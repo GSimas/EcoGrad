@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-eco-bg text-slate-200 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply text-eco-accent font-semibold tracking-tight;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-eco-border;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-eco-border bg-eco-panel/70 p-4 shadow-lg shadow-black/20;
+  }
+
+  .kpi {
+    @apply flex flex-col gap-1 rounded-xl border border-eco-border bg-eco-panel/70 p-4;
+  }
+
+  .kpi-valor {
+    @apply text-2xl font-bold text-slate-100 tabular-nums;
+  }
+
+  .kpi-rotulo {
+    @apply text-xs uppercase tracking-wide text-slate-400;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-eco-border
+      bg-eco-panel px-3 py-2 text-sm font-medium text-slate-200 transition
+      hover:border-eco-accent/60 hover:bg-eco-accent/10 hover:text-eco-accent
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-eco-accent
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-primary {
+    @apply border-eco-accent bg-eco-accent text-black hover:bg-amber-400 hover:text-black;
+  }
+
+  .btn-chip {
+    @apply inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-eco-border
+      bg-eco-panel px-3 py-1 text-left text-xs text-slate-300 transition
+      hover:border-eco-accent/60 hover:text-eco-accent;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-eco-border bg-eco-bg px-3 py-2 text-sm text-slate-200
+      placeholder:text-slate-500 focus:border-eco-accent focus:outline-none;
+  }
+
+  .tabela {
+    @apply w-full border-collapse text-left text-sm;
+  }
+  .tabela th {
+    @apply sticky top-0 z-10 whitespace-nowrap border-b border-eco-border bg-eco-panel
+      px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400;
+  }
+  .tabela td {
+    @apply border-b border-eco-border/50 px-3 py-2 align-top text-slate-300;
+  }
+  .tabela tbody tr:hover {
+    @apply bg-white/[0.03];
+  }
+
+  .secao {
+    @apply mb-3 flex items-center gap-2 text-lg font-semibold text-eco-accent;
+  }
+
+  .aviso {
+    @apply rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200;
+  }
+  .info {
+    @apply rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-200;
+  }
+  .erro {
+    @apply rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200;
+  }
+  .sucesso {
+    @apply rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200;
+  }
+}
+
+/* Markdown renderizado pelo chat */
+.markdown a {
+  @apply text-eco-accent underline underline-offset-2 hover:text-amber-300;
+}
+.markdown p {
+  @apply mb-3 leading-relaxed;
+}
+.markdown ul,
+.markdown ol {
+  @apply mb-3 ml-5 list-outside space-y-1;
+}
+.markdown ul {
+  @apply list-disc;
+}
+.markdown ol {
+  @apply list-decimal;
+}
+.markdown strong {
+  @apply font-semibold text-slate-100;
+}
+.markdown code {
+  @apply rounded bg-black/40 px-1 py-0.5 text-[0.85em];
+}

@@ -1,91 +1,211 @@
-# 🌌 Ecologia do Conhecimento: Plataforma Cientométrica e Topológica
+# 🌌 EcoGrad — Ecologia do Conhecimento
 
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Netlify](https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
-![Neo4j](https://img.shields.io/badge/Neo4j-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=google&logoColor=white)
-![NetworkX](https://img.shields.io/badge/NetworkX-000000?style=for-the-badge&logo=python&logoColor=white)
 
-Plataforma avançada de **Cienciometria, Análise de Redes Sociais (SNA) e Mineração de Textos** focada no mapeamento de Programas de Pós-Graduação (PPGs). O sistema analisa a produção acadêmica (teses e dissertações) para revelar a estrutura latente do conhecimento, redes de colaboração, genealogia acadêmica e o papel topológico de pesquisadores e conceitos.
-
----
-
-## 🎯 Visão Geral
-
-Este projeto transcende a contagem tradicional de publicações. Utilizando a teoria de **Sistemas Complexos** e **Grafos**, a aplicação mapeia a "Ecologia do Conhecimento" de ecossistemas acadêmicos. Através de uma arquitetura híbrida (memória + banco de grafos em nuvem) e IA Generativa, o sistema permite:
-
-- Avaliar a maturidade e resiliência de linhas de pesquisa.
-- Identificar *Brokers* (corretores de conhecimento) e *Hubs* interdisciplinares.
-- Rastrear a genealogia acadêmica (alunos que se tornam formadores).
-- Recomendar conexões através de similaridade vetorial/topológica.
+Plataforma de **cientometria, análise de redes sociais (SNA) e mineração de textos** que mapeia a
+produção acadêmica da UFSC — teses, dissertações e trabalhos de conclusão — para revelar a
+estrutura latente do conhecimento: redes de colaboração, genealogia acadêmica, temas emergentes e
+o papel topológico de pesquisadores e conceitos.
 
 ---
 
-## 🚀 Funcionalidades Principais
+## 📦 Duas implementações neste repositório
 
-### 1. 🧊 Espaço Topológico Multidimensional
-Renderização de um espaço de fase 3D utilizando as três principais leis de força da rede: **Grau (Volume), Betweenness (Intermediação) e Closeness (Proximidade)**. Permite a identificação visual rápida de anomalias, clusters isolados e líderes do ecossistema.
+| | Aplicação web (atual) | Streamlit (original) |
+| --- | --- | --- |
+| **Onde** | [`ecograd-web/`](ecograd-web/) | raiz do repositório |
+| **Stack** | React 18 + Vite + TypeScript + Tailwind, Netlify Functions | Python + Streamlit + NetworkX + Plotly |
+| **Execução** | No navegador (Web Workers) + funções serverless | Servidor Python |
+| **Como rodar** | `cd ecograd-web && npm install && npm run netlify:dev` | `pip install -r requirements.txt && streamlit run Principal.py` |
+| **Documentação** | [`ecograd-web/README.md`](ecograd-web/README.md) | esta página |
 
-### 2. 🧭 Mapeamento Temático (Bibliometrix Style)
-Implementação inspirada no modelo de Callon para quadrantes de maturidade. Classifica Macrotemas e Palavras-chave em:
-* **Temas Motores:** Alta centralidade e alta densidade.
-* **Temas de Nicho:** Alta densidade, baixa centralidade.
-* **Temas Emergentes/Declínio:** Baixa centralidade e densidade.
-* **Temas Básicos (Transversais):** Alta centralidade, baixa densidade.
-
-### 3. 🧬 Métricas de Ecologia Profunda (SNA Avançado)
-Cálculo em tempo real da "física" da rede acadêmica:
-* **Assortatividade ($r$):** Mede a endogenia (panelinhas) vs. expansão interdisciplinar.
-* **Rich-Club Coefficient ($\Phi$):** Avalia se a "elite" do programa (Top 20% hubs) colabora entre si ou atua em silos.
-* **Expoente Gamma ($\gamma$) da Lei de Potência:** Avalia a dependência da rede em relação aos grandes líderes (validação da estrutura *Scale-Free*).
-* **Correlação de Spearman ($\rho$):** Mede a presença de Inovadores/Brokers na rede cruzando Grau e Betweenness.
-
-### 4. 🔗 Recomendação Topológica (Índice de Jaccard)
-Sistema de recomendação que sugere conexões latentes (Autores parecidos, Teses correlatas, Conceitos vizinhos) calculando a sobreposição do "DNA acadêmico" (similaridade de vizinhança) na rede complexa.
-
-### 5. 🌌 Ego-Graphs e Órbitas de Relacionamento
-Consultas na linguagem **Cypher** disparadas diretamente para o **Neo4j AuraDB**, renderizando subgrafos interativos que mostram a área de influência de um pesquisador ou conceito em até 3 graus de profundidade.
-
-### 6. 🤖 Síntese Dinâmica com IA Generativa
-Integração com a API do **Google Gemini** para ler amostras do repositório em tempo real e gerar descritivos fenomenológicos/epistemológicos do foco de pesquisa de um PPG, eliminando a necessidade de leitura manual massiva.
+A versão web é uma migração da versão Streamlit. Toda a matemática de redes complexas, foresight
+e memética foi **transcrita e verificada numericamente** contra o `backend.py` original — veja
+[Paridade](#-paridade-numérica-com-o-backend-python).
 
 ---
 
-## 🏗️ Arquitetura e Stack Tecnológico
+## 🎯 Visão geral
 
-A plataforma utiliza um modelo de **Arquitetura Híbrida**:
-* **Front-end & UI:** Streamlit (Python)
-* **Back-end Matemático:** Pandas, SciPy, NetworkX (Cálculo de métricas em RAM para alta velocidade em filtros tabulares).
-* **Back-end de Grafos:** Neo4j AuraDB (Cloud) para armazenamento persistente da ontologia e consultas estruturais complexas via Cypher.
-* **Visualização de Dados:** Plotly (Gráficos 3D, Linhas, Barras, Scatter), Streamlit-agraph (vis.js para redes).
-* **NLP & IA:** Google Gen AI SDK (`google-genai`) com Gemini 2.5/2.0 Flash.
+O projeto vai além da contagem de publicações. Usando teoria de **sistemas complexos** e **grafos**,
+mapeia a "ecologia do conhecimento" de ecossistemas acadêmicos para:
+
+- avaliar a maturidade e a resiliência de linhas de pesquisa;
+- identificar *brokers* (corretores de conhecimento) e *hubs* interdisciplinares;
+- rastrear a genealogia acadêmica (alunos que se tornam formadores);
+- prospectar temas emergentes antes que virem consenso;
+- recomendar conexões por similaridade topológica.
 
 ---
 
-## 🛠️ Instalação e Configuração
+## 🚀 Funcionalidades
 
-### Pré-requisitos
-- Python 3.9 ou superior.
-- Uma conta gratuita no [Neo4j Aura](https://console.neo4j.io/).
-- Uma chave de API do [Google AI Studio](https://aistudio.google.com/).
+### Fluxo de telas
 
-### Passo a Passo
+1. **Apresentação** — o que é a plataforma, como funciona e um tutorial de 5 passos em modal.
+2. **Seleção de coleções** — escolha de PPGs e cursos de graduação, com o Panorama CAPES já
+   visível enquanto se decide.
+3. **Análise** — as cinco seções abaixo.
 
-1. **Clone o Repositório:**
-```bash
-git clone [https://github.com/SEU_USUARIO/ecologia-conhecimento.git](https://github.com/SEU_USUARIO/ecologia-conhecimento.git)
-cd ecologia-conhecimento
+O painel lateral recolhe para uma faixa de ícones, e o estado fica salvo na sessão.
+
+### 1. 📊 Dashboard
+
+KPIs da base, comparativo entre PPGs quando há mais de um, **ficha oficial da CAPES** (cruzada com
+a Plataforma Sucupira por *fuzzy matching*, que resolve programas renomeados) e uma síntese do
+perfil epistemológico escrita por IA.
+
+Traz também as **métricas de ecologia profunda**: assortatividade ($r$), coeficiente rich-club
+($\Phi$), expoente $\gamma$ da lei de potência e correlação de Spearman ($\rho$) entre grau e
+intermediação.
+
+Todo nome exibido é clicável — chips de destaque e as barras dos Top 10 — e leva direto ao dossiê
+da entidade no Motor de Busca.
+
+### 2. 🔍 Motor de Busca e Dossiê
+
+Busca unificada por Documento, Autor, Orientador, Co-orientador, Palavra-chave e Macrotema. Cada
+entidade abre um dossiê com:
+
+- **Raio-X de Especialização** — peculiaridade temática (NMF), densidade local na rede e raridade
+  do vocabulário (IDF);
+- **Quociente Locacional (QL)** — especialização relativa à média global da base;
+- **Evolução histórica** — produção ano a ano, com opção cumulativa;
+- **Lexicometria** — nuvem de palavras de conceitos, títulos ou resumos;
+- **Órbita de relacionamentos** — ego-graph animado com player temporal;
+- **Itens semelhantes** — recomendação topológica pelo **Índice de Jaccard**, calculada sobre a
+  sobreposição do "DNA acadêmico" (vizinhança na rede).
+
+### 3. 🔮 Radar de Foresight
+
+Cruza **Momentum Temporal** (aceleração do uso de um termo, normalizada por taxa relativa com
+suavização de Laplace) com **Novidade Estrutural** (Betweenness × IDF), separando os termos em
+quatro quadrantes: Tendências, Sinais Fracos, Mainstream e Base/Declínio.
+
+- Segmentação por **percentil fixo** ou **K-Means adaptativo** de 4 clusters.
+- **Bootstrap** de 100 reamostragens para um betweenness robusto em bases pequenas.
+- **Grid Search** que varre 108 configurações, valida cada uma contra a história real da base
+  (treino até T1, conferência em T2) e ranqueia por **MCC** — robusto a classes desbalanceadas.
+
+Funciona sobre Palavras-chave, Macrotemas ou Artefatos da Ontologia IA.
+
+### 4. 🧬 Memética e Ontologia
+
+- **Mineração de artefatos** — a IA lê os resumos e extrai teorias, métodos e ferramentas de fato
+  utilizados, indo além das palavras-chave genéricas. O catálogo é exportável em CSV e pode ser
+  recarregado depois, sem gastar cota da API.
+- **Genética das ideias** — fecundidade, mortalidade infantil e tempo de meia-vida dos memes.
+- **Longevidade** — dispersograma de ano de nascimento × anos de sobrevivência, com cor pelo ano
+  da última aparição e tamanho pelas replicações.
+- **Ecologia Memética (SNA)** — rede de coocorrência entre memes, com métricas de redes complexas,
+  métricas de ecologia profunda, grafo interativo e tabela de centralidade global exportável.
+
+### 5. 🤖 Consultor Acadêmico IA
+
+Chat com streaming que recebe o dossiê institucional completo — métricas de rede, mapa de
+especialidades de cada docente e catálogo de trabalhos com os links do repositório. Recomenda
+orientadores compatíveis com a ideia do candidato e indica teses para ler, com os títulos como
+hiperlinks que abrem o repositório da UFSC em nova aba.
+
+---
+
+## 🏗️ Arquitetura
+
+```text
+netlify.toml                  # na raiz, com base = "ecograd-web"
+ecograd-web/
+├── netlify/functions/        # Gemini (síntese, ontologia, chat), proxy CAPES, Neo4j
+├── src/lib/                  # motores analíticos em TypeScript puro
+├── src/workers/              # ingestão e redes complexas fora da main thread
+└── src/components/           # UI React
 ```
 
-2. **Instale as dependências:**
+**Front-end** — React 18, Vite, Tailwind, Zustand (estado), TanStack Query (cache), Radix UI,
+ECharts (gráficos e nuvem de palavras) e react-force-graph (grafos).
+
+**Motores analíticos** — kernels próprios sobre estrutura CSR: Brandes (BFS e Dijkstra, com
+amostragem de pivôs), closeness com correção Wasserman-Faust, clustering simples e ponderado,
+PageRank, autovetor, constraint de Burt, rich-club, assortatividade e Louvain (graphology).
+
+**Web Workers** — a ingestão descomprime `.json.gz` de 62 MB e filtra a seleção; o worker de rede
+roda SNA, bootstrap, grid search e a rede memética. Sem isso a página congelaria por minutos.
+
+**Backend serverless** — Netlify Functions em TypeScript. As chaves da API vivem só no runtime das
+funções, nunca no bundle. O `neo4j-query` não aceita Cypher do cliente: só o nome de uma consulta
+pré-registrada e parâmetros, que viajam como binds do driver.
+
+### Aproximações em redes grandes
+
+O `backend.py` já aproximava o betweenness acima de 1500 nós; o mesmo princípio foi estendido às
+demais métricas O(n·m), porque a rede completa da UFSC passa de 100 mil nós. Abaixo dos limiares o
+resultado é idêntico ao NetworkX. A tabela completa está no
+[README da aplicação](ecograd-web/README.md#aproximações-em-redes-grandes).
+
+---
+
+## ✅ Paridade numérica com o backend Python
+
+```bash
+cd ecograd-web && npm run verify:parity
+```
+
+O harness roda os dois motores sobre a mesma base e compara os resultados. Cobertura:
+
+| Bloco | O que é comparado |
+| --- | --- |
+| Topologia | degree, betweenness, closeness e clustering — diferença relativa máxima `2e-16` |
+| Métricas complexas | densidade, eficiência global, entropia, PageRank, autovetor, Burt |
+| Rede de coocorrência | rich-club por grau (153 valores), clustering ponderado, assortatividade, γ |
+| Maturidade | assortatividade, rich-club, γ por regressão log-log e por estimador MLE |
+| Radar de Foresight | os 43 termos, com Momentum e Novidade — diferença exatamente zero |
+| Backtest | as 89 linhas, distribuição por quadrante e os oito vereditos |
+| Memética | memes, mortalidade, sobreviventes, longevidade, meia-vida |
+| QL e Jaccard | valores idênticos |
+
+Duas diferenças conhecidas, ambas sem efeito sobre os números: **Louvain** é estocástico (a
+comparação é por modularidade) e **empates de contagem** na memética têm ordem arbitrária no
+pandas, que usa quicksort instável — o TypeScript desempata por nome, o que torna o Top-N
+reprodutível.
+
+O harness já pagou por si: foi ele que expôs o autovetor iterando `A·x` em vez do `x + A·x` do
+NetworkX, e a varredura do rich-club ordenando as arestas pelo maior grau em vez do menor — erro
+que produzia coeficientes acima de 1.
+
+---
+
+## 🛠️ Instalação
+
+### Aplicação web
+
+```bash
+cd ecograd-web && npm install
+```
+
+Crie `ecograd-web/.env` a partir de `.env.example` e rode tudo (front-end + funções) em
+<http://localhost:8888>:
+
+```bash
+npm run netlify:dev
+```
+
+Para trabalhar só na interface, sem as funções, use `npm run dev`. As bases da raiz são copiadas
+para `public/data/` automaticamente. Detalhes, comandos e notas de deploy no
+[README da aplicação](ecograd-web/README.md).
+
+### Versão Streamlit (original)
+
 ```bash
 pip install -r requirements.txt
+streamlit run Principal.py
 ```
 
-3. **Configure as credenciais:**
-O projeto agora aceita tanto `.streamlit/secrets.toml` quanto variáveis de ambiente, o que facilita o deploy no Railway.
+As credenciais são lidas de `.streamlit/secrets.toml` ou de variáveis de ambiente:
 
-Variáveis esperadas:
 ```bash
 GEMINI_API_KEY=...
 NEO4J_URI=...
@@ -93,5 +213,32 @@ NEO4J_USERNAME=...
 NEO4J_PASSWORD=...
 ```
 
-4. **Deploy no Railway:**
-Cadastre essas quatro chaves em `Variables` no painel do Railway. O app não depende mais de `/app/.streamlit/secrets.toml` para subir em produção.
+---
+
+## 📋 Estado da migração
+
+A migração cobre os módulos centrais, mas **nem tudo do app Streamlit foi portado**. O que ainda
+vive só na versão Python:
+
+| Módulo original | Onde estava | Status |
+| --- | --- | --- |
+| Espaço Topológico 3D (Grau × Betweenness × Closeness) | Exploração Global | ⏳ não portado |
+| Mapa Temático (quadrantes de Callon / Bibliometrix) | Principal | ⏳ não portado |
+| Sankey Temporal de palavras-chave | Fluxos | ⏳ não portado |
+| Boxplot de Especialização (QL por nível) | Exploração Global | ⏳ não portado |
+| Furos Estruturais de Burt (seção dedicada) | Exploração Global | ⏳ não portado |
+| Exportação da rede (GEXF / GraphML / JSON) | Exploração Global | ⏳ não portado |
+| Tabela geral da base com métricas SNA | Principal | ⏳ não portado |
+| Órbita via Neo4j (Cypher) | Motor de Busca | ⚠️ função pronta, UI usa o grafo em memória |
+| Métricas de redes complexas do grafo global | Exploração Global | ⚠️ motor pronto, exposto só na rede memética |
+
+Os motores matemáticos de vários desses itens já existem em `ecograd-web/src/lib/` — falta a
+camada de interface.
+
+---
+
+## 📄 Licença
+
+Ver [LICENSE](LICENSE).
+
+Desenvolvido por **Gustavo Simas** — [github.com/GSimas](https://github.com/GSimas)
