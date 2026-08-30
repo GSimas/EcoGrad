@@ -4,7 +4,7 @@
  * paginação de 100 em 100 e a normalização do nome (sem acentos, caixa alta)
  * usada como chave de cruzamento com os nomes do repositório.
  */
-import { erro } from './_shared';
+import { erro } from './lib/gemini';
 
 const URL_CAPES = 'https://apigw-proxy.capes.gov.br/observatorio/data/observatorio/ppg';
 /** id-ies 4362 = UFSC. */

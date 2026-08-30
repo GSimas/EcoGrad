@@ -4,7 +4,7 @@
  * `processar_lote_ontologia` (backend.py:843), incluindo o delay de segurança
  * de 4s entre requisições e a blindagem contra formatos inesperados da IA.
  */
-import { erro, gerarComRetry, json, MODELOS_RAPIDOS } from './_shared';
+import { erro, gerarComRetry, json, MODELOS_RAPIDOS } from './lib/gemini';
 
 interface ItemLote {
   titulo: string;

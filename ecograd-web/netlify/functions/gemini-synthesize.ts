@@ -2,7 +2,7 @@
  * Síntese epistemológica do perfil de pesquisa.
  * Transcrição de `gerar_descritivo_sessao` (backend.py:2379).
  */
-import { erro, gerarComRetry, json, MODELOS_TEXTO } from './_shared';
+import { erro, gerarComRetry, json, MODELOS_TEXTO } from './lib/gemini';
 
 interface Payload {
   nomesProgramas?: string[];

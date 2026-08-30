@@ -8,7 +8,7 @@
  * bind do driver — nunca por interpolação de string.
  */
 import neo4j, { type Driver } from 'neo4j-driver';
-import { erro, json } from './_shared';
+import { erro, json } from './lib/gemini';
 
 type NomeConsulta = 'subgrafo-programa' | 'orbita-entidade' | 'ping';
 

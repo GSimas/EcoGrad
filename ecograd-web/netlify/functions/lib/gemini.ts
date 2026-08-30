@@ -1,5 +1,7 @@
 /**
- * Utilidades comuns às Netlify Functions.
+ * Utilidades compartilhadas pelas Netlify Functions.
+ * Fica em `lib/` porque a Netlify trata todo arquivo na raiz de
+ * `netlify/functions/` como um endpoint publicável — este é só um módulo.
  * Porta de `gemini_utils.py` e `app_config.py` para o runtime serverless:
  * a GEMINI_API_KEY vive só aqui, nunca no bundle do cliente.
  */

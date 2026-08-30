@@ -2,3 +2,5 @@
 base_consolidada_ufsc.json
 .claude/
 .agent/
+# Local Netlify folder
+.netlify

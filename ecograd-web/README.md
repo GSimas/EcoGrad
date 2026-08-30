@@ -31,7 +31,7 @@ A aplicação sobe em <http://localhost:5173>.
 ### Aplicação completa (frontend + funções)
 
 ```bash
-npx netlify dev
+npm run netlify:dev
 ```
 
 Isso sobe o Vite e as funções juntos em <http://localhost:8888>, roteando `/api/*` para
@@ -45,6 +45,11 @@ NEO4J_USERNAME=...
 NEO4J_PASSWORD=...
 ```
 
+> **Não chame `netlify dev` diretamente de dentro de `ecograd-web/`.** A CLI resolve `base`, o
+> diretório de funções e o `.env` a partir da raiz do repositório git, e por isso o `netlify.toml`
+> fica **na raiz** (com `base = "ecograd-web"`). O script `netlify:dev` cuida disso: ele executa a
+> CLI a partir da raiz. Rodando de dentro da pasta, as funções respondem 404 e o `.env` é ignorado.
+
 ### Outros comandos
 
 | Comando | O que faz |
@@ -53,6 +58,7 @@ NEO4J_PASSWORD=...
 | `npm run build` | Sincroniza dados, checa tipos e gera `dist/` |
 | `npm run preview` | Serve o build de produção localmente |
 | `npm run sync:data` | Só copia as bases para `public/data/` |
+| `npm run netlify:dev` | Frontend + funções em <http://localhost:8888> |
 | `npm run verify:parity` | Compara os motores TS com o `backend.py` (requer o venv Python) |
 
 ---
@@ -60,9 +66,10 @@ NEO4J_PASSWORD=...
 ## Arquitetura
 
 ```text
+netlify.toml                    # na RAIZ do repositório, com base = "ecograd-web"
 ecograd-web/
 ├── netlify/functions/
-│   ├── _shared.ts              # cliente Gemini (retry exponencial, fallback de modelos)
+│   ├── lib/gemini.ts           # cliente Gemini (retry exponencial, fallback de modelos)
 │   ├── gemini-synthesize.ts    # síntese epistemológica do perfil do PPG
 │   ├── gemini-ontology.ts      # extração de teorias/métodos/ferramentas em lote
 │   ├── gemini-chat.ts          # consultor acadêmico com streaming SSE → texto
@@ -161,8 +168,13 @@ Duas diferenças conhecidas, ambas sem efeito sobre os números:
 
 ## Deploy na Netlify
 
-O `netlify.toml` já está configurado com `base = "ecograd-web"`, rotas SPA, roteamento de
-`/api/*` para as funções, e headers de cache para `dist/assets` (imutável) e `public/data`.
+O `netlify.toml` fica **na raiz do repositório** e já está configurado com
+`base = "ecograd-web"`, rotas SPA, roteamento de `/api/*` para as funções, e headers de cache
+para `dist/assets` (imutável) e `public/data`. Não é preciso configurar nada no painel: o `base`
+do arquivo já aponta para a subpasta da aplicação.
+
+Todo módulo compartilhado entre funções mora em `netlify/functions/lib/` — arquivos na raiz de
+`netlify/functions/` viram endpoints publicáveis, inclusive os prefixados com `_`.
 
 Defina as variáveis de ambiente (`GEMINI_API_KEY`, `NEO4J_URI`, `NEO4J_USERNAME`,
 `NEO4J_PASSWORD`) no painel do site — elas vivem apenas no runtime das funções e **nunca**

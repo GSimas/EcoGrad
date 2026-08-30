@@ -6,7 +6,7 @@
  * com LINKs) é montado aqui, no servidor, a partir do resumo enviado pelo cliente —
  * assim o prompt completo nunca precisa trafegar duas vezes nem ficar exposto.
  */
-import { abrirStream, erro, lerChaveGemini, MODELOS_CHAT } from './_shared';
+import { abrirStream, erro, lerChaveGemini, MODELOS_CHAT } from './lib/gemini';
 
 interface DocenteResumo {
   nome: string;

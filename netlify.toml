@@ -1,3 +1,8 @@
+# Fica na RAIZ do repositório, não em `ecograd-web/`.
+# A CLI da Netlify resolve `base`, o diretório de funções e o `.env` a partir
+# da raiz do repositório git; com o arquivo dentro de `ecograd-web/` o
+# `netlify dev` não encontra nem as funções nem as variáveis de ambiente.
+# Todos os caminhos abaixo são relativos a `base`.
 [build]
   base    = "ecograd-web"
   command = "npm run build"
@@ -8,23 +13,27 @@
   NODE_VERSION = "20"
 
 [functions]
+  # `directory` é lido pelo runtime atual do Netlify Dev; o `functions` em
+  # [build] atende versões mais antigas da CLI. Ambos relativos a `base`.
+  directory = "netlify/functions"
   node_bundler = "esbuild"
   # O chat usa streaming (ReadableStream) — exige runtime Node 18+
   external_node_modules = ["neo4j-driver"]
 
 [dev]
-  command = "npm run dev"
-  targetPort = 5173
+  # O Netlify Dev executa este comando a partir da RAIZ do repositório (não de
+  # `base`), por isso o `--prefix`. Porta fixa porque o Netlify precisa saber
+  # onde o Vite vai atender — ajuste `targetPort` e `--port` juntos se 5176
+  # estiver ocupada.
+  command = "npm --prefix ecograd-web run dev -- --port 5176 --strictPort"
+  targetPort = 5176
   port = 8888
   framework = "#custom"
   autoLaunch = false
 
 # --- Rotas SPA: tudo que não for arquivo/função cai no index.html ---
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to   = "/.netlify/functions/:splat"
-  status = 200
-
+# `/.netlify/functions/*` já é servido nativamente — não precisa (nem aceita)
+# uma regra de redirect própria.
 [[redirects]]
   from = "/api/*"
   to   = "/.netlify/functions/:splat"
