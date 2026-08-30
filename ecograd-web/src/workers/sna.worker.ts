@@ -15,6 +15,7 @@ import {
   calcularMetricasComplexas,
   calcularSnaGlobal,
 } from '@/lib/sna-engine';
+import { gerarEcologiaMemes } from '@/lib/memetic-network';
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -81,6 +82,18 @@ ctx.addEventListener('message', (evento: MessageEvent<SnaWorkerRequest>) => {
             )
           : [];
         responder({ type: 'grid-search', grid, backtest });
+        break;
+      }
+      case 'ecologia-memes': {
+        // A rede de coocorrência de memes é densa (milhares de nós, dezenas de
+        // milhares de arestas); calcular no main thread congelaria a página.
+        const result = gerarEcologiaMemes(
+          pedido.docs,
+          pedido.minCoocorrencia,
+          pedido.fonte,
+          (value, text) => responder({ type: 'progress', value, text }),
+        );
+        responder({ type: 'ecologia-memes', result });
         break;
       }
       default:

@@ -4,6 +4,8 @@ import { Aviso, Card, Kpi, Tabela } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { CatalogoOntologia } from './CatalogoOntologia';
+import { EcologiaSNA } from './EcologiaSNA';
+import { GraficoLongevidade } from './GraficoLongevidade';
 import { calcularMetricasMemeticas, tempoDeMeiaVida, type FonteMemes } from '@/lib/memetics';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 
@@ -26,13 +28,6 @@ export function Memetica() {
 
   const totalMemes = metricas.mortalidade + metricas.sobreviventes;
   const taxaMortalidade = totalMemes > 0 ? (metricas.mortalidade / totalMemes) * 100 : 0;
-
-  // Distribuição do tempo de vida (histograma por anos)
-  const histLongevidade = useMemo(() => {
-    const c = new Map<number, number>();
-    for (const l of metricas.longevidade) c.set(l.tempo_vida_anos, (c.get(l.tempo_vida_anos) ?? 0) + 1);
-    return [...c.entries()].sort((a, b) => a[0] - b[0]);
-  }, [metricas]);
 
   const topVivos = useMemo(() => metricas.memesVivos.slice(0, 20), [metricas]);
 
@@ -82,61 +77,31 @@ export function Memetica() {
               />
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
-              <Card>
-                <h3 className="mb-2 text-sm font-semibold">Fecundidade vs. Mortalidade Infantil</h3>
-                <Grafico
-                  altura={330}
-                  option={{
-                    tooltip: { trigger: 'item' },
-                    legend: { bottom: 0, textStyle: { color: TEMA_GRAFICO.texto } },
-                    series: [
-                      {
-                        type: 'pie',
-                        radius: ['45%', '70%'],
-                        center: ['50%', '45%'],
-                        data: [
-                          { name: 'Sobreviventes (>1 aparição)', value: metricas.sobreviventes, itemStyle: { color: '#2ECC71' } },
-                          { name: 'Mortos (1 aparição)', value: metricas.mortalidade, itemStyle: { color: '#E74C3C' } },
-                        ],
-                        label: { color: TEMA_GRAFICO.texto },
-                        itemStyle: { borderColor: '#0E1117', borderWidth: 2 },
-                      },
-                    ],
-                  }}
-                />
-              </Card>
+            <Card>
+              <h3 className="mb-2 text-sm font-semibold">Fecundidade vs. Mortalidade Infantil</h3>
+              <Grafico
+                altura={300}
+                option={{
+                  tooltip: { trigger: 'item' },
+                  legend: { bottom: 0, textStyle: { color: TEMA_GRAFICO.texto } },
+                  series: [
+                    {
+                      type: 'pie',
+                      radius: ['45%', '70%'],
+                      center: ['50%', '45%'],
+                      data: [
+                        { name: 'Sobreviventes (>1 aparição)', value: metricas.sobreviventes, itemStyle: { color: '#2ECC71' } },
+                        { name: 'Mortos (1 aparição)', value: metricas.mortalidade, itemStyle: { color: '#E74C3C' } },
+                      ],
+                      label: { color: TEMA_GRAFICO.texto },
+                      itemStyle: { borderColor: '#0E1117', borderWidth: 2 },
+                    },
+                  ],
+                }}
+              />
+            </Card>
 
-              <Card className="lg:col-span-2">
-                <h3 className="mb-2 text-sm font-semibold">Longevidade (distribuição do tempo de vida)</h3>
-                <Grafico
-                  altura={330}
-                  option={{
-                    tooltip: { trigger: 'axis' },
-                    grid: { left: 8, right: 16, top: 24, bottom: 8, containLabel: true },
-                    xAxis: {
-                      type: 'category',
-                      name: 'anos',
-                      data: histLongevidade.map(([anos]) => String(anos)),
-                      axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-                    },
-                    yAxis: {
-                      type: 'value',
-                      name: 'memes',
-                      splitLine: { lineStyle: { color: TEMA_GRAFICO.grade } },
-                      axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-                    },
-                    series: [
-                      {
-                        type: 'bar',
-                        data: histLongevidade.map(([, n]) => n),
-                        itemStyle: { color: TEMA_GRAFICO.paleta[1], borderRadius: [3, 3, 0, 0] },
-                      },
-                    ],
-                  }}
-                />
-              </Card>
-            </div>
+            <GraficoLongevidade longevidade={metricas.longevidade} />
 
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="space-y-2">
@@ -174,6 +139,8 @@ export function Memetica() {
           </>
         )}
       </section>
+
+      <EcologiaSNA fonte={fonte} />
     </div>
   );
 }

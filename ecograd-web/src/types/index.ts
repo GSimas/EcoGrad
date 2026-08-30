@@ -256,6 +256,9 @@ export interface IndicesInvertidos {
 }
 
 /** Mensagens do worker de SNA. */
+// Importado como tipo puro: a implementação vive em `lib/memetic-network.ts`.
+import type { EcologiaMemetica } from '@/lib/memetic-network';
+
 export type SnaWorkerRequest =
   | { type: 'sna-global'; docs: Documento[] }
   | { type: 'maturidade'; docs: Documento[]; sna: SnaGlobal }
@@ -267,7 +270,13 @@ export type SnaWorkerRequest =
       nBootstrap: number;
       fracaoAmostra: number;
     }
-  | { type: 'grid-search'; docs: Documento[]; tipo: TipoForesight };
+  | { type: 'grid-search'; docs: Documento[]; tipo: TipoForesight }
+  | {
+      type: 'ecologia-memes';
+      docs: Documento[];
+      minCoocorrencia: number;
+      fonte: 'Palavras-chave' | 'Artefatos Extraídos';
+    };
 
 export type SnaWorkerResponse =
   | { type: 'progress'; value: number; text: string }
@@ -276,6 +285,7 @@ export type SnaWorkerResponse =
   | { type: 'metricas-complexas'; result: MetricasComplexas | null }
   | { type: 'bootstrap'; result: BootstrapMap }
   | { type: 'grid-search'; grid: GridSearchRow[]; backtest: BacktestRow[] }
+  | { type: 'ecologia-memes'; result: EcologiaMemetica }
   | { type: 'error'; message: string };
 
 export interface ChatMessage {

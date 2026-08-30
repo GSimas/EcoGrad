@@ -109,6 +109,32 @@ gamma_lin = abs(slope)
 
 gamma_mle = B._estimar_gamma_lei_potencia(graus3)
 
+# ---------- 3.5 Rede de coocorrência (densa) — cobre rich-club e clustering ponderado ----------
+# O grafo estrutural tem rich-club 0, o que mascarava erros; a rede de
+# coocorrência de palavras-chave é densa e produz valores não triviais.
+import itertools as _it
+G_co = nx.Graph()
+for d in sub:
+    termos = sorted({str(p).strip().title() for p in d.get('palavras_chave', []) if str(p).strip()})
+    for a, b in _it.combinations(termos, 2):
+        if G_co.has_edge(a, b): G_co[a][b]['weight'] += 1
+        else: G_co.add_edge(a, b, weight=1)
+
+if G_co.number_of_nodes() > 2:
+    rc_co = nx.rich_club_coefficient(G_co, normalized=False)
+    graus_co = [d for _, d in G_co.degree()]
+    coocorrencia = {
+        'n_nos': G_co.number_of_nodes(),
+        'n_arestas': G_co.number_of_edges(),
+        'rich_club': {str(k): v for k, v in sorted(rc_co.items())},
+        'clustering_ponderado': nx.average_clustering(G_co, weight='weight'),
+        'clustering_simples': nx.average_clustering(G_co),
+        'assortatividade': nx.degree_assortativity_coefficient(G_co),
+        'gamma_mle': B._estimar_gamma_lei_potencia(graus_co),
+    }
+else:
+    coocorrencia = {}
+
 # ---------- 4. Radar de Foresight (base completa, sem bootstrap) ----------
 # SNA global usa betweenness aproximado; para comparar o radar de forma
 # determinística usamos um sna_global com betweenness EXATO do grafo completo.
@@ -196,6 +222,7 @@ saida = {
         'clu': {k: clu[k] for k in sorted(clu)[:400]},
     },
     'complexas': complexas,
+    'coocorrencia': coocorrencia,
     'maturidade': {
         'assortatividade': assort,
         'rich_club': rich_club_val,

@@ -45,6 +45,22 @@ for k in ['densidade','eficiencia','entropia','clustering','pagerank_avg','eigen
     cmp_num(k, py['complexas'][k], ts['complexas'][k], 1e-6)
 cmp_num('n_nos', py['complexas']['n_nos'], ts['complexas']['n_nos'], 0, False)
 
+print('\n=== 2.5 REDE DE COOCORRENCIA (densa: rich-club e clustering ponderado) ===')
+pc, tc = py.get('coocorrencia') or {}, ts.get('coocorrencia') or {}
+if not pc or not tc:
+    print('  -- sem rede de coocorrencia nesta base')
+else:
+    cmp_num('n_nos', pc['n_nos'], tc['n_nos'], 0, False)
+    cmp_num('n_arestas', pc['n_arestas'], tc['n_arestas'], 0, False)
+    cmp_num('clustering_ponderado', pc['clustering_ponderado'], tc['clustering_ponderado'], 1e-9)
+    cmp_num('clustering_simples', pc['clustering_simples'], tc['clustering_simples'], 1e-9)
+    cmp_num('assortatividade', pc['assortatividade'], tc['assortatividade'], 1e-9)
+    cmp_num('gamma_mle', pc['gamma_mle'], tc['gamma_mle'], 1e-9)
+    cmp_dict('rich_club (por grau k)', pc['rich_club'], tc['rich_club'], 1e-9)
+    fora = [k for k, v in tc['rich_club'].items() if v < 0 or v > 1]
+    print(f'  {"OK " if not fora else "XX "}rich-club dentro de [0,1]              {len(tc["rich_club"])} valores')
+    if fora: falhas.append(f'rich-club fora de [0,1] em k={fora[:5]}')
+
 print('\n=== 3. MATURIDADE TOPOLOGICA (base completa) ===')
 for k in ['assortatividade','rich_club','gamma_linregress','gamma_mle','n_nos_G3']:
     cmp_num(k, py['maturidade'][k], ts['maturidade'][k], 1e-9)

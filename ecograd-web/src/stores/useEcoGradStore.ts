@@ -25,6 +25,8 @@ export interface EcoGradState {
   apresentacaoVista: boolean;
   /** Aba ativa depois que a base é carregada. */
   rota: Rota;
+  /** Painel lateral recolhido (só ícones). Persistido. */
+  sidebarRecolhida: boolean;
 
   // --- Seleção de coleções (persistida) ---
   programasSelecionados: string[];
@@ -60,6 +62,7 @@ export interface EcoGradState {
   concluirApresentacao: () => void;
   voltarParaApresentacao: () => void;
   setRota: (r: Rota) => void;
+  alternarSidebar: () => void;
   setProgramas: (v: string[]) => void;
   setCursosTcc: (v: string[]) => void;
   iniciarCarregamento: () => void;
@@ -99,6 +102,7 @@ export const useEcoGradStore = create<EcoGradState>()(
     (set, get) => ({
       apresentacaoVista: false,
       rota: 'dashboard',
+      sidebarRecolhida: false,
 
       programasSelecionados: [],
       cursosTccSelecionados: [],
@@ -128,6 +132,7 @@ export const useEcoGradStore = create<EcoGradState>()(
       concluirApresentacao: () => set({ apresentacaoVista: true }),
       voltarParaApresentacao: () => set({ apresentacaoVista: false }),
       setRota: (r) => set({ rota: r }),
+      alternarSidebar: () => set((e) => ({ sidebarRecolhida: !e.sidebarRecolhida })),
       setProgramas: (v) => set({ programasSelecionados: v }),
       setCursosTcc: (v) => set({ cursosTccSelecionados: v }),
 
@@ -215,6 +220,7 @@ export const useEcoGradStore = create<EcoGradState>()(
       partialize: (s) => ({
         apresentacaoVista: s.apresentacaoVista,
         rota: s.rota,
+        sidebarRecolhida: s.sidebarRecolhida,
         programasSelecionados: s.programasSelecionados,
         cursosTccSelecionados: s.cursosTccSelecionados,
         buscaTipo: s.buscaTipo,

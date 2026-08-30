@@ -23,6 +23,7 @@ import {
   richClubCoefficient,
 } from '../src/lib/graph-core';
 import { calcularMetricasComplexas, estimarGammaLeiPotencia } from '../src/lib/sna-engine';
+import { tituloPython } from '../src/lib/memetic-network';
 import {
   extrairTermosForesight,
   prepararRadarForesight,
@@ -131,6 +132,38 @@ const complexas = {
     grau_medio: complexasTs.links.media,
   },
 };
+
+// ---------- 3.5 Rede de coocorrência (densa) — cobre rich-club e clustering ponderado ----------
+const gCo = new Graph({ type: 'undirected', allowSelfLoops: false, multi: false });
+for (const d of sub) {
+  const termos = [...new Set(d.palavras_chave.map((p) => tituloPython(String(p).trim())).filter(Boolean))].sort();
+  for (let i = 0; i < termos.length; i += 1) {
+    for (let j = i + 1; j < termos.length; j += 1) {
+      const [a, b] = [termos[i], termos[j]];
+      if (!gCo.hasNode(a)) gCo.addNode(a);
+      if (!gCo.hasNode(b)) gCo.addNode(b);
+      if (gCo.hasEdge(a, b)) gCo.updateEdgeAttribute(a, b, 'weight', (w) => (Number(w) || 0) + 1);
+      else gCo.addEdge(a, b, { weight: 1 });
+    }
+  }
+}
+
+const cgCo = compactar(gCo, 'weight');
+const grausCo: number[] = [];
+for (let i = 0; i < cgCo.n; i += 1) grausCo.push(grauDe(cgCo, i));
+const rcCo = richClubCoefficient(cgCo);
+
+const coocorrencia = cgCo.n > 2
+  ? {
+      n_nos: cgCo.n,
+      n_arestas: cgCo.m,
+      rich_club: Object.fromEntries([...rcCo.entries()].sort((a, b) => a[0] - b[0]).map(([k, v]) => [String(k), v])),
+      clustering_ponderado: mean(Array.from(clusteringCoefficient(cgCo, { atributoPeso: 'weight' }))),
+      clustering_simples: mean(Array.from(clusteringCoefficient(cgCo))),
+      assortatividade: degreeAssortativity(cgCo),
+      gamma_mle: estimarGammaLeiPotencia(grausCo),
+    }
+  : {};
 
 // ---------- 3. Maturidade (grafo estrutural completo) ----------
 const g3 = new Graph({ type: 'undirected', allowSelfLoops: false, multi: false });
@@ -261,6 +294,7 @@ console.log(
         clu: porRotulo(clu),
       },
       complexas,
+      coocorrencia,
       maturidade,
       radar,
       backtest: { n: bt.length, quadrantes, vereditos },

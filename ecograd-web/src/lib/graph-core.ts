@@ -329,31 +329,53 @@ export function closenessCentrality(
 
 /**
  * Coeficiente de clustering local (`nx.clustering`).
+ *
  * Triângulos contados por aresta com interseção do menor conjunto de vizinhos —
- * O(Σ min(d(u), d(v))), viável mesmo com hubs de grau muito alto.
+ * O(Σ min(d(u), d(v))), viável mesmo com hubs de grau muito alto (a varredura
+ * por pares do NetworkX seria O(Σ d²)).
+ *
+ * Com `atributoPeso`, aplica a versão ponderada de Onnela et al. usada pelo
+ * `nx.clustering(G, weight=...)`: cada triângulo contribui com a média
+ * geométrica dos três pesos, normalizados pelo maior peso do grafo.
  */
-export function clusteringCoefficient(cg: CompactGraph): Float64Array {
-  const { n, offsets, adj } = cg;
+export function clusteringCoefficient(
+  cg: CompactGraph,
+  { atributoPeso }: { atributoPeso?: string } = {},
+): Float64Array {
+  const { n, offsets, adj, pesos } = cg;
   const tri = new Float64Array(n);
+  const ponderado = Boolean(atributoPeso);
 
-  const vizinhos: Set<number>[] = new Array(n);
+  let pesoMaximo = 1;
+  if (ponderado) {
+    for (let p = 0; p < pesos.length; p += 1) if (pesos[p] > pesoMaximo) pesoMaximo = pesos[p];
+  }
+
+  // Vizinhança como mapa vizinho → peso normalizado (peso 1 no caso não-ponderado)
+  const vizinhos: Array<Map<number, number>> = new Array(n);
   for (let v = 0; v < n; v += 1) {
-    const s = new Set<number>();
-    for (let p = offsets[v]; p < offsets[v + 1]; p += 1) s.add(adj[p]);
-    vizinhos[v] = s;
+    const m = new Map<number, number>();
+    for (let p = offsets[v]; p < offsets[v + 1]; p += 1) {
+      m.set(adj[p], ponderado ? pesos[p] / pesoMaximo : 1);
+    }
+    vizinhos[v] = m;
   }
 
   for (let u = 0; u < n; u += 1) {
     for (let p = offsets[u]; p < offsets[u + 1]; p += 1) {
       const v = adj[p];
       if (v <= u) continue;
-      const [menor, maior] = vizinhos[u].size <= vizinhos[v].size ? [vizinhos[u], vizinhos[v]] : [vizinhos[v], vizinhos[u]];
-      for (const w of menor) {
-        if (w > v && maior.has(w)) {
-          tri[u] += 1;
-          tri[v] += 1;
-          tri[w] += 1;
-        }
+      const [menor, maior] =
+        vizinhos[u].size <= vizinhos[v].size ? [vizinhos[u], vizinhos[v]] : [vizinhos[v], vizinhos[u]];
+      for (const [w, pesoMenor] of menor) {
+        if (w <= v) continue;
+        const pesoMaior = maior.get(w);
+        if (pesoMaior === undefined) continue;
+        // Média geométrica dos três lados; vale 1 quando não-ponderado
+        const contrib = ponderado ? Math.cbrt(vizinhos[u].get(v)! * pesoMenor * pesoMaior) : 1;
+        tri[u] += contrib;
+        tri[v] += contrib;
+        tri[w] += contrib;
       }
     }
   }
@@ -566,7 +588,11 @@ export function richClubCoefficient(cg: CompactGraph): Map<number, number> {
   }
   if (nks.length === 0) return rc;
 
-  // Arestas ordenadas pelo maior grau entre os extremos
+  // Pares [menor grau, maior grau] das pontas de cada aresta, em ordem
+  // lexicográfica crescente. A ordem por MENOR grau é o que torna a varredura
+  // abaixo correta: em cada passo `d`, ela retira exatamente as arestas com
+  // alguma ponta de grau ≤ d, deixando em `ek` só as arestas internas ao clube.
+  // Ordenar pelo maior grau deixaria arestas de fora e o coeficiente estouraria 1.
   const arestas: Array<[number, number]> = [];
   for (let u = 0; u < n; u += 1) {
     for (let p = offsets[u]; p < offsets[u + 1]; p += 1) {
@@ -577,7 +603,7 @@ export function richClubCoefficient(cg: CompactGraph): Map<number, number> {
       arestas.push([a, b]);
     }
   }
-  arestas.sort((x, y) => x[1] - y[1]);
+  arestas.sort((x, y) => x[0] - y[0] || x[1] - y[1]);
 
   let ek = arestas.length;
   let cursor = 0;

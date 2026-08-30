@@ -85,6 +85,7 @@ ecograd-web/
     │   ├── sna-engine.ts       # grafo global, SNA, maturidade, métricas complexas
     │   ├── foresight-math.ts   # momentum, novidade, bootstrap, backtest, grid search
     │   ├── memetics.ts         # fecundidade, mortalidade infantil, longevidade
+    │   ├── memetic-network.ts  # rede de coocorrência entre memes (Ecologia SNA)
     │   ├── similarity.ts       # perfis e recomendação por Índice de Jaccard
     │   ├── ql.ts               # Quociente Locacional e Raio-X de Especialização
     │   ├── orbit.ts            # ego-graph com recorte temporal
@@ -110,6 +111,13 @@ ecograd-web/
 2. **Seleção de coleções** — escolha dos PPGs e cursos, com o Panorama CAPES
    sempre visível.
 3. **Análise** — Dashboard, Motor de Busca, Foresight, Memética e Consultor IA.
+
+O painel lateral recolhe para uma faixa de ícones (o estado fica salvo na sessão).
+
+A página de Memética reúne o catálogo ontológico, as métricas de propagação, o gráfico de
+longevidade (ano de nascimento × anos de sobrevivência, cor pelo ano da última aparição) e a
+**Ecologia Memética (SNA)**: rede de coocorrência entre memes com métricas de redes complexas,
+ecologia profunda, grafo interativo e tabela de centralidade global.
 
 Qualquer nome clicável no Dashboard (chips de destaque e as barras dos Top 10)
 abre o Motor de Busca já com o dossiê daquela entidade — a rota vive no store,
@@ -159,6 +167,10 @@ Cobertura da verificação:
   Novidade — todos com diferença exatamente zero.
 - **Backtest histórico**: as 89 linhas, a distribuição por quadrante e os oito vereditos.
 - **Memética**: total de memes, mortalidade, sobreviventes, longevidade e tempo de meia-vida.
+- **Rede de coocorrência (densa)**: rich-club por grau (todos os 153 valores), clustering
+  ponderado e simples, assortatividade e γ. Este caso existe porque o grafo estrutural tem
+  rich-club 0 e mascarava erros — foi assim que se descobriu que a varredura do rich-club
+  ordenava as arestas pelo maior grau em vez do menor, produzindo coeficientes acima de 1.
 - **Quociente Locacional** e **similaridade de Jaccard**: valores idênticos.
 
 Duas diferenças conhecidas, ambas sem efeito sobre os números:

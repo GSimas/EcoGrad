@@ -9,6 +9,8 @@ import type {
   SnaWorkerResponse,
   TipoForesight,
 } from '@/types';
+import type { EcologiaMemetica } from '@/lib/memetic-network';
+import type { FonteMemes } from '@/lib/memetics';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 
 type Resolver = (r: SnaWorkerResponse) => void;
@@ -107,5 +109,23 @@ export function useSnaWorker() {
     [enviar],
   );
 
-  return { calcularSna, calcularBootstrap, calcularMetricasComplexas, executarGridSearch };
+  const calcularEcologiaMemes = useCallback(
+    async (
+      docs: Documento[],
+      minCoocorrencia: number,
+      fonte: FonteMemes,
+    ): Promise<EcologiaMemetica | null> => {
+      const r = await enviar({ type: 'ecologia-memes', docs, minCoocorrencia, fonte });
+      return r.type === 'ecologia-memes' ? r.result : null;
+    },
+    [enviar],
+  );
+
+  return {
+    calcularSna,
+    calcularBootstrap,
+    calcularMetricasComplexas,
+    executarGridSearch,
+    calcularEcologiaMemes,
+  };
 }
