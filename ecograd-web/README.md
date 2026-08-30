@@ -97,8 +97,23 @@ ecograd-web/
     │   ├── sna.worker.ts       # SNA, maturidade, bootstrap e grid search
     │   └── data.worker.ts      # download + descompressão + filtro das bases
     ├── stores/useEcoGradStore.ts
-    └── components/{layout,dashboard,search-engine,foresight,memetics,chat,ui}/
+    └── components/
+        ├── layout/                 # Apresentação, tutorial em modal, sidebar, seleção
+        └── {dashboard,search-engine,foresight,memetics,chat,ui}/
 ```
+
+### Fluxo de telas
+
+1. **Apresentação** — o que é o EcoGrad, como funciona e um tutorial de 5 passos
+   em modal. Some depois do primeiro "Começar análise" (a sidebar mantém um
+   atalho para voltar).
+2. **Seleção de coleções** — escolha dos PPGs e cursos, com o Panorama CAPES
+   sempre visível.
+3. **Análise** — Dashboard, Motor de Busca, Foresight, Memética e Consultor IA.
+
+Qualquer nome clicável no Dashboard (chips de destaque e as barras dos Top 10)
+abre o Motor de Busca já com o dossiê daquela entidade — a rota vive no store,
+e por isso `navegarPara` consegue trocar de aba e de entidade num só passo.
 
 ### Por que Web Workers
 

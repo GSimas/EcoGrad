@@ -22,10 +22,11 @@
 
 [dev]
   # O Netlify Dev executa este comando a partir da RAIZ do repositório (não de
-  # `base`), por isso o `--prefix`. Porta fixa porque o Netlify precisa saber
-  # onde o Vite vai atender — ajuste `targetPort` e `--port` juntos se 5176
-  # estiver ocupada.
-  command = "npm --prefix ecograd-web run dev -- --port 5176 --strictPort"
+  # `base`), por isso o `--prefix`. O `PORT` alimenta tanto `server.port` quanto
+  # `server.hmr.clientPort` no vite.config — sem esse alinhamento o WebSocket de
+  # HMR tenta a porta do proxy e o hot-reload para de funcionar.
+  # Ajuste `PORT` e `targetPort` juntos se 5176 estiver ocupada.
+  command = "PORT=5176 npm --prefix ecograd-web run dev"
   targetPort = 5176
   port = 8888
   framework = "#custom"

@@ -82,7 +82,7 @@ export function SelecaoInicial() {
   const temSelecao = programas.length > 0 || cursosTcc.length > 0;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 p-6 lg:p-10">
+    <div className="mx-auto max-w-6xl space-y-8 px-6 pb-24 pt-6 lg:px-10 lg:pt-10">
       <header className="space-y-2">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           <Plug size={22} /> Seleção de Coleções (Teses, Dissertações e TCCs)

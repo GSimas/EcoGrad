@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Trophy } from 'lucide-react';
 import { Aviso, Card, Chip, Expander } from '@/components/ui/primitives';
-import { Grafico, barrasHorizontais, TEMA_GRAFICO } from '@/components/ui/Chart';
+import { RankingClicavel, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs } from '@/components/ui/Tabs';
 import { formatarDecimal } from '@/lib/utils';
 import { topN } from '@/lib/lexicon';
@@ -132,19 +132,44 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
             valor: 'graficos',
             rotulo: '📊 Top 10 (Gráficos)',
             conteudo: (
-              <div className="grid gap-4 lg:grid-cols-2">
-                <Card>
-                  <Grafico option={barrasHorizontais(topN(contagens.orientadores, 10), 'Top 10 Orientadores', TEMA_GRAFICO.paleta[0])} altura={330} />
-                </Card>
-                <Card>
-                  <Grafico option={barrasHorizontais(topN(contagens.keywords, 10), 'Top 10 Palavras-chave', TEMA_GRAFICO.paleta[2])} altura={330} />
-                </Card>
-                <Card>
-                  <Grafico option={barrasHorizontais(topN(contagens.coorientadores, 10), 'Top 10 Coorientadores', TEMA_GRAFICO.paleta[1])} altura={330} />
-                </Card>
-                <Card>
-                  <Grafico option={barrasHorizontais(topN(contagens.macrotemas, 10), 'Top 10 Macrotemas', TEMA_GRAFICO.paleta[4])} altura={330} />
-                </Card>
+              <div className="space-y-3">
+                <p className="text-xs text-slate-500">
+                  Clique em qualquer barra para abrir o dossiê da entidade no Motor de Busca.
+                </p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <Card>
+                    <RankingClicavel
+                      dados={topN(contagens.orientadores, 10)}
+                      titulo="Top 10 Orientadores"
+                      cor={TEMA_GRAFICO.paleta[0]}
+                      onSelecionar={(nome) => navegarPara('Orientador', nome)}
+                    />
+                  </Card>
+                  <Card>
+                    <RankingClicavel
+                      dados={topN(contagens.keywords, 10)}
+                      titulo="Top 10 Palavras-chave"
+                      cor={TEMA_GRAFICO.paleta[2]}
+                      onSelecionar={(nome) => navegarPara('Palavra-chave', nome)}
+                    />
+                  </Card>
+                  <Card>
+                    <RankingClicavel
+                      dados={topN(contagens.coorientadores, 10)}
+                      titulo="Top 10 Coorientadores"
+                      cor={TEMA_GRAFICO.paleta[1]}
+                      onSelecionar={(nome) => navegarPara('Co-orientador', nome)}
+                    />
+                  </Card>
+                  <Card>
+                    <RankingClicavel
+                      dados={topN(contagens.macrotemas, 10)}
+                      titulo="Top 10 Macrotemas"
+                      cor={TEMA_GRAFICO.paleta[4]}
+                      onSelecionar={(nome) => navegarPara('Macrotema', nome)}
+                    />
+                  </Card>
+                </div>
               </div>
             ),
           },

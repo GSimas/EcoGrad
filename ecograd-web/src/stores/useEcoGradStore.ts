@@ -12,6 +12,7 @@ import type {
   Documento,
   MaturidadeRede,
   OntologiaIA,
+  Rota,
   SnaGlobal,
   TipoBusca,
   TipoForesight,
@@ -20,6 +21,11 @@ import type {
 export type StatusSNA = 'ocioso' | 'calculando' | 'pronto' | 'erro';
 
 export interface EcoGradState {
+  /** Tela de apresentação (antes da seleção de coleções). Persistida. */
+  apresentacaoVista: boolean;
+  /** Aba ativa depois que a base é carregada. */
+  rota: Rota;
+
   // --- Seleção de coleções (persistida) ---
   programasSelecionados: string[];
   cursosTccSelecionados: string[];
@@ -51,6 +57,9 @@ export interface EcoGradState {
   buscaTermo: string | null;
 
   // --- Ações ---
+  concluirApresentacao: () => void;
+  voltarParaApresentacao: () => void;
+  setRota: (r: Rota) => void;
   setProgramas: (v: string[]) => void;
   setCursosTcc: (v: string[]) => void;
   iniciarCarregamento: () => void;
@@ -88,6 +97,9 @@ export function rotuloAnaliseAtiva(state: Pick<EcoGradState, 'programasSeleciona
 export const useEcoGradStore = create<EcoGradState>()(
   persist(
     (set, get) => ({
+      apresentacaoVista: false,
+      rota: 'dashboard',
+
       programasSelecionados: [],
       cursosTccSelecionados: [],
 
@@ -113,6 +125,9 @@ export const useEcoGradStore = create<EcoGradState>()(
       buscaTipo: 'Documento',
       buscaTermo: null,
 
+      concluirApresentacao: () => set({ apresentacaoVista: true }),
+      voltarParaApresentacao: () => set({ apresentacaoVista: false }),
+      setRota: (r) => set({ rota: r }),
       setProgramas: (v) => set({ programasSelecionados: v }),
       setCursosTcc: (v) => set({ cursosTccSelecionados: v }),
 
@@ -158,6 +173,8 @@ export const useEcoGradStore = create<EcoGradState>()(
           buscaTermo: null,
           programasSelecionados: [],
           cursosTccSelecionados: [],
+          // Volta para a seleção de coleções, não para a apresentação
+          rota: 'dashboard',
         }),
 
       setProgressoSNA: (valor, texto) => set({ progressoSNA: valor, textoProgressoSNA: texto }),
@@ -172,7 +189,9 @@ export const useEcoGradStore = create<EcoGradState>()(
       setUsarBootstrap: (v) => set({ usarBootstrap: v }),
       setBootstrap: (b) => set({ bootstrap: b }),
 
-      navegarPara: (tipo, termo) => set({ buscaTipo: tipo, buscaTermo: termo }),
+      // Além de fixar a entidade, leva para o Motor de Busca — assim um clique
+      // em qualquer nome do Dashboard abre o dossiê correspondente.
+      navegarPara: (tipo, termo) => set({ buscaTipo: tipo, buscaTermo: termo, rota: 'busca' }),
 
       aplicarOntologia: (porTitulo) => {
         const { docs } = get();
@@ -194,6 +213,8 @@ export const useEcoGradStore = create<EcoGradState>()(
       // Apenas seleção e preferências. `docs`/`snaGlobal` são grandes demais e
       // voláteis por natureza — são reconstruídos a partir da seleção.
       partialize: (s) => ({
+        apresentacaoVista: s.apresentacaoVista,
+        rota: s.rota,
         programasSelecionados: s.programasSelecionados,
         cursosTccSelecionados: s.cursosTccSelecionados,
         buscaTipo: s.buscaTipo,

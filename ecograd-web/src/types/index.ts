@@ -282,3 +282,10 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
+
+/**
+ * Telas da aplicação. Vive aqui (e não no Sidebar) para que o store possa
+ * trocar de rota — é o que permite a um clique no Dashboard abrir o Motor de
+ * Busca já com a entidade selecionada — sem criar import circular.
+ */
+export type Rota = 'dashboard' | 'busca' | 'foresight' | 'memetica' | 'chat';

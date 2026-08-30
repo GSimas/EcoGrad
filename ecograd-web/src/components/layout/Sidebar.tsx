@@ -1,5 +1,7 @@
 import {
+  BookOpen,
   BotMessageSquare,
+  ChevronLeft,
   Dna,
   Github,
   LayoutDashboard,
@@ -7,10 +9,10 @@ import {
   RotateCcw,
   Search,
 } from 'lucide-react';
+import { TutorialModal } from './TutorialModal';
 import { cn } from '@/lib/utils';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
-
-export type Rota = 'dashboard' | 'busca' | 'foresight' | 'memetica' | 'chat';
+import type { Rota } from '@/types';
 
 const ITENS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }> = [
   { rota: 'dashboard', rotulo: 'Dashboard', icone: LayoutDashboard },
@@ -20,11 +22,16 @@ const ITENS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }
   { rota: 'chat', rotulo: 'Consultor IA', icone: BotMessageSquare },
 ];
 
-export function Sidebar({ rota, onRota }: { rota: Rota; onRota: (r: Rota) => void }) {
+export function Sidebar() {
   const dadosCarregados = useEcoGradStore((s) => s.dadosCarregados);
   const novaConsulta = useEcoGradStore((s) => s.novaConsulta);
   const rotulo = useEcoGradStore(rotuloAnaliseAtiva);
   const totalDocs = useEcoGradStore((s) => s.docs.length);
+  // A rota vive no store para que `navegarPara` (usado pelos cliques do
+  // Dashboard) consiga abrir o Motor de Busca junto com a entidade.
+  const rota = useEcoGradStore((s) => s.rota);
+  const onRota = useEcoGradStore((s) => s.setRota);
+  const voltarParaApresentacao = useEcoGradStore((s) => s.voltarParaApresentacao);
 
   return (
     <aside className="flex h-full w-72 shrink-0 flex-col gap-5 overflow-y-auto border-r border-eco-border bg-eco-panel/40 p-5">
@@ -100,6 +107,17 @@ export function Sidebar({ rota, onRota }: { rota: Rota; onRota: (r: Rota) => voi
               <li>Acesse Foresight e Memética para métricas avançadas.</li>
             </ol>
           </section>
+
+          <div className="space-y-2 pt-1">
+            <TutorialModal>
+              <button type="button" className="btn w-full">
+                <BookOpen size={14} /> Ver tutorial
+              </button>
+            </TutorialModal>
+            <button type="button" className="btn w-full" onClick={voltarParaApresentacao}>
+              <ChevronLeft size={14} /> Voltar à apresentação
+            </button>
+          </div>
         </div>
       )}
 
