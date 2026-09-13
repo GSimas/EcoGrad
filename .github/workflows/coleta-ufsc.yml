@@ -1,0 +1,64 @@
+name: Coleta semanal UFSC
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # segundas, 03:00 em Brasília
+  workflow_dispatch:
+    inputs:
+      fonte:
+        description: Fonte da coleta
+        type: choice
+        options: [auto, dspace, oasisbr]
+        default: auto
+      desde:
+        description: Depósitos a partir de (AAAA-MM-DD). Vazio usa coletas/estado.json
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coleta-ufsc
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    # Runners hospedados do GitHub ficam fora da RedeUFSC: o DSpace pede verificação anti-robô e a
+    # coleta cai no Oasisbr/IBICT (sem resumo). Para coletar direto do DSpace, registre um runner
+    # self-hosted numa máquina da rede da UFSC (ou com VPN) e defina a variável de repositório
+    # COLETA_RUNNER com o rótulo dele, por exemplo `self-hosted`.
+    runs-on: ${{ vars.COLETA_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: coleta/requirements.txt
+
+      - name: Instalar dependências da coleta
+        run: pip install -r coleta/requirements.txt
+
+      - name: Testar regras da coleta
+        run: python coleta/test_coleta.py
+
+      - name: Coletar documentos novos
+        env:
+          PYTHONUNBUFFERED: '1'
+          FONTE: ${{ inputs.fonte || 'auto' }}
+          DESDE: ${{ inputs.desde }}
+        run: python coleta/coletar_ufsc.py --fonte "$FONTE" ${DESDE:+--desde "$DESDE"}
+
+      - name: Salvar lote no repositório
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add coletas programas_ufsc.json mapa_colecoes_tcc.json
+          if git diff --staged --quiet; then
+            echo "Nada novo para salvar."
+            exit 0
+          fi
+          git commit -m "dados: coleta semanal do Repositório Institucional da UFSC"
+          git push

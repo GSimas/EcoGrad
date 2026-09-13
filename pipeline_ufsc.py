@@ -163,7 +163,8 @@ def normalizar_palavra_chave(pk):
 
 def identificar_nivel(tipos, titulo=""):
     tipos_str = " ".join(tipos).lower()
-    if 'doctoral' in tipos_str or 'tese' in tipos_str or 'tese' in titulo.lower(): return 'Tese (Doutorado)'
+    # Palavra inteira: 'síntese', 'hipótese' e 'prótese' não são teses
+    if 'doctoral' in tipos_str or 'tese' in tipos_str or re.search(r'\btese\b', titulo.lower()): return 'Tese (Doutorado)'
     if 'master' in tipos_str or 'disserta' in tipos_str or 'disserta' in titulo.lower(): return 'Dissertação (Mestrado)'
     return 'Outros'
 
@@ -465,6 +466,7 @@ def executar_pipeline_diario():
                 
                 for doc in dados_tcc:
                     doc['ecossistema_afinidade'] = ecossistema_tcc
+                    doc['nivel_academico'] = 'TCC (Especialização)' if 'especializ' in curso.lower() else 'TCC (Graduação)'
                 
                 documentos_tcc_por_ecossistema[ecossistema_tcc].extend(dados_tcc)
                 print(f"   [+] {len(dados_tcc)} TCCs alocados na Área: {ecossistema_tcc}.")

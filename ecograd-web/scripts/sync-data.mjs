@@ -1,6 +1,7 @@
 import { gunzipSync } from 'node:zlib';
 import { COVERAGE_SCHEMA, summarizeCollections, catalogEntries } from './collection-metadata.mjs';
 import { collectionShards, SHARD_SCHEMA } from './collection-shards.mjs';
+import { aplicarColetas, BATCH_FILE } from './collection-batches.mjs';
 import { createHash } from 'node:crypto';
 /**
  * Copia as bases do repositório Python (raiz do projeto) para `public/data/`,
@@ -49,14 +50,26 @@ for (const nome of ARQUIVOS) {
 
 if (copiados === 0) console.log('[sync-data] Bases já sincronizadas.');
 
+// Lotes da coleta semanal (raiz/coletas) entram em ordem sobre as bases, sem reescrevê-las,
+// e fazem parte da versão: um lote novo é uma nova versão científica.
+const pastaColetas = join(raizRepo, 'coletas');
+const nomesLotes = existsSync(pastaColetas) ? readdirSync(pastaColetas).filter((n) => BATCH_FILE.test(n)).sort() : [];
+for (const n of nomesLotes) hashes[`coletas/${n}`] = hash(join(pastaColetas, n));
+const lerGz = (path) => JSON.parse(gunzipSync(readFileSync(path)).toString('utf8'));
+const bases = aplicarColetas(
+  { ppg: lerGz(join(destino, ARQUIVOS[2])), tcc: lerGz(join(destino, ARQUIVOS[3])) },
+  nomesLotes.map((n) => lerGz(join(pastaColetas, n))),
+);
+if (nomesLotes.length) console.log(`[sync-data] ${nomesLotes.length} lote(s) da coleta semanal aplicados.`);
+
 const version = createHash('sha256').update(JSON.stringify(hashes)).digest('hex');
 const coveragePath = join(destino, 'colecoes-cobertura.json');
 const entries = catalogEntries(JSON.parse(readFileSync(join(destino, ARQUIVOS[0]), 'utf8')), JSON.parse(readFileSync(join(destino, ARQUIVOS[1]), 'utf8')));
 const colecoes = [];
 const collections = { schema: SHARD_SCHEMA, ppg: [], tcc: [] };
 const generated = new Set();
-for (const [tipo, file] of [['ppg', ARQUIVOS[2]], ['tcc', ARQUIVOS[3]]]) {
-  const records = JSON.parse(gunzipSync(readFileSync(join(destino, file))).toString('utf8'));
+for (const tipo of ['ppg', 'tcc']) {
+  const records = bases[tipo];
   const catalog = entries.filter((e) => e.tipo === tipo);
   const shards = collectionShards(records, catalog.map(e => e.nome));
   collections[tipo] = shards.map(s => s.descriptor);

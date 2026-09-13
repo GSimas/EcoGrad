@@ -8,6 +8,15 @@ O endpoint legado `neo4j-query` agora responde **410 Gone / NEO4J_DISABLED**, se
 
 O backend Python histórico não foi modificado. Seu uso anterior de Neo4j e os arquivos de dados permanecem preservados. Nenhuma instância, credencial remota, banco ou dado foi removido. A nova resposta 410 só chegará à produção após outro deploy autorizado; por enquanto a versão publicada ainda contém o endpoint antigo.
 
+## Coleta semanal em lotes
+
+O workflow `.github/workflows/coleta-ufsc.yml` roda às segundas e executa `coleta/coletar_ufsc.py`. As bases `base_consolidada_ufsc.json.gz` e `base_tcc_ufsc.json.gz` não são reescritas: cada coleta grava `coletas/AAAA-MM-DDTHHMMSSZ.json.gz` com os registros novos ou atualizados e os handles removidos. O `sync-data` aplica os lotes em ordem (um handle no lote substitui todos os registros anteriores com ele) e inclui os lotes na versão do manifesto. Assim o histórico do git cresce só com as novidades, e não 64 MB por semana.
+
+- **Fonte:** OAI-PMH do DSpace, incremental por data (`coletas/estado.json`). Coleções novas entram em `programas_ufsc.json` ou `mapa_colecoes_tcc.json` conforme o tipo dos trabalhos.
+- **Bloqueio da RedeUFSC:** o repositório pede verificação anti-robô a acessos de fora da rede da UFSC ou sem VPN, o que inclui os runners hospedados do GitHub. Nesse caso a coleta usa a API do Oasisbr/IBICT, que não traz resumo nem coleção; os registros saem com `fonte: "oasisbr"` e `metadados_incompletos: true` e são substituídos quando o DSpace voltar a responder, porque o estado do DSpace só avança quando ele responde. Para coletar direto do DSpace, use um runner self-hosted na rede da UFSC e defina a variável de repositório `COLETA_RUNNER`.
+- **Tipo e temas:** o nível vem do tipo do registro (nunca do título). TCCs são `TCC (Graduação)` ou `TCC (Especialização)`. Registros novos recebem o macrotema do trabalho mais parecido da mesma coleção; recalcular os temas da base inteira continua sendo o `pipeline_ufsc.py`.
+- **Consolidação:** quando os lotes ficarem grandes, basta aplicar os lotes às bases, gravar os `.gz` e remover os lotes aplicados, num único commit.
+
 ## Investigação da conexão
 
 O ping do deploy atual e do anterior retornou 502 com falha de descoberta de servidores de roteamento. Esses resultados já estão registrados em [produção](PUBLICACAO.md) e [comparação anterior](evidencias/publicacao/neo4j-anterior.json). Isso identifica a etapa da falha, mas não prova se a causa é instância pausada, URI obsoleta, rede ou configuração.
