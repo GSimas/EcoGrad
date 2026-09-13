@@ -1,4 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { Aparencia } from '@/components/layout/Aparencia';
+import { NavigationHistory, UnknownPage } from '@/components/layout/NavigationHistory';
+import { useNavigation, navigatePage } from '@/services/navigation';
+import { useNavigationPosition } from '@/hooks/useNavigationPosition';
+import { SessionStatus } from '@/components/layout/SessionStatus';
+import { useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Apresentacao } from '@/components/layout/Apresentacao';
 import { SelecaoInicial } from '@/components/layout/SelecaoInicial';
@@ -8,37 +13,47 @@ import { RadarForesight } from '@/components/foresight/RadarForesight';
 import { Memetica } from '@/components/memetics/Memetica';
 import { ConsultorIA } from '@/components/chat/ConsultorIA';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { AtividadesIA } from '@/components/ui/AtividadesIA';
+import { PainelAtividades } from '@/components/ui/Atividade';
+import { calcularSna } from '@/services/calculos';
 import { cn } from '@/lib/utils';
 
 export default function App() {
-  const apresentacaoVista = useEcoGradStore((s) => s.apresentacaoVista);
+  const page = useNavigation((s) => s.page);
   const dadosCarregados = useEcoGradStore((s) => s.dadosCarregados);
-  const rota = useEcoGradStore((s) => s.rota);
-  const buscaTermo = useEcoGradStore((s) => s.buscaTermo);
-  const conteudoRef = useRef<HTMLElement>(null);
-
-  // Trocar de aba (inclusive via clique no Dashboard, que abre o Motor de
-  // Busca) deve começar do topo — senão o usuário cai no meio da página nova
-  // com a rolagem herdada da anterior.
+  const rota = page;
+  const docs = useEcoGradStore((s) => s.docs);
+  const statusSNA = useEcoGradStore((s) => s.statusSNA);
   useEffect(() => {
-    conteudoRef.current?.scrollTo({ top: 0 });
-  }, [rota, buscaTermo]);
+    if (docs.length && statusSNA === 'ocioso') calcularSna(docs);
+  }, [docs, statusSNA]);
+  const conteudoRef = useNavigationPosition();
 
   // A apresentação ocupa a tela inteira: a sidebar só entra a partir da seleção
-  if (!apresentacaoVista) {
+  if (page === 'inicio') {
     return (
-      <div className="h-screen overflow-y-auto">
+      <main ref={conteudoRef} tabIndex={-1} aria-label="Conteúdo principal" className="h-screen overflow-y-auto">
+        <SessionStatus />
+        <PainelAtividades />
+        <AtividadesIA />
+        <NavigationHistory />
+        <div className="mx-auto flex max-w-6xl justify-end px-4 pt-2"><Aparencia /></div>
         <Apresentacao />
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh flex-col overflow-hidden lg:flex-row">
+      <a href="#conteudo-principal" onClick={(e) => { e.preventDefault(); conteudoRef.current?.focus(); }} className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-eco-action focus:p-3 focus:text-black">Pular para o conteúdo</a>
       <Sidebar />
-      <main ref={conteudoRef} className="flex-1 overflow-y-auto">
-        {!dadosCarregados ? (
-          <SelecaoInicial />
+      <main id="conteudo-principal" tabIndex={-1} aria-label="Conteúdo principal" ref={conteudoRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto focus:outline-none">
+        <SessionStatus />
+        <PainelAtividades />
+        <AtividadesIA />
+        <NavigationHistory />
+        {page === 'nao-encontrada' ? <UnknownPage /> : !dadosCarregados || page === 'selecao' ? (
+          <div className="px-3 py-4 sm:px-6"><SelecaoInicial edicao={dadosCarregados} onVoltar={() => navigatePage('dashboard')} /></div>
         ) : (
           // `min-h-full` (e não `h-full`): com altura fixa em 100%, o conteúdo
           // que transborda escapa da caixa e o `padding-bottom` fica desenhado
@@ -47,7 +62,7 @@ export default function App() {
           // de entrada no rodapé, e por isso mantém `h-full`.
           <div
             className={cn(
-              'mx-auto max-w-[1400px] px-6 pt-6 lg:px-8 lg:pt-8',
+              'mx-auto w-full min-w-0 max-w-[1400px] px-3 pt-4 sm:px-6 lg:px-8 lg:pt-8',
               rota === 'chat' ? 'h-full pb-6 lg:pb-8' : 'min-h-full pb-24',
             )}
           >

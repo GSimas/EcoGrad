@@ -1,0 +1,34 @@
+{
+  "id": "6aa5ee23875c3a0006f75f26",
+  "site_id": "e2e5db90-ff63-4958-8451-a1aeaae70f6e",
+  "state": "ready",
+  "published_at": "2026-09-13T00:31:44.485Z",
+  "ssl_url": "https://ecograd.gustavosimas.com",
+  "functions": [
+    {
+      "nome": "capes-proxy",
+      "runtime": "nodejs24.x",
+      "invocacao": "stream"
+    },
+    {
+      "nome": "gemini-chat",
+      "runtime": "nodejs24.x",
+      "invocacao": "stream"
+    },
+    {
+      "nome": "gemini-ontology",
+      "runtime": "nodejs24.x",
+      "invocacao": "stream"
+    },
+    {
+      "nome": "gemini-synthesize",
+      "runtime": "nodejs24.x",
+      "invocacao": "stream"
+    },
+    {
+      "nome": "neo4j-query",
+      "runtime": "nodejs24.x",
+      "invocacao": "stream"
+    }
+  ]
+}

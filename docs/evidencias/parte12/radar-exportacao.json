@@ -1,0 +1,117 @@
+{
+  "formato": "ecograd-visualizacao-v1",
+  "contexto": {
+    "baseVersao": "6c9b93b97aa1376dfc0a2df092b84a8c74ac311872900bbf8f57ea429c936acd",
+    "colecoes": [
+      "Programa de Pós-Graduação em Ecologia",
+      "TCC Administração Pública EAD"
+    ],
+    "registrosCarregados": 322,
+    "periodoObservado": [
+      2010,
+      2026
+    ],
+    "dataColeta": "Não informada",
+    "pagina": "foresight",
+    "entidade": null,
+    "fonte": "Recorte local do Repositório Institucional da UFSC",
+    "limites": "Metadados incompletos e registros sobrepostos são possíveis; indicadores não medem qualidade. Filtros de apresentação não alteram os cálculos.",
+    "coberturaTemporal": {
+      "primeiro": 2010,
+      "ultimo": 2026,
+      "corte": 2023,
+      "passado": 288,
+      "recente": 34,
+      "semAno": 0,
+      "comTermosDatados": 322,
+      "limiteOcorrencias": 32.2
+    },
+    "segmentacaoEfetiva": {
+      "metodo": "Percentil",
+      "percentil": 0.65,
+      "linhas": "Cortes calculados sobre os termos elegíveis da seleção; alto e baixo são relativos a esses cortes."
+    },
+    "interpretacaoCategorias": {
+      "↗️ Tendência": "Momentum alto · novidade alta",
+      "↖️ Sinal Fraco": "Momentum baixo · novidade alta",
+      "↘️ Mainstream": "Momentum alto · novidade baixa",
+      "↙️ Base/Declínio": "Momentum baixo · novidade baixa"
+    },
+    "dimensao": "Palavra-chave",
+    "janelaRecenteAnos": 3,
+    "metodoCorte": "Percentil fixo",
+    "percentilCorte": 0.65,
+    "bootstrap": false,
+    "cortes": {
+      "x": 2.7121,
+      "y": 0.00019730000000000005
+    },
+    "titulo": "Pontos do Radar de Foresight",
+    "descricao": "X: momentum temporal (índice). Y: novidade estrutural, Betweenness × IDF (índice). Cor: quadrante; tamanho: volume total. Linhas tracejadas: cortes por percentil ou referências dos centroides no K-Means. São descrições do recorte, não previsões garantidas. A tabela permite abrir cada termo por teclado. Cortes: momentum 2,7121; novidade 0,0001973.",
+    "exportadoEm": "2026-09-12T15:56:27.987Z",
+    "consulta": {
+      "busca": "biodiversidade",
+      "coluna": "",
+      "direcao": "asc",
+      "pagina": 0
+    },
+    "linhasDisponiveis": 10,
+    "linhasExportadas": 1,
+    "escopo": "Todas as linhas filtradas e ordenadas, não apenas a página visível"
+  },
+  "colunas": [
+    {
+      "chave": "Termo",
+      "rotulo": "Termo completo"
+    },
+    {
+      "chave": "Quadrante",
+      "rotulo": "Categoria original do modelo"
+    },
+    {
+      "chave": "Total",
+      "rotulo": "Ocorrências totais (n)"
+    },
+    {
+      "chave": "Aparições Recentes",
+      "rotulo": "Ocorrências recentes (n)"
+    },
+    {
+      "chave": "Tração (%)",
+      "rotulo": "Tração (%)"
+    },
+    {
+      "chave": "Momentum (Burst)",
+      "rotulo": "Momentum (índice)"
+    },
+    {
+      "chave": "Novidade (Estrutural * IDF)",
+      "rotulo": "Novidade (índice)"
+    },
+    {
+      "chave": "Bet. Robusto?",
+      "rotulo": "Betweenness robusto"
+    },
+    {
+      "chave": "Bet. IQR",
+      "rotulo": "Betweenness: intervalo interquartil"
+    },
+    {
+      "chave": "cluster_id",
+      "rotulo": "Cluster K-Means (identificador)"
+    }
+  ],
+  "dados": [
+    {
+      "Termo": "biodiversidade",
+      "Quadrante": "↖️ Sinal Fraco",
+      "Total": 22,
+      "Aparições Recentes": 4,
+      "Tração (%)": 18.2,
+      "Momentum (Burst)": 1.1383,
+      "Novidade (Estrutural * IDF)": 0.001807,
+      "Bet. Robusto?": false,
+      "Bet. IQR": null
+    }
+  ]
+}

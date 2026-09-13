@@ -1,0 +1,11 @@
+{
+  "siteId": "e2e5db90-ff63-4958-8451-a1aeaae70f6e",
+  "site": "ecograd.netlify.app",
+  "dominioPrincipal": "ecograd.gustavosimas.com",
+  "deployAnterior": "6a947f736239ed000876648d",
+  "estadoAnterior": "ready",
+  "runtimeAnterior": "nodejs20.x",
+  "publicacaoAutorizadaExplicitamente": true,
+  "integridadeDistConfiguracaoBundles": "conferida contra manifesto release",
+  "homologacaoHumana": "pendente"
+}

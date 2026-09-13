@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "allowImportingTsExtensions": false,
+    "esModuleInterop": true,
+    "noEmit": false,
+    "rootDir": "..",
+    "outDir": "../node_modules/.cache/capes-tests"
+  },
+  "include": ["./*.test.ts"]
+}

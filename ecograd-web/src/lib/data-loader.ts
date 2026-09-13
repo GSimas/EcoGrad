@@ -9,6 +9,7 @@
  */
 import { inflate } from 'pako';
 import type { CatalogoProgramas, ColecaoTCC, Documento } from '@/types';
+import { carregarColecoes, carregarManifestoColecoes, type CollectionManifest } from './collection-loader';
 
 export const CAMINHO_BASE_PPG = '/data/base_consolidada_ufsc.json.gz';
 export const CAMINHO_BASE_TCC = '/data/base_tcc_ufsc.json.gz';
@@ -72,7 +73,7 @@ export function normalizarDocumentos(dados: unknown[]): Documento[] {
  * com o corpo já consumido, sem chance de fallback.
  */
 export async function carregarJsonGz<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const resposta = await fetch(url, { signal });
+  const resposta = await fetch(url, { signal, cache: 'no-cache' });
   if (!resposta.ok) {
     throw new Error(`Falha ao baixar ${url}: HTTP ${resposta.status}`);
   }
@@ -95,15 +96,15 @@ export async function carregarJsonGz<T>(url: string, signal?: AbortSignal): Prom
 
 /** Catálogo leve de PPGs (nome do programa → setSpec do repositório). */
 export async function carregarCatalogoProgramas(signal?: AbortSignal): Promise<CatalogoProgramas> {
-  const r = await fetch(CAMINHO_CATALOGO_PPG, { signal });
+  const r = await fetch(CAMINHO_CATALOGO_PPG, { signal, cache: 'no-cache' });
   if (!r.ok) throw new Error(`Catálogo de programas indisponível (HTTP ${r.status}).`);
   return (await r.json()) as CatalogoProgramas;
 }
 
 /** Catálogo leve de coleções de TCC. */
 export async function carregarCatalogoTCC(signal?: AbortSignal): Promise<ColecaoTCC[]> {
-  const r = await fetch(CAMINHO_CATALOGO_TCC, { signal });
-  if (!r.ok) return [];
+  const r = await fetch(CAMINHO_CATALOGO_TCC, { signal, cache: 'no-cache' });
+  if (!r.ok) throw new Error(`Catálogo de graduação indisponível (HTTP ${r.status}).`);
   return (await r.json()) as ColecaoTCC[];
 }
 
@@ -114,24 +115,20 @@ export async function carregarCatalogoTCC(signal?: AbortSignal): Promise<Colecao
 export async function carregarBasePPG(
   programasSelecionados: readonly string[],
   signal?: AbortSignal,
+  manifest?: CollectionManifest,
+  progress?: (text: string) => void,
 ): Promise<Documento[]> {
   if (programasSelecionados.length === 0) return [];
-  const bruto = await carregarJsonGz<unknown[]>(CAMINHO_BASE_PPG, signal);
-  const alvo = new Set(programasSelecionados);
-  return normalizarDocumentos(
-    bruto.filter((d) => alvo.has(String((d as Record<string, unknown>)?.programa_origem ?? ''))),
-  );
+  return normalizarDocumentos(await carregarColecoes('ppg', programasSelecionados, manifest ?? await carregarManifestoColecoes(signal), signal, progress));
 }
 
 /** Carrega e filtra a base de TCCs pelos cursos escolhidos. */
 export async function carregarBaseTCC(
   cursosSelecionados: readonly string[],
   signal?: AbortSignal,
+  manifest?: CollectionManifest,
+  progress?: (text: string) => void,
 ): Promise<Documento[]> {
   if (cursosSelecionados.length === 0) return [];
-  const bruto = await carregarJsonGz<unknown[]>(CAMINHO_BASE_TCC, signal);
-  const alvo = new Set(cursosSelecionados);
-  return normalizarDocumentos(
-    bruto.filter((d) => alvo.has(String((d as Record<string, unknown>)?.programa_origem ?? ''))),
-  );
+  return normalizarDocumentos(await carregarColecoes('tcc', cursosSelecionados, manifest ?? await carregarManifestoColecoes(signal), signal, progress));
 }

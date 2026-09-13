@@ -1,0 +1,22 @@
+{
+  "escopo": "JS referenciado pelo HTML antes da parte 12; gzip de referência calculado com Python nível 9, não comparar diretamente ao gzip nível 6 do relatório atual",
+  "arquivos": {
+    "index-BUIOzA48.js": {
+      "bytes": 537432,
+      "gzip": 173195
+    },
+    "graph-DClzagms.js": {
+      "bytes": 91778,
+      "gzip": 19280
+    },
+    "echarts-JfmHPEsE.js": {
+      "bytes": 1078946,
+      "gzip": 356950
+    },
+    "forcegraph-BKL0wiBZ.js": {
+      "bytes": 186954,
+      "gzip": 61270
+    }
+  },
+  "bytes": 1895110
+}

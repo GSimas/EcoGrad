@@ -1,0 +1,60 @@
+[
+  {
+    "base": "https://ecograd.netlify.app",
+    "status": 200,
+    "htmlHashIgual": false,
+    "assets": [
+      {
+        "path": "/assets/index-WpEjD03s.js",
+        "status": 200,
+        "hashIgual": true
+      },
+      {
+        "path": "/assets/react-CC3K5JGs.js",
+        "status": 200,
+        "hashIgual": true
+      },
+      {
+        "path": "/assets/graph-xZF4dEUc.js",
+        "status": 200,
+        "hashIgual": true
+      },
+      {
+        "path": "/assets/index-ChqT47Fl.css",
+        "status": 200,
+        "hashIgual": true
+      }
+    ],
+    "apiGetStatus": 405,
+    "ok": true
+  },
+  {
+    "base": "https://ecograd.gustavosimas.com",
+    "status": 200,
+    "htmlHashIgual": true,
+    "assets": [
+      {
+        "path": "/assets/index-WpEjD03s.js",
+        "status": 200,
+        "hashIgual": true
+      },
+      {
+        "path": "/assets/react-CC3K5JGs.js",
+        "status": 200,
+        "hashIgual": true
+      },
+      {
+        "path": "/assets/graph-xZF4dEUc.js",
+        "status": 200,
+        "hashIgual": true
+      },
+      {
+        "path": "/assets/index-ChqT47Fl.css",
+        "status": 200,
+        "hashIgual": true
+      }
+    ],
+    "apiGetStatus": 405,
+    "ok": true
+  }
+]

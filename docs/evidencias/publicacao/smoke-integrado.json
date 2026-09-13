@@ -1,0 +1,91 @@
+{
+  "base": "https://6aa5ee23875c3a0006f75f26--ecograd.netlify.app",
+  "quando": "2026-09-13T00:29:28.682Z",
+  "checks": [
+    {
+      "name": "index",
+      "status": 200,
+      "url": "https://6aa5ee23875c3a0006f75f26--ecograd.netlify.app/",
+      "htmlHashIgual": true,
+      "assets": [
+        {
+          "path": "/assets/index-WpEjD03s.js",
+          "status": 200,
+          "hashIgual": true
+        },
+        {
+          "path": "/assets/react-CC3K5JGs.js",
+          "status": 200,
+          "hashIgual": true
+        },
+        {
+          "path": "/assets/graph-xZF4dEUc.js",
+          "status": 200,
+          "hashIgual": true
+        },
+        {
+          "path": "/assets/index-ChqT47Fl.css",
+          "status": 200,
+          "hashIgual": true
+        }
+      ],
+      "ok": true
+    },
+    {
+      "name": "manifesto",
+      "status": 200,
+      "version": "6c9b93b97aa1376dfc0a2df092b84a8c74ac311872900bbf8f57ea429c936acd",
+      "cache": "public,max-age=0,must-revalidate",
+      "ok": true
+    },
+    {
+      "name": "colecaoHash",
+      "status": 200,
+      "bytes": 1064,
+      "cache": "public,max-age=31536000,immutable",
+      "ok": true
+    },
+    {
+      "name": "gemini-chat-rota",
+      "status": 405,
+      "ok": true
+    },
+    {
+      "name": "gemini-ontology-rota",
+      "status": 405,
+      "ok": true
+    },
+    {
+      "name": "gemini-synthesize-rota",
+      "status": 405,
+      "ok": true
+    },
+    {
+      "name": "neo4j-query-rota",
+      "status": 405,
+      "ok": true
+    },
+    {
+      "name": "capes-real",
+      "status": 200,
+      "campos": [
+        "versao",
+        "programas",
+        "fonte"
+      ],
+      "ok": true
+    },
+    {
+      "name": "ontology-real-boletim",
+      "status": 200,
+      "processados": 1,
+      "ok": true
+    },
+    {
+      "name": "neo4j-ping",
+      "status": 502,
+      "ok": false,
+      "erro": "Falha na consulta ao Neo4j: Could not perform discovery. No routing servers available. Known routing table: RoutingTable[database=default database, expirationTime=0, currentTime=1789259377725, routers=[], readers=[], writers=[]]"
+    }
+  ]
+}

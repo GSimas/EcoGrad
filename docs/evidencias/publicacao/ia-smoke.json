@@ -1,0 +1,30 @@
+{
+  "entrada": {
+    "itens": [
+      {
+        "id": "doc-v1-0dfa99814b8c71e859e9dccd15f7b465ccec9ddfc11320c029e3dcd6bb923939",
+        "titulo": "Boletim Informativo do PGA",
+        "resumo": "Nº VI, 2021.2. Este boletim traz informações e acontecimentos envolvendo os discentes e docentes do Programa de Pós-Graduação em Agroecossistemas do Centro de Ciências Agrárias da Universidade Federal de Santa Catarina. Contém as notícias: Informes gerais; Lançamento de livros e publicações; Cursos, congressos e eventos."
+      }
+    ]
+  },
+  "status": 200,
+  "resposta": {
+    "resultados": [
+      {
+        "id": "doc-v1-0dfa99814b8c71e859e9dccd15f7b465ccec9ddfc11320c029e3dcd6bb923939",
+        "titulo": "Boletim Informativo do PGA",
+        "ontologia": {
+          "teorias_e_modelos": [],
+          "ferramentas_e_artefatos": [],
+          "metodos_e_tecnicas": []
+        },
+        "evidencias": [],
+        "resumoSha256": "6ac0be2ef617a738bed512a94223badd7b92c89e09d1927bc4dfe6d76e547906",
+        "erro": null
+      }
+    ],
+    "processados": 1,
+    "maxItensPorChamada": 8
+  }
+}

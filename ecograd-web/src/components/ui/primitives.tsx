@@ -1,3 +1,4 @@
+import { useSessionField } from '@/hooks/useSessionField';
 import type { ReactNode } from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { cn, formatarNumero } from '@/lib/utils';
@@ -35,17 +36,18 @@ export function Kpi({
   );
 }
 
-export function Progresso({ valor, texto }: { valor: number; texto?: string }) {
+export function Progresso({ valor, texto }: { valor: number | null; texto?: string }) {
   return (
     <div className="space-y-2">
-      {texto && <p className="text-sm text-slate-400">{texto}</p>}
+      {texto && <p role="status" className="text-sm text-slate-400">{texto}{valor !== null ? ` (${Math.round(valor)}%)` : ''}</p>}
       <ProgressPrimitive.Root
         value={valor}
+        aria-label={texto ?? 'Progresso da atividade'}
         className="h-2 w-full overflow-hidden rounded-full bg-eco-border"
       >
         <ProgressPrimitive.Indicator
-          className="h-full bg-eco-accent transition-transform duration-300"
-          style={{ transform: `translateX(-${100 - Math.min(Math.max(valor, 0), 100)}%)` }}
+          className={cn("h-full bg-eco-accent transition-transform duration-300", valor === null && "w-1/3 motion-safe:animate-pulse")}
+          style={{ transform: `translateX(-${valor === null ? 0 : 100 - Math.min(Math.max(valor, 0), 100)}%)` }}
         />
       </ProgressPrimitive.Root>
     </div>
@@ -78,89 +80,25 @@ export function Expander({
   titulo,
   children,
   aberto = false,
+  lazy = false,
 }: {
   titulo: string;
   children: ReactNode;
   aberto?: boolean;
+  lazy?: boolean;
 }) {
+  const [expanded, setExpanded] = useSessionField('expander.' + titulo, aberto);
   return (
-    <details className="rounded-lg border border-eco-border bg-eco-panel/50" open={aberto}>
+    <details className="rounded-lg border border-eco-border bg-eco-panel/50" open={expanded} onToggle={(event) => { if (event.currentTarget.open !== expanded) setExpanded(event.currentTarget.open); }}>
       <summary className="cursor-pointer select-none px-4 py-2 text-sm font-medium text-slate-300 hover:text-eco-accent">
         {titulo}
       </summary>
-      <div className="border-t border-eco-border px-4 py-3">{children}</div>
+      <div className="border-t border-eco-border px-4 py-3">{!lazy || expanded ? children : null}</div>
     </details>
   );
 }
 
-export interface ColunaTabela<T> {
-  chave: string;
-  rotulo: string;
-  render?: (linha: T) => ReactNode;
-  className?: string;
-  /** Renderiza a célula como barra de progresso (equivalente ao ProgressColumn). */
-  barra?: { max: number };
-}
-
-export function Tabela<T extends Record<string, unknown>>({
-  colunas,
-  linhas,
-  altura = 'max-h-96',
-  vazio = 'Sem dados para exibir.',
-}: {
-  colunas: ReadonlyArray<ColunaTabela<T>>;
-  linhas: readonly T[];
-  altura?: string;
-  vazio?: string;
-}) {
-  if (linhas.length === 0) {
-    return <p className="py-6 text-center text-sm text-slate-500">{vazio}</p>;
-  }
-  return (
-    <div className={cn('overflow-auto rounded-lg border border-eco-border', altura)}>
-      <table className="tabela">
-        <thead>
-          <tr>
-            {colunas.map((c) => (
-              <th key={c.chave} className={c.className}>
-                {c.rotulo}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {linhas.map((linha, i) => (
-            <tr key={i}>
-              {colunas.map((c) => {
-                const bruto = linha[c.chave];
-                if (c.render) return <td key={c.chave} className={c.className}>{c.render(linha)}</td>;
-                if (c.barra) {
-                  const v = Number(bruto) || 0;
-                  const pct = c.barra.max > 0 ? (v / c.barra.max) * 100 : 0;
-                  return (
-                    <td key={c.chave} className={c.className}>
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-eco-border">
-                          <div className="h-full bg-eco-accent" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="tabular-nums">{formatarNumero(v)}</span>
-                      </div>
-                    </td>
-                  );
-                }
-                return (
-                  <td key={c.chave} className={c.className}>
-                    {typeof bruto === 'number' ? formatarNumero(bruto) : String(bruto ?? '')}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+export { Tabela, type ColunaTabela } from './Tabela';
 
 export function Carregando({ texto }: { texto: string }) {
   return (

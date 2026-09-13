@@ -1,0 +1,8 @@
+{
+  "escopo": "Diagnóstico somente leitura. Apenas URI consultada em memória; usuário/senha não lidos; nenhum Cypher executado. Host e URI omitidos.",
+  "uriDisponivel": false,
+  "dns": "não testado",
+  "tcp": "não testado",
+  "tls": "não testado",
+  "consultaConfiguracao": "valor indisponível ou formato não reconhecido; sem expor saída da CLI"
+}

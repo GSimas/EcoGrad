@@ -27,7 +27,8 @@ export function erro(mensagem: string, status = 500): Response {
 }
 
 export function lerChaveGemini(): string | null {
-  const chave = process.env.GEMINI_API_KEY;
+  const runtime=globalThis as typeof globalThis & {Netlify?:{env:{get:(name:string)=>string|undefined}}};
+  const chave = runtime.Netlify?.env.get('GEMINI_API_KEY') ?? process.env.GEMINI_API_KEY;
   return chave && chave.trim() !== '' ? chave : null;
 }
 
@@ -37,6 +38,7 @@ export interface ConteudoGemini {
 }
 
 export interface OpcoesGeracao {
+  signal?: AbortSignal;
   contents: ConteudoGemini[];
   modelos?: readonly string[];
   temperature?: number;
@@ -67,9 +69,11 @@ export async function gerarConteudo(opcoes: OpcoesGeracao): Promise<string> {
   let ultimoErro: Error | null = null;
 
   for (const modelo of modelos) {
+    opcoes.signal?.throwIfAborted();
     try {
       const r = await fetch(`${BASE_GEMINI}/${modelo}:generateContent`, {
         method: 'POST',
+        signal: opcoes.signal,
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
         body: JSON.stringify(corpoRequisicao(opcoes)),
       });
@@ -79,8 +83,10 @@ export async function gerarConteudo(opcoes: OpcoesGeracao): Promise<string> {
         candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
       };
       const texto = dados.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? '';
+      if(!texto.trim()) throw new Error('O provedor retornou texto vazio.');
       return texto;
     } catch (e) {
+      opcoes.signal?.throwIfAborted();
       ultimoErro = e instanceof Error ? e : new Error(String(e));
     }
   }
@@ -102,9 +108,10 @@ export async function gerarComRetry(
     try {
       return await gerarConteudo(opcoes);
     } catch (e) {
+      opcoes.signal?.throwIfAborted();
       ultimoErro = e instanceof Error ? e : new Error(String(e));
       if (tentativa < maxTentativas - 1) {
-        await new Promise((r) => setTimeout(r, delayBase * 2 ** tentativa));
+        await esperar(delayBase * 2 ** tentativa, opcoes.signal);
       }
     }
   }
@@ -120,9 +127,11 @@ export async function abrirStream(opcoes: OpcoesGeracao): Promise<Response> {
   let ultimoErro: Error | null = null;
 
   for (const modelo of modelos) {
+    opcoes.signal?.throwIfAborted();
     try {
       const r = await fetch(`${BASE_GEMINI}/${modelo}:streamGenerateContent?alt=sse`, {
         method: 'POST',
+        signal: opcoes.signal,
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
         body: JSON.stringify(corpoRequisicao(opcoes)),
       });
@@ -131,9 +140,15 @@ export async function abrirStream(opcoes: OpcoesGeracao): Promise<Response> {
       }
       return r;
     } catch (e) {
+      opcoes.signal?.throwIfAborted();
       ultimoErro = e instanceof Error ? e : new Error(String(e));
     }
   }
 
   throw ultimoErro ?? new Error('Falha ao abrir o stream do Gemini.');
+}
+
+export function esperar(ms:number,signal?:AbortSignal):Promise<void> {
+ signal?.throwIfAborted();
+ return new Promise((resolve,reject)=>{const abort=()=>{clearTimeout(timer);reject(signal?.reason);};const timer=setTimeout(()=>{signal?.removeEventListener('abort',abort);resolve();},ms);signal?.addEventListener('abort',abort,{once:true});});
 }

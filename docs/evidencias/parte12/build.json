@@ -1,0 +1,39 @@
+{
+  "escopo": "JS inicial referenciado pelo HTML de produção; gzip calculado, não tempo de carregamento nem tráfego medido",
+  "initial": [
+    {
+      "arquivo": "/assets/index-kmKZ_goY.js",
+      "bytes": 402670,
+      "gzip": 130398
+    },
+    {
+      "arquivo": "/assets/react-CC3K5JGs.js",
+      "bytes": 148657,
+      "gzip": 47603
+    },
+    {
+      "arquivo": "/assets/graph-xZF4dEUc.js",
+      "bytes": 91658,
+      "gzip": 19306
+    }
+  ],
+  "totais": {
+    "bytes": 642985,
+    "gzip": 197307
+  },
+  "adiados": [
+    "EChartsCanvas-B3fNzwVy.js",
+    "echarts-BwtwZlJu.js",
+    "forcegraph-Ds8dyI2J.js"
+  ],
+  "bases": [
+    {
+      "arquivo": "base_consolidada_ufsc.json.gz",
+      "bytes": 41721699
+    },
+    {
+      "arquivo": "base_tcc_ufsc.json.gz",
+      "bytes": 23155399
+    }
+  ]
+}

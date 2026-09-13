@@ -45,7 +45,7 @@ export function tituloPython(texto: string): string {
 }
 
 /** Memes de um documento, conforme a fonte escolhida. */
-function memesDoDocumento(d: Documento, fonte: FonteMemes): string[] {
+export function memesDoDocumento(d: Documento, fonte: FonteMemes): string[] {
   if (fonte === 'Artefatos Extraídos') {
     const onto = parseOntologia(d.ontologia_ia);
     if (!onto) return [];

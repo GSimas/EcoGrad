@@ -1,0 +1,292 @@
+
+> ecograd-web@1.0.0 test:all
+> npm run sync:data && tsc -p tests/tsconfig.json && node scripts/test-all.mjs
+
+
+> ecograd-web@1.0.0 sync:data
+> node scripts/sync-data.mjs
+
+[sync-data] Bases já sincronizadas.
+[sync-data] Prévia de 264 coleções gerada.
+✔ chart theme and reduced motion preserve data, categories, functions and original options (1.441416ms)
+✔ invalid or old appearance preferences fall back without admitting arbitrary fields (0.119708ms)
+✔ changing appearance never changes documents, drafts, IA, history UI or worker states, including storage failure (0.117667ms)
+✔ both theme token palettes meet text 4.5:1 and control/focus 3:1 against their surfaces (0.668584ms)
+✔ system reduced motion always takes priority; system theme follows OS without changing explicit themes (0.1575ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5.481167
+✔ indexa por código e mantém as notas e a proveniência oficiais (12.055875ms)
+✔ falha TLS produz 502 sem cache, em vez de catálogo vazio com 200 (0.790708ms)
+✔ não retorna catálogo parcial quando uma página posterior falha (1.133583ms)
+✔ catálogo vazio não é armazenado como sucesso (0.47325ms)
+✔ resposta com formato inesperado produz erro recuperável (0.53875ms)
+✔ instituição inválida é rejeitada antes da consulta externa (0.305125ms)
+✔ consulta no navegador ignora o catálogo vazio armazenado no cache HTTP antigo (0.928875ms)
+✔ catálogo vazio recebido do serviço continua sendo tratado como erro (0.371833ms)
+✔ preserva homônimos acadêmicos e profissionais como programas distintos (0.323209ms)
+✔ registro sem código invalida a consulta, sem publicar um catálogo parcial (0.308417ms)
+✔ códigos repetidos idênticos não duplicam contagens (0.251834ms)
+✔ códigos repetidos conflitantes não são sobrescritos silenciosamente (0.1825ms)
+✔ percorre todas as páginas antes de publicar o catálogo (0.569083ms)
+✔ nome exato único ignora prefixos, acentos, caixa e espaços repetidos (1.048708ms)
+✔ homônimos são ambíguos independentemente da ordem; código resolve a identidade (0.251625ms)
+✔ similaridade apenas sugere e nunca atribui uma ficha oficial (0.22525ms)
+✔ catálogo inclui inativos, mas panorama exige situação ativa explícita (0.088625ms)
+✔ filtros distinguem todos e nenhum em cada dimensão e combinam critérios (0.152417ms)
+✔ grau ausente permanece incluído em todos e pode ser filtrado explicitamente (0.057291ms)
+✔ cliente rejeita contrato antigo, registros incompletos e total inconsistente (0.47025ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25.365125
+✔ only documented exact identity binds a collection; sibling labels and codes never inherit (0.449542ms)
+✔ changed official identity or removed code requires review (0.105417ms)
+✔ similar-name groups are display-only and source links accept repository IDs only (0.280209ms)
+✔ preview rejects wrong version, malformed counters and unsupported schemas (1.356625ms)
+✔ preview fetch never downloads a document base and rejects updates during the request (13.3015ms)
+✔ goal is captured for loading; page routing preserves drafts and conversation (0.454625ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19.126125
+✔ only selected exact names are fetched, duplicate selections do not duplicate rows, source order wins (13.542625ms)
+✔ HTTP decompression is accepted only when the original JSON hash matches (0.5505ms)
+✔ missing collection, invalid index and unsupported delivery fail without full-base fallback (0.342125ms)
+✔ HTTP failure, corrupted or truncated payload cannot return a partial selection (0.841292ms)
+✔ correct hash does not excuse mismatched collection identity or repeated positions (1.059916ms)
+✔ cancellation between collections stops the remaining downloads (0.683542ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19.483666
+✔ new and legacy proposals default to pending, never automatically approved (1.971291ms)
+✔ correction preserves original proposal and evidence; rejection excludes term (1.065667ms)
+✔ approval requires literal support and all decisions require justification (0.515667ms)
+✔ history is append-only, last decision wins, corrected duplicate terms are blocked (0.355208ms)
+✔ application blocks pending terms then applies only approved corrections by exact ID (2.1095ms)
+✔ all rejected means no enrichment, not empty ontology (0.61025ms)
+✔ review history and pending terms survive session codec and recovery (0.545208ms)
+✔ changed summary, duplicate IDs, stale base and concurrent revision cannot alter documents (1.874584ms)
+✔ legacy evidence must be supplied by the curator; old approval flags do not invent decisions (0.420583ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12.324625
+✔ ingestion worker applies an entire verified selection and rejects a changed base version (21.156ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23.172416
+✔ synthesis endpoint uses explicit bounded sample and returns a real failure status (15.9715ms)
+✔ ontology endpoint echoes exact identity and marks malformed model JSON as failed (0.693083ms)
+✔ ontology accepts valid empty lists, rejects missing or duplicate IDs and never matches titles (2.914791ms)
+✔ chat endpoint validates limits and returns the terminal-aware protocol (4.418667ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26.192958
+✔ every term requires one literal excerpt from its own summary, with exact category and label (0.852041ms)
+✔ endpoint validates actual provider excerpts and binds them to exact input summary and ID (14.558625ms)
+✔ synthesis scope is deterministic even when provider omits it, and invalid counts fail (0.745375ms)
+✔ failed synthesis keeps the successful text, scope and input together (0.49225ms)
+✔ evidence and source snapshots survive serialization and manual recovery; legacy results remain intact (0.378875ms)
+✔ client rejects evidence attached to a different summary even with a matching document ID (1.084875ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 21.0515
+✔ identity is stable across ordering and ontology changes, separating same titles by source and collection (2.242083ms)
+✔ new CSV roundtrip preserves commas, newlines, JSON lists and empty lists (1.199625ms)
+✔ legacy matching is exact and unique; accent, case, whitespace and repeated titles never approximate (0.342125ms)
+✔ unknown IDs never fall back to title; wrong base, metadata and duplicate rows are blocked (0.716292ms)
+✔ validation refuses malformed lists, duplicate headers and files over row limit (0.424958ms)
+✔ application ignores ambiguous identity, preserves existing ontology unless explicitly replacing, and never mutates input (0.458041ms)
+✔ sampling preserves the original stride and exposes actual 20000 character truncation (0.171292ms)
+✔ conversation window respects message and character limits without changing saved history (0.098208ms)
+✔ stream decoder preserves partial text but rejects EOF without terminal confirmation (12.741917ms)
+✔ server streaming handles final SSE without newline and detects MAX_TOKENS or missing STOP (1.162667ms)
+✔ retry does not duplicate question, preserves prior partial and draft, and successful completion clears retry (1.20325ms)
+✔ chat cancellation and analysis changes reject late replies (0.457ms)
+✔ ontology persists successes, retries only failed items, and applies nothing before review (4008.120166ms)
+✔ ontology refuses mismatched response identity and interruption leaves pending work resumable (4016.288375ms)
+✔ synthesis failures, interruption and empty responses preserve prior result without false success (2.137ms)
+✔ reload converts active AI work to manual recovery without losing completed items, previews or synthesis (0.526125ms)
+✔ commit revalidates concurrent activity guard before replacing document data (1.304125ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8053.973667
+✔ coverage follows scientific inclusive cutoff, excluding undated records without mutation (1.223625ms)
+✔ empty guidance distinguishes absent years, absent dimension, unsplit periods and frequency exclusions (0.194333ms)
+✔ effective method reports the existing K-Means fallback and keeps raw categories (0.281958ms)
+✔ memetic presentation distinguishes zero-year spans, absent spans and zero-title complement (0.3075ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6.188333
+✔ URLs contain only whitelisted pages; unknown and injected URLs resolve safely (0.837917ms)
+✔ browser back/forward restores entity and filters without resetting documents, chat or work state (1.641292ms)
+✔ duplicates, typing and progress do not fill history; a new branch replaces Forward (0.588416ms)
+✔ reload restores the same history entry and its forward path (0.380291ms)
+✔ new analysis invalidates old entity history even when native Back reaches it (0.311042ms)
+✔ direct links require a base and continue to the requested page after loading (0.171292ms)
+✔ context excludes live operations, conversation, drafts and base selection (0.43375ms)
+✔ expired, corrupt and oversized histories are discarded; storage rejection leaves navigation operational (0.330708ms)
+✔ scroll and focus belong to each visit and survive reload (0.25125ms)
+✔ unknown addresses keep the known path and do not duplicate popstate/hashchange events (0.296791ms)
+✔ stored context cannot overwrite actions, conversation or base via unexpected fields (0.095625ms)
+✔ goal selection and catalog search preserve history, drafts, live activity and documents (0.819333ms)
+✔ an explicit direct link takes precedence over the loading goal (0.172917ms)
+✔ dashboard filters and exact document identity survive back, forward and reload with duplicate titles (0.438ms)
+✔ table query, chart view and network camera survive traversal without rewinding live work (0.189625ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10.754459
+✔ coverage preserves original classifications, missing metadata and repeated source URLs (0.873042ms)
+✔ common comparison window changes only display counts, keeps zeros and excludes undated records (0.252708ms)
+✔ no common period when a collection is empty, undated or disjoint (0.089917ms)
+✔ work search covers title, author, advisor, keyword and abstract, with conjunctive filters (0.4015ms)
+✔ related people and terms count at most once per record without changing raw metadata (0.683625ms)
+✔ duplicate titles require an explicit record; stale or fabricated references do not choose one (0.10775ms)
+✔ source links permit web URLs only and preserve missing source state (0.094625ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5.991125
+✔ mesmas coleções em outra ordem não exigem novo cálculo (0.521375ms)
+✔ aplicar seleção substitui nomes e documentos atomicamente; navegação preserva a base (10.3015ms)
+✔ nova análise limpa coleções e resultados, enquanto trocar de página os preserva (0.216416ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14.005
+✔ round trip preserves drafts, partial conversation, parameters and non-finite scientific values (0.873583ms)
+✔ schema and expiry are checked before restoration (0.186834ms)
+✔ only the same analysis and verified base can restore scientific results (0.079417ms)
+✔ text quota includes UTF-16 bytes and removes obsolete drafts instead of silently truncating (0.126917ms)
+✔ browser storage rejection never propagates to typing or navigation (0.069291ms)
+✔ large snapshots respect 64 MiB without truncating scientific results (0.080875ms)
+✔ storage cleanup removes expired and oldest checkpoints to enforce total and count limits (0.363709ms)
+✔ immediate reload reconciles new execution intentions with the last committed scientific result (0.187666ms)
+✔ interrupted conversations keep the question, draft and partial response without resending (0.157916ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5.997917
+✔ search and numeric sort preserve raw metrics, stable ties and missing values last (1.3485ms)
+✔ formatted numeric strings sort numerically; tiny metrics do not display as zero (36.596875ms)
+✔ exports include every filtered row, raw precision, column units and no unexpected fields (1.25375ms)
+✔ CSV protects formulas in names and metadata, escapes quotes and keeps numeric negatives (0.104875ms)
+✔ export context uses an allowlist and distinguishes unknown dates from observed years (0.248292ms)
+✔ term navigation follows the exact extractor of network, propagation or foresight (13.555083ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 56.796417
+✔ trocar de página remove assinaturas sem encerrar execução ou perder resultado (2.428791ms)
+✔ cancelamento termina o worker e ignora resultado, erro e progresso atrasados (0.164667ms)
+✔ reinício usa os parâmetros capturados e não recebe resposta da execução anterior (0.159834ms)
+✔ duplo clique não substitui uma execução ou seu consumidor (0.169292ms)
+✔ atividades concorrentes mantêm progresso, resultados e falhas independentes (0.128458ms)
+✔ fila respeita o limite, pode ser cancelada e avança após encerrar atividade (0.1295ms)
+✔ nova base invalida simultaneamente execução, fila e resultados; mensagens antigas são descartadas (0.113584ms)
+✔ falha ou cancelamento do recálculo preserva último resultado e seus parâmetros (0.091334ms)
+✔ erros nativos e de inicialização sempre produzem estado recuperável (0.107125ms)
+✔ falha no envio e resposta incompatível não são interpretadas como sucesso vazio (0.136083ms)
+✔ etapa concluída é preservada quando a etapa seguinte é cancelada (0.078917ms)
+✔ invalidação na conclusão impede aplicação de resultado à base que acabou de mudar (0.066208ms)
+✔ recovery retains results and captured parameters without creating workers or calling completion (0.123041ms)
+✔ reload interrupts running and queued jobs, preserving previous results and manual retry callbacks (0.618417ms)
+✔ new analysis invalidates restored activity and rejects its late messages (0.0725ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8.32225
+✔ exact collection identity, missing data, observed levels and duplicate sources (0.884125ms)
+✔ same TCC label keeps every source ID and never duplicates its records (0.170667ms)
+✔ published preview agrees with both real bases and manifest, including zero collections (1487.002584ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1495.36425
+✔ sharding preserves exact labels, duplicate documents and zero collections deterministically (1.52925ms)
+✔ every real shard reconstitutes its original base in exact order with identical raw records (3001.345583ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3011.203084

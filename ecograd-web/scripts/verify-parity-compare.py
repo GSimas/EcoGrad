@@ -1,4 +1,4 @@
-import json, sys
+import json, sys, math
 
 import os
 # Diretório com py_ref.json e ts_ref.json (gerados por `npm run verify:parity`).
@@ -23,6 +23,10 @@ def cmp_dict(nome, dpy, dts, tol=1e-9):
     faltando = set(dpy) ^ set(dts)
     maxdiff = 0.0; pior = None
     for k in chaves:
+        if not math.isfinite(dpy[k]) or not math.isfinite(dts[k]):
+            falhas.append(f'{nome}: valor não finito em {k!r}')
+            maxdiff = float('inf')
+            continue
         d = abs(dpy[k] - dts[k])
         e = max(abs(dpy[k]), abs(dts[k]), 1e-12)
         r = d / e
@@ -64,7 +68,7 @@ else:
 print('\n=== 3. MATURIDADE TOPOLOGICA (base completa) ===')
 for k in ['assortatividade','rich_club','gamma_linregress','gamma_mle','n_nos_G3']:
     cmp_num(k, py['maturidade'][k], ts['maturidade'][k], 1e-9)
-print(f'  -- Louvain (estocástico, comparado por modularidade):')
+print(f'  -- Louvain (estocástico: valores informativos, sem asserção de igualdade):')
 print(f'     py: mod={py["maturidade"]["modularidade_louvain"]:.4f} comunidades={py["maturidade"]["n_comunidades"]}')
 print(f'     ts: mod={ts["maturidade"]["modularidade_louvain"]:.4f} comunidades={ts["maturidade"]["n_comunidades"]}')
 
@@ -114,6 +118,8 @@ cmp_num('n_docs do perfil', py['ql']['n_docs'], ts['ql']['n_docs'], 0, False)
 pl = {(r['Entidade'], r['Tipo']): r for r in py['ql']['linhas'] if r['Entidade'] != ''}
 tl = {(r['Entidade'], r['Tipo']): r for r in ts['ql']['linhas'] if r['Entidade'] != ''}
 comuns = set(pl) & set(tl)
+if set(pl) != set(tl):
+    falhas.append(f'QL entidades divergentes: só-py={set(pl)-set(tl)} só-ts={set(tl)-set(pl)}')
 print(f'  linhas comparáveis: {len(comuns)} (py={len(pl)} ts={len(tl)})')
 ruim = [k for k in comuns if abs(pl[k]['QL']-tl[k]['QL'])>1e-9 or pl[k]['Total']!=tl[k]['Total']]
 print(f'  {"OK " if not ruim else "XX "}QL e Total idênticos nas linhas comuns')
@@ -132,4 +138,4 @@ if falhas:
     print(f'❌ {len(falhas)} DIVERGÊNCIA(S):')
     for f in falhas: print('   -', f)
     sys.exit(1)
-print('✅ PARIDADE TOTAL: todas as métricas comparadas coincidem com o backend Python.')
+print('✅ VERIFICAÇÕES DE PARIDADE APROVADAS: métricas e recortes cobertos coincidem nas tolerâncias documentadas.')

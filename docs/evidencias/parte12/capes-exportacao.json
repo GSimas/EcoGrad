@@ -1,0 +1,85 @@
+{
+  "formato": "ecograd-visualizacao-v1",
+  "contexto": {
+    "baseVersao": null,
+    "colecoes": null,
+    "registrosCarregados": null,
+    "periodoObservado": null,
+    "dataColeta": "Não informada",
+    "pagina": "Panorama CAPES",
+    "entidade": null,
+    "fonte": {
+      "url": "https://apigw-proxy.capes.gov.br/observatorio/data/observatorio/ppg?query=id-ies%3A%284362%29&size=100",
+      "idIes": "4362",
+      "consultadoEm": "2026-09-12T15:40:12.073Z",
+      "totalProgramas": 90
+    },
+    "limites": "Programas em funcionamento, contados por código. Não é uma correspondência com coleções locais. A data da consulta não é a data de atualização da CAPES.",
+    "filtros": {
+      "nivel": [
+        "Doutorado",
+        "Mestrado"
+      ],
+      "modalidade": [
+        "ACADÊMICO",
+        "PROFISSIONAL"
+      ],
+      "nota": [
+        "A",
+        "7",
+        "6",
+        "5",
+        "4",
+        "3"
+      ]
+    },
+    "titulo": "Programas CAPES",
+    "descricao": "",
+    "exportadoEm": "2026-09-12T15:45:00.363Z",
+    "consulta": {
+      "busca": "Odontologia",
+      "coluna": "",
+      "direcao": "asc",
+      "pagina": 0
+    },
+    "linhasDisponiveis": 84,
+    "linhasExportadas": 1,
+    "escopo": "Todas as linhas filtradas e ordenadas, não apenas a página visível"
+  },
+  "colunas": [
+    {
+      "chave": "Nome",
+      "rotulo": "Nome"
+    },
+    {
+      "chave": "Código",
+      "rotulo": "Código"
+    },
+    {
+      "chave": "Grande Área",
+      "rotulo": "Grande Área"
+    },
+    {
+      "chave": "Nota",
+      "rotulo": "Nota"
+    },
+    {
+      "chave": "Modalidade",
+      "rotulo": "Modalidade"
+    },
+    {
+      "chave": "Grau Acadêmico",
+      "rotulo": "Grau"
+    }
+  ],
+  "dados": [
+    {
+      "Nome": "ODONTOLOGIA",
+      "Código": "41001010008P0",
+      "Grande Área": "CIÊNCIAS DA SAÚDE",
+      "Nota": "5",
+      "Modalidade": "ACADÊMICO",
+      "Grau Acadêmico": "Mestrado/Doutorado"
+    }
+  ]
+}

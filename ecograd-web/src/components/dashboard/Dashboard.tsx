@@ -1,120 +1,70 @@
-import { useEffect, useMemo } from 'react';
-import { Activity, BarChart3 } from 'lucide-react';
-import { Aviso, Card, Kpi, Progresso } from '@/components/ui/primitives';
-import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
+import { useMemo } from 'react';
+import { Activity } from 'lucide-react';
+import { Kpi, Expander } from '@/components/ui/primitives';
 import { Destaques } from './Destaques';
 import { FichaTecnica } from './FichaTecnica';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
-import { useSnaWorker } from '@/hooks/useSnaWorker';
-import { normalizarNivel } from '@/lib/entities';
+import { Atividade } from '@/components/ui/Atividade';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
+import { Trabalhos } from '@/components/results/Trabalhos';
+import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
+import { Relacoes } from '@/components/results/Relacoes';
+import { ComparacaoColecoes } from './ComparacaoColecoes';
+import { resumoRegistros, periodoTexto } from '@/lib/resultados';
 import { formatarDecimal } from '@/lib/utils';
 
-/** Dashboard principal: KPIs, comparativo entre PPGs, ficha CAPES e destaques SNA. */
+/** Resultados do recorte, trabalhos e comparação; métodos disponíveis sob demanda. */
 export function Dashboard() {
-  const { docs, conjuntos, contagens, niveis, programas } = useDadosDerivados();
+  const { docs, conjuntos, contagens, niveis } = useDadosDerivados();
   const snaGlobal = useEcoGradStore((s) => s.snaGlobal);
   const statusSNA = useEcoGradStore((s) => s.statusSNA);
-  const progressoSNA = useEcoGradStore((s) => s.progressoSNA);
-  const textoProgressoSNA = useEcoGradStore((s) => s.textoProgressoSNA);
   const maturidade = useEcoGradStore((s) => s.maturidade);
   const rotulo = useEcoGradStore(rotuloAnaliseAtiva);
 
-  const { calcularSna } = useSnaWorker();
-
-  // A rede é calculada uma única vez por base carregada
-  useEffect(() => {
-    if (docs.length > 0 && statusSNA === 'ocioso') void calcularSna(docs);
-  }, [docs, statusSNA, calcularSna]);
-
-  const comparativo = useMemo(() => {
-    if (programas.length <= 1) return [];
-    const porPpg = new Map<string, typeof docs>();
-    for (const d of docs) {
-      const ppg = d.programa_origem || 'Desconhecido';
-      const lista = porPpg.get(ppg);
-      if (lista) (lista as (typeof docs)[number][]).push(d);
-      else porPpg.set(ppg, [d]);
-    }
-    return [...porPpg.entries()].map(([ppg, lista]) => ({
-      PPG: ppg,
-      Documentos: lista.length,
-      Teses: lista.filter((d) => normalizarNivel(d.nivel_academico) === 'Teses').length,
-      Dissertações: lista.filter((d) => normalizarNivel(d.nivel_academico) === 'Dissertações').length,
-      Autores: new Set(lista.flatMap((d) => d.autores)).size,
-      Orientadores: new Set(lista.map((d) => d.orientador).filter(Boolean)).size,
-      Coorientadores: new Set(lista.flatMap((d) => d.co_orientadores)).size,
-      Conceitos: new Set(lista.flatMap((d) => d.palavras_chave)).size,
-    }));
-  }, [docs, programas]);
+  const ppg = useEcoGradStore((s) => s.programasSelecionados);
+  const tcc = useEcoGradStore((s) => s.cursosTccSelecionados);
+  const navegar = useEcoGradStore((s) => s.navegarPara);
+  const nomes = useMemo(() => [...new Set([...ppg, ...tcc, ...docs.map((d) => d.programa_origem)])].sort(), [docs, ppg, tcc]);
+  const cobertura = useMemo(() => resumoRegistros(docs), [docs]);
+  const docsPpg = useMemo(() => docs.filter((d) => ppg.includes(d.programa_origem) && !tcc.includes(d.programa_origem)), [docs, ppg, tcc]);
 
   return (
     <div className="space-y-8">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">🌌 Ecologia do Conhecimento</h1>
+        <h1 className="text-2xl font-bold">Explore a produção das coleções</h1>
         <p className="text-sm text-slate-400">Base: {rotulo}</p>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Kpi rotulo="📄 Documentos Totais" valor={docs.length} />
-        <Kpi rotulo="🎓 Teses (Doutorado)" valor={niveis.teses} />
-        <Kpi rotulo="📜 Dissertações" valor={niveis.dissertacoes} />
-      </div>
-
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi rotulo="✍️ Autores Únicos" valor={conjuntos.autores.size} />
-        <Kpi rotulo="🏫 Orientadores" valor={conjuntos.orientadores.size} />
-        <Kpi rotulo="🤝 Co-orientadores" valor={conjuntos.coorientadores.size} />
-        <Kpi rotulo="💡 Conceitos (Keywords)" valor={conjuntos.keywords.size} />
+        <Kpi rotulo="Registros carregados" valor={docs.length} detalhe="Não necessariamente trabalhos únicos" />
+        <Kpi rotulo="Coleções selecionadas" valor={nomes.length} />
+        <Kpi rotulo="Período observado" valor={periodoTexto(cobertura)} detalhe={`${cobertura.semAno} registros sem ano`} />
+        <Kpi rotulo="Resumos disponíveis" valor={`${cobertura.comResumo}/${docs.length}`} />
       </div>
-
-      {comparativo.length > 1 && (
-        <section className="space-y-3">
-          <h3 className="flex items-center gap-2 text-lg font-semibold">
-            <BarChart3 size={18} /> Comparativo entre PPGs
-          </h3>
-          <Card>
-            <Grafico
-              altura={420}
-              option={{
-                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-                legend: { bottom: 0, textStyle: { color: TEMA_GRAFICO.texto } },
-                grid: { left: 8, right: 8, top: 24, bottom: 60, containLabel: true },
-                xAxis: {
-                  type: 'category',
-                  data: comparativo.map((c) => c.PPG),
-                  axisLabel: { show: false },
-                  axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-                },
-                yAxis: {
-                  type: 'value',
-                  splitLine: { lineStyle: { color: TEMA_GRAFICO.grade } },
-                  axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-                },
-                series: (
-                  ['Documentos', 'Teses', 'Dissertações', 'Autores', 'Orientadores', 'Coorientadores', 'Conceitos'] as const
-                ).map((chave) => ({
-                  name: chave,
-                  type: 'bar',
-                  data: comparativo.map((c) => c[chave]),
-                  itemStyle: { borderRadius: [3, 3, 0, 0] },
-                })),
-              }}
-            />
-          </Card>
-        </section>
-      )}
-
-      <FichaTecnica docs={docs} programas={programas} />
-
-      {statusSNA === 'calculando' && (
-        <Card>
-          <Progresso valor={progressoSNA} texto={textoProgressoSNA || 'Calculando rede complexa...'} />
-        </Card>
-      )}
-      {statusSNA === 'erro' && (
-        <Aviso tipo="erro">Falha ao calcular a rede complexa. Recarregue a base para tentar novamente.</Aviso>
-      )}
+      <CoberturaAnalise docs={docs} />
+      <div className="flex flex-wrap gap-3">
+        <button type="button" className="btn" onClick={() => navegar('Documento', null)}>Buscar um trabalho pelo título</button>
+        <button type="button" className="btn" onClick={() => navegar('Palavra-chave', null)}>Investigar um tema</button>
+        <button type="button" className="btn" onClick={() => navegar('Orientador', null)}>Buscar orientador pelo nome</button>
+      </div>
+      {nomes.length > 1 && <ComparacaoColecoes docs={docs} nomes={nomes} tcc={tcc} ppg={ppg} />}
+      <Trabalhos docs={docs} sessionKey="dashboard.trabalhos" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Relacoes docs={docs} tipo="Palavra-chave" titulo="Temas para começar a exploração" />
+        <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores presentes no recorte" />
+      </div>
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Fontes e contexto institucional</h2>
+        {tcc.length > 0 && <p className="text-sm text-slate-300">O catálogo de TCCs inclui graduação ou especialização; há {tcc.length} {tcc.length === 1 ? 'coleção selecionada' : 'coleções selecionadas'}. Essas coleções não recebem nota de programa CAPES. Tipos inconsistentes ou “Outros” são mantidos como registrados na base.</p>}
+        {ppg.length > 0 ? <Expander titulo="Consultar vínculos CAPES e síntese por IA" lazy><FichaTecnica docs={docsPpg} programas={ppg.filter((n) => !tcc.includes(n))} /></Expander> : <p className="text-sm text-slate-300">Não há coleção de pós-graduação selecionada para a ficha institucional. O Panorama CAPES continua disponível no menu.</p>}
+      </section>
+      <Expander titulo="Indicadores e métodos da rede" lazy>
+      <p className="mb-4 text-sm text-slate-300">Indicadores descritivos do conjunto carregado. Centralidade, volume e comunidade não são avaliações de mérito das pessoas ou trabalhos. Nomes podem representar homônimos.</p>
+      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Kpi rotulo="Nomes na autoria" valor={conjuntos.autores.size} /><Kpi rotulo="Nomes de orientadores" valor={conjuntos.orientadores.size} /><Kpi rotulo="Nomes de coorientadores" valor={conjuntos.coorientadores.size} /><Kpi rotulo="Palavras-chave distintas" valor={conjuntos.keywords.size} />
+      </div>
+      <Atividade id="sna-global" />
+      <Atividade id="maturidade" />
 
       {statusSNA === 'pronto' && (
         <>
@@ -137,7 +87,7 @@ export function Dashboard() {
                 <Kpi
                   rotulo="Expoente γ"
                   valor={formatarDecimal(maturidade.Gamma, 3)}
-                  detalhe={maturidade.Gamma >= 2 && maturidade.Gamma <= 3 ? 'Regime livre de escala' : 'Fora da faixa livre de escala'}
+                  detalhe="Estimativa do expoente; isoladamente não comprova regime livre de escala"
                 />
                 <Kpi
                   rotulo="Spearman (Grau × Bet.)"
@@ -157,6 +107,7 @@ export function Dashboard() {
           />
         </>
       )}
+      </Expander>
     </div>
   );
 }

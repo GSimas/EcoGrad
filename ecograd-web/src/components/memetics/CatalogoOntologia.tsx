@@ -1,296 +1,134 @@
+import { CuradoriaTermos } from './CuradoriaTermos';
+import { resultadoCurado } from '@/lib/curadoria';
+import { aplicarCuradoria } from '@/services/curadoria';
 import { useMemo, useRef, useState } from 'react';
 import Papa from 'papaparse';
-import { Download, Sparkles, Upload } from 'lucide-react';
+import { useSessionField } from '@/hooks/useSessionField';
 import { Aviso, Card, Expander, Progresso, Tabela } from '@/components/ui/primitives';
-import { baixarArquivo, paraCSV } from '@/lib/utils';
+import { baixarArquivo } from '@/lib/utils';
 import { parseOntologia } from '@/lib/foresight-math';
+import { COLUNAS_ONTOLOGIA, CHAVES_ONTOLOGIA, MAX_ARQUIVO, MAX_LINHAS, indexarDocumentos, linhasExportacaoOntologia, prepararImportacao } from '@/lib/ontologia-importacao';
+import { iniciarExtracao, interromperExtracao } from '@/services/ia';
+import { atividades } from '@/services/calculos';
+import { useAtividades, emExecucao } from '@/hooks/useSnaWorker';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import type { ItemExtracao } from '@/lib/ia-state';
 import type { OntologiaIA } from '@/types';
 
-const COLUNAS_CSV = ['Título', 'Teorias e Modelos', 'Ferramentas e Artefatos', 'Métodos e Técnicas'] as const;
-
-/** A função serverless processa no máximo 8 documentos por invocação. */
-const ITENS_POR_CHAMADA = 8;
-const TAMANHOS_LOTE = [5, 10, 20, 50, 100, 200, 500, 1000];
-
-interface RespostaOntologia {
-  resultados: Array<{ titulo: string; ontologia: OntologiaIA | null; erro: string | null }>;
-}
-
-function separarLista(valor: unknown): string[] {
-  const s = valor === null || valor === undefined ? '' : String(valor).trim();
-  if (s === '') return [];
-  return s.split(',').map((i) => i.trim()).filter(Boolean);
-}
-
-/**
- * Catálogo Ontológico: processamento em lote pela IA (com ETA), tabela,
- * exportação e upload de um CSV pré-processado.
- * Transcrição de pages/1_Avançado.py:1240-1360.
- */
 export function CatalogoOntologia() {
-  const docs = useEcoGradStore((s) => s.docs);
-  const aplicarOntologia = useEcoGradStore((s) => s.aplicarOntologia);
-
-  const [tamanhoLote, setTamanhoLote] = useState(10);
-  const [processando, setProcessando] = useState(false);
-  const [progresso, setProgresso] = useState(0);
-  const [statusLote, setStatusLote] = useState('');
-  const [erros, setErros] = useState<string[]>([]);
-  const [mensagemUpload, setMensagemUpload] = useState<{ tipo: 'sucesso' | 'aviso' | 'erro'; texto: string } | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const linhasCatalogo = useMemo(() => {
-    const linhas: Array<Record<string, unknown>> = [];
-    for (const d of docs) {
-      const onto = parseOntologia(d.ontologia_ia);
-      if (!onto) continue;
-      linhas.push({
-        Ano: d.ano ?? 'N/A',
-        'Título': d.titulo,
-        'Teorias e Modelos': onto.teorias_e_modelos.join(', '),
-        'Ferramentas e Artefatos': onto.ferramentas_e_artefatos.join(', '),
-        'Métodos e Técnicas': onto.metodos_e_tecnicas.join(', '),
-      });
-    }
-    return linhas;
-  }, [docs]);
-
-  const fila = useMemo(
-    () => docs.filter((d) => !parseOntologia(d.ontologia_ia) && d.resumo.trim() !== ''),
-    [docs],
-  );
-  const totalValidos = useMemo(() => docs.filter((d) => d.resumo.trim() !== '').length, [docs]);
-  const jaProcessados = totalValidos - fila.length;
-
-  const processarLote = async () => {
-    const lote = fila.slice(0, tamanhoLote);
-    if (lote.length === 0) return;
-
-    setProcessando(true);
-    setProgresso(0);
-    setErros([]);
-    const inicio = performance.now();
-    const acumulado = new Map<string, OntologiaIA>();
-    const falhas: string[] = [];
-
-    try {
-      for (let i = 0; i < lote.length; i += ITENS_POR_CHAMADA) {
-        const fatia = lote.slice(i, i + ITENS_POR_CHAMADA);
-
-        // ETA a partir do ritmo real observado até aqui
-        if (i > 0) {
-          const decorrido = (performance.now() - inicio) / 1000;
-          const mediaPorDoc = decorrido / i;
-          const eta = Math.round((lote.length - i) * mediaPorDoc);
-          const min = Math.floor(eta / 60);
-          const seg = eta % 60;
-          setStatusLote(`🤖 Lendo ${i + 1}/${lote.length} · ⏳ Restam aprox. ${min}m ${seg}s`);
-        } else {
-          setStatusLote(`🤖 Lendo 1/${lote.length} · ⏳ Calculando tempo...`);
-        }
-
-        const r = await fetch('/api/gemini-ontology', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            itens: fatia.map((d) => ({ titulo: d.titulo, resumo: d.resumo })),
-          }),
-        });
-
-        if (!r.ok) {
-          falhas.push(`Lote ${i / ITENS_POR_CHAMADA + 1}: HTTP ${r.status}`);
-          break;
-        }
-
-        const dados = (await r.json()) as RespostaOntologia;
-        for (const res of dados.resultados) {
-          if (res.ontologia) acumulado.set(res.titulo.trim().toLowerCase(), res.ontologia);
-          else if (res.erro) falhas.push(`${res.titulo.slice(0, 40)}…: ${res.erro}`);
-        }
-
-        setProgresso(Math.round(((i + fatia.length) / lote.length) * 100));
-      }
-
-      const atualizados = aplicarOntologia(acumulado);
-      setStatusLote(
-        `Lote concluído! ${atualizados} documentos enriquecidos. Faltam ${fila.length - atualizados} na fila.`,
-      );
-      setErros(falhas);
-    } catch (e) {
-      setErros([e instanceof Error ? e.message : String(e)]);
-    } finally {
-      setProcessando(false);
-    }
-  };
-
-  const aoSelecionarArquivo = (arquivo: File) => {
-    setMensagemUpload(null);
-    Papa.parse<Record<string, string>>(arquivo, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (resultado) => {
-        const campos = resultado.meta.fields ?? [];
-        const faltando = COLUNAS_CSV.filter((c) => !campos.includes(c));
-        if (faltando.length > 0) {
-          setMensagemUpload({
-            tipo: 'erro',
-            texto:
-              'O CSV não possui as colunas estruturais corretas. Use o arquivo gerado pelo botão "Exportar Catálogo" desta plataforma.',
-          });
-          return;
-        }
-
-        const mapa = new Map<string, OntologiaIA>();
-        for (const linha of resultado.data) {
-          const titulo = String(linha['Título'] ?? '').trim().toLowerCase();
-          if (!titulo) continue;
-          mapa.set(titulo, {
-            teorias_e_modelos: separarLista(linha['Teorias e Modelos']),
-            ferramentas_e_artefatos: separarLista(linha['Ferramentas e Artefatos']),
-            metodos_e_tecnicas: separarLista(linha['Métodos e Técnicas']),
-          });
-        }
-
-        const atualizados = aplicarOntologia(mapa);
-        setMensagemUpload(
-          atualizados > 0
-            ? { tipo: 'sucesso', texto: `✅ Sucesso! ${atualizados} documentos foram enriquecidos com o catálogo carregado.` }
-            : {
-                tipo: 'aviso',
-                texto: '⚠️ O upload foi lido, mas nenhum "Título" do CSV coincidiu com a base atual em memória.',
-              },
-        );
-        // Limpa o input para que o mesmo arquivo possa ser reenviado sem
-        // disparar um novo ciclo de render em loop.
-        if (inputRef.current) inputRef.current.value = '';
-      },
-      error: (e) => setMensagemUpload({ tipo: 'erro', texto: `Erro ao ler o arquivo CSV: ${e.message}` }),
-    });
-  };
-
-  return (
-    <div className="space-y-4">
-      <Card className="space-y-4">
-        <div>
-          <h3 className="flex items-center gap-2 text-sm font-semibold">
-            <Sparkles size={16} /> Extração Ontológica por IA
-          </h3>
-          <p className="mt-1 text-xs text-slate-500">
-            A API lê os resumos para extrair construtos reais (Artefatos, Teorias e Métodos),
-            superando a limitação das palavras-chave genéricas.
-          </p>
-        </div>
-
-        <Progresso
-          valor={totalValidos > 0 ? (jaProcessados / totalValidos) * 100 : 0}
-          texto={`Progresso da Base: ${jaProcessados} de ${totalValidos} resumos lidos pela IA.`}
-        />
-
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-xs text-slate-400">
-            Tamanho do Lote
-            <select
-              value={tamanhoLote}
-              onChange={(e) => setTamanhoLote(Number(e.target.value))}
-              className="input py-1.5"
-            >
-              {TAMANHOS_LOTE.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={processarLote}
-            disabled={processando || fila.length === 0}
-          >
-            🚀 Processar Próximo Lote
-          </button>
-          <p className="text-xs text-slate-500">
-            Lotes pequenos evitam estourar o limite da API gratuita. Cada invocação serverless
-            processa até {ITENS_POR_CHAMADA} documentos, com 4s de intervalo entre chamadas.
-          </p>
-        </div>
-
-        {processando && <Progresso valor={progresso} texto={statusLote} />}
-        {!processando && statusLote && <Aviso tipo="sucesso">{statusLote}</Aviso>}
-        {fila.length === 0 && totalValidos > 0 && (
-          <Aviso tipo="sucesso">Toda a base já foi processada pela IA!</Aviso>
-        )}
-        {erros.length > 0 && (
-          <Expander titulo={`⚠️ ${erros.length} falhas na IA. Clique para ver.`}>
-            <ul className="space-y-1 text-xs text-red-300">
-              {erros.slice(0, 10).map((e, i) => (
-                <li key={i}>{e}</li>
-              ))}
-            </ul>
-          </Expander>
-        )}
-      </Card>
-
-      <Card className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-semibold">🗂️ Catálogo de Artefatos Extraídos</h3>
-            <p className="text-xs text-slate-500">
-              Verifique e baixe o que a IA encontrou, ou faça upload de um catálogo pré-processado.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="btn"
-              onClick={() => inputRef.current?.click()}
-            >
-              <Upload size={14} /> Upload CSV
-            </button>
-            <button
-              type="button"
-              className="btn"
-              disabled={linhasCatalogo.length === 0}
-              onClick={() => baixarArquivo(paraCSV(linhasCatalogo), 'catalogo_ontologico_ia.csv')}
-            >
-              <Download size={14} /> Exportar Catálogo
-            </button>
-          </div>
-        </div>
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(e) => {
-            const arquivo = e.target.files?.[0];
-            if (arquivo) aoSelecionarArquivo(arquivo);
-          }}
-        />
-
-        {mensagemUpload && <Aviso tipo={mensagemUpload.tipo}>{mensagemUpload.texto}</Aviso>}
-
-        {linhasCatalogo.length === 0 ? (
-          <Aviso>
-            💡 A base ainda não possui ontologia estruturada. Processe um lote na seção acima ou faça
-            upload de um CSV existente.
-          </Aviso>
-        ) : (
-          <Tabela
-            altura="max-h-80"
-            linhas={linhasCatalogo}
-            colunas={[
-              { chave: 'Ano', rotulo: 'Ano', render: (l) => String(l.Ano) },
-              { chave: 'Título', rotulo: 'Título', className: 'max-w-xs truncate' },
-              { chave: 'Teorias e Modelos', rotulo: 'Teorias e Modelos', className: 'max-w-xs truncate' },
-              { chave: 'Ferramentas e Artefatos', rotulo: 'Ferramentas e Artefatos', className: 'max-w-xs truncate' },
-              { chave: 'Métodos e Técnicas', rotulo: 'Métodos e Técnicas', className: 'max-w-xs truncate' },
-            ]}
-          />
-        )}
-      </Card>
+ const docs=useEcoGradStore(s=>s.docs);const baseVersion=useEcoGradStore(s=>s.baseVersion);
+ const {lote,importacao}=useEcoGradStore(s=>s.ia);const setIA=useEcoGradStore(s=>s.setIA);
+ const [tamanho,setTamanho]=useSessionField('ontologia.tamanho',10);
+ const [mensagem,setMensagem]=useSessionField('ontologia.mensagem','');
+ const [csvRascunho,setCsvRascunho]=useSessionField('ontologia.csvRascunho','');
+ const [substituir,setSubstituir]=useSessionField('ontologia.substituir',false);
+ const [ocupado,setOcupado]=useState(false);const inputRef=useRef<HTMLInputElement>(null);const previaRef=useRef<HTMLDivElement>(null);
+ const processando=lote?.estado==='executando';const calculando=useAtividades().some(emExecucao);
+ const linhas=useMemo(()=>docs.flatMap((d,indice)=>{const onto=parseOntologia(d.ontologia_ia);return onto?[{indice,Ano:d.ano??'N/A','Título':d.titulo,...Object.fromEntries(COLUNAS_ONTOLOGIA.map((c,i)=>[c,onto[CHAVES_ONTOLOGIA[i]].join(', ')]))}]:[];}),[docs]);
+ const comResumo=docs.filter(d=>d.resumo.trim()).length;
+ const validas=importacao?.linhas.filter(l=>l.valida && (!l.substituir||substituir))??[];
+ const sucessoLote=lote?.itens.filter(i=>i.estado==='concluido'&&i.ontologia)??[];
+ const resumoCuradoria=useMemo(()=>{try{return {erro:'',...sucessoLote.reduce((r,i)=>{const c=resultadoCurado(i);return {pendentes:r.pendentes+c.pendentes,aprovados:r.aprovados+c.aprovados,rejeitados:r.rejeitados+c.rejeitados};},{pendentes:0,aprovados:0,rejeitados:0})};}catch(e){return {erro:e instanceof Error?e.message:'Curadoria inválida',pendentes:0,aprovados:0,rejeitados:0};}},[lote]);
+ const pendentes=lote?.itens.filter(i=>i.estado!=='concluido').length??0;
+ const aguardando=lote?.itens.filter(i=>i.estado==='pendente'||i.estado==='executando').length??0;
+ const guard=()=>{if(atividades.getSnapshot().some(emExecucao))throw new Error('Aguarde ou interrompa as atividades de cálculo antes de aplicar dados novos.');};
+ const aplicar=async(porId:Map<string,OntologiaIA>,origem:'lote'|'csv')=>{
+  const estado=useEcoGradStore.getState();const id=estado.analysisId;setOcupado(true);setMensagem('');
+  try{guard();const n=origem==='lote'?await aplicarCuradoria(guard):await estado.aplicarOntologia(porId,substituir,guard);if(useEcoGradStore.getState().analysisId!==id)return;
+   if(origem==='csv'&&importacao)setIA({importacao:{...importacao,aplicada:true}});
+   setMensagem(`${n} ${n===1?'documento atualizado':'documentos atualizados'} por identidade exata. Resultados de cálculo anteriores foram invalidados porque os dados mudaram; execute-os novamente quando desejar.`);
+  }catch(e){if(useEcoGradStore.getState().analysisId===id)setMensagem(e instanceof Error?e.message:'Falha na aplicação.');}finally{setOcupado(false);}
+ };
+ const lerArquivo=async(arquivo:File)=>{
+  const id=useEcoGradStore.getState().analysisId;setOcupado(true);setMensagem('');
+  try{if(arquivo.size>MAX_ARQUIVO)throw new Error('Arquivo excede 2 MiB. Divida o catálogo e importe uma parte por vez.');
+   const texto=await arquivo.text();const parsed=Papa.parse<Record<string,string>>(texto,{header:true,skipEmptyLines:'greedy'});
+   if(parsed.errors.length || Object.keys((parsed.meta as {renamedHeaders?:object}).renamedHeaders??{}).length)throw new Error('CSV malformado ou cabeçalhos duplicados. Corrija o arquivo antes de importar.');
+   const previa=await prepararImportacao(parsed.data,parsed.meta.fields??[],docs,baseVersion,arquivo.name);
+   if(useEcoGradStore.getState().analysisId!==id)return;setSubstituir(false);setIA({importacao:previa});
+   requestAnimationFrame(()=>{previaRef.current?.focus();previaRef.current?.scrollIntoView({block:'start'});});
+  }catch(e){if(useEcoGradStore.getState().analysisId===id){setIA({importacao:null});setMensagem(e instanceof Error?e.message:'Não foi possível ler o CSV.');}}finally{setOcupado(false);if(inputRef.current)inputRef.current.value='';}
+ };
+ const exportar=async()=>{
+  setOcupado(true);try{const dados=await linhasExportacaoOntologia(docs,baseVersion);baixarArquivo(Papa.unparse(dados,{quotes:true}),'catalogo_ontologico_ia.csv');}catch{setMensagem('Não foi possível preparar a exportação.');}finally{setOcupado(false);}
+ };
+ const criarLote=async()=>{
+  const id=useEcoGradStore.getState().analysisId;const indice=await indexarDocumentos(docs);if(useEcoGradStore.getState().analysisId!==id)return;
+  const ids=indice.map(i=>i.id);const ambiguos=ids.length-new Set(ids).size;
+  setMensagem(ambiguos?`${ambiguos} identidades repetidas: esses registros não serão enviados automaticamente.`:'');
+  void iniciarExtracao(tamanho);
+ };
+ return <div className="space-y-4">
+  <Card className="space-y-4">
+   <h3 className="text-base font-semibold">Extração de artefatos por IA</h3>
+   <p className="text-sm text-slate-300">A IA recebe somente o resumo integral de cada documento do lote. Título e identificador vinculam a resposta ao documento no EcoGrad e não são enviados ao Google Gemini nesta extração. {comResumo} de {docs.length} registros têm resumo. A fila segue a ordem da seleção, ignora registros já enriquecidos e identidades ambíguas. Não envia chat nem notas CAPES.</p>
+   <p className="text-sm text-slate-300">A IA propõe nomes de teorias, ferramentas e métodos e pode agrupá-los ou omitir conceitos. Revise as extrações e suas fontes. Há uma pausa de quatro segundos entre documentos. Cada resultado fica salvo para revisão; só altera a análise ao aplicar. Interromper impede novas solicitações, mas o provedor pode concluir uma já recebida.</p>
+   <div className="flex flex-wrap items-end gap-3">
+    <label className="text-sm">Tamanho do Lote<select className="input mt-1" value={tamanho} disabled={processando} onChange={e=>setTamanho(Number(e.target.value))}>{[5,10,20,50,100,200,500,1000].map(t=><option key={t}>{t}</option>)}</select></label>
+    <button type="button" className="btn btn-primary" disabled={processando||ocupado||!comResumo||!!lote&&!lote.aplicado} onClick={()=>void criarLote()}>Preparar novo lote pela IA</button>
+    {processando&&<button type="button" className="btn" onClick={interromperExtracao}>Interromper extração</button>}
+   </div>
+   {lote&&<div className="space-y-3">
+    <Progresso valor={lote.itens.length?100*lote.itens.filter(i=>i.estado==='concluido'||i.estado==='erro').length/lote.itens.length:0} texto={`${sucessoLote.length} concluídos · ${lote.itens.filter(i=>i.estado==='erro').length} falhas · ${aguardando} pendentes · ${lote.estado==='concluido'?'processamento concluído':lote.estado==='interrompido'?'interrompido':'em andamento'}`} />
+    <p className="text-sm">Lote capturado: {lote.itens.length} documentos. Retomar repete somente pendências e falhas; não reenvia os concluídos. Limite de 1.000 documentos por lote e armazenamento compartilhado de 64 MiB na sessão.</p>
+    {lote.itens.length===0&&<Aviso>Nenhum registro elegível. Confira resumos, identidades repetidas e o catálogo existente.</Aviso>}
+    <div className="flex flex-wrap gap-2">
+     <button type="button" className="btn" disabled={processando||!pendentes||lote.aplicado} onClick={()=>void iniciarExtracao(tamanho,true)}>Retomar pendências e falhas</button>
+     <button type="button" className="btn" disabled={processando||ocupado||calculando||!!resumoCuradoria.erro||!!resumoCuradoria.pendentes||!resumoCuradoria.aprovados||lote.aplicado} onClick={()=>void aplicar(new Map(), 'lote')}>Aplicar {resumoCuradoria.aprovados} termos aprovados</button>
+     {!processando&&<button type="button" className="btn" onClick={()=>{if(!lote.aplicado&&!window.confirm('Encerrar descarta os resultados deste lote ainda não aplicados. Exporte a revisão se precisar conservar uma cópia. Continuar?'))return;setIA({lote:null});setMensagem('Lote encerrado. O catálogo já aplicado permanece na análise.');}}>Encerrar revisão deste lote</button>}
     </div>
-  );
+    <button type="button" className="btn" onClick={()=>baixarArquivo(JSON.stringify({formato:'ecograd-revisao-ia-v2',...lote},null,2),'ecograd-revisao-ia.json')}>Exportar revisão com fontes e evidências</button>
+    <p className="text-sm">Trechos literais demonstram a origem da proposta, não garantem que sua categoria esteja correta. Confira o uso descrito no resumo antes de aplicar. Resultados antigos sem evidências são identificados abaixo e não são reprocessados automaticamente. O CSV científico mantém o formato anterior; conserve também o JSON de revisão.</p>
+    <p role="status">Curadoria: {resumoCuradoria.aprovados} aprovados · {resumoCuradoria.rejeitados} rejeitados · {resumoCuradoria.pendentes} pendentes.</p>
+    {resumoCuradoria.erro&&<p role="alert">{resumoCuradoria.erro}</p>}
+    <p className="text-sm">Decida todos os termos dos resultados concluídos antes de aplicar. Somente aprovações salvas serão usadas; rejeições e rascunhos ficam fora do catálogo. Após aplicar, a revisão fica bloqueada. Documentos com todos os termos rejeitados permanecem sem enriquecimento.</p>
+    {lote.aplicado&&<Aviso>Resultados aplicados. Encerre a revisão para preparar outro lote; documentos já enriquecidos serão ignorados.</Aviso>}
+    <Tabela titulo="Revisão do lote de ontologia" descricao="Resultados por identidade estável. Falhas não são ontologias vazias; listas vazias válidas significam que a IA não identificou itens." linhas={lote.itens.map(i=>({...i,artefatos:i.ontologia?JSON.stringify(i.ontologia):'',erro:i.erro??''}))} colunas={[{chave:'titulo',rotulo:'Título',className:'min-w-64'},{chave:'estado',rotulo:'Estado'},{chave:'artefatos',rotulo:'Extração proposta',render:l=><DetalheOntologia valor={l.ontologia as OntologiaIA|undefined}/>},{chave:'evidencias',rotulo:'Trechos e fonte',render:l=><EvidenciasExtracao item={l as unknown as ItemExtracao}/>},{chave:'curadoria',rotulo:'Curadoria por termo',render:l=><CuradoriaTermos item={l as unknown as ItemExtracao} bloqueado={!!processando||ocupado||!!lote.aplicado} revisaoId={lote.revisaoId??'legado'}/>},{chave:'erro',rotulo:'Motivo da falha'}]} />
+   </div>}
+  </Card>
+  <Card className="space-y-3">
+   <h3 className="text-base font-semibold">Importar catálogo com prévia</h3>
+   <p className="text-sm text-slate-300">CSV de até 2 MiB e {MAX_LINHAS} linhas. Nada é aplicado ao selecionar o arquivo. O formato atual inclui versão da base, coleção, identificador estável e listas JSON, preservando vírgulas nos nomes. Identidade repetida ou divergente bloqueia a linha.</p>
+   <div className="flex flex-wrap gap-2"><button type="button" className="btn" disabled={ocupado||processando} onClick={()=>inputRef.current?.click()}>Escolher CSV para prévia</button><button type="button" className="btn" disabled={ocupado||!linhas.length} onClick={()=>void exportar()}>Exportar CSV para reimportação</button></div>
+   <Expander titulo="Colar CSV como texto">
+    <label className="block text-sm">Conteúdo CSV<textarea className="input mt-2 min-h-40 font-mono text-xs" maxLength={50000} value={csvRascunho} onChange={e=>setCsvRascunho(e.target.value)} /></label>
+    <p className="my-2 text-xs text-slate-400">{csvRascunho.length}/50.000 caracteres. O rascunho permanece na sessão. Usa a mesma validação da importação por arquivo.</p>
+    <button type="button" className="btn" disabled={ocupado||processando||!csvRascunho.trim()} onClick={()=>void lerArquivo(new File([csvRascunho],'conteudo-colado.csv',{type:'text/csv'}))}>Validar CSV colado</button>
+   </Expander>
+   <input ref={inputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void lerArquivo(f);}} />
+   {ocupado&&<p role="status">Preparando dados…</p>}
+   {mensagem&&<Aviso><p role="status">{mensagem}</p></Aviso>}
+   {calculando&&<Aviso>A aplicação aguarda o fim das atividades de cálculo. Você pode continuar a revisão; aplicar dados novos invalida os resultados anteriores.</Aviso>}
+   {importacao&&<div ref={previaRef} tabIndex={-1} aria-label="Prévia da importação" className="space-y-3">
+    <h4 className="break-words font-semibold">Prévia: {importacao.arquivo}</h4>
+    {importacao.legado&&<Aviso>CSV antigo sem identificadores: somente títulos exatamente iguais e únicos na seleção são aceitos. Não se removem acentos nem se aproximam nomes. Listas antigas são separadas por vírgula; confira conceitos que contêm vírgulas antes de aplicar.</Aviso>}
+    <p role="status">{validas.length} linhas {importacao.aplicada?'validadas na importação aplicada':'prontas para aplicar'} · {importacao.linhas.filter(l=>!l.valida).length} bloqueadas · {importacao.linhas.filter(l=>l.valida&&l.substituir).length} substituições possíveis.</p>
+    <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={substituir} onChange={e=>setSubstituir(e.target.checked)} disabled={importacao.aplicada} />Incluir substituição das ontologias existentes indicadas na prévia</label>
+    <Tabela titulo="Prévia do catálogo importado" linhas={importacao.linhas.map(l=>({...l,artefatos:JSON.stringify(l.ontologia)}))} colunas={[{chave:'titulo',rotulo:'Título',className:'min-w-64'},{chave:'situacao',rotulo:'Validação',className:'min-w-48'},{chave:'colecao',rotulo:'Coleção'},{chave:'linha',rotulo:'Linha CSV'},{chave:'artefatos',rotulo:'Ontologia proposta',render:l=><DetalheOntologia valor={l.ontologia as OntologiaIA|undefined}/>}]} />
+    <button type="button" className="btn btn-primary" disabled={ocupado||processando||calculando||!validas.length||importacao.aplicada||importacao.baseVersion!==baseVersion} onClick={()=>void aplicar(new Map(validas.map(l=>[l.id,l.ontologia!])), 'csv')}>Aplicar {validas.length} {validas.length===1?'linha validada':'linhas validadas'}</button>
+    {importacao.aplicada&&<Aviso>Importação aplicada. Linhas bloqueadas não alteraram documentos.</Aviso>}
+   </div>}
+  </Card>
+  <Expander titulo="Catálogo de artefatos aplicado à análise">
+   {linhas.length?<Tabela titulo="Catálogo ontológico" descricao="Catálogo aplicado. Para reimportação use o CSV com identidade; as exportações desta tabela são para leitura." linhas={linhas} rotuloAbrir={l=>String(l['Título'])} onAbrir={l=>useEcoGradStore.getState().navegarDocumento(Number(l.indice))} colunas={[{chave:'Ano',rotulo:'Ano'},{chave:'Título',rotulo:'Título'},...COLUNAS_ONTOLOGIA.map(c=>({chave:c,rotulo:c}))]} />:<Aviso>Nenhuma ontologia aplicada. Prepare um lote ou escolha um CSV para revisar.</Aviso>}
+  </Expander>
+ </div>;
+}
+
+function DetalheOntologia({valor}:{valor?:OntologiaIA}){
+ if(!valor)return <span>Sem extração válida</span>;
+ const total=CHAVES_ONTOLOGIA.reduce((n,k)=>n+valor[k].length,0);
+ return <details><summary className="cursor-pointer min-h-11">Ver {total} itens propostos</summary><dl className="space-y-2">{CHAVES_ONTOLOGIA.map((k,i)=><div key={k}><dt className="font-semibold">{COLUNAS_ONTOLOGIA[i]}</dt><dd className="whitespace-pre-wrap">{valor[k].join('; ')||'Nenhum item identificado'}</dd></div>)}</dl></details>;
+}
+
+function EvidenciasExtracao({item}:{item:ItemExtracao}) {
+ if(item.estado!=='concluido')return <span>Sem resultado concluído.</span>;
+ if(!item.fonte)return <span>Resultado legado sem evidências registradas. Confira a fonte antes de aplicar.</span>;
+ return <div className="space-y-2 min-w-64">
+  {/^https?:\/\//i.test(item.fonte.url)&&<a href={item.fonte.url} target="_blank" rel="noopener noreferrer" className="underline">Abrir fonte do documento</a>}
+  {!item.evidencias&&<p>Resultado legado: fonte vinculada pela curadoria humana, sem evidências originais da IA.</p>}
+  {item.evidencias?.length===0&&<p>Nenhum artefato identificado com apoio suficiente neste resumo.</p>}
+  {(item.evidencias??[]).map(e=><div key={e.categoria+e.termo}><strong>{e.termo}</strong><p>{e.categoria.replaceAll('_',' ')}</p><blockquote className="border-l-2 pl-2">{e.trecho}</blockquote></div>)}
+  <details><summary>{item.fonte.origem==='curadoria'?'Conferir resumo usado na curadoria':'Conferir resumo enviado'}</summary><p className="whitespace-pre-wrap">{item.fonte.resumo}</p></details>
+ </div>;
 }

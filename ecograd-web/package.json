@@ -10,7 +10,19 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "netlify:dev": "node scripts/netlify-dev.mjs",
-    "verify:parity": "bash scripts/verify-parity.sh"
+    "verify:parity": "bash scripts/verify-parity.sh",
+    "test:capes": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/capes.test.js",
+    "test:workers": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/worker-tasks.test.js",
+    "test:selecao": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/selecao.test.js",
+    "test:session": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/session.test.js",
+    "test:navigation": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/navigation.test.js",
+    "test:colecoes": "npm run sync:data && tsc -p tests/tsconfig.json && node tests/collection-metadata.test.mjs && node node_modules/.cache/capes-tests/tests/colecoes.test.js",
+    "test:resultados": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/resultados.test.js",
+    "test:visualizacao": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/visualizacao.test.js",
+    "test:interpretacao": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/interpretacao.test.js",
+    "test:ia": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/ia.test.js",
+    "test:all": "npm run sync:data && tsc -p tests/tsconfig.json && node scripts/test-all.mjs",
+    "report:build": "node scripts/report-build.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",
@@ -30,7 +42,6 @@
     "graphology-communities-louvain": "^2.0.2",
     "graphology-metrics": "^2.4.0",
     "lucide-react": "^0.474.0",
-    "neo4j-driver": "^5.28.1",
     "pako": "^2.1.0",
     "papaparse": "^5.5.2",
     "react": "^18.3.1",
@@ -53,5 +64,8 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "vite": "^6.0.11"
+  },
+  "engines": {
+    "node": ">=24 <25"
   }
 }

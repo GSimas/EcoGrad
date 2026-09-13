@@ -1,15 +1,17 @@
-import { useMemo, useState } from 'react';
-import { ExternalLink } from 'lucide-react';
-import { Aviso, Card, Chip, Expander, Kpi, Tabela } from '@/components/ui/primitives';
+import { useSessionField } from '@/hooks/useSessionField';
+import { useMemo } from 'react';
+import { Aviso, Card, Expander, Tabela } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs } from '@/components/ui/Tabs';
 import { TabelaQL } from './TabelaQL';
 import { OrbitaGrafo } from './OrbitaGrafo';
 import { evolucaoAnual, obterFrequenciasTexto, type FonteNuvem } from '@/lib/lexicon';
 import { gerarTabelaQLCruzado } from '@/lib/ql';
-import { calcularSimilaresRede, type PerfisSimilaridade } from '@/lib/similarity';
-import type { GrafoHistorico } from '@/lib/orbit';
+import { calcularSimilaresRede } from '@/lib/similarity';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { useGrafoHistorico, usePerfisSimilaridade } from '@/hooks/useDadosDerivados';
+import { VisaoEntidade } from './VisaoEntidade';
+import { MetricasEntidade } from './MetricasEntidade';
 import type { Documento, SnaGlobal, TipoBusca } from '@/types';
 
 interface Props {
@@ -18,25 +20,30 @@ interface Props {
   docsAlvo: readonly Documento[];
   dadosCompletos: readonly Documento[];
   snaGlobal: SnaGlobal | null;
-  perfis: PerfisSimilaridade;
-  grafoHistorico: GrafoHistorico;
 }
 
 const FONTES_NUVEM: FonteNuvem[] = ['Conceitos (Palavras-chave)', 'Títulos', 'Resumos (Abstracts)'];
 
-/** Dossiê individual com as 4 abas analíticas. */
-export function Dossie({
+/** Reading and sources remain above the optional scientific methods. */
+export function Dossie(props: Props) {
+  return <div className="space-y-6">
+    <VisaoEntidade tipo={props.tipo} docs={props.docsAlvo} termo={props.termo} />
+    <Expander titulo="Análises e métodos do dossiê" lazy><AnalisesDossie {...props} /></Expander>
+  </div>;
+}
+
+function AnalisesDossie({
   termo,
   tipo,
   docsAlvo,
   dadosCompletos,
   snaGlobal,
-  perfis,
-  grafoHistorico,
 }: Props) {
+  const perfis = usePerfisSimilaridade(dadosCompletos);
+  const grafoHistorico = useGrafoHistorico(dadosCompletos);
   const navegarPara = useEcoGradStore((s) => s.navegarPara);
-  const [cumulativo, setCumulativo] = useState(false);
-  const [fonteNuvem, setFonteNuvem] = useState<FonteNuvem>('Conceitos (Palavras-chave)');
+  const [cumulativo, setCumulativo] = useSessionField('dossie.cumulativo', false);
+  const [fonteNuvem, setFonteNuvem] = useSessionField<FonteNuvem>('dossie.nuvem', 'Conceitos (Palavras-chave)');
 
   const serie = useMemo(() => evolucaoAnual(docsAlvo, cumulativo), [docsAlvo, cumulativo]);
   const nuvem = useMemo(() => obterFrequenciasTexto(docsAlvo, fonteNuvem), [docsAlvo, fonteNuvem]);
@@ -56,20 +63,12 @@ export function Dossie({
   }, [tipo, docsAlvo, dadosCompletos]);
 
   return (
-    <Tabs
+    <div className="space-y-5"><MetricasEntidade termo={termo} docsAlvo={docsAlvo} docs={dadosCompletos} snaGlobal={snaGlobal} /><Tabs
       abas={[
         {
           valor: 'perfil',
-          rotulo: '🗂️ Perfil',
-          conteudo: (
-            <PerfilEntidade
-              termo={termo}
-              tipo={tipo}
-              docsAlvo={docsAlvo}
-              tabelaQL={tabelaQL}
-              onNavegar={navegarPara}
-            />
-          ),
+          rotulo: 'Frequências e relações (QL)',
+          conteudo: tabelaQL.length ? <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></> : <p className="text-sm text-slate-300">QL cruzado não se aplica a este tipo de entidade. Consulte os trabalhos e relações acima ou as outras análises.</p>,
         },
         {
           valor: 'evolucao',
@@ -87,6 +86,7 @@ export function Dossie({
               </label>
               <Card>
                 <Grafico
+                  leitura={{ titulo: 'Evolução anual da entidade', descricao: `Eixo X: ano. Eixo Y: registros (n), ${cumulativo ? 'acumulados até cada ano' : 'em cada ano'}. A ausência de registros não comprova ausência de produção.`, linhas: serie.map((l) => ({...l})), colunas: [{chave:'ano',rotulo:'Ano',render:(l)=>String(l.ano)}, {chave:'total',rotulo: cumulativo ? 'Registros acumulados (n)' : 'Registros no ano (n)'}], contexto: {cumulativo} }}
                   altura={340}
                   option={{
                     tooltip: { trigger: 'axis' },
@@ -128,7 +128,7 @@ export function Dossie({
                     type="button"
                     onClick={() => setFonteNuvem(f)}
                     className={`rounded-md px-3 py-1.5 text-sm transition ${
-                      f === fonteNuvem ? 'bg-eco-accent text-black' : 'text-slate-400 hover:bg-white/5'
+                      f === fonteNuvem ? 'bg-eco-action text-black' : 'text-slate-400 hover:bg-white/5'
                     }`}
                   >
                     {f}
@@ -142,6 +142,7 @@ export function Dossie({
                   </p>
                 ) : (
                   <Grafico
+                    leitura={{ titulo: 'Frequências da nuvem de palavras', descricao: 'Tamanho da palavra: frequência no texto selecionado (ocorrências). Cor e rotação são decorativas. Leia todos os termos e valores na tabela.', linhas: nuvem.map((l) => ({...l})), colunas: [{chave:'name',rotulo:'Termo completo'}, {chave:'value',rotulo:'Ocorrências (n)'}], contexto: {fonte:fonteNuvem} }}
                     altura={420}
                     option={{
                       tooltip: { show: true },
@@ -213,6 +214,7 @@ export function Dossie({
                   <div key={grupo} className="space-y-2">
                     <p className="text-sm font-medium text-slate-200">{grupo}</p>
                     <Tabela
+                      titulo={`Itens semelhantes: ${grupo}`}
                       altura="max-h-72"
                       linhas={itens as unknown as Array<Record<string, unknown>>}
                       colunas={[
@@ -231,7 +233,7 @@ export function Dossie({
                         },
                         {
                           chave: 'Similaridade (%)',
-                          rotulo: 'Similaridade',
+                          rotulo: 'Similaridade Jaccard (%)',
                           render: (l) => (
                             <span className="tabular-nums">{Number(l['Similaridade (%)']).toFixed(2)}%</span>
                           ),
@@ -251,187 +253,6 @@ export function Dossie({
           ),
         },
       ]}
-    />
-  );
-}
-
-/** Conteúdo do perfil, específico por tipo de entidade (Principal.py:684-1190). */
-function PerfilEntidade({
-  termo,
-  tipo,
-  docsAlvo,
-  tabelaQL,
-  onNavegar,
-}: {
-  termo: string;
-  tipo: TipoBusca;
-  docsAlvo: readonly Documento[];
-  tabelaQL: ReturnType<typeof gerarTabelaQLCruzado>;
-  onNavegar: (tipo: TipoBusca, termo: string) => void;
-}) {
-  if (tipo === 'Documento') {
-    const doc = docsAlvo[0];
-    if (!doc) return <p className="text-sm text-slate-500">Documento não encontrado.</p>;
-    return (
-      <div className="space-y-4">
-        <Card className="space-y-3">
-          <p className="text-sm text-slate-400">
-            <strong>Ano:</strong> {doc.ano ?? 'N/A'} · <strong>Nível:</strong>{' '}
-            {doc.nivel_academico || 'N/A'} · <strong>Programa:</strong> {doc.programa_origem || 'N/A'}
-          </p>
-          {doc.url && (
-            <a
-              href={doc.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-eco-accent hover:underline"
-            >
-              <ExternalLink size={14} /> Link oficial no repositório da UFSC
-            </a>
-          )}
-          {doc.macrotema && (
-            <div className="space-y-1">
-              <p className="text-xs text-slate-400">Macrotema Classificado:</p>
-              <Chip onClick={() => onNavegar('Macrotema', doc.macrotema)}>🏷️ {doc.macrotema}</Chip>
-            </div>
-          )}
-          <ListaChips
-            titulo="Rede de Autoria e Orientação"
-            itens={[
-              ...doc.autores.map((a) => ({ rotulo: `👤 ${a}`, tipo: 'Autor' as TipoBusca, termo: a })),
-              ...(doc.orientador
-                ? [{ rotulo: `🏫 ${doc.orientador}`, tipo: 'Orientador' as TipoBusca, termo: doc.orientador }]
-                : []),
-              ...doc.co_orientadores.map((c) => ({
-                rotulo: `🤝 ${c}`,
-                tipo: 'Co-orientador' as TipoBusca,
-                termo: c,
-              })),
-            ]}
-            onNavegar={onNavegar}
-          />
-          <ListaChips
-            titulo="Palavras-chave"
-            itens={doc.palavras_chave.map((pk) => ({
-              rotulo: `💡 ${pk}`,
-              tipo: 'Palavra-chave' as TipoBusca,
-              termo: pk,
-            }))}
-            onNavegar={onNavegar}
-          />
-        </Card>
-        <Expander titulo="Ler Resumo (Abstract)">
-          <p className="whitespace-pre-line text-sm leading-relaxed text-slate-300">
-            {doc.resumo || 'Resumo não disponível.'}
-          </p>
-        </Expander>
-      </div>
-    );
-  }
-
-  const programas = [...new Set(docsAlvo.map((d) => d.programa_origem).filter(Boolean))].sort();
-  const orientadores = new Set<string>();
-  const coorientadores = new Set<string>();
-  const alunos = new Set<string>();
-  for (const d of docsAlvo) {
-    if (d.orientador) orientadores.add(d.orientador);
-    for (const co of d.co_orientadores) coorientadores.add(co);
-    for (const a of d.autores) alunos.add(a);
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Kpi rotulo="Documentos" valor={docsAlvo.length} />
-        <Kpi rotulo="Programas (PPG)" valor={programas.length} />
-        <Kpi
-          rotulo={tipo === 'Autor' ? 'Orientadores' : 'Pessoas na rede'}
-          valor={tipo === 'Autor' ? orientadores.size + coorientadores.size : alunos.size}
-        />
-      </div>
-
-      {programas.length > 0 && (
-        <Card>
-          <p className="text-sm text-slate-400">
-            <strong>🏛️ Programas (PPG):</strong> {programas.join(', ')}
-          </p>
-        </Card>
-      )}
-
-      {tabelaQL.length > 0 && (
-        <Card>
-          <TabelaQL linhas={tabelaQL} titulo="📊 Frequência Temática e Especialização (QL)" />
-        </Card>
-      )}
-
-      {tipo === 'Autor' && (orientadores.size > 0 || coorientadores.size > 0) && (
-        <Card>
-          <ListaChips
-            titulo="👨‍🏫 Orientadores e Co-orientadores"
-            itens={[
-              ...[...orientadores].sort().map((o) => ({
-                rotulo: `🏫 ${o}`,
-                tipo: 'Orientador' as TipoBusca,
-                termo: o,
-              })),
-              ...[...coorientadores].sort().map((c) => ({
-                rotulo: `🤝 ${c}`,
-                tipo: 'Co-orientador' as TipoBusca,
-                termo: c,
-              })),
-            ]}
-            onNavegar={onNavegar}
-          />
-        </Card>
-      )}
-
-      {(tipo === 'Orientador' || tipo === 'Co-orientador') && alunos.size > 0 && (
-        <Expander titulo={`🎓 Alunos ${tipo === 'Orientador' ? 'orientados' : 'co-orientados'} (${alunos.size})`}>
-          <div className="flex flex-wrap gap-1.5">
-            {[...alunos].sort((a, b) => a.localeCompare(b, 'pt-BR')).map((a) => (
-              <Chip key={a} onClick={() => onNavegar('Autor', a)}>
-                👤 {a}
-              </Chip>
-            ))}
-          </div>
-        </Expander>
-      )}
-
-      <Expander titulo={`📚 Documentos associados (${docsAlvo.length})`}>
-        <div className="flex flex-col gap-1.5">
-          {docsAlvo.map((d) => (
-            <Chip key={d.titulo} onClick={() => onNavegar('Documento', d.titulo)} title={d.titulo}>
-              📄 {d.titulo}
-            </Chip>
-          ))}
-        </div>
-      </Expander>
-
-      <p className="text-xs text-slate-600">Entidade em foco: {termo}</p>
-    </div>
-  );
-}
-
-function ListaChips({
-  titulo,
-  itens,
-  onNavegar,
-}: {
-  titulo: string;
-  itens: Array<{ rotulo: string; tipo: TipoBusca; termo: string }>;
-  onNavegar: (tipo: TipoBusca, termo: string) => void;
-}) {
-  if (itens.length === 0) return null;
-  return (
-    <div className="space-y-1.5">
-      <p className="text-xs uppercase tracking-wide text-slate-400">{titulo}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {itens.map((i) => (
-          <Chip key={`${i.tipo}-${i.termo}`} onClick={() => onNavegar(i.tipo, i.termo)}>
-            {i.rotulo}
-          </Chip>
-        ))}
-      </div>
-    </div>
+    /></div>
   );
 }

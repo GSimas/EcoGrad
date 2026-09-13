@@ -309,7 +309,7 @@ console.log(
       ql: {
         orientador: oriAlvo,
         n_docs: docsOri.length,
-        linhas: ql.slice(0, 40).map((l) => ({
+        linhas: ql.map((l) => ({
           Entidade: l.Entidade,
           Tipo: l.Tipo,
           Total: l.Total,

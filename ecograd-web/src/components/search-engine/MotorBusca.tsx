@@ -1,14 +1,12 @@
 import { useMemo } from 'react';
-import { Microscope, Search } from 'lucide-react';
-import { Aviso, Card, Kpi } from '@/components/ui/primitives';
+import { Search } from 'lucide-react';
+import { Aviso, Card } from '@/components/ui/primitives';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { SelectBusca } from '@/components/ui/MultiSelect';
 import { Dossie } from './Dossie';
-import { useDadosDerivados, useGrafoHistorico, usePerfisSimilaridade } from '@/hooks/useDadosDerivados';
+import { useDadosDerivados } from '@/hooks/useDadosDerivados';
 import { docsDoTermo, opcoesPorTipo } from '@/lib/entities';
-import { calcularRaioX } from '@/lib/ql';
-import { contar } from '@/lib/foresight-math';
-import { formatarDecimal } from '@/lib/utils';
+import { resolverDocumento } from '@/lib/resultados';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { TipoBusca } from '@/types';
 
@@ -29,25 +27,18 @@ export function MotorBusca() {
   const buscaTermo = useEcoGradStore((s) => s.buscaTermo);
   const navegarPara = useEcoGradStore((s) => s.navegarPara);
 
-  const perfis = usePerfisSimilaridade(docs);
-  const grafoHistorico = useGrafoHistorico(docs);
+  const referencia = useEcoGradStore((s) => s.ui['dossie.documento']);
+  const navegarDocumento = useEcoGradStore((s) => s.navegarDocumento);
+  const candidatos = useMemo(() => buscaTipo === 'Documento' && buscaTermo !== null ? docs.map((doc, indice) => ({ doc, indice })).filter(({ doc }) => doc.titulo === buscaTermo) : [], [docs, buscaTipo, buscaTermo]);
 
   const opcoes = useMemo(() => opcoesPorTipo(indices, buscaTipo), [indices, buscaTipo]);
   const docsAlvo = useMemo(
-    () => (buscaTermo ? docsDoTermo(indices, buscaTipo, buscaTermo) : []),
-    [indices, buscaTipo, buscaTermo],
-  );
-
-  const contagemPks = useMemo(
-    () => contar(docs.flatMap((d) => d.palavras_chave).filter(Boolean)),
-    [docs],
-  );
-
-  const metricas = buscaTermo ? snaGlobal?.[buscaTermo] : undefined;
-
-  const raioX = useMemo(
-    () => calcularRaioX(docsAlvo, docs, metricas?.Clustering ?? 0, contagemPks),
-    [docsAlvo, docs, metricas, contagemPks],
+    () => {
+      if (buscaTermo === null) return [];
+      if (buscaTipo === 'Documento') { const d = resolverDocumento(docs, buscaTermo, referencia); return d ? [d] : []; }
+      return docsDoTermo(indices, buscaTipo, buscaTermo);
+    },
+    [docs, indices, buscaTipo, buscaTermo, referencia],
   );
 
   return (
@@ -69,76 +60,33 @@ export function MotorBusca() {
           onChange={(t) => navegarPara(t, null)}
         />
         <SelectBusca
-          rotulo="Selecione"
+          key={buscaTipo}
+          sessionKey={buscaTipo}
+          rotulo={`Selecione ${buscaTipo.toLowerCase()}`}
           opcoes={opcoes}
           valor={buscaTermo}
           onChange={(v) => navegarPara(buscaTipo, v)}
         />
       </Card>
 
-      {!buscaTermo && (
+      {buscaTermo === null && (
         <Aviso>
-          Selecione uma entidade acima para abrir o dossiê completo — com Raio-X de Especialização,
-          evolução histórica, lexicometria, órbita animada e recomendações por Jaccard.
+          Escolha um tipo, digite parte do nome ou título e confirme uma opção do catálogo. O dossiê mostra primeiro os trabalhos, resumos e fontes; as análises ficam disponíveis ao final.
         </Aviso>
       )}
 
-      {buscaTermo && docsAlvo.length === 0 && (
+      {buscaTermo !== null && docsAlvo.length === 0 && candidatos.length <= 1 && (
         <Aviso tipo="aviso">Nenhum documento associado a &quot;{buscaTermo}&quot; nesta base.</Aviso>
       )}
 
-      {buscaTermo && docsAlvo.length > 0 && (
+      {candidatos.length > 1 && <section className="space-y-3" aria-label="Escolher registro do título">
+        <h2 className="text-lg font-semibold">Este título aparece em {candidatos.length} registros</h2>
+        <p className="text-sm text-slate-300">Escolha pela coleção, ano, autoria e fonte. Os registros não foram fundidos.</p>
+        <div className="space-y-2">{candidatos.map(({ doc, indice }) => <button type="button" key={indice} className="btn flex w-full flex-col items-start text-left" aria-pressed={docsAlvo[0] === doc} onClick={() => navegarDocumento(indice)}><span>{doc.programa_origem || 'Origem não informada'} · {doc.ano ?? 'Sem ano'}</span><span>{doc.autores.join('; ') || 'Autoria não informada'}</span><span className="break-all text-xs">{doc.url || 'Sem link de fonte'}</span></button>)}</div>
+      </section>}
+      {buscaTermo !== null && docsAlvo.length > 0 && (
         <div className="space-y-6">
-          <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-            <Card className="space-y-4">
-              <p className="text-lg font-semibold text-eco-accent">{buscaTermo}</p>
-
-              {raioX && (
-                <div className="space-y-2">
-                  <p className="flex items-center gap-2 text-sm font-medium text-slate-200">
-                    <Microscope size={16} /> Raio-X de Especialização
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <Kpi
-                      rotulo={`Peculiaridade NMF${raioX.amostraMultipla ? ' (Média)' : ''}`}
-                      valor={`${raioX.purezaMedia.toFixed(1)}%`}
-                      detalhe={`Perfil: ${raioX.perfil}`}
-                    />
-                    <Kpi
-                      rotulo="Densidade Local (SNA)"
-                      valor={raioX.densidade.toFixed(2)}
-                      detalhe={raioX.densidade > 0.8 ? 'Forte coesão / panelinha' : 'Conexões esparsas'}
-                    />
-                    <Kpi
-                      rotulo={`Raridade IDF${raioX.amostraMultipla ? ' (Média)' : ''}`}
-                      valor={`${raioX.raridadePct.toFixed(1)}%`}
-                      detalhe={raioX.raridadePct > 60 ? 'Vocabulário raro / nicho' : 'Vocabulário comum'}
-                    />
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            <Card className="space-y-3">
-              <p className="text-sm font-medium text-slate-200">Posição na Rede</p>
-              {metricas ? (
-                <>
-                  <div className="sucesso text-xs">
-                    Cluster {String(metricas.Comunidade)} · Rank #{String(metricas['Ranking Global'])}
-                  </div>
-                  <div className="grid gap-2">
-                    <Kpi rotulo="Grau (Conexões)" valor={metricas['Grau Absoluto']} />
-                    <Kpi rotulo="Betweenness" valor={formatarDecimal(metricas.Betweenness)} />
-                    <Kpi rotulo="Closeness" valor={formatarDecimal(metricas.Closeness)} />
-                  </div>
-                </>
-              ) : (
-                <p className="text-xs text-slate-500">
-                  Métricas SNA ainda não disponíveis — aguarde o cálculo da rede no Dashboard.
-                </p>
-              )}
-            </Card>
-          </div>
+          <h2 className="break-words text-xl font-semibold">{buscaTipo}: {buscaTermo || 'Trabalho sem título'}</h2>
 
           <Dossie
             termo={buscaTermo}
@@ -146,8 +94,6 @@ export function MotorBusca() {
             docsAlvo={docsAlvo}
             dadosCompletos={docs}
             snaGlobal={snaGlobal}
-            perfis={perfis}
-            grafoHistorico={grafoHistorico}
           />
         </div>
       )}

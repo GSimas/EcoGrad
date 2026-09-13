@@ -242,7 +242,7 @@ saida = {
         'n_longevidade': len(longev),
         'meia_vida_mediana': float(longev['tempo_vida_anos'].median()) if len(longev) else 0.0,
     },
-    'ql': {'orientador': ori_alvo, 'n_docs': len(docs_ori), 'linhas': linhas_ql[:40]},
+    'ql': {'orientador': ori_alvo, 'n_docs': len(docs_ori), 'linhas': linhas_ql},
     'similares': sim_saida,
 }
 

@@ -4,3 +4,10 @@ base_consolidada_ufsc.json
 .agent/
 # Local Netlify folder
 .netlify
+
+# Artefatos e segredos locais (arquivos já rastreados exigem revisão separada)
+.DS_Store
+node_modules/
+.env
+.env.*
+!.env.example

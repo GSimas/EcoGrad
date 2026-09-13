@@ -1,19 +1,13 @@
 /**
- * Cruzamento entre o nome do programa no repositório e a ficha oficial da CAPES.
- * Transcrição da cascata de matching do Principal.py:365-405
- * (exato → difflib fuzzy 0.65 → interseção de palavras).
+ * Identificação conservadora: sem atribuição automática por similaridade.
  */
 import type { CatalogoCapes, ProgramaCapes } from '@/types';
 
 /** Normaliza o nome do PPG como no Python: remove prefixos, acentos e caixa. */
 export function normalizarNomePPG(nome: string): string {
-  const limpo = nome
-    .replace('Programa de Pós-Graduação em ', '')
-    .replace('Programa de Pós-Graduação ', '')
-    .replace('PPG em ', '')
-    .trim()
-    .toUpperCase();
-  return limpo.normalize('NFD').replace(/\p{Mn}/gu, '');
+  return nome.normalize('NFD').replace(/\p{Mn}/gu, '').toUpperCase()
+    .replace(/^(?:PROGRAMA DE POS[- ]GRADUACAO(?: EM)?|PPG(?: EM)?)\s+/, '')
+    .trim().replace(/\s+/g, ' ');
 }
 
 /**
@@ -59,57 +53,84 @@ function casamentosRecursivos(a: string, b: string): number {
   );
 }
 
-/** Equivalente a `difflib.get_close_matches(alvo, candidatos, n=1, cutoff)`. */
-export function melhorCorrespondencia(
-  alvo: string,
-  candidatos: readonly string[],
-  cutoff = 0.65,
-): string | null {
-  let melhor: string | null = null;
-  let melhorRazao = cutoff;
-  for (const c of candidatos) {
-    const r = razaoSimilaridade(alvo, c);
-    if (r >= melhorRazao) {
-      melhorRazao = r;
-      melhor = c;
-    }
-  }
-  return melhor;
+export type CorrespondenciaCapes =
+  | { status: 'exata'; programa: ProgramaCapes; criterio: 'codigo' | 'nome' }
+  | { status: 'ambigua'; candidatos: ProgramaCapes[] }
+  | { status: 'nao-encontrada'; sugestoes: ProgramaCapes[] };
+
+/** Homônimos permanecem ambíguos; similaridade serve somente como sugestão. */
+export function encontrarFichaCapes(nomePPG: string, catalogo: CatalogoCapes): CorrespondenciaCapes {
+  const porCodigo = catalogo.programas[nomePPG.trim()];
+  if (porCodigo) return { status: 'exata', programa: porCodigo, criterio: 'codigo' };
+  const alvo = normalizarNomePPG(nomePPG);
+  const programas = Object.values(catalogo.programas);
+  const exatos = programas.filter((p) => normalizarNomePPG(p.Nome) === alvo);
+  if (exatos.length === 1) return { status: 'exata', programa: exatos[0], criterio: 'nome' };
+  if (exatos.length > 1) return { status: 'ambigua', candidatos: exatos };
+  const sugestoes = alvo.length < 3 ? [] : programas
+    .map((p) => ({ p, score: razaoSimilaridade(alvo, normalizarNomePPG(p.Nome)) }))
+    .filter(({ score }) => score >= 0.65)
+    .sort((a, b) => b.score - a.score || a.p.Código.localeCompare(b.p.Código))
+    .slice(0, 3).map(({ p }) => p);
+  return { status: 'nao-encontrada', sugestoes };
 }
 
-/**
- * Localiza a ficha CAPES de um programa aplicando, em ordem:
- * 1) match exato pelo nome normalizado;
- * 2) fuzzy matching com 65% de similaridade estrutural;
- * 3) interseção de palavras-chave principais (ignorando termos com ≤2 letras).
- */
-export function encontrarFichaCapes(
-  nomePPG: string,
-  catalogo: CatalogoCapes,
-): ProgramaCapes | null {
-  const alvo = normalizarNomePPG(nomePPG);
+export function programaEmFuncionamento(p: ProgramaCapes): boolean {
+  return ['EM FUNCIONAMENTO', 'ATIVO'].includes(normalizarNomePPG(p.Situação));
+}
 
-  const exato = catalogo[alvo];
-  if (exato) return exato;
+export function niveisPrograma(p: ProgramaCapes): string[] {
+  const grau = normalizarNomePPG(p['Grau Acadêmico']);
+  const niveis = ['Mestrado', 'Doutorado'].filter((nivel) => grau.includes(nivel.toUpperCase()));
+  return niveis.length ? niveis : ['Não informado'];
+}
 
-  const chaves = Object.keys(catalogo);
-  const fuzzy = melhorCorrespondencia(alvo, chaves, 0.65);
-  if (fuzzy) return catalogo[fuzzy];
+export interface FiltrosCapes {
+  niveis: readonly string[] | null;
+  modalidades: readonly string[] | null;
+  notas: readonly string[] | null;
+}
 
-  const palavrasBusca = new Set(alvo.split(/\s+/).filter((p) => p.length > 2));
-  for (const chave of chaves) {
-    const palavrasCapes = new Set(chave.split(/\s+/).filter((p) => p.length > 2));
-    let intersecao = 0;
-    for (const p of palavrasBusca) if (palavrasCapes.has(p)) intersecao += 1;
-    if (intersecao >= Math.max(1, palavrasBusca.size - 1)) return catalogo[chave];
-  }
+/** null = todas as opções; [] = nenhuma. Dentro do campo OR, entre campos AND. */
+export function filtrarProgramasCapes(programas: readonly ProgramaCapes[], filtros: FiltrosCapes): ProgramaCapes[] {
+  return programas.filter((p) =>
+    (filtros.niveis === null || niveisPrograma(p).some((n) => filtros.niveis!.includes(n))) &&
+    (filtros.modalidades === null || filtros.modalidades.includes(p.Modalidade)) &&
+    (filtros.notas === null || filtros.notas.includes(p.Nota)),
+  );
+}
 
-  return null;
+function catalogoValido(dados: unknown): dados is CatalogoCapes {
+  if (!dados || typeof dados !== 'object') return false;
+  const c = dados as CatalogoCapes;
+  if (c.versao !== 2 || !c.programas || typeof c.programas !== 'object' || Array.isArray(c.programas) ||
+      !c.fonte || typeof c.fonte.url !== 'string' || typeof c.fonte.idIes !== 'string' ||
+      typeof c.fonte.consultadoEm !== 'string' || !Number.isFinite(Date.parse(c.fonte.consultadoEm))) return false;
+  const entradas = Object.entries(c.programas);
+  const campos: (keyof ProgramaCapes)[] = ['Nome', 'Código', 'Nota', 'Grande Área', 'Área de Avaliação',
+    'Área de Conhecimento', 'Modalidade', 'Situação', 'Modalidade de Ensino', 'Grau Acadêmico'];
+  return entradas.length > 0 && c.fonte.totalProgramas === entradas.length && entradas.every(([codigo, p]) =>
+    p && campos.every((campo) => typeof p[campo] === 'string') && p.Código === codigo && !!codigo.trim() && !!p.Nome.trim(),
+  );
 }
 
 /** Busca o catálogo institucional da CAPES via Netlify Function (sem CORS). */
 export async function carregarCatalogoCapes(signal?: AbortSignal): Promise<CatalogoCapes> {
-  const r = await fetch('/api/capes-proxy', { signal });
-  if (!r.ok) throw new Error(`Panorama CAPES indisponível (HTTP ${r.status}).`);
-  return (await r.json()) as CatalogoCapes;
+  // Versões anteriores armazenavam até respostas vazias por 24h no navegador.
+  // O React Query já mantém o catálogo válido em memória; tentativas de rede
+  // precisam consultar o serviço novamente, sem reutilizar esse cache HTTP.
+  const r = await fetch('/api/capes-proxy?v=2', { signal, cache: 'no-store' });
+  if (!r.headers.get('content-type')?.includes('application/json')) {
+    throw new Error('O serviço de consulta à CAPES não está acessível.');
+  }
+  const dados: unknown = await r.json();
+  if (!r.ok) {
+    const mensagem = dados && typeof dados === 'object' && 'error' in dados ? dados.error : null;
+    throw new Error(typeof mensagem === 'string' ? mensagem : `Falha ao consultar a CAPES (HTTP ${r.status}).`);
+  }
+  if (!dados || typeof dados !== 'object' || Array.isArray(dados) || Object.keys(dados).length === 0) {
+    throw new Error('A CAPES não retornou programas para a instituição consultada.');
+  }
+  if (!catalogoValido(dados)) throw new Error('O catálogo CAPES recebido está incompleto ou desatualizado. Atualize a consulta.');
+  return dados;
 }

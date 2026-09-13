@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { useSessionField } from '@/hooks/useSessionField';
+import { useMemo } from 'react';
 import { Card } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import type { LongevidadeRow } from '@/types';
@@ -14,8 +16,9 @@ const ESCALA_ANO = ['#3B0F70', '#8C2981', '#DE4968', '#FE9F6D', '#FCFDBF'];
  * o número de replicações — assim dá para separar de relance os pilares
  * estruturais (alto, à esquerda, claro) dos que morreram cedo.
  */
-export function GraficoLongevidade({ longevidade }: { longevidade: readonly LongevidadeRow[] }) {
-  const [minReplicacoes, setMinReplicacoes] = useState(2);
+export function GraficoLongevidade({ longevidade, onSelecionar }: { longevidade: readonly LongevidadeRow[]; onSelecionar: (termo: string) => void }) {
+  const fonte = useEcoGradStore((s)=>s.fonteMemes);
+  const [minReplicacoes, setMinReplicacoes] = useSessionField('memes.replicacoes', 2);
 
   const maxReplicacoes = useMemo(
     () => Math.max(2, ...longevidade.map((l) => l.total_aparicoes)),
@@ -51,23 +54,22 @@ export function GraficoLongevidade({ longevidade }: { longevidade: readonly Long
     <Card className="space-y-4">
       <div>
         <h3 className="text-base font-semibold text-slate-100">
-          Tempo de Meia-Vida do Conhecimento (Longevidade)
+          Intervalos de ocorrência dos termos
         </h3>
         <p className="mt-1 text-xs text-slate-500">
-          Analisa a &quot;idade&quot; de sobrevivência. Memes com vida longa indicam pilares
-          estruturais.
+          Distância entre o primeiro e o último ano observado, para termos com mais de um título e ao menos um ano válido. Não mede vida útil ou importância.
         </p>
       </div>
 
       <label className="block space-y-1">
-        <span className="text-xs text-slate-400">Filtrar por nº mínimo de replicações:</span>
+        <span className="text-xs text-slate-400">Mínimo de títulos distintos associados:</span>
         <span className="block text-xs font-semibold text-red-400 tabular-nums">
           {minReplicacoes}
         </span>
         <input
           type="range"
           min={2}
-          max={Math.max(3, Math.min(maxReplicacoes, 50))}
+          max={Math.max(3, Math.min(maxReplicacoes, 50), minReplicacoes)}
           value={minReplicacoes}
           onChange={(e) => setMinReplicacoes(Number(e.target.value))}
           className="w-full accent-red-400"
@@ -75,11 +77,14 @@ export function GraficoLongevidade({ longevidade }: { longevidade: readonly Long
       </label>
 
       {pontos.length === 0 ? (
-        <p className="py-10 text-center text-sm text-slate-500">
-          Nenhum meme atinge {minReplicacoes} replicações.
-        </p>
+        <div className="space-y-2 py-6 text-sm text-slate-300">
+          <p>{longevidade.length === 0 ? 'Não há termos com mais de um título e ano válido para calcular intervalos. Verifique a cobertura e explore os títulos nas tabelas de propagação.' : `Nenhum termo atinge o filtro de ${minReplicacoes} títulos. A configuração anterior foi preservada.`}</p>
+          {longevidade.length > 0 && <button type="button" className="btn" onClick={()=>setMinReplicacoes(2)}>Mostrar a partir de 2 títulos</button>}
+        </div>
       ) : (
         <Grafico
+          leitura={{titulo:'Longevidade dos termos', descricao:'X: ano da primeira aparição. Y: anos entre primeira e última aparição. Cor: ano da última aparição; tamanho: títulos distintos associados. Ausência recente não comprova extinção. O filtro exige o mínimo de replicações indicado.', linhas:longevidade.filter((l)=>l.total_aparicoes>=minReplicacoes).map((l)=>({...l})), colunas:[{chave:'meme',rotulo:'Termo completo'},{chave:'ano_nascimento',rotulo:'Primeira aparição (ano)',render:(l)=>String(l.ano_nascimento)},{chave:'ano_extincao',rotulo:'Última aparição (ano)',render:(l)=>String(l.ano_extincao)},{chave:'tempo_vida_anos',rotulo:'Intervalo (anos)'},{chave:'total_aparicoes',rotulo:'Títulos distintos (n)'}], contexto:{fonteMemes:fonte,minimoReplicacoes:minReplicacoes}, onAbrir:(l)=>onSelecionar(String(l.meme))}}
+          onEvents={{click:(p)=>{const nome=(p as {name?:string}).name;if(nome) onSelecionar(nome);}}}
           altura={480}
           option={{
             tooltip: {
@@ -87,18 +92,18 @@ export function GraficoLongevidade({ longevidade }: { longevidade: readonly Long
               formatter: (p: unknown) => {
                 const d = p as { name: string; value: number[] };
                 return [
-                  `<strong>${d.name}</strong>`,
-                  `Nascimento: ${d.value[0]}`,
+                  d.name,
+                  `Primeiro ano: ${d.value[0]}`,
                   `Última aparição: ${d.value[2]}`,
-                  `Sobrevivência: ${d.value[1]} anos`,
-                  `Replicações: ${d.value[3]}`,
-                ].join('<br/>');
+                  `Intervalo observado: ${d.value[1]} anos`,
+                  `Títulos distintos: ${d.value[3]}`,
+                ].join('\n');
               },
             },
-            grid: { left: 8, right: 24, top: 24, bottom: 56, containLabel: true },
+            grid: { left: 32, right: 12, top: 24, bottom: 95, containLabel: true },
             xAxis: {
               type: 'value',
-              name: 'Ano de Nascimento (1ª Aparição)',
+              name: 'Primeira aparição (ano)',
               nameLocation: 'middle',
               nameGap: 32,
               nameTextStyle: { color: TEMA_GRAFICO.texto },
@@ -110,7 +115,7 @@ export function GraficoLongevidade({ longevidade }: { longevidade: readonly Long
             },
             yAxis: {
               type: 'value',
-              name: 'Longevidade (Anos de Sobrevivência)',
+              name: 'Intervalo observado (anos)',
               nameLocation: 'middle',
               nameGap: 40,
               nameTextStyle: { color: TEMA_GRAFICO.texto },
@@ -125,11 +130,13 @@ export function GraficoLongevidade({ longevidade }: { longevidade: readonly Long
                 dimension: 2,
                 min: faixaAnos.min,
                 max: faixaAnos.max,
-                calculable: true,
-                right: 0,
-                top: 'middle',
-                itemHeight: 220,
-                text: ['Ano da Última Aparição', ''],
+                calculable: false,
+                left: 'center',
+                bottom: 0,
+                orient: 'horizontal',
+                itemHeight: 100,
+                itemWidth: 10,
+                text: ['Último ano', 'Primeiro ano'],
                 textStyle: { color: TEMA_GRAFICO.texto, fontSize: 11 },
                 inRange: { color: ESCALA_ANO },
               },
@@ -156,7 +163,7 @@ export function GraficoLongevidade({ longevidade }: { longevidade: readonly Long
       )}
 
       <p className="text-xs text-slate-500">
-        {pontos.length} memes com ao menos {minReplicacoes} replicações · eixo horizontal = ano da
+        {pontos.length} termos com ao menos {minReplicacoes} títulos distintos · eixo horizontal = ano da
         1ª aparição · eixo vertical = anos entre a primeira e a última aparição.
       </p>
     </Card>

@@ -1,0 +1,83 @@
+
+=== 1. TOPOLOGIA DO SUBCONJUNTO (150 docs, cálculo exato) ===
+  OK n_nos                                  py=630                    ts=630                   
+  OK n_arestas                              py=951                    ts=951                   
+  OK deg (amostra de 400 nós)               n=400    maxRelDiff=2.18e-16
+  OK bet (amostra de 400 nós)               n=400    maxRelDiff=0
+  OK clo (amostra de 400 nós)               n=400    maxRelDiff=0
+  OK clu (amostra de 400 nós)               n=400    maxRelDiff=0
+
+=== 2. METRICAS COMPLEXAS (150 docs) ===
+  OK densidade                              py=0.00479975774093       ts=0.00479975774093      
+  OK eficiencia                             py=0.286379909321         ts=0.286379909321        
+  OK entropia                               py=2.19146313193          ts=2.19146313193         
+  OK clustering                             py=0                      ts=0                     
+  OK pagerank_avg                           py=0.0015873015873        ts=0.0015873015873       
+  OK eigen_avg                              py=0.0196099602063        ts=0.0196099602063       
+  OK constraint_avg                         py=0.687539716949         ts=0.687539716949        
+  OK grau_medio                             py=3.01904761905          ts=3.01904761905         
+  OK grau_std                               py=6.44436156018          ts=6.44436156018         
+  OK n_nos                                  py=630                    ts=630                   
+
+=== 2.5 REDE DE COOCORRENCIA (densa: rich-club e clustering ponderado) ===
+  OK n_nos                                  py=287                    ts=287                   
+  OK n_arestas                              py=974                    ts=974                   
+  OK clustering_ponderado                   py=0.0214863012437        ts=0.0214863012437       
+  OK clustering_simples                     py=0.878824956259         ts=0.878824956259        
+  OK assortatividade                        py=-0.2630757992          ts=-0.2630757992         
+  OK gamma_mle                              py=1.63634177747          ts=1.63634177747         
+  OK rich_club (por grau k)                 n=153    maxRelDiff=0
+  OK rich-club dentro de [0,1]              153 valores
+
+=== 3. MATURIDADE TOPOLOGICA (base completa) ===
+  OK assortatividade                        py=-0.119217930936        ts=-0.119217930936       
+  OK rich_club                              py=0                      ts=0                     
+  OK gamma_linregress                       py=1.28802137964          ts=1.28802137964         
+  OK gamma_mle                              py=2.16581094812          ts=2.16581094812         
+  OK n_nos_G3                               py=2816                   ts=2816                  
+  -- Louvain (estocástico: valores informativos, sem asserção de igualdade):
+     py: mod=0.5232 comunidades=29
+     ts: mod=0.5336 comunidades=26
+
+=== 4. RADAR DE FORESIGHT (base completa, bet. exato) ===
+  OK conjunto de termos                    py=43 ts=43
+  OK radar.Total                            n=43     maxRelDiff=0
+  OK radar.Aparições Recentes               n=43     maxRelDiff=0
+  OK radar.Tração (%)                       n=43     maxRelDiff=0
+  OK radar.Momentum (Burst)                 n=43     maxRelDiff=0
+  OK radar.Novidade (Estrutural * IDF)      n=43     maxRelDiff=0
+
+=== 5. BACKTEST HISTORICO (2018/3/4/0.65) ===
+  OK n linhas                               py=89                     ts=89                    
+  OK quadrante ↖️ Sinal Fraco         py=23    ts=23
+  OK quadrante ↗️ Tendência           py=8     ts=8
+  OK quadrante ↘️ Mainstream          py=23    ts=23
+  OK quadrante ↙️ Base/Declínio       py=35    ts=35
+  OK veredito ✅ Confirmado (Caiu/Morreu)             py=35    ts=35
+  OK veredito ✅ Confirmado (Continuou Fogo)          py=4     ts=4
+  OK veredito ✅ Confirmado (Platô/Caiu)              py=16    ts=16
+  OK veredito ✅ Sucesso (Emergiu/Explodiu)           py=4     ts=4
+  OK veredito ❌ Falso Negativo (Voltou a Crescer)    py=7     ts=7
+  OK veredito ❌ Falso Positivo (Esfriou)             py=4     ts=4
+  OK veredito ❌ Falso Positivo (Ruído)               py=19    ts=19
+
+=== 6. MEMETICA ===
+  OK n_memes                                py=3035                   ts=3035                  
+  OK mortos                                 py=1867                   ts=1867                  
+  OK vivos                                  py=1168                   ts=1168                  
+  OK n_longevidade                          py=1168                   ts=1168                  
+  OK meia_vida_mediana                      py=9                      ts=9                     
+  OK top-20 fecundidade                   [('engenharia e gestao do conhecimento', 811), ('gestao do conhecimento', 442), ('inovacao', 108)]
+      (empate no valor de corte 34: ['apoio', 'ontologias (sistema de recuperacao da informacao)'] — ordenação arbitrária no pandas)
+
+=== 7. QUOCIENTE LOCACIONAL ===
+  orientador alvo: py='Lapolli, Edis Mafra' ts='Lapolli, Edis Mafra'
+  OK n_docs do perfil                       py=48                     ts=48                    
+  linhas comparáveis: 95 (py=95 ts=95)
+  OK QL e Total idênticos nas linhas comuns
+
+=== 8. SIMILARES (Jaccard) ===
+  OK Professores: ['Dandolini, Gertrudes Apareci', 'Santos, Neri Dos', 'Willerding, Inara Antunes Vi']
+
+======================================================================
+✅ VERIFICAÇÕES DE PARIDADE APROVADAS: métricas e recortes cobertos coincidem nas tolerâncias documentadas.

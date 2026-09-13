@@ -1,0 +1,61 @@
+{
+  "data": "2026-09-12T22:24:46.778Z",
+  "origem": "http://localhost:8888",
+  "escopo": "Smoke de endpoints locais reais; não valida UI, custo nem produção",
+  "amostra": {
+    "id": "doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c",
+    "titulo": "Analise economica da valorização energetica da madeira",
+    "url": "https://repositorio.ufsc.br/xmlui/handle/123456789/157542",
+    "programa": "Curso de Pos-Graduação em Engenhariade Produção",
+    "resumo": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição dos combustíveis derivados do petróleo, até então amplamente utilizados, e introduziu uma nova mentalidade nos meios de produção a racionalização das atividades e a necessidade e valorização dos resíduos industriais. Empresas ligadas às atividades madeireiras iniciaram a valorização de seus resíduos industriais, ou concebendo novos produtos, ou simplesmente através da geração de energia. Ao mesmo tempo, empresas de outros setores inciaram os reflorestamentos energéticos (principalmente formados por eucaliptos) motivadas pela possiblidade de obtenção de incentivos fiscais, e pela necessidade de assegurar suas próprias provisões de lenha, e desta forma minizarem sua dependência dos fornecedores desta matéria-prima, bem como sua sensibilidade às oscilações dos preços no mercado. Entretanto, há uma carência de estudos sobre a viabilidade econômica da valorização energética da madeira, quer sob a forma de resíduos industriais, quer sob a forma de lenha oriunda dos reflorestamentos energéticos. Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações.",
+    "palavras_chave": [
+      "santa catarina",
+      "residuos como combustivel",
+      "industria madeireira",
+      "madeira como combustivel"
+    ]
+  },
+  "execucoes": [
+    {
+      "endpoint": "gemini-chat",
+      "cancelamentoSolicitado": false,
+      "status": 200,
+      "contentType": "application/x-ndjson; charset=utf-8",
+      "cabecalhosMs": 5784,
+      "primeiroChunkMs": 5784,
+      "resposta": "{\"tipo\":\"texto\",\"texto\":\"Prezado(a) futuro(a) mestrando(a) ou doutorando(a),\\n\\nÉ um prazer auxiliá-lo(a) em sua jornada acadêmica.\\n\\nCom base no doss\"}\n{\"tipo\":\"texto\",\"texto\":\"iê de conhecimento fornecido, o único trabalho do catálogo com título e link exatos é:\\n\\n*   [Analise economica da valorização energetica da madeira](https://repositorio.ufsc.br/xmlui/handle/1\"}\n{\"tipo\":\"texto\",\"texto\":\"23456789/157542)\\n\\n### Limites deste Recorte do Catálogo\\n\\nÉ fundamental compreender as limitações deste recorte para evitar conclusões precipitadas:\\n\\n1.  **Extrema\"}\n{\"tipo\":\"texto\",\"texto\":\" Limitação de Dados:** O dossiê contém apenas **um único registro** de trabalho. Isso significa que ele representa uma amostra mínima e não reflete a totalidade, a diversidade ou a profundidade das pesquisas desenvolvidas no Programa de\"}\n{\"tipo\":\"texto\",\"texto\":\" Pós-Graduação em Engenharia de Produção da UFSC.\\n2.  **Ausência de Contexto Amplo:** Com apenas um trabalho, não é possível identificar tendências de pesquisa, áreas de concentração predominantes, a\"}\n{\"tipo\":\"texto\",\"texto\":\" gama de temas abordados pelos orientadores ou a evolução das linhas de pesquisa ao longo do tempo.\\n3.  **Falta de Detalhes:** Não temos acesso a resumos ou ao texto integral dos trabalhos, o que limita\"}\n{\"tipo\":\"texto\",\"texto\":\" a compreensão aprofundada do escopo e das metodologias utilizadas.\\n\\n### Disponibilidade Atual de Orientação\\n\\nCom base neste recorte, **não é possível afirmar a disponibilidade atual de orientação** no programa.\\n\\nOs indícios para\"}\n{\"tipo\":\"texto\",\"texto\":\" esta conclusão são:\\n\\n*   O dossiê indica \\\"Orientadores encontrados nos registros: 0\\\", o que sugere que, na métrica utilizada para esta contagem, nenhum orientador ativo foi identificado.\\n*   O\"}\n{\"tipo\":\"texto\",\"texto\":\" \\\"PERFIL DE ORIENTAÇÃO (MAPA DE ESPECIALISTAS)\\\" está completamente vazio, não fornecendo informações sobre as especialidades ou a atuação de professores.\\n*   Embora o trabalho listado mencione \\\"Kliemann Neto\"}\n{\"tipo\":\"texto\",\"texto\":\", Francisco Jose\\\" como orientador, a presença de um nome em um trabalho passado não garante que o professor esteja atualmente ativo no programa, aceitando novos alunos ou que sua linha de pesquisa permaneça a mesma.\\n\\nPara obter informações precisas\"}\n{\"tipo\":\"texto\",\"texto\":\" sobre a disponibilidade de orientadores e suas linhas de pesquisa atuais, recomendo fortemente que você consulte o site oficial do programa, entre em contato com a secretaria da pós-graduação e, se possível, com os próprios professores cujos temas\"}\n{\"tipo\":\"texto\",\"texto\":\" lhe interessem.\\n\\nEspero que esta análise, embora limitada pelos dados, seja útil para você.\"}\n{\"tipo\":\"fim\"}\n",
+      "totalMs": 8264
+    },
+    {
+      "endpoint": "gemini-synthesize",
+      "cancelamentoSolicitado": false,
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "cabecalhosMs": 968,
+      "primeiroChunkMs": 968,
+      "resposta": "{\"descritivo\":\"A pesquisa concentra-se na análise econômica de recursos, com foco em resíduos como combustíveis e a valorização energética da madeira, especialmente no contexto de Santa Catarina. O ecossistema abrange a indústria madeireira e a aplicação de materiais como fonte de energia, promovendo a sustentabilidade e a eficiência.\"}",
+      "totalMs": 969
+    },
+    {
+      "endpoint": "gemini-ontology",
+      "cancelamentoSolicitado": false,
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "cabecalhosMs": 855,
+      "primeiroChunkMs": 855,
+      "resposta": "{\"resultados\":[{\"id\":\"doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c\",\"titulo\":\"Analise economica da valorização energetica da madeira\",\"ontologia\":{\"teorias_e_modelos\":[],\"ferramentas_e_artefatos\":[],\"metodos_e_tecnicas\":[\"análise econômica\",\"valorização energética da madeira\"]},\"erro\":null}],\"processados\":1,\"maxItensPorChamada\":8}",
+      "totalMs": 855
+    },
+    {
+      "endpoint": "gemini-chat",
+      "cancelamentoSolicitado": true,
+      "status": 200,
+      "contentType": "application/x-ndjson; charset=utf-8",
+      "cabecalhosMs": 7879,
+      "primeiroChunkMs": 7879,
+      "canceladoAposTexto": true,
+      "resposta": "{\"tipo\":\"texto\",\"texto\":\"Prezado(a) futuro(a) mestrando(a) ou doutorando(a),\\n\\nCompreendo a importância de ter uma base de dados robusta para auxiliar no refinamento de sua\"}\n",
+      "totalMs": 7881
+    }
+  ]
+}

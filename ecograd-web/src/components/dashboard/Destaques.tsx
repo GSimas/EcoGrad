@@ -201,7 +201,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-slate-200">🌱 Formadores de Professores</p>
                     <p className="text-xs text-slate-500">
-                      Orientadores que formaram alunos que hoje também orientam na rede.
+                      Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal ou atuação atual.
                     </p>
                     {genealogia.formadores.length > 0 ? (
                       <Expander titulo={`Ver lista de formadores (${genealogia.formadores.length})`}>
@@ -220,7 +220,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
 
                   <div className="space-y-1">
                     <p className="text-sm font-medium text-slate-200">
-                      👩‍🎓 Autores Mestre + Doutor no mesmo programa
+                      Nomes na autoria de tese e dissertação na mesma coleção
                     </p>
                     {genealogia.mestreDoutor.length > 0 ? (
                       <Expander titulo={`Ver autores Mestre+Doutor (${genealogia.mestreDoutor.length})`}>
@@ -250,8 +250,8 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                 <Aviso>
                   <strong>O que é Betweenness (Intermediação)?</strong> Mede quantas vezes um nó
                   atua como &quot;ponte&quot; no caminho mais curto entre outros nós. Alto
-                  Betweenness = elo que conecta bolhas de conhecimento diferentes e controla o fluxo
-                  de informação no programa.
+                  Betweenness = elo que conecta bolhas de conhecimento diferentes nos caminhos calculados. Isso não comprova controle real do fluxo
+                  de informação ou interdisciplinaridade.
                 </Aviso>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <Card className="space-y-3">
@@ -259,8 +259,8 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                     {botaoSna('Coorientador (Maior Betweenness):', topSna.cooriBet, 'Co-orientador', '🤝')}
                   </Card>
                   <Card className="space-y-3">
-                    {botaoSna('Tese Interdisciplinar:', topSna.teseBet, 'Documento', '📄')}
-                    {botaoSna('Dissertação Interdisciplinar:', topSna.dissBet, 'Documento', '📄')}
+                    {botaoSna('Registro classificado como tese (maior intermediação):', topSna.teseBet, 'Documento', '📄')}
+                    {botaoSna('Registro classificado como dissertação (maior intermediação):', topSna.dissBet, 'Documento', '📄')}
                   </Card>
                 </div>
               </div>
@@ -282,8 +282,8 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                     {botaoSna('Coorientador Mais Central:', topSna.cooriClose, 'Co-orientador', '🤝')}
                   </Card>
                   <Card className="space-y-3">
-                    {botaoSna('Tese Central:', topSna.teseClose, 'Documento', '📄')}
-                    {botaoSna('Dissertação Central:', topSna.dissClose, 'Documento', '📄')}
+                    {botaoSna('Registro classificado como tese (maior proximidade):', topSna.teseClose, 'Documento', '📄')}
+                    {botaoSna('Registro classificado como dissertação (maior proximidade):', topSna.dissClose, 'Documento', '📄')}
                   </Card>
                 </div>
               </div>

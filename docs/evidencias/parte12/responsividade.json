@@ -1,0 +1,325 @@
+{
+  "metodo": "Medições DOM em navegador IAB, viewport confirmado; largura do conteúdo principal e elementos que excedem seu contêiner; tabelas mantêm rolagem local. Transcrição dos 40 registros observados.",
+  "resultados": [
+    {
+      "theme": "escuro",
+      "page": "#/dashboard",
+      "width": 320,
+      "client": 300,
+      "scroll": 300,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/dashboard",
+      "width": 390,
+      "client": 370,
+      "scroll": 370,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/dashboard",
+      "width": 768,
+      "client": 748,
+      "scroll": 748,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/dashboard",
+      "width": 1440,
+      "client": 1132,
+      "scroll": 1132,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/busca",
+      "width": 320,
+      "client": 300,
+      "scroll": 300,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/busca",
+      "width": 390,
+      "client": 370,
+      "scroll": 370,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/busca",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/busca",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/foresight",
+      "width": 320,
+      "client": 310,
+      "scroll": 310,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/foresight",
+      "width": 390,
+      "client": 380,
+      "scroll": 380,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/foresight",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/foresight",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/memetica",
+      "width": 320,
+      "client": 310,
+      "scroll": 310,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/memetica",
+      "width": 390,
+      "client": 380,
+      "scroll": 380,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/memetica",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/memetica",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/chat",
+      "width": 320,
+      "client": 310,
+      "scroll": 310,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/chat",
+      "width": 390,
+      "client": 380,
+      "scroll": 380,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/chat",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "escuro",
+      "page": "#/chat",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/dashboard",
+      "width": 320,
+      "client": 300,
+      "scroll": 300,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/dashboard",
+      "width": 390,
+      "client": 370,
+      "scroll": 370,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/dashboard",
+      "width": 768,
+      "client": 748,
+      "scroll": 748,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/dashboard",
+      "width": 1440,
+      "client": 1132,
+      "scroll": 1132,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/busca",
+      "width": 320,
+      "client": 300,
+      "scroll": 300,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/busca",
+      "width": 390,
+      "client": 370,
+      "scroll": 370,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/busca",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/busca",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/foresight",
+      "width": 320,
+      "client": 310,
+      "scroll": 310,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/foresight",
+      "width": 390,
+      "client": 380,
+      "scroll": 380,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/foresight",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/foresight",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/memetica",
+      "width": 320,
+      "client": 310,
+      "scroll": 310,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/memetica",
+      "width": 390,
+      "client": 380,
+      "scroll": 380,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/memetica",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/memetica",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/chat",
+      "width": 320,
+      "client": 310,
+      "scroll": 310,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/chat",
+      "width": 390,
+      "client": 380,
+      "scroll": 380,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/chat",
+      "width": 768,
+      "client": 758,
+      "scroll": 758,
+      "overflow": []
+    },
+    {
+      "theme": "claro",
+      "page": "#/chat",
+      "width": 1440,
+      "client": 1142,
+      "scroll": 1142,
+      "overflow": []
+    }
+  ]
+}
