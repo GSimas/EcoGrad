@@ -5,12 +5,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        slate: Object.fromEntries([100,200,300,400,500,600].map(n => [n, `rgb(var(--slate-${n}) / <alpha-value>)`])),
         // Paleta herdada do app Streamlit (quadrantes e tipos de nó)
         eco: {
-          bg: '#0E1117',
-          panel: '#161B22',
-          border: '#26303B',
-          accent: '#F39C12',
+          bg: 'rgb(var(--eco-bg) / <alpha-value>)',
+          panel: 'rgb(var(--eco-panel) / <alpha-value>)',
+          border: 'rgb(var(--eco-border) / <alpha-value>)',
+          accent: 'rgb(var(--eco-accent) / <alpha-value>)',
+          action: '#F6AD35',
           doc: '#E74C3C',
           autor: '#3498DB',
           orientador: '#F39C12',

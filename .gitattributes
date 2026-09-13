@@ -1,0 +1,5 @@
+# Evidências brutas preservam os bytes usados nos manifestos históricos.
+docs/evidencias/** -text
+# Alinhamento dos logs e CRLF dos CSVs exportados não são defeitos de fonte.
+docs/evidencias/**/*.txt -whitespace
+docs/evidencias/**/*.csv -whitespace

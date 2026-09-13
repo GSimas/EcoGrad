@@ -1,3 +1,5 @@
+import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import type { TipoBusca } from '@/types';
 import { Tabela } from '@/components/ui/primitives';
 import type { LinhaQL } from '@/types';
 
@@ -20,6 +22,9 @@ export function TabelaQL({ linhas, titulo }: { linhas: readonly LinhaQL[]; titul
     <div className="space-y-2">
       <p className="text-sm font-medium text-slate-200">{titulo}</p>
       <Tabela<Record<string, unknown>>
+        titulo={titulo}
+        descricao="QL é uma razão adimensional: acima de 1, acima da referência; igual a 1, mesma proporção; abaixo de 1, abaixo da referência. Cores são complementares ao valor. Contagens em registros (n)."
+        onAbrir={(l)=>useEcoGradStore.getState().navegarPara(String(l.Tipo) as TipoBusca, String(l.Entidade))}
         altura="max-h-80"
         linhas={linhas as unknown as Array<Record<string, unknown>>}
         colunas={[

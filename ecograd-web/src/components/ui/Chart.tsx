@@ -1,7 +1,11 @@
-import { useCallback, useMemo, useRef } from 'react';
-import ReactECharts from 'echarts-for-react';
+import { useAparencia } from '@/services/aparencia';
+import { adaptarGrafico } from '@/lib/aparencia-graficos';
+import { lazy, useCallback, useMemo, useRef } from 'react';
+import { CanvasBoundary } from './CanvasBoundary';
+const ReactECharts = lazy(() => import('./EChartsCanvas'));
 import type { EChartsOption } from 'echarts';
-import 'echarts-wordcloud';
+import { useSessionField } from '@/hooks/useSessionField';
+import { Tabela, type LeituraDados } from './Tabela';
 
 /** Tokens visuais compartilhados por todos os gráficos (tema escuro do EcoGrad). */
 export const TEMA_GRAFICO = {
@@ -22,33 +26,52 @@ export const CORES_QUADRANTE: Record<string, string> = {
 
 export function Grafico({
   option,
+  leitura,
   altura = 360,
+  larguraMinima = 0,
   onEvents,
   onReady,
 }: {
   option: EChartsOption;
+  leitura: LeituraDados;
   altura?: number;
+  larguraMinima?: number;
   onEvents?: Record<string, (params: unknown) => void>;
   onReady?: (instancia: unknown) => void;
 }) {
+  const { claro, reduzir } = useAparencia();
+  const [vista, setVista] = useSessionField('grafico.' + leitura.titulo, 'grafico');
   const opcaoFinal = useMemo<EChartsOption>(
-    () => ({
+    () => adaptarGrafico({
       backgroundColor: 'transparent',
       textStyle: { color: TEMA_GRAFICO.texto, fontFamily: 'Inter, system-ui, sans-serif' },
       color: TEMA_GRAFICO.paleta,
+      ...option,
+      animation: !reduzir,
+      aria: { enabled: true, label: { description: `${leitura.titulo}. ${leitura.descricao ?? ''} Dados completos disponíveis na vista em tabela.` } },
+      legend: { ...(option.legend as object), selectedMode: false },
       tooltip: {
         backgroundColor: TEMA_GRAFICO.fundoTooltip,
         borderColor: '#26303B',
         textStyle: { color: TEMA_GRAFICO.texto },
         ...(option.tooltip as object),
+        renderMode: 'richText',
+        confine: true,
       },
-      ...option,
-    }),
-    [option],
+    }, claro, reduzir),
+    [option, leitura.titulo, leitura.descricao, claro, reduzir],
   );
 
   return (
-    <ReactECharts
+    <section className="min-w-0 space-y-3" aria-label={leitura.titulo}>
+      <p className="text-sm font-medium">{leitura.titulo}</p>
+      <p className="text-xs leading-relaxed text-slate-300">{leitura.descricao}</p>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={`Visualização de ${leitura.titulo}`}>
+        <button type="button" className="btn" aria-pressed={vista !== 'tabela'} onClick={() => setVista('grafico')}>Ver gráfico</button>
+        <button type="button" className="btn" aria-pressed={vista === 'tabela'} onClick={() => setVista('tabela')}>Ver dados em tabela</button>
+      </div>
+      {vista === 'tabela' ? <Tabela {...leitura} /> : <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
+    <CanvasBoundary><ReactECharts
       option={opcaoFinal}
       style={{ height: altura, width: '100%' }}
       opts={{ renderer: 'canvas' }}
@@ -56,7 +79,8 @@ export function Grafico({
       lazyUpdate
       onEvents={onEvents}
       onChartReady={onReady}
-    />
+    /></CanvasBoundary></div></div>}
+    </section>
   );
 }
 
@@ -70,6 +94,7 @@ export function barrasHorizontais(
   dados: ReadonlyArray<[string, number]>,
   titulo: string,
   cor = TEMA_GRAFICO.paleta[0],
+  unidade = 'Ocorrências (n)',
 ): EChartsOption {
   const ordenado = ordenarRanking(dados);
   return {
@@ -78,14 +103,16 @@ export function barrasHorizontais(
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     xAxis: {
       type: 'value',
+      name: unidade,
+      minInterval: 1,
       axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
       splitLine: { lineStyle: { color: TEMA_GRAFICO.grade } },
     },
     yAxis: {
       type: 'category',
-      data: ordenado.map(([nome]) => (nome.length > 34 ? `${nome.slice(0, 34)}…` : nome)),
+      data: ordenado.map(([nome]) => nome),
       axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-      axisLabel: { color: TEMA_GRAFICO.texto, fontSize: 11 },
+      axisLabel: { color: TEMA_GRAFICO.texto, fontSize: 11, width: 190, overflow: 'truncate' },
     },
     series: [
       {
@@ -162,5 +189,5 @@ export function RankingClicavel({
     });
   }, []);
 
-  return <Grafico option={option} altura={altura} onReady={aoCriar} />;
+  return <Grafico leitura={{ titulo, descricao: 'Barras: ocorrências no recorte carregado (n). Frequência não mede mérito. Use a tabela para ler nomes completos, exportar ou abrir uma entidade por teclado.', linhas: [...dados].map(([nome, valor]) => ({ nome, valor })), colunas: [{ chave: 'nome', rotulo: 'Nome completo' }, { chave: 'valor', rotulo: 'Ocorrências (n)' }], onAbrir: (l) => onSelecionar(String(l.nome)) }} option={option} altura={altura} larguraMinima={460} onReady={aoCriar} />;
 }

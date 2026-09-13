@@ -28,19 +28,19 @@ ctx.addEventListener('message', (evento: MessageEvent<SnaWorkerRequest>) => {
   try {
     switch (pedido.type) {
       case 'sna-global': {
-        const result = calcularSnaGlobal(pedido.docs, (value, text) =>
-          responder({ type: 'progress', value, text }),
+        const result = calcularSnaGlobal(pedido.docs, (_value, text) =>
+          responder({ type: 'progress', value: null, text }),
         );
         responder({ type: 'sna-global', result });
         break;
       }
       case 'maturidade': {
-        responder({ type: 'progress', value: 20, text: 'Avaliando maturidade topológica...' });
+        responder({ type: 'progress', value: null, text: 'Avaliando maturidade topológica...' });
         responder({ type: 'maturidade', result: calcularMaturidadeRede(pedido.docs, pedido.sna) });
         break;
       }
       case 'metricas-complexas': {
-        responder({ type: 'progress', value: 20, text: 'Calculando métricas de complexidade...' });
+        responder({ type: 'progress', value: null, text: 'Calculando métricas de complexidade...' });
         responder({ type: 'metricas-complexas', result: calcularMetricasComplexas(pedido.docs) });
         break;
       }
@@ -70,6 +70,7 @@ ctx.addEventListener('message', (evento: MessageEvent<SnaWorkerRequest>) => {
             text: `Avaliando combinação ${feito}/${total}...`,
           }),
         );
+        responder({ type: 'progress', value: null, text: 'Validando a melhor configuração...' });
         const melhor = grid[0];
         const backtest = melhor
           ? validarForesightHistorico(
@@ -91,7 +92,7 @@ ctx.addEventListener('message', (evento: MessageEvent<SnaWorkerRequest>) => {
           pedido.docs,
           pedido.minCoocorrencia,
           pedido.fonte,
-          (value, text) => responder({ type: 'progress', value, text }),
+          (_value, text) => responder({ type: 'progress', value: null, text }),
         );
         responder({ type: 'ecologia-memes', result });
         break;

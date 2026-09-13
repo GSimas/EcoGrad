@@ -1,0 +1,10 @@
+{
+  "site_id": "e2e5db90-ff63-4958-8451-a1aeaae70f6e",
+  "site_name": "ecograd",
+  "deploy_id": "6aa5ecf2018fd6375ba4044d",
+  "deploy_url": "https://6aa5ecf2018fd6375ba4044d--ecograd.netlify.app",
+  "logs": "https://app.netlify.com/projects/ecograd/deploys/6aa5ecf2018fd6375ba4044d",
+  "function_logs": "https://app.netlify.com/projects/ecograd/logs/functions",
+  "edge_function_logs": "https://app.netlify.com/projects/ecograd/logs/edge-functions",
+  "url": "https://ecograd.gustavosimas.com"
+}

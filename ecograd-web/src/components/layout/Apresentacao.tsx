@@ -1,174 +1,50 @@
-import {
-  ArrowRight,
-  BookOpen,
-  BotMessageSquare,
-  Dna,
-  Github,
-  Network,
-  Radar,
-  Search,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react';
+import { ArrowRight, BookOpen, Github } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { useSessionField } from '@/hooks/useSessionField';
+import { OBJETIVOS } from '@/lib/objetivos';
+import { navigatePage } from '@/services/navigation';
 
-interface Recurso {
-  icone: LucideIcon;
-  titulo: string;
-  texto: string;
-}
-
-const RECURSOS: Recurso[] = [
-  {
-    icone: Network,
-    titulo: 'Redes complexas',
-    texto:
-      'Documentos, autores, orientadores, conceitos e macrotemas viram um único grafo. Centralidade de grau, intermediação, proximidade e comunidades de Louvain revelam quem lidera, quem faz ponte entre áreas e onde estão os clusters.',
-  },
-  {
-    icone: Search,
-    titulo: 'Dossiê por entidade',
-    texto:
-      'Cada pessoa ou conceito ganha uma ficha completa: especialização temática, evolução histórica, nuvem de palavras, órbita animada de relacionamentos e trabalhos semelhantes por Índice de Jaccard.',
-  },
-  {
-    icone: Radar,
-    titulo: 'Prospecção de tendências',
-    texto:
-      'O Radar de Foresight cruza aceleração temporal com novidade estrutural para separar tendências consolidadas de sinais fracos — e valida o próprio modelo contra a história real da base.',
-  },
-  {
-    icone: Dna,
-    titulo: 'Memética e ontologia',
-    texto:
-      'As ideias são tratadas como memes que se replicam: fecundidade, mortalidade infantil e tempo de meia-vida. A IA lê os resumos e extrai as teorias, métodos e ferramentas realmente utilizados.',
-  },
-  {
-    icone: BotMessageSquare,
-    titulo: 'Consultor acadêmico',
-    texto:
-      'Um assistente que conhece a topologia da rede e o catálogo inteiro do programa, para sugerir orientadores compatíveis com sua ideia e indicar teses para ler, com link direto para o repositório.',
-  },
-  {
-    icone: Sparkles,
-    titulo: 'Dados oficiais',
-    texto:
-      'A produção do repositório da UFSC é cruzada com a ficha oficial da Plataforma Sucupira (CAPES): conceito, área de avaliação, modalidade e situação de cada programa.',
-  },
-];
-
-const ETAPAS = [
-  {
-    numero: '01',
-    titulo: 'Selecione as coleções',
-    texto: 'Escolha um ou mais programas de pós-graduação e cursos de graduação para analisar.',
-  },
-  {
-    numero: '02',
-    titulo: 'A rede é construída',
-    texto: 'Os documentos viram um grafo e as métricas de rede são calculadas no seu navegador.',
-  },
-  {
-    numero: '03',
-    titulo: 'Explore o ecossistema',
-    texto: 'Navegue pelo dashboard, abra dossiês, prospecte tendências e converse com a IA.',
-  },
-];
-
-/**
- * Tela de apresentação — a primeira coisa que o usuário vê.
- * Explica o que é o EcoGrad, oferece o tutorial em modal e dá acesso à
- * seleção de coleções.
- */
 export function Apresentacao() {
-  const concluirApresentacao = useEcoGradStore((s) => s.concluirApresentacao);
-
+  const carregada = useEcoGradStore((s) => s.dadosCarregados);
+  const rota = useEcoGradStore((s) => s.rota);
+  const [, setObjetivo] = useSessionField('entrada.objetivo', 'panorama');
   return (
-    <div className="mx-auto max-w-5xl px-6 pb-24 pt-12 lg:px-10 lg:pt-20">
+    <div className="apresentacao mx-auto max-w-5xl px-4 pb-24 pt-10 sm:px-6 lg:px-10">
       <header className="flex flex-col items-center text-center">
-        <img
-          src="/ecograd-logo.png"
-          alt=""
-          aria-hidden="true"
-          className="h-20 w-20 rounded-2xl object-contain"
-        />
+        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="intro-logo h-20 w-20 rounded-2xl object-contain" />
         <h1 className="mt-6 text-4xl font-bold tracking-tight lg:text-5xl">EcoGrad</h1>
         <p className="mt-2 text-lg text-slate-300">Ecologia do Conhecimento · UFSC</p>
-        <p className="mt-6 max-w-2xl text-balance leading-relaxed text-slate-400">
-          Uma plataforma analítica que mapeia as redes de produção acadêmica da Universidade Federal
-          de Santa Catarina. Teses, dissertações e trabalhos de conclusão viram um ecossistema
-          navegável — onde dá para ver como pesquisadores, teorias e ferramentas se conectam, quais
-          temas estão emergindo e quem sustenta cada área do conhecimento.
-        </p>
-
-        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-          <button type="button" className="btn btn-primary px-6 py-3" onClick={concluirApresentacao}>
-            Começar análise <ArrowRight size={16} />
-          </button>
-          <TutorialModal>
-            <button type="button" className="btn px-6 py-3">
-              <BookOpen size={16} /> Ver tutorial
-            </button>
-          </TutorialModal>
+        <p className="mt-5 max-w-2xl leading-relaxed text-slate-300">Encontre trabalhos para ler, explore pesquisadores e investigue temas na produção acadêmica da UFSC. Comece pela pergunta que você quer responder.</p>
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <button type="button" className="btn btn-primary px-6 py-3" onClick={() => navigatePage(carregada ? rota : 'selecao')}>{carregada ? 'Continuar análise atual' : 'Escolher coleções'} <ArrowRight size={16} /></button>
+          <TutorialModal><button type="button" className="btn px-6 py-3"><BookOpen size={16} /> Ver tutorial</button></TutorialModal>
         </div>
       </header>
-
-      <section className="mt-16">
-        <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-slate-500">
-          Como funciona
-        </h2>
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
-          {ETAPAS.map((e) => (
-            <li key={e.numero} className="card">
-              <span className="text-2xl font-bold text-eco-accent/40 tabular-nums">{e.numero}</span>
-              <h3 className="mt-1 text-base font-semibold text-slate-100">{e.titulo}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-slate-400">{e.texto}</p>
-            </li>
-          ))}
-        </ol>
+      <section className="mt-10 space-y-4" aria-labelledby="objetivos-inicio">
+        <h2 id="objetivos-inicio" className="text-xl font-semibold">O que você quer descobrir?</h2>
+        {carregada && <p className="text-sm text-slate-300">Os atalhos usam as coleções da análise atual. Para mudar o recorte, use “Editar seleção”.</p>}
+        <div className="grid gap-4 sm:grid-cols-2">{OBJETIVOS.map((o) => <button key={o.id} type="button" className="card intro-block space-y-2 text-left" onClick={() => { setObjetivo(o.id); navigatePage(carregada ? o.rota : 'selecao'); }}>
+          <span className="block text-base font-semibold text-eco-accent">{o.titulo}</span><span className="block text-sm leading-relaxed text-slate-300">{o.descricao}</span><span className="flex items-center gap-2 text-xs text-slate-400">{carregada ? 'Explorar análise atual' : 'Escolher coleções para este objetivo'} <ArrowRight size={14} /></span>
+        </button>)}</div>
       </section>
-
-      <section className="mt-14">
-        <h2 className="text-center text-sm font-semibold uppercase tracking-widest text-slate-500">
-          O que você encontra
-        </h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {RECURSOS.map(({ icone: Icone, titulo, texto }) => (
-            <article key={titulo} className="card">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-eco-accent/15 text-eco-accent">
-                <Icone size={18} />
-              </span>
-              <h3 className="mt-3 text-base font-semibold text-slate-100">{titulo}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{texto}</p>
-            </article>
-          ))}
-        </div>
+      <section className="mt-10 space-y-4">
+        <h2 className="text-xl font-semibold">Da pergunta à fonte</h2>
+        <ol className="grid gap-4 md:grid-cols-3">{[
+          ['1. Defina o recorte', 'Compare nomes completos, identificadores, períodos e tipos de documentos antes de carregar.'],
+          ['2. Explore as relações', 'Use busca, Dashboard, Radar e Memética conforme seu objetivo. Ajuda e atividades ficam acessíveis no menu.'],
+          ['3. Confira a evidência', 'Abra as fontes originais. Indicadores descrevem o recorte escolhido; sugestões por IA precisam de revisão.'],
+        ].map(([titulo, texto]) => <li key={titulo} className="card intro-block"><h3 className="font-semibold">{titulo}</h3><p className="mt-2 text-sm leading-relaxed text-slate-300">{texto}</p></li>)}</ol>
       </section>
-
-      <section className="mt-14 flex flex-col items-center gap-4 rounded-2xl border border-eco-border bg-eco-panel/50 px-6 py-10 text-center">
-        <h2 className="text-xl font-semibold text-slate-100">Pronto para explorar?</h2>
-        <p className="max-w-xl text-sm leading-relaxed text-slate-400">
-          Na próxima tela você escolhe quais programas e cursos quer analisar. Enquanto decide, o
-          panorama institucional da UFSC na CAPES já fica visível.
-        </p>
-        <button type="button" className="btn btn-primary px-6 py-3" onClick={concluirApresentacao}>
-          Ir para a seleção de coleções <ArrowRight size={16} />
-        </button>
+      <section className="card intro-block mt-10 space-y-3">
+        <h2 className="text-lg font-semibold">O que os dados permitem saber</h2>
+        <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama CAPES é uma consulta institucional independente; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
+        <p className="text-sm leading-relaxed text-slate-300">O Consultor IA recebe contexto limitado da análise. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
+        <button type="button" className="btn" onClick={() => navigatePage('selecao')}>{carregada ? 'Editar seleção de coleções' : 'Conferir coleções e Panorama CAPES'} <ArrowRight size={16} /></button>
       </section>
-
-      <footer className="mt-12 flex flex-col items-center gap-1 text-xs text-slate-500">
-        <span>
-          Desenvolvido por <span className="text-slate-300">Gustavo Simas</span>
-        </span>
-        <a
-          href="https://github.com/GSimas"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-eco-accent hover:text-amber-300"
-        >
-          <Github size={13} /> github.com/GSimas
-        </a>
+      <footer className="mt-12 flex flex-col items-center gap-2 text-xs text-slate-400">
+        <span>Desenvolvido por <a href="https://gustavosimas.com" target="_blank" rel="noopener noreferrer" className="text-slate-300 underline">Gustavo Simas</a></span>
+        <a href="https://github.com/GSimas/EcoGrad/tree/main" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-eco-accent"><Github size={13} /> github.com/GSimas/EcoGrad</a>
       </footer>
     </div>
   );

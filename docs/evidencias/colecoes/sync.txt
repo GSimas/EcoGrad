@@ -1,0 +1,6 @@
+
+> ecograd-web@1.0.0 sync:data
+> node scripts/sync-data.mjs
+
+[sync-data] Bases já sincronizadas.
+[sync-data] Prévia de 264 coleções gerada.

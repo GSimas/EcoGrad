@@ -209,7 +209,12 @@ export interface ProgramaCapes {
   'Grau Acadêmico': string;
 }
 
-export type CatalogoCapes = Record<string, ProgramaCapes>;
+/** Contrato versionado: nomes são atributos, o código oficial é a identidade. */
+export interface CatalogoCapes {
+  versao: 2;
+  programas: Record<string, ProgramaCapes>;
+  fonte: { url: string; idIes: string; consultadoEm: string; totalProgramas: number };
+}
 
 /** Catálogo leve de PPGs: nome → setSpec do repositório. */
 export type CatalogoProgramas = Record<string, string>;
@@ -279,7 +284,7 @@ export type SnaWorkerRequest =
     };
 
 export type SnaWorkerResponse =
-  | { type: 'progress'; value: number; text: string }
+  | { type: 'progress'; value: number | null; text: string }
   | { type: 'sna-global'; result: SnaGlobal }
   | { type: 'maturidade'; result: MaturidadeRede }
   | { type: 'metricas-complexas'; result: MetricasComplexas | null }

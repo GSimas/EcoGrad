@@ -1,0 +1,188 @@
+{
+  "metodo": "Medições DOM após montagem; transcrição das leituras de 12/09/2026. Aparência móvel reaberta no desktop após mudança de breakpoint.",
+  "resultados": [
+    {
+      "theme": "escuro",
+      "componente": "Panorama CAPES",
+      "viewport": 320,
+      "largura": 304,
+      "scrollPagina": 320
+    },
+    {
+      "theme": "escuro",
+      "componente": "Panorama CAPES",
+      "viewport": 390,
+      "largura": 374,
+      "scrollPagina": 390
+    },
+    {
+      "theme": "escuro",
+      "componente": "Panorama CAPES",
+      "viewport": 768,
+      "largura": 752,
+      "scrollPagina": 768
+    },
+    {
+      "theme": "escuro",
+      "componente": "Panorama CAPES",
+      "viewport": 1440,
+      "largura": 1152,
+      "scrollPagina": 1440
+    },
+    {
+      "theme": "escuro",
+      "componente": "Aparência e conforto",
+      "viewport": 320,
+      "largura": 304,
+      "scrollPagina": 320
+    },
+    {
+      "theme": "escuro",
+      "componente": "Aparência e conforto",
+      "viewport": 390,
+      "largura": 374,
+      "scrollPagina": 390
+    },
+    {
+      "theme": "escuro",
+      "componente": "Aparência e conforto",
+      "viewport": 768,
+      "largura": 512,
+      "scrollPagina": 768
+    },
+    {
+      "theme": "escuro",
+      "componente": "Aparência e conforto",
+      "viewport": 1440,
+      "largura": 512,
+      "scrollPagina": 1440
+    },
+    {
+      "theme": "escuro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 320,
+      "largura": 218,
+      "scrollPagina": 320
+    },
+    {
+      "theme": "escuro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 390,
+      "largura": 288,
+      "scrollPagina": 390
+    },
+    {
+      "theme": "escuro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 768,
+      "largura": 634,
+      "scrollPagina": 768
+    },
+    {
+      "theme": "escuro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 1440,
+      "largura": 1002,
+      "scrollPagina": 1440
+    },
+    {
+      "theme": "claro",
+      "componente": "Panorama CAPES",
+      "viewport": 320,
+      "largura": 304,
+      "scrollPagina": 320
+    },
+    {
+      "theme": "claro",
+      "componente": "Panorama CAPES",
+      "viewport": 390,
+      "largura": 374,
+      "scrollPagina": 390
+    },
+    {
+      "theme": "claro",
+      "componente": "Panorama CAPES",
+      "viewport": 768,
+      "largura": 752,
+      "scrollPagina": 768
+    },
+    {
+      "theme": "claro",
+      "componente": "Panorama CAPES",
+      "viewport": 1440,
+      "largura": 1152,
+      "scrollPagina": 1440
+    },
+    {
+      "theme": "claro",
+      "componente": "Aparência e conforto",
+      "viewport": 320,
+      "largura": 304,
+      "scrollPagina": 320
+    },
+    {
+      "theme": "claro",
+      "componente": "Aparência e conforto",
+      "viewport": 390,
+      "largura": 374,
+      "scrollPagina": 390
+    },
+    {
+      "theme": "claro",
+      "componente": "Aparência e conforto",
+      "viewport": 768,
+      "largura": 512,
+      "scrollPagina": 768
+    },
+    {
+      "theme": "claro",
+      "componente": "Aparência e conforto",
+      "viewport": 1440,
+      "largura": 512,
+      "scrollPagina": 1440
+    },
+    {
+      "theme": "claro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 320,
+      "largura": 218,
+      "scrollPagina": 320
+    },
+    {
+      "theme": "claro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 390,
+      "largura": 288,
+      "scrollPagina": 390
+    },
+    {
+      "theme": "claro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 768,
+      "largura": 634,
+      "scrollPagina": 768
+    },
+    {
+      "theme": "claro",
+      "componente": "Prévia de importação aplicada",
+      "viewport": 1440,
+      "largura": 1002,
+      "scrollPagina": 1440
+    }
+  ],
+  "recuperacao": {
+    "zoomAntes": "98%",
+    "zoomDepois": "98%",
+    "rede": "330 nós / 889 conexões visíveis; 1827 termos na rede completa",
+    "rascunhoChatRecuperado": true,
+    "parcialRecuperado": true,
+    "voltarAvancar": true,
+    "consoleFinal": []
+  },
+  "teclado": {
+    "tutorialTab": "primeiro passo, foco de 3 px",
+    "tutorialEscape": "retorna ao botão Ajuda e tutorial do menu",
+    "aparenciaEscape": "retorna ao botão Aparência e conforto",
+    "radarHome": "janela recente passa a 1 ano"
+  }
+}

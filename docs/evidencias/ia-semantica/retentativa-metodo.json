@@ -1,0 +1,25 @@
+{
+  "entrada": {
+    "itens": [
+      {
+        "id": "doc-v1-b0700ce1af603cde93e01a7b03a493aa971db7e40b6b22de4334a6d81e00e03d",
+        "titulo": "Avaliação da produção de aveia preta (Avena strigosa) sobressemeada em diferentes espécies de pastagens perenes de verão em sistema de pastoreiro racional Voisin",
+        "resumo": "A flutuação estacional de pastagens é um problema decorrente de diversos fatores, principalmente climáticos, como queda na temperatura e déficit hídrico. A flutuação, que resulta na diminuição da oferta de pasto em determinados períodos do ano é responsável pela queda no desempenho produtivo de sistemas de criação de herbívoros. A sobressemeadura de espécies hibernais em pastagens perenes de verão se constitui em uma alternativa para amenizar o problema. Além disso, é desta forma que se torna possível manter a cobertura vegetal permanente ao longo do ano em regiões em que espécies hibernais apresentam bom estabelecimento. A compensação da flutuação estacional de pasto deve ser realizada por meio de um planejamento forrageiro. No entanto, alguns métodos são onerosos e resultam em maior penosidade do trabalho. O presente trabalho, através de uma pesquisa experimental em condições de campo, analisou em termos quantitativos a produção de forragem de Avena strigosa cv. Embrapa 139 Neblina, sobressemeada em diferentes espécies de pastagens perenes. O experimento foi implantado em condições de campo, nos anos de 2016 e 2017, sendo que no último ano não houve produção em função de situações climáticas desfavoráveis. O desenho experimental utilizado foi de blocos completos casualizados, constituído por cinco tratamentos e quatro repetições. Foi comparado o somatório da produção da cultura anual sobressemeada em Brachiária brizantha cv. MG5, em Cynodon cv. Tífton 68, em Panicum maximum cv. Mombaça, em Pennisetum purpureum cv. Pioneiro e em Brachiária brizantha cv. Piatã. Os dados de produção do ano de 2016 foram submetidos à análise de variância e ao teste Tukey a 5% de significância. Houve diferença significativa entre os tratamentos composto por sobressemeadura de aveia em Panicum maximum cv. Mombaça, que apresentou menor produção, e tratamento composto por aveia sobressemeada em Brachiária brizantha cv. MG5, que foi mais produtivo."
+      }
+    ]
+  },
+  "status": 200,
+  "resposta": {
+    "resultados": [
+      {
+        "id": "doc-v1-b0700ce1af603cde93e01a7b03a493aa971db7e40b6b22de4334a6d81e00e03d",
+        "titulo": "Avaliação da produção de aveia preta (Avena strigosa) sobressemeada em diferentes espécies de pastagens perenes de verão em sistema de pastoreiro racional Voisin",
+        "ontologia": null,
+        "erro": "Evidência não corresponde a um trecho literal do resumo ou à extração."
+      }
+    ],
+    "processados": 0,
+    "maxItensPorChamada": 8
+  },
+  "totalMs": 3041
+}

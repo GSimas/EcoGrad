@@ -1,0 +1,61 @@
+{
+  "base": "https://ecograd.netlify.app",
+  "quando": "2026-09-13T00:24:16.588Z",
+  "checks": [
+    {
+      "name": "index",
+      "status": 200,
+      "url": "https://ecograd.netlify.app/",
+      "ok": false
+    },
+    {
+      "name": "manifesto",
+      "status": 200,
+      "version": "6c9b93b97aa1376dfc0a2df092b84a8c74ac311872900bbf8f57ea429c936acd",
+      "cache": "public,max-age=0,must-revalidate",
+      "ok": true
+    },
+    {
+      "name": "colecaoHash",
+      "status": 200,
+      "bytes": 1064,
+      "cache": "public,max-age=31536000,immutable",
+      "ok": true
+    },
+    {
+      "name": "gemini-chat-rota",
+      "status": 502,
+      "ok": false
+    },
+    {
+      "name": "gemini-ontology-rota",
+      "status": 502,
+      "ok": false
+    },
+    {
+      "name": "gemini-synthesize-rota",
+      "status": 502,
+      "ok": false
+    },
+    {
+      "name": "neo4j-query-rota",
+      "status": 502,
+      "ok": false
+    },
+    {
+      "name": "capes-real",
+      "ok": false,
+      "erro": "SyntaxError: Unexpected token 'e', \"error deco\"... is not valid JSON"
+    },
+    {
+      "name": "ontology-real-boletim",
+      "ok": false,
+      "erro": "SyntaxError: Unexpected token 'e', \"error deco\"... is not valid JSON"
+    },
+    {
+      "name": "neo4j-ping",
+      "ok": false,
+      "erro": "SyntaxError: Unexpected token 'e', \"error deco\"... is not valid JSON"
+    }
+  ]
+}

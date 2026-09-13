@@ -1,0 +1,65 @@
+{
+  "formato": "ecograd-revisao-ia-v2",
+  "revisaoId": "9c421439-0902-4a90-b22b-40fe9ba42bac",
+  "baseVersion": "6c9b93b97aa1376dfc0a2df092b84a8c74ac311872900bbf8f57ea429c936acd",
+  "estado": "concluido",
+  "itens": [
+    {
+      "id": "doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c",
+      "titulo": "Analise economica da valorização energetica da madeira",
+      "estado": "concluido",
+      "ontologia": {
+        "teorias_e_modelos": [
+          "Teoria, simulada"
+        ],
+        "ferramentas_e_artefatos": [
+          "Ferramenta simulada"
+        ],
+        "metodos_e_tecnicas": []
+      },
+      "evidencias": [
+        {
+          "categoria": "teorias_e_modelos",
+          "termo": "Teoria, simulada",
+          "trecho": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição"
+        },
+        {
+          "categoria": "ferramentas_e_artefatos",
+          "termo": "Ferramenta simulada",
+          "trecho": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição"
+        }
+      ],
+      "fonte": {
+        "titulo": "Analise economica da valorização energetica da madeira",
+        "url": "https://repositorio.ufsc.br/xmlui/handle/123456789/157542",
+        "resumo": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição dos combustíveis derivados do petróleo, até então amplamente utilizados, e introduziu uma nova mentalidade nos meios de produção a racionalização das atividades e a necessidade e valorização dos resíduos industriais. Empresas ligadas às atividades madeireiras iniciaram a valorização de seus resíduos industriais, ou concebendo novos produtos, ou simplesmente através da geração de energia. Ao mesmo tempo, empresas de outros setores inciaram os reflorestamentos energéticos (principalmente formados por eucaliptos) motivadas pela possiblidade de obtenção de incentivos fiscais, e pela necessidade de assegurar suas próprias provisões de lenha, e desta forma minizarem sua dependência dos fornecedores desta matéria-prima, bem como sua sensibilidade às oscilações dos preços no mercado. Entretanto, há uma carência de estudos sobre a viabilidade econômica da valorização energética da madeira, quer sob a forma de resíduos industriais, quer sob a forma de lenha oriunda dos reflorestamentos energéticos. Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações.",
+        "resumoSha256": "b23866c54a1fe68dd7a0879ba8357ad3a654dd645656a9583cd556ce3d58eeed"
+      },
+      "curadoria": {
+        "schema": 1,
+        "termos": {
+          "[\"teorias_e_modelos\",0]": [
+            {
+              "termo": "Método de teste de interface",
+              "categoria": "metodos_e_tecnicas",
+              "trecho": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição",
+              "justificativa": "Correção simulada para verificar o fluxo de curadoria; não é avaliação científica.",
+              "estado": "aprovado",
+              "quando": "2026-09-12T23:42:25.391Z"
+            }
+          ],
+          "[\"ferramentas_e_artefatos\",0]": [
+            {
+              "termo": "Ferramenta simulada",
+              "categoria": "ferramentas_e_artefatos",
+              "trecho": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição",
+              "justificativa": "Proposta artificial rejeitada no teste de interface.",
+              "estado": "rejeitado",
+              "quando": "2026-09-12T23:42:25.680Z"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

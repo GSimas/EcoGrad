@@ -1,0 +1,26 @@
+[
+  {
+    "nomeColecao": "Programa de Pós-Graduação em Odontologia (ID: 74720)",
+    "setSpec": "col_123456789_74720",
+    "codigo": "41001010008P0",
+    "nomeCapes": "ODONTOLOGIA",
+    "modalidade": "ACADÊMICO",
+    "idIes": "4362",
+    "verificadoEm": "2026-09-11",
+    "criterio": "O site oficial do PPGO aponta explicitamente para a coleção 123456789/74720. O edital conjunto FAPESC/CAPES 06/2023 identifica Odontologia da UFSC pelo código 41001010008P0 (Anexo I, página 21). O catálogo CAPES da IES 4362 confirma esse código, nome e modalidade acadêmica.",
+    "fontes": [
+      {
+        "titulo": "PPGO/UFSC: vínculo explícito com a coleção",
+        "url": "https://ppgo.ufsc.br/repositorio-dissertacoes-e-teses/"
+      },
+      {
+        "titulo": "FAPESC/CAPES 06/2023 — Anexo I, página 21: instituição e código",
+        "url": "https://fapesc.sc.gov.br/wp-content/uploads/2023/07/edital-de-cahamada-publica_06_2023_bolsas_fapesc_capes.pdf"
+      },
+      {
+        "titulo": "CAPES: catálogo institucional da UFSC (IES 4362)",
+        "url": "https://apigw-proxy.capes.gov.br/observatorio/data/observatorio/ppg?query=id-ies%3A%284362%29&size=100"
+      }
+    ]
+  }
+]

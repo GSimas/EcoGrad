@@ -1,0 +1,62 @@
+{
+  "id": "6aa5ecf2018fd6375ba4044d",
+  "state": "ready",
+  "published_at": "2026-09-13T00:23:49.498Z",
+  "functions": [
+    {
+      "nome": "capes-proxy",
+      "runtime": "nodejs24.x"
+    },
+    {
+      "nome": "gemini-chat",
+      "runtime": "nodejs24.x"
+    },
+    {
+      "nome": "gemini-ontology",
+      "runtime": "nodejs24.x"
+    },
+    {
+      "nome": "gemini-synthesize",
+      "runtime": "nodejs24.x"
+    },
+    {
+      "nome": "neo4j-query",
+      "runtime": "nodejs24.x"
+    }
+  ],
+  "summary": {
+    "status": "ready",
+    "messages": [
+      {
+        "type": "info",
+        "title": "267 new files uploaded",
+        "description": "1 generated page and 266 assets changed.",
+        "details": "New pages include:\n- index.html\n"
+      },
+      {
+        "type": "info",
+        "title": "2 redirect rules processed",
+        "description": "All redirect rules deployed without errors.",
+        "details": ""
+      },
+      {
+        "type": "info",
+        "title": "6 header rules processed",
+        "description": "All header rules deployed without errors.",
+        "details": ""
+      },
+      {
+        "type": "info",
+        "title": "5 functions deployed",
+        "description": "We have deployed 5 functions. [Visit your Functions](/projects/ecograd/logs/functions) for more information.",
+        "details": null
+      },
+      {
+        "type": "info",
+        "title": "No edge functions deployed",
+        "description": "This deploy did not include any edge functions. [Learn more about Edge Functions](https://docs.netlify.com/edge-functions/overview/)",
+        "details": null
+      }
+    ]
+  }
+}

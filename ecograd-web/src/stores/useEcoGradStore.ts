@@ -1,13 +1,11 @@
-/**
- * Estado global do EcoGrad (substitui o `st.session_state` do Streamlit).
- *
- * Persistência: apenas a *seleção* e o estado de UI vão para o sessionStorage.
- * Os documentos (centenas de MB depois de descomprimidos) nunca são persistidos —
- * ao retomar a sessão, o app recarrega a base a partir da seleção salva.
- */
+import { iaVazia, type EstadoIA } from '../lib/ia-state';
+import { aplicarPorIdentidade } from '../lib/ontologia-importacao';
+import { referenciaDocumento } from '../lib/resultados';
+import { objetivoPorId } from '../lib/objetivos';
+import type { SelecaoColecoes } from '../lib/selecao';
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import type {
+  ChatMessage,
   BootstrapMap,
   Documento,
   MaturidadeRede,
@@ -18,9 +16,29 @@ import type {
   TipoForesight,
 } from '@/types';
 
-export type StatusSNA = 'ocioso' | 'calculando' | 'pronto' | 'erro';
+export type StatusSNA = 'ocioso' | 'calculando' | 'pronto' | 'erro' | 'cancelado';
+
+export interface Conversa {
+  mensagens: ChatMessage[];
+  tentativa?: { historico: ChatMessage[]; contexto: string };
+  parciaisAnteriores?: string[];
+  entrada: string;
+  parcial: string;
+  streaming: boolean;
+  erro: string | null;
+  contexto: string;
+}
+export const conversaVazia = (): Conversa => ({ mensagens: [], entrada: '', parcial: '', streaming: false, erro: null, contexto: '' });
 
 export interface EcoGradState {
+  ia: EstadoIA;
+  setIA: (valor: Partial<EstadoIA>) => void;
+  analysisId: string;
+  baseVersion: string;
+  ui: Record<string, unknown>;
+  chat: Conversa;
+  setChat: (value: Partial<Conversa>) => void;
+
   /** Tela de apresentação (antes da seleção de coleções). Persistida. */
   apresentacaoVista: boolean;
   /** Aba ativa depois que a base é carregada. */
@@ -32,18 +50,16 @@ export interface EcoGradState {
   programasSelecionados: string[];
   cursosTccSelecionados: string[];
 
-  // --- Base ativa (volátil) ---
+  // --- Base ativa (checkpoint limitado no IndexedDB) ---
   docs: Documento[];
   dadosCarregados: boolean;
   carregando: boolean;
   mensagemCarregamento: string;
   erroCarregamento: string | null;
 
-  // --- Rede complexa (volátil) ---
+  // --- Resultados associados à versão da base ---
   snaGlobal: SnaGlobal | null;
   statusSNA: StatusSNA;
-  progressoSNA: number;
-  textoProgressoSNA: string;
   maturidade: MaturidadeRede | null;
 
   // --- Foresight ---
@@ -53,6 +69,11 @@ export interface EcoGradState {
   percentilCorte: number;
   usarBootstrap: boolean;
   bootstrap: BootstrapMap | null;
+
+  fonteMemes: 'Palavras-chave' | 'Artefatos Extraídos';
+  minCoocorrencia: number;
+  setFonteMemes: (fonte: EcoGradState['fonteMemes']) => void;
+  setMinCoocorrencia: (valor: number) => void;
 
   // --- Motor de busca (persistido) ---
   buscaTipo: TipoBusca;
@@ -67,11 +88,10 @@ export interface EcoGradState {
   setCursosTcc: (v: string[]) => void;
   iniciarCarregamento: () => void;
   setMensagemCarregamento: (v: string) => void;
-  concluirCarregamento: (docs: Documento[]) => void;
+  concluirCarregamento: (docs: Documento[], selecao?: SelecaoColecoes, baseVersion?: string, objetivo?: string) => void;
   falharCarregamento: (msg: string) => void;
   novaConsulta: () => void;
 
-  setProgressoSNA: (valor: number, texto: string) => void;
   setSnaGlobal: (sna: SnaGlobal) => void;
   setStatusSNA: (s: StatusSNA) => void;
   setMaturidade: (m: MaturidadeRede | null) => void;
@@ -83,10 +103,11 @@ export interface EcoGradState {
   setUsarBootstrap: (v: boolean) => void;
   setBootstrap: (b: BootstrapMap | null) => void;
 
+  navegarDocumento: (indice: number) => void;
   navegarPara: (tipo: TipoBusca, termo: string | null) => void;
 
   /** Injeta ontologias (lote da IA ou upload de CSV) sem recriar a base inteira. */
-  aplicarOntologia: (porTitulo: Map<string, OntologiaIA>) => number;
+  aplicarOntologia: (porId: Map<string, OntologiaIA>, substituir?: boolean, antesDeAplicar?: () => void) => Promise<number>;
 }
 
 /** Rótulo da badge "Análise Ativa" na Sidebar. */
@@ -97,9 +118,14 @@ export function rotuloAnaliseAtiva(state: Pick<EcoGradState, 'programasSeleciona
   return `${nomes.length} Origem(ns) Selecionada(s)`;
 }
 
-export const useEcoGradStore = create<EcoGradState>()(
-  persist(
-    (set, get) => ({
+export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
+      analysisId: crypto.randomUUID(),
+      baseVersion: '',
+      ui: {},
+      ia: iaVazia(),
+      setIA: (valor) => set((s)=>({ia:{...s.ia,...valor}})),
+      chat: conversaVazia(),
+      setChat: (value) => set((s) => ({ chat: { ...s.chat, ...value } })),
       apresentacaoVista: false,
       rota: 'dashboard',
       sidebarRecolhida: false,
@@ -115,8 +141,6 @@ export const useEcoGradStore = create<EcoGradState>()(
 
       snaGlobal: null,
       statusSNA: 'ocioso',
-      progressoSNA: 0,
-      textoProgressoSNA: '',
       maturidade: null,
 
       tipoForesight: 'Palavra-chave',
@@ -126,6 +150,10 @@ export const useEcoGradStore = create<EcoGradState>()(
       usarBootstrap: false,
       bootstrap: null,
 
+      fonteMemes: 'Palavras-chave',
+      minCoocorrencia: 3,
+      setFonteMemes: (fonteMemes) => set({ fonteMemes }),
+      setMinCoocorrencia: (minCoocorrencia) => set({ minCoocorrencia }),
       buscaTipo: 'Documento',
       buscaTermo: null,
 
@@ -145,8 +173,15 @@ export const useEcoGradStore = create<EcoGradState>()(
 
       setMensagemCarregamento: (v) => set({ mensagemCarregamento: v }),
 
-      concluirCarregamento: (docs) =>
+      concluirCarregamento: (docs, selecao, baseVersion = '', objetivo) =>
         set({
+          analysisId: crypto.randomUUID(),
+          ia: iaVazia(),
+          baseVersion,
+          ui: { ...get().ui, 'selecao.rascunho': undefined, 'dossie.documento': undefined, 'ontologia.processando': false, 'ontologia.status': '', 'ontologia.erros': [], 'ontologia.upload': null },
+          ...(selecao && docs.length ? { programasSelecionados: selecao.programas, cursosTccSelecionados: selecao.cursosTcc } : {}),
+          rota: objetivoPorId(objetivo).rota,
+          ...(objetivoPorId(objetivo).buscaTipo ? { buscaTipo: objetivoPorId(objetivo).buscaTipo } : {}),
           docs,
           dadosCarregados: docs.length > 0,
           carregando: false,
@@ -165,14 +200,17 @@ export const useEcoGradStore = create<EcoGradState>()(
 
       novaConsulta: () =>
         set({
+          analysisId: crypto.randomUUID(),
+          ia: iaVazia(),
+          baseVersion: '',
+          ui: {},
+          chat: conversaVazia(),
           docs: [],
           dadosCarregados: false,
           carregando: false,
           erroCarregamento: null,
           snaGlobal: null,
           statusSNA: 'ocioso',
-          progressoSNA: 0,
-          textoProgressoSNA: '',
           maturidade: null,
           bootstrap: null,
           buscaTermo: null,
@@ -182,8 +220,7 @@ export const useEcoGradStore = create<EcoGradState>()(
           rota: 'dashboard',
         }),
 
-      setProgressoSNA: (valor, texto) => set({ progressoSNA: valor, textoProgressoSNA: texto }),
-      setSnaGlobal: (sna) => set({ snaGlobal: sna, statusSNA: 'pronto', progressoSNA: 100 }),
+      setSnaGlobal: (sna) => set({ snaGlobal: sna, statusSNA: 'pronto' }),
       setStatusSNA: (s) => set({ statusSNA: s }),
       setMaturidade: (m) => set({ maturidade: m }),
 
@@ -196,41 +233,18 @@ export const useEcoGradStore = create<EcoGradState>()(
 
       // Além de fixar a entidade, leva para o Motor de Busca — assim um clique
       // em qualquer nome do Dashboard abre o dossiê correspondente.
-      navegarPara: (tipo, termo) => set({ buscaTipo: tipo, buscaTermo: termo, rota: 'busca' }),
+      navegarPara: (tipo, termo) => set((s) => ({ buscaTipo: tipo, buscaTermo: termo, rota: 'busca', ui: { ...s.ui, 'dossie.documento': undefined } })),
+      navegarDocumento: (indice) => {
+        const ref = referenciaDocumento(get().docs, indice);
+        if (ref) set((s) => ({ buscaTipo: 'Documento', buscaTermo: ref.titulo, rota: 'busca', ui: { ...s.ui, 'dossie.documento': ref } }));
+      },
 
-      aplicarOntologia: (porTitulo) => {
-        const { docs } = get();
-        let atualizados = 0;
-        // Mapa por título normalizado, igual ao upload de CSV do Streamlit
-        const proximos = docs.map((d) => {
-          const onto = porTitulo.get(d.titulo.trim().toLowerCase());
-          if (!onto) return d;
-          atualizados += 1;
-          return { ...d, ontologia_ia: onto };
-        });
-        if (atualizados > 0) set({ docs: proximos, bootstrap: null });
+      aplicarOntologia: async (porId, substituir = false, antesDeAplicar) => {
+        const { docs, analysisId } = get();
+        const {proximos,atualizados}=await aplicarPorIdentidade(docs,porId,substituir);
+        antesDeAplicar?.();
+        if(get().analysisId!==analysisId || get().docs!==docs) throw new Error('A análise mudou. Revise novamente antes de aplicar.');
+        if(atualizados>0)set({docs:proximos,bootstrap:null});
         return atualizados;
       },
-    }),
-    {
-      name: 'ecograd-sessao',
-      storage: createJSONStorage(() => sessionStorage),
-      // Apenas seleção e preferências. `docs`/`snaGlobal` são grandes demais e
-      // voláteis por natureza — são reconstruídos a partir da seleção.
-      partialize: (s) => ({
-        apresentacaoVista: s.apresentacaoVista,
-        rota: s.rota,
-        sidebarRecolhida: s.sidebarRecolhida,
-        programasSelecionados: s.programasSelecionados,
-        cursosTccSelecionados: s.cursosTccSelecionados,
-        buscaTipo: s.buscaTipo,
-        buscaTermo: s.buscaTermo,
-        tipoForesight: s.tipoForesight,
-        janelaRecente: s.janelaRecente,
-        metodoCorte: s.metodoCorte,
-        percentilCorte: s.percentilCorte,
-        usarBootstrap: s.usarBootstrap,
-      }),
-    },
-  ),
-);
+}));

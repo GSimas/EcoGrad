@@ -1,0 +1,10 @@
+{
+  "arquivo": "/tmp/EcoGrad-release-revisao.tar",
+  "bytes": 138096640,
+  "sha256": "8cfa37569e813a985b6912059485e90cf381206ccde9ccc31de5f65dc23c530d",
+  "membrosVerificados": 516,
+  "cincoBundles": true,
+  "checagemNomesESegredosConhecidos": "aprovada; não substitui auditoria completa de segredos",
+  "fontesFrontendIguaisBloco16": true,
+  "publicado": false
+}

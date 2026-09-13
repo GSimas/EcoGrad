@@ -1,0 +1,210 @@
+{
+  "data": "2026-09-12T23:04:34.946Z",
+  "origem": "http://localhost:8888",
+  "escopo": "Smoke de endpoints locais reais; não valida UI, custo nem produção",
+  "amostra": {
+    "id": "doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c",
+    "titulo": "Analise economica da valorização energetica da madeira",
+    "url": "https://repositorio.ufsc.br/xmlui/handle/123456789/157542",
+    "programa": "Curso de Pos-Graduação em Engenhariade Produção",
+    "resumo": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição dos combustíveis derivados do petróleo, até então amplamente utilizados, e introduziu uma nova mentalidade nos meios de produção a racionalização das atividades e a necessidade e valorização dos resíduos industriais. Empresas ligadas às atividades madeireiras iniciaram a valorização de seus resíduos industriais, ou concebendo novos produtos, ou simplesmente através da geração de energia. Ao mesmo tempo, empresas de outros setores inciaram os reflorestamentos energéticos (principalmente formados por eucaliptos) motivadas pela possiblidade de obtenção de incentivos fiscais, e pela necessidade de assegurar suas próprias provisões de lenha, e desta forma minizarem sua dependência dos fornecedores desta matéria-prima, bem como sua sensibilidade às oscilações dos preços no mercado. Entretanto, há uma carência de estudos sobre a viabilidade econômica da valorização energética da madeira, quer sob a forma de resíduos industriais, quer sob a forma de lenha oriunda dos reflorestamentos energéticos. Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações.",
+    "palavras_chave": [
+      "santa catarina",
+      "residuos como combustivel",
+      "industria madeireira",
+      "madeira como combustivel"
+    ]
+  },
+  "execucoes": [
+    {
+      "endpoint": "gemini-chat",
+      "cancelamentoSolicitado": false,
+      "entrada": {
+        "mensagens": [
+          {
+            "role": "user",
+            "content": "Indique o único trabalho do catálogo com título e link exatos. Explique os limites deste recorte e se permite afirmar disponibilidade atual de orientação."
+          }
+        ],
+        "dossie": {
+          "nomePrograma": "Curso de Pos-Graduação em Engenhariade Produção",
+          "totalDocumentos": 1,
+          "lideresVolume": [],
+          "pontesInterdisciplinares": [],
+          "principaisConceitos": [
+            "santa catarina",
+            "residuos como combustivel",
+            "industria madeireira",
+            "madeira como combustivel"
+          ],
+          "docentes": [],
+          "catalogo": [
+            {
+              "titulo": "Analise economica da valorização energetica da madeira",
+              "autores": [
+                "Fries, Juliana"
+              ],
+              "orientador": "Kliemann Neto, Francisco Jose",
+              "macrotema": "Geografia Urbana Catarinense",
+              "conceitos": [
+                "santa catarina",
+                "residuos como combustivel",
+                "industria madeireira",
+                "madeira como combustivel"
+              ],
+              "url": "https://repositorio.ufsc.br/xmlui/handle/123456789/157542"
+            }
+          ]
+        }
+      },
+      "status": 200,
+      "contentType": "application/x-ndjson; charset=utf-8",
+      "cabecalhosMs": 3798,
+      "primeiroChunkMs": 3799,
+      "resposta": "{\"tipo\":\"texto\",\"texto\":\"Olá! Fico feliz em ajudar você a navegar pelo nosso catálogo e entender as informações disponíveis.\\n\\nCom base no recorte do catálogo fornecido, o único trabalho que corresponde à sua descrição, com título e link exatos\"}\n{\"tipo\":\"texto\",\"texto\":\", é:\\n\\n*   [Analise economica da valorização energetica da madeira](https://repositorio.ufsc.br/xmlui/handle/123456789/157542)\\n\\n\"}\n{\"tipo\":\"texto\",\"texto\":\"**Limites deste recorte e disponibilidade de orientação:**\\n\\nÉ importante ressaltar que este é um **recorte parcial** do catálogo de trabalhos do programa, contendo apenas um registro. Isso significa que ele não representa a totalidade das\"}\n{\"tipo\":\"texto\",\"texto\":\" teses e dissertações defendidas no Curso de Pós-Graduação em Engenharia de Produção da UFSC.\\n\\nSobre a disponibilidade atual de orientação, o dossiê fornecido **não permite afirmar** se o professor\"}\n{\"tipo\":\"texto\",\"texto\":\" Francisco Jose Kliemann Neto, orientador do trabalho mencionado, está atualmente credenciado no programa, ativo ou com disponibilidade de vagas para novos orientandos. A informação sobre a orientação histórica presente no catálogo é distinta da disponibilidade atual, e esta\"}\n{\"tipo\":\"texto\",\"texto\":\" última não foi fornecida neste contexto.\\n\\nPara informações sobre credenciamento e disponibilidade de orientação, é sempre recomendado consultar os canais oficiais do programa de pós-graduação.\"}\n{\"tipo\":\"fim\"}\n",
+      "totalMs": 5113
+    },
+    {
+      "endpoint": "gemini-synthesize",
+      "cancelamentoSolicitado": false,
+      "entrada": {
+        "nomesProgramas": [
+          "Curso de Pos-Graduação em Engenhariade Produção"
+        ],
+        "recorte": {
+          "quantidade": 1,
+          "total": 1,
+          "salto": 1,
+          "truncada": false
+        },
+        "amostraTextos": "Título: Analise economica da valorização energetica da madeira\nPalavras-chave: santa catarina, residuos como combustivel, industria madeireira, madeira como combustivel"
+      },
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "cabecalhosMs": 866,
+      "primeiroChunkMs": 866,
+      "resposta": "{\"descritivo\":\"Síntese restrita a até 1 de 1 registros da seleção, somente títulos e palavras-chave. Nesta amostra, os temas abordados incluem análise econômica, valorização energética, uso de resíduos como combustível e a indústria madeireira, com foco em Santa Catarina.\",\"escopo\":\"Síntese restrita a até 1 de 1 registros da seleção, somente títulos e palavras-chave.\",\"recorte\":{\"quantidade\":1,\"total\":1,\"salto\":1,\"truncada\":false}}",
+      "totalMs": 866
+    },
+    {
+      "endpoint": "gemini-ontology",
+      "cancelamentoSolicitado": false,
+      "entrada": {
+        "itens": [
+          {
+            "id": "doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c",
+            "titulo": "Analise economica da valorização energetica da madeira",
+            "resumo": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição dos combustíveis derivados do petróleo, até então amplamente utilizados, e introduziu uma nova mentalidade nos meios de produção a racionalização das atividades e a necessidade e valorização dos resíduos industriais. Empresas ligadas às atividades madeireiras iniciaram a valorização de seus resíduos industriais, ou concebendo novos produtos, ou simplesmente através da geração de energia. Ao mesmo tempo, empresas de outros setores inciaram os reflorestamentos energéticos (principalmente formados por eucaliptos) motivadas pela possiblidade de obtenção de incentivos fiscais, e pela necessidade de assegurar suas próprias provisões de lenha, e desta forma minizarem sua dependência dos fornecedores desta matéria-prima, bem como sua sensibilidade às oscilações dos preços no mercado. Entretanto, há uma carência de estudos sobre a viabilidade econômica da valorização energética da madeira, quer sob a forma de resíduos industriais, quer sob a forma de lenha oriunda dos reflorestamentos energéticos. Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações."
+          }
+        ]
+      },
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "cabecalhosMs": 1222,
+      "primeiroChunkMs": 1222,
+      "resposta": "{\"resultados\":[{\"id\":\"doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c\",\"titulo\":\"Analise economica da valorização energetica da madeira\",\"ontologia\":{\"teorias_e_modelos\":[],\"ferramentas_e_artefatos\":[],\"metodos_e_tecnicas\":[\"análise econômica\"]},\"evidencias\":[{\"categoria\":\"metodos_e_tecnicas\",\"termo\":\"análise econômica\",\"trecho\":\"Entretanto, há uma carência de estudos sobre a viabilidade econômica da valorização energética da madeira, quer sob a forma de resíduos industriais, quer sob a forma de lenha oriunda dos reflorestamentos energéticos. Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações.\"}],\"resumoSha256\":\"b23866c54a1fe68dd7a0879ba8357ad3a654dd645656a9583cd556ce3d58eeed\",\"erro\":null}],\"processados\":1,\"maxItensPorChamada\":8}",
+      "totalMs": 1222
+    },
+    {
+      "endpoint": "gemini-ontology",
+      "cancelamentoSolicitado": false,
+      "entrada": {
+        "itens": [
+          {
+            "id": "doc-v1-b0700ce1af603cde93e01a7b03a493aa971db7e40b6b22de4334a6d81e00e03d",
+            "titulo": "Avaliação da produção de aveia preta (Avena strigosa) sobressemeada em diferentes espécies de pastagens perenes de verão em sistema de pastoreiro racional Voisin",
+            "resumo": "A flutuação estacional de pastagens é um problema decorrente de diversos fatores, principalmente climáticos, como queda na temperatura e déficit hídrico. A flutuação, que resulta na diminuição da oferta de pasto em determinados períodos do ano é responsável pela queda no desempenho produtivo de sistemas de criação de herbívoros. A sobressemeadura de espécies hibernais em pastagens perenes de verão se constitui em uma alternativa para amenizar o problema. Além disso, é desta forma que se torna possível manter a cobertura vegetal permanente ao longo do ano em regiões em que espécies hibernais apresentam bom estabelecimento. A compensação da flutuação estacional de pasto deve ser realizada por meio de um planejamento forrageiro. No entanto, alguns métodos são onerosos e resultam em maior penosidade do trabalho. O presente trabalho, através de uma pesquisa experimental em condições de campo, analisou em termos quantitativos a produção de forragem de Avena strigosa cv. Embrapa 139 Neblina, sobressemeada em diferentes espécies de pastagens perenes. O experimento foi implantado em condições de campo, nos anos de 2016 e 2017, sendo que no último ano não houve produção em função de situações climáticas desfavoráveis. O desenho experimental utilizado foi de blocos completos casualizados, constituído por cinco tratamentos e quatro repetições. Foi comparado o somatório da produção da cultura anual sobressemeada em Brachiária brizantha cv. MG5, em Cynodon cv. Tífton 68, em Panicum maximum cv. Mombaça, em Pennisetum purpureum cv. Pioneiro e em Brachiária brizantha cv. Piatã. Os dados de produção do ano de 2016 foram submetidos à análise de variância e ao teste Tukey a 5% de significância. Houve diferença significativa entre os tratamentos composto por sobressemeadura de aveia em Panicum maximum cv. Mombaça, que apresentou menor produção, e tratamento composto por aveia sobressemeada em Brachiária brizantha cv. MG5, que foi mais produtivo."
+          }
+        ]
+      },
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "cabecalhosMs": 1510,
+      "primeiroChunkMs": 1510,
+      "resposta": "{\"resultados\":[{\"id\":\"doc-v1-b0700ce1af603cde93e01a7b03a493aa971db7e40b6b22de4334a6d81e00e03d\",\"titulo\":\"Avaliação da produção de aveia preta (Avena strigosa) sobressemeada em diferentes espécies de pastagens perenes de verão em sistema de pastoreiro racional Voisin\",\"ontologia\":null,\"erro\":\"Evidência não corresponde a um trecho literal do resumo ou à extração.\"}],\"processados\":0,\"maxItensPorChamada\":8}",
+      "totalMs": 1511
+    },
+    {
+      "endpoint": "gemini-ontology",
+      "cancelamentoSolicitado": false,
+      "entrada": {
+        "itens": [
+          {
+            "id": "doc-v1-0dfa99814b8c71e859e9dccd15f7b465ccec9ddfc11320c029e3dcd6bb923939",
+            "titulo": "Boletim Informativo do PGA",
+            "resumo": "Nº VI, 2021.2. Este boletim traz informações e acontecimentos envolvendo os discentes e docentes do Programa de Pós-Graduação em Agroecossistemas do Centro de Ciências Agrárias da Universidade Federal de Santa Catarina. Contém as notícias: Informes gerais; Lançamento de livros e publicações; Cursos, congressos e eventos."
+          }
+        ]
+      },
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "cabecalhosMs": 975,
+      "primeiroChunkMs": 975,
+      "resposta": "{\"resultados\":[{\"id\":\"doc-v1-0dfa99814b8c71e859e9dccd15f7b465ccec9ddfc11320c029e3dcd6bb923939\",\"titulo\":\"Boletim Informativo do PGA\",\"ontologia\":{\"teorias_e_modelos\":[],\"ferramentas_e_artefatos\":[],\"metodos_e_tecnicas\":[]},\"evidencias\":[],\"resumoSha256\":\"6ac0be2ef617a738bed512a94223badd7b92c89e09d1927bc4dfe6d76e547906\",\"erro\":null}],\"processados\":1,\"maxItensPorChamada\":8}",
+      "totalMs": 975
+    },
+    {
+      "endpoint": "gemini-chat",
+      "cancelamentoSolicitado": true,
+      "entrada": {
+        "mensagens": [
+          {
+            "role": "user",
+            "content": "Explique detalhadamente os limites do catálogo recebido em 15 parágrafos."
+          }
+        ],
+        "dossie": {
+          "nomePrograma": "Curso de Pos-Graduação em Engenhariade Produção",
+          "totalDocumentos": 1,
+          "lideresVolume": [],
+          "pontesInterdisciplinares": [],
+          "principaisConceitos": [
+            "santa catarina",
+            "residuos como combustivel",
+            "industria madeireira",
+            "madeira como combustivel"
+          ],
+          "docentes": [],
+          "catalogo": [
+            {
+              "titulo": "Analise economica da valorização energetica da madeira",
+              "autores": [
+                "Fries, Juliana"
+              ],
+              "orientador": "Kliemann Neto, Francisco Jose",
+              "macrotema": "Geografia Urbana Catarinense",
+              "conceitos": [
+                "santa catarina",
+                "residuos como combustivel",
+                "industria madeireira",
+                "madeira como combustivel"
+              ],
+              "url": "https://repositorio.ufsc.br/xmlui/handle/123456789/157542"
+            }
+          ]
+        }
+      },
+      "status": 200,
+      "contentType": "application/x-ndjson; charset=utf-8",
+      "cabecalhosMs": 4248,
+      "primeiroChunkMs": 4249,
+      "canceladoAposTexto": true,
+      "resposta": "{\"tipo\":\"texto\",\"texto\":\"Prezado(a)\"}\n",
+      "totalMs": 4251
+    }
+  ],
+  "amostrasAdicionais": [
+    {
+      "id": "doc-v1-b0700ce1af603cde93e01a7b03a493aa971db7e40b6b22de4334a6d81e00e03d",
+      "titulo": "Avaliação da produção de aveia preta (Avena strigosa) sobressemeada em diferentes espécies de pastagens perenes de verão em sistema de pastoreiro racional Voisin",
+      "url": "https://repositorio.ufsc.br/handle/123456789/186334",
+      "resumo": "A flutuação estacional de pastagens é um problema decorrente de diversos fatores, principalmente climáticos, como queda na temperatura e déficit hídrico. A flutuação, que resulta na diminuição da oferta de pasto em determinados períodos do ano é responsável pela queda no desempenho produtivo de sistemas de criação de herbívoros. A sobressemeadura de espécies hibernais em pastagens perenes de verão se constitui em uma alternativa para amenizar o problema. Além disso, é desta forma que se torna possível manter a cobertura vegetal permanente ao longo do ano em regiões em que espécies hibernais apresentam bom estabelecimento. A compensação da flutuação estacional de pasto deve ser realizada por meio de um planejamento forrageiro. No entanto, alguns métodos são onerosos e resultam em maior penosidade do trabalho. O presente trabalho, através de uma pesquisa experimental em condições de campo, analisou em termos quantitativos a produção de forragem de Avena strigosa cv. Embrapa 139 Neblina, sobressemeada em diferentes espécies de pastagens perenes. O experimento foi implantado em condições de campo, nos anos de 2016 e 2017, sendo que no último ano não houve produção em função de situações climáticas desfavoráveis. O desenho experimental utilizado foi de blocos completos casualizados, constituído por cinco tratamentos e quatro repetições. Foi comparado o somatório da produção da cultura anual sobressemeada em Brachiária brizantha cv. MG5, em Cynodon cv. Tífton 68, em Panicum maximum cv. Mombaça, em Pennisetum purpureum cv. Pioneiro e em Brachiária brizantha cv. Piatã. Os dados de produção do ano de 2016 foram submetidos à análise de variância e ao teste Tukey a 5% de significância. Houve diferença significativa entre os tratamentos composto por sobressemeadura de aveia em Panicum maximum cv. Mombaça, que apresentou menor produção, e tratamento composto por aveia sobressemeada em Brachiária brizantha cv. MG5, que foi mais produtivo."
+    },
+    {
+      "id": "doc-v1-0dfa99814b8c71e859e9dccd15f7b465ccec9ddfc11320c029e3dcd6bb923939",
+      "titulo": "Boletim Informativo do PGA",
+      "url": "https://repositorio.ufsc.br/handle/123456789/256927",
+      "resumo": "Nº VI, 2021.2. Este boletim traz informações e acontecimentos envolvendo os discentes e docentes do Programa de Pós-Graduação em Agroecossistemas do Centro de Ciências Agrárias da Universidade Federal de Santa Catarina. Contém as notícias: Informes gerais; Lançamento de livros e publicações; Cursos, congressos e eventos."
+    }
+  ]
+}

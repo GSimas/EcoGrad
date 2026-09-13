@@ -1,0 +1,32 @@
+{
+  "formato": "ecograd-revisao-ia-v1",
+  "baseVersion": "6c9b93b97aa1376dfc0a2df092b84a8c74ac311872900bbf8f57ea429c936acd",
+  "estado": "concluido",
+  "itens": [
+    {
+      "id": "doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c",
+      "titulo": "Analise economica da valorização energetica da madeira",
+      "estado": "concluido",
+      "ontologia": {
+        "teorias_e_modelos": [],
+        "ferramentas_e_artefatos": [],
+        "metodos_e_tecnicas": [
+          "análise de custos"
+        ]
+      },
+      "evidencias": [
+        {
+          "categoria": "metodos_e_tecnicas",
+          "termo": "análise de custos",
+          "trecho": "Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações."
+        }
+      ],
+      "fonte": {
+        "titulo": "Analise economica da valorização energetica da madeira",
+        "url": "https://repositorio.ufsc.br/xmlui/handle/123456789/157542",
+        "resumo": "As atuais necessidades de redução dos custos para a produção de bens, aliada à crise energética desencadeada na década de 70, levou muitas empresas a buscarem soluções alternativas para a substituição dos combustíveis derivados do petróleo, até então amplamente utilizados, e introduziu uma nova mentalidade nos meios de produção a racionalização das atividades e a necessidade e valorização dos resíduos industriais. Empresas ligadas às atividades madeireiras iniciaram a valorização de seus resíduos industriais, ou concebendo novos produtos, ou simplesmente através da geração de energia. Ao mesmo tempo, empresas de outros setores inciaram os reflorestamentos energéticos (principalmente formados por eucaliptos) motivadas pela possiblidade de obtenção de incentivos fiscais, e pela necessidade de assegurar suas próprias provisões de lenha, e desta forma minizarem sua dependência dos fornecedores desta matéria-prima, bem como sua sensibilidade às oscilações dos preços no mercado. Entretanto, há uma carência de estudos sobre a viabilidade econômica da valorização energética da madeira, quer sob a forma de resíduos industriais, quer sob a forma de lenha oriunda dos reflorestamentos energéticos. Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações.",
+        "resumoSha256": "b23866c54a1fe68dd7a0879ba8357ad3a654dd645656a9583cd556ce3d58eeed"
+      }
+    }
+  ]
+}

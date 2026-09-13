@@ -1,3 +1,4 @@
+import { useSessionField } from '@/hooks/useSessionField';
 import type { ReactNode } from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { cn } from '@/lib/utils';
@@ -22,11 +23,12 @@ export function Tabs({
   onValorChange?: (v: string) => void;
   className?: string;
 }) {
+  const [saved, setSaved] = useSessionField('tabs.' + abas.map((a) => a.valor).join('|'), padrao ?? abas[0]?.valor);
   return (
     <TabsPrimitive.Root
       defaultValue={padrao ?? abas[0]?.valor}
-      value={valor}
-      onValueChange={onValorChange}
+      value={valor ?? (abas.some((a) => a.valor === saved) ? saved : abas[0]?.valor)}
+      onValueChange={(v) => { setSaved(v); onValorChange?.(v); }}
       className={cn('w-full', className)}
     >
       <TabsPrimitive.List className="mb-4 flex flex-wrap gap-1 border-b border-eco-border">
@@ -72,10 +74,11 @@ export function GrupoOpcoes<T extends string>({
             key={o}
             type="button"
             onClick={() => onChange(o)}
+            aria-pressed={o === valor}
             className={cn(
               'rounded-md px-3 py-1.5 text-sm font-medium transition',
               o === valor
-                ? 'bg-eco-accent text-black'
+                ? 'bg-eco-action text-black'
                 : 'text-slate-400 hover:bg-white/5 hover:text-slate-200',
             )}
           >

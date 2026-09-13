@@ -1,0 +1,9 @@
+{
+  "site_id": "e2e5db90-ff63-4958-8451-a1aeaae70f6e",
+  "site_name": "ecograd",
+  "deploy_id": "6aa5ee23875c3a0006f75f26",
+  "deploy_url": "https://6aa5ee23875c3a0006f75f26--ecograd.netlify.app",
+  "logs": "https://app.netlify.com/projects/ecograd/deploys/6aa5ee23875c3a0006f75f26",
+  "function_logs": "https://app.netlify.com/projects/ecograd/logs/functions?scope=deploy:6aa5ee23875c3a0006f75f26",
+  "edge_function_logs": "https://app.netlify.com/projects/ecograd/logs/edge-functions?scope=deployid:6aa5ee23875c3a0006f75f26"
+}

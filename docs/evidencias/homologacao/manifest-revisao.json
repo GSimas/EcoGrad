@@ -1,0 +1,647 @@
+{
+  "gitHead": "c57c40a2abbe97405dc3f5c45e6c5ec43192f3a3",
+  "workspaceSujo": true,
+  "node": "v24.14.1",
+  "segredosLocaisNosArtefatos": "nenhum valor de KEY/PASSWORD/TOKEN do .env detectado; checagem limitada, n\u00e3o auditoria completa",
+  "dist": [
+    {
+      "path": "ecograd-web/dist/assets/EChartsCanvas-B3fNzwVy.js",
+      "bytes": 92,
+      "sha256": "e5da4cd6b3a2cbbde5dc38b9b53b22bbfa3728a5a43c840379294ebb2c0eaa7c"
+    },
+    {
+      "path": "ecograd-web/dist/assets/data.worker-DgMjf3G2.js",
+      "bytes": 24440,
+      "sha256": "a0aff24cb3d203d3df6e54ab29297530b4b5ac991ac5fcc6204b7dc376e9f37f"
+    },
+    {
+      "path": "ecograd-web/dist/assets/echarts-BwtwZlJu.js",
+      "bytes": 1066487,
+      "sha256": "3f058c0fe539aeca8199ea2e075847ca5814d05f1461567f1b70b283fb1a280e"
+    },
+    {
+      "path": "ecograd-web/dist/assets/forcegraph-Ds8dyI2J.js",
+      "bytes": 186925,
+      "sha256": "382589f5afeffbe02deb322b2020fec234a2b6c190394e0c71a7291c1e4f5579"
+    },
+    {
+      "path": "ecograd-web/dist/assets/graph-xZF4dEUc.js",
+      "bytes": 91658,
+      "sha256": "b84fe49266562f992dc48f54b4bb6d6c8b9adfe0f2b4c45c69e8f67a8812ab4d"
+    },
+    {
+      "path": "ecograd-web/dist/assets/index-B_6N5mkx.css",
+      "bytes": 34336,
+      "sha256": "38b2be1a6c1adb5ff75a830c0b32046996105da2b3e8138c879d1d86c197033b"
+    },
+    {
+      "path": "ecograd-web/dist/assets/index-kmKZ_goY.js",
+      "bytes": 402670,
+      "sha256": "9408e45f9542af2a148b7e980f22731e743d3c162fa1ff25bc0cb81292ce60cb"
+    },
+    {
+      "path": "ecograd-web/dist/assets/react-CC3K5JGs.js",
+      "bytes": 148657,
+      "sha256": "5e1e20ff5012dbe184ee96b64901a2240ea8b554e5f2d49bd9f83e5b5e3be3cf"
+    },
+    {
+      "path": "ecograd-web/dist/assets/sna.worker-DKGMnjLJ.js",
+      "bytes": 116457,
+      "sha256": "efda155f68f4b4bf639f16b2d66ebd9e7107533dbb2531fd40654fc82ca0b894"
+    },
+    {
+      "path": "ecograd-web/dist/data/.gitignore",
+      "bytes": 103,
+      "sha256": "5c0daee5f3326c2c50b442a3eca0ce806b4dfc75abe1066d9e183a051948ea8f"
+    },
+    {
+      "path": "ecograd-web/dist/data/base_consolidada_ufsc.json.gz",
+      "bytes": 41721699,
+      "sha256": "7b1cbeb9dea18b2d60abd671958b8371cdf13e1efe17af2dd4e5764bc500edcc"
+    },
+    {
+      "path": "ecograd-web/dist/data/base_tcc_ufsc.json.gz",
+      "bytes": 23155399,
+      "sha256": "105d4140f223e489141373ed8a4836bc31b2f51b7d49e57cf1345d6e9bbf484c"
+    },
+    {
+      "path": "ecograd-web/dist/data/colecoes-cobertura.json",
+      "bytes": 76534,
+      "sha256": "1273aa1d7dd4e406e9509c9a42a0216da7ea7e5cdfbe16f9b5f84c12deaa5340"
+    },
+    {
+      "path": "ecograd-web/dist/data/manifest.json",
+      "bytes": 459,
+      "sha256": "b0e39eeab231ef0a2f37a22e45e42a01a1860f321df514f71d54081c4d5af303"
+    },
+    {
+      "path": "ecograd-web/dist/data/mapa_colecoes_tcc.json",
+      "bytes": 19917,
+      "sha256": "4ab1acafd395798f3213f95cc319c966f91d9dddc7467f9d11c0f91bee61b4d7"
+    },
+    {
+      "path": "ecograd-web/dist/data/programas_ufsc.json",
+      "bytes": 11830,
+      "sha256": "2e2cb40b2b27a8fe37b3f9d590436140dc04beda9f1af54d9490d780dcdbb435"
+    },
+    {
+      "path": "ecograd-web/dist/ecograd-logo.png",
+      "bytes": 52455,
+      "sha256": "eb8b253bc59add85207df6af2fa4138f5c608136c1bd0236a6ae8e0e43f271cd"
+    },
+    {
+      "path": "ecograd-web/dist/index.html",
+      "bytes": 804,
+      "sha256": "2b6e92315c6fcef6f66f1b9197a69757184ee6d1772f3b4e7ac62124bc1854ad"
+    }
+  ],
+  "funcoes": [
+    {
+      "path": "/tmp/ecograd-homologacao-functions/capes-proxy.zip",
+      "bytes": 342436,
+      "sha256": "d8e1dd1478513d28fde8a7f5c62491d8938eeb036f365c87b56f3228296b91f5"
+    },
+    {
+      "path": "/tmp/ecograd-homologacao-functions/gemini-chat.zip",
+      "bytes": 342925,
+      "sha256": "6a298bde48966ac87ec76aa119b7e4525ee4e7e4519a8613b9c4f96befaa1065"
+    },
+    {
+      "path": "/tmp/ecograd-homologacao-functions/gemini-ontology.zip",
+      "bytes": 341726,
+      "sha256": "2a0305dbcde03beea1b1ef766795c215d199181431795510ac6fbf763c546955"
+    },
+    {
+      "path": "/tmp/ecograd-homologacao-functions/gemini-synthesize.zip",
+      "bytes": 340679,
+      "sha256": "4728a0202220b493e69a6363f3a74e6591fc2597687e24d4daaa82fcd71ed6fc"
+    },
+    {
+      "path": "/tmp/ecograd-homologacao-functions/neo4j-query.zip",
+      "bytes": 895039,
+      "sha256": "bedb1bce98ae483bed286747f3f099b7513a2e03b7ce661fef05bf41536afd37"
+    }
+  ],
+  "fontes": [
+    {
+      "path": "ecograd-web/netlify/functions/_shared/capes-tls.ts",
+      "sha256": "2b2b0fefae2f27293a33b3a29205460b42a45fca3f091cb8fa1f5eaf8480bba6"
+    },
+    {
+      "path": "ecograd-web/netlify/functions/_shared/chat-stream.ts",
+      "sha256": "091d73b158c40e86a9cbf0e8d37a347aa3ab1ac88922612f7598a16231f22878"
+    },
+    {
+      "path": "ecograd-web/netlify/functions/capes-proxy.ts",
+      "sha256": "9f4abf310703d2390a064443f3927343b455e81be331416d4dff36a75c1a0685"
+    },
+    {
+      "path": "ecograd-web/netlify/functions/gemini-chat.ts",
+      "sha256": "efe9aa10b5710644f8092a8a8b2c5560aa70c8a0143696a521af1776ffeddf9b"
+    },
+    {
+      "path": "ecograd-web/netlify/functions/gemini-ontology.ts",
+      "sha256": "888b6d1b5601701ddb7e05c754d9019693664a8e0028c61ffc6af3c9946b6589"
+    },
+    {
+      "path": "ecograd-web/netlify/functions/gemini-synthesize.ts",
+      "sha256": "ebb5d047f1d718f425f15135dd29afba98362f20c826ed241ebf77eb19ef47a7"
+    },
+    {
+      "path": "ecograd-web/netlify/functions/lib/gemini.ts",
+      "sha256": "78264827acddea3389acab182626b6463e33e4838434f82105bec81bbeb885f0"
+    },
+    {
+      "path": "ecograd-web/netlify/functions/neo4j-query.ts",
+      "sha256": "311e6d70f1713a2ff104d1cdb9df901749d8f0f77cf14420a361b044ed53d52c"
+    },
+    {
+      "path": "ecograd-web/package-lock.json",
+      "sha256": "3687682d992b4ffe8a740c209943130fa4270ea82fdc8277b45b1b3b86fb3919"
+    },
+    {
+      "path": "ecograd-web/package.json",
+      "sha256": "8fc9ce8f8cf2d3a380651c33369bd5a52082f0842bf6ff38db9d5b8e4096d082"
+    },
+    {
+      "path": "ecograd-web/scripts/collection-metadata.mjs",
+      "sha256": "9e1a02bfa206d2b0b160d39bb2ff95b35c06da371e27c672822503ba8396cac0"
+    },
+    {
+      "path": "ecograd-web/scripts/homologar-ia-real.mjs",
+      "sha256": "a14b3adbf988c1388dd1dd225aae61c821c2e61fa47466860e05b27cbcad983f"
+    },
+    {
+      "path": "ecograd-web/scripts/netlify-dev.mjs",
+      "sha256": "fd6c5467a0feb325789792574c2b338a5be2b85b1902eba80550700a9afd9c06"
+    },
+    {
+      "path": "ecograd-web/scripts/report-build.mjs",
+      "sha256": "6b0dd35acff87a772b5ecbc6fe54b1436974103b18a81a5d6a86d4c32a180726"
+    },
+    {
+      "path": "ecograd-web/scripts/sync-data.mjs",
+      "sha256": "eefc487bdbeb24e2003027926080ca52734f5f75678003e874b6bab574e876cd"
+    },
+    {
+      "path": "ecograd-web/scripts/test-all.mjs",
+      "sha256": "76ea9d1e3a572c8e12d74c27ccdbc124b1c5eb4ba3bd44687307e483ef64593d"
+    },
+    {
+      "path": "ecograd-web/scripts/verify-parity-compare.py",
+      "sha256": "6dcc16f68bcac0b1ca17b8bb869d5af4378c288bc82c817496e0fb5c857b0c13"
+    },
+    {
+      "path": "ecograd-web/scripts/verify-parity-reference.py",
+      "sha256": "c131c0283ba11a810407140839a16cd945aea7d728a3be80185fb63eb4ba1203"
+    },
+    {
+      "path": "ecograd-web/scripts/verify-parity.sh",
+      "sha256": "f730cbb0600f4c92d4f6225e11006d5095555354834f93b810488929f01fd9cc"
+    },
+    {
+      "path": "ecograd-web/scripts/verify-parity.ts",
+      "sha256": "f1b7dda8c8404a441f67ae556a326beb56546628b574f0ebb1c067f2a41b8d46"
+    },
+    {
+      "path": "ecograd-web/src/App.tsx",
+      "sha256": "e2d479896176b510b59f95bce6c98d333abe2331d115069f6ceff7fa45b0f0be"
+    },
+    {
+      "path": "ecograd-web/src/components/chat/ConsultorIA.tsx",
+      "sha256": "9cfe625bc39c43b986cccc35ac3afba046d91f673a5a79f8c574591a981db884"
+    },
+    {
+      "path": "ecograd-web/src/components/dashboard/ComparacaoColecoes.tsx",
+      "sha256": "8a44bf6e67c75e1f07aa5c4c36995db214e7bc2b2fb56323270eab386ad61bd1"
+    },
+    {
+      "path": "ecograd-web/src/components/dashboard/Dashboard.tsx",
+      "sha256": "29e93fac6c21b5004bddc2a8c6feb0077d29f58c0070234d24ca6e52621cce42"
+    },
+    {
+      "path": "ecograd-web/src/components/dashboard/Destaques.tsx",
+      "sha256": "39d32aa08498e9d1a55cb6264f3c3e00a8dda6c93c0919e6441439f7200d6b42"
+    },
+    {
+      "path": "ecograd-web/src/components/dashboard/FichaTecnica.tsx",
+      "sha256": "fe21f1214c1c5681feda1e606a83b9224783ddb04db2cc299ff09c89b7d5af44"
+    },
+    {
+      "path": "ecograd-web/src/components/dashboard/FonteCapes.tsx",
+      "sha256": "ef6126339c9ca5c57fd3d0bad49eaa124f3f0d3feec602e954b739eb1e3396a2"
+    },
+    {
+      "path": "ecograd-web/src/components/dashboard/PanoramaCapes.tsx",
+      "sha256": "0a99e051452a2c1daeafdfc73a6b7f3fc12b545c7a7adcd2750c6d7ec4a518e6"
+    },
+    {
+      "path": "ecograd-web/src/components/foresight/GridSearch.tsx",
+      "sha256": "4492be64579e4de313baab905ffdad8f78c2437b68454c7bd4b8ae753951bd92"
+    },
+    {
+      "path": "ecograd-web/src/components/foresight/RadarForesight.tsx",
+      "sha256": "7b9b8ed7a019b1fc58b7dececa7fd9163d12e4395f351c2cfe2410accc0d6d5c"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/Aparencia.tsx",
+      "sha256": "0a6d10543a1eb5d728644ac365e1cb51340e77153c7ac2c4428eb2a24f59eebb"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/Apresentacao.tsx",
+      "sha256": "c56752033d854260d18057c8e55ff4a8ef50b3672163892ed799573640f944b7"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/ColecoesPicker.tsx",
+      "sha256": "a7fd547bb15cc978ab54f33b7b1ecdfcbf9f8311b183320b2774316d1ea95064"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/Janela.tsx",
+      "sha256": "8838c1ef76929337df25c8f394ec32c99a010e44c536d73f1313be332f7b3352"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/NavigationHistory.tsx",
+      "sha256": "a5e4a8f6f2eabbf70869dfa1e6680a0fcc7814329a2ff24284b9e5e929f76915"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/ObjetivosUso.tsx",
+      "sha256": "4bce408a986d1821c01bec4266bab9b0a0a66269289370ecd3412a11f7f135d2"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/SelecaoInicial.tsx",
+      "sha256": "da576e51ed25db0b5e9e297117918b6934f70f26c8f689742fde75fc90850c83"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/SessionStatus.tsx",
+      "sha256": "91dad43b7549f4df54fadf70f8da8931c98ed5c6c31ff7b0c550fefa9065f432"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/Sidebar.tsx",
+      "sha256": "9d09061fef11b6d12291fc1d193f60cff0b327f5d1dca94d3268e1568843a509"
+    },
+    {
+      "path": "ecograd-web/src/components/layout/TutorialModal.tsx",
+      "sha256": "8292492b0749e9433b79c599065831d72b32faec11ca4f9db09f945b6a536fdd"
+    },
+    {
+      "path": "ecograd-web/src/components/memetics/CatalogoOntologia.tsx",
+      "sha256": "0e37a0394dcba88e7df1801f665ce8f49a5d71977ff9e4778216ec5b34e988e7"
+    },
+    {
+      "path": "ecograd-web/src/components/memetics/EcologiaSNA.tsx",
+      "sha256": "f6005f1262f407ef64105aa93fd8f3f3ad112aeeb65016319963290259108822"
+    },
+    {
+      "path": "ecograd-web/src/components/memetics/GraficoLongevidade.tsx",
+      "sha256": "9a4366ce8758d6829bcc20363e92977ce808cf138a9a79cda8855424e701aa96"
+    },
+    {
+      "path": "ecograd-web/src/components/memetics/Memetica.tsx",
+      "sha256": "222496bbe9d235566d78398eb6999881b09a59da68a72be829b3600df555548b"
+    },
+    {
+      "path": "ecograd-web/src/components/results/CoberturaAnalise.tsx",
+      "sha256": "a6868e1f70b5951802dec168b7caf68fddf60fb31998af4af074eeb1937a011f"
+    },
+    {
+      "path": "ecograd-web/src/components/results/Relacoes.tsx",
+      "sha256": "3e98f9c5bc506a975dfc2e2917c619c49d29082a760f8ac1ea34bac8fc36f567"
+    },
+    {
+      "path": "ecograd-web/src/components/results/Trabalhos.tsx",
+      "sha256": "19c83e086862f60d0331a8d175f4de8fa506449f3fdd0373bb802f0b6d903f23"
+    },
+    {
+      "path": "ecograd-web/src/components/results/TrabalhosDoTermo.tsx",
+      "sha256": "eeee31426f1d98fd39aa1b367a4dda873c97b3b4c7338de989103ca400453417"
+    },
+    {
+      "path": "ecograd-web/src/components/search-engine/Dossie.tsx",
+      "sha256": "d13ef74ae6d48665578ed4d984c20c1de742d1d62d22a174d50bbc1edcc37b8c"
+    },
+    {
+      "path": "ecograd-web/src/components/search-engine/MetricasEntidade.tsx",
+      "sha256": "3e71acc37da41c45875bdff441785474a5c27e02db94d27648e0321368972c96"
+    },
+    {
+      "path": "ecograd-web/src/components/search-engine/MotorBusca.tsx",
+      "sha256": "fcde9d88444d223a54c895b0e91842d6bce184d92c8fa5097655c5db51ef1c89"
+    },
+    {
+      "path": "ecograd-web/src/components/search-engine/OrbitaGrafo.tsx",
+      "sha256": "1b2ee24271399ecae943a7387d867ca6895a51b692445a47c9413cad1bf19f76"
+    },
+    {
+      "path": "ecograd-web/src/components/search-engine/TabelaQL.tsx",
+      "sha256": "3b57856dd6bd87d7b47c2133e0c943d7c6aef2fb3cce4a6095278d5ebed70669"
+    },
+    {
+      "path": "ecograd-web/src/components/search-engine/VisaoEntidade.tsx",
+      "sha256": "75afc0ef04a6bf73563d7dfc10ddcfeb800bd0a5f1623a2014542fdfddd9392e"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/Atividade.tsx",
+      "sha256": "b041c401424e307262d58668ce1ecea71484c9ac19d6b1519520a1f050fc870f"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/AtividadesIA.tsx",
+      "sha256": "5180bbe01683056c964fecb56a19bb4fe28496304171f57422b91e7f5825d825"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/CanvasBoundary.tsx",
+      "sha256": "19952e82b47085d18b2f52b9f6446a99b595380b75b6938bcd6f7740a2420664"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/Chart.tsx",
+      "sha256": "7a2ce64218d21458ccf15d2e9eddf24a97b7813630ebc863f8d92de6cb85bf58"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/EChartsCanvas.tsx",
+      "sha256": "67ab0e2bea65e64c6e4b9e0569a696dd586ddcc9da4ea7fecbaace4f58d900ab"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/MultiSelect.tsx",
+      "sha256": "8c5597efe87238373071583dae9cf04dbb6fda4ec4b844fda18b67924c2dc250"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/RedeInterativa.tsx",
+      "sha256": "0637692b284f37ededa56cbabb534a949b9f3abca018dc4b19450b37f06371eb"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/Tabela.tsx",
+      "sha256": "736bc20a45bd041948a44c5e66ed90618d9ab934afcf347b3baf4ea7c83b8db0"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/Tabs.tsx",
+      "sha256": "d883c2f133998d2d818703c126176b92eab3ab0c760b5d8cf82b727b1665f1d3"
+    },
+    {
+      "path": "ecograd-web/src/components/ui/primitives.tsx",
+      "sha256": "b7b8d18d78b63884f01aa15252767ebeb16534b0e94abeafaa73e86deff75b8e"
+    },
+    {
+      "path": "ecograd-web/src/data/vinculos-capes.json",
+      "sha256": "8f20b461d09aec92ef72f033f778799c38acf1b620b9738747b3b79ce4f49679"
+    },
+    {
+      "path": "ecograd-web/src/hooks/useDadosDerivados.ts",
+      "sha256": "4409e13b833bbb1b899e4c43cf04c7747380bda300b391d37a84275e4783bf81"
+    },
+    {
+      "path": "ecograd-web/src/hooks/useNavigationPosition.ts",
+      "sha256": "8525028e049c0d090c638142bc2e214f06ee7adfb55a9203402803ed513bdca0"
+    },
+    {
+      "path": "ecograd-web/src/hooks/useSessionField.ts",
+      "sha256": "8229ab85354bf08a31c56fcc235993318e59ebdfa48403d7581820ea1a1aa7f6"
+    },
+    {
+      "path": "ecograd-web/src/hooks/useSnaWorker.ts",
+      "sha256": "8a5e2b5a80b972323a22e1881347d9ff62e988a5b816646090c86797ef505a9c"
+    },
+    {
+      "path": "ecograd-web/src/index.css",
+      "sha256": "ec0696d0b1fb086204707afbb1859649bfe17d54fa732e23a01280bf00fa3e2d"
+    },
+    {
+      "path": "ecograd-web/src/lib/aparencia-graficos.ts",
+      "sha256": "df763c9cb2d3a24782485fa2238a8a20eaf2e277bb5617c2038e6bc31ee1edb2"
+    },
+    {
+      "path": "ecograd-web/src/lib/base-version.ts",
+      "sha256": "aa649ecf0eb0067eb1757bda2bc4969eea846c974bc216ddd1650c224f8ac0a7"
+    },
+    {
+      "path": "ecograd-web/src/lib/capes.ts",
+      "sha256": "16621507ae5090146564d2fe0e01f368bf6411b8bedc75489df27b505e4de170"
+    },
+    {
+      "path": "ecograd-web/src/lib/colecoes.ts",
+      "sha256": "92e27b9005df21f9d747e37778c37c350d7447314410b5ed72f1e8a60add27a3"
+    },
+    {
+      "path": "ecograd-web/src/lib/data-loader.ts",
+      "sha256": "656c63a5d6ca0feb5708b623f63ec2d058da53da2a9e2e4cc5d4334a47fdc9a7"
+    },
+    {
+      "path": "ecograd-web/src/lib/entities.ts",
+      "sha256": "c516ea9c646ea2573be7f3f968ff22ab83d4c461706b631d71a6d90c4e5a379c"
+    },
+    {
+      "path": "ecograd-web/src/lib/foresight-math.ts",
+      "sha256": "894ac68be7192ee3c5fe0a9eb44d37492804fb87528f5050f4ecb62c090c098c"
+    },
+    {
+      "path": "ecograd-web/src/lib/graph-core.ts",
+      "sha256": "ca0a4a3f46186c96068d5afa7abb0d39d5766f23607142d4fbbd55120affb62c"
+    },
+    {
+      "path": "ecograd-web/src/lib/ia-contexto.ts",
+      "sha256": "b791daec26392d7131e3cf542d02a51ee92f5728192441841bf6df223def4da5"
+    },
+    {
+      "path": "ecograd-web/src/lib/ia-state.ts",
+      "sha256": "eef00ced8d04b24f5e4172e971b41f934b65e7480952246d844bcd03f53c53e9"
+    },
+    {
+      "path": "ecograd-web/src/lib/interpretacao.ts",
+      "sha256": "43693f83c7e175394c0d4a9db5b02902d0ba70a4167e05fd5efb485f4a9626b3"
+    },
+    {
+      "path": "ecograd-web/src/lib/lexicon.ts",
+      "sha256": "da297fda0c8949b1a4ed474e176f6c8fed99fbb5470150f5855f7dc3cafc7cd9"
+    },
+    {
+      "path": "ecograd-web/src/lib/markdown.ts",
+      "sha256": "10932770d253127203c8d3179e7fc109e202ccf3897c96c96d6fc504d5a80dc8"
+    },
+    {
+      "path": "ecograd-web/src/lib/memetic-network.ts",
+      "sha256": "ba15f169d6562153d24bca7c72501289dab1193bc274b8b3d056b8d6b7ca2c9f"
+    },
+    {
+      "path": "ecograd-web/src/lib/memetics.ts",
+      "sha256": "d1f8f26a83b49e4252f3830618509ed8dd411c60756f666ee33785d84dfb70a1"
+    },
+    {
+      "path": "ecograd-web/src/lib/navigation.ts",
+      "sha256": "249e3e564d2f2c6011815569ff562d6e1f321e3262b4e77ece186eb42109e946"
+    },
+    {
+      "path": "ecograd-web/src/lib/objetivos.ts",
+      "sha256": "3848c668a3e372727f0c35533ee303f02afc6d44f4f87a75a5c3b808de6f0943"
+    },
+    {
+      "path": "ecograd-web/src/lib/ontologia-importacao.ts",
+      "sha256": "9a741f1d6a60887ae48b0cf668d4dd393ff4fde638cb01a73d4e093083df86ab"
+    },
+    {
+      "path": "ecograd-web/src/lib/orbit.ts",
+      "sha256": "1bb4e3aaa8ec592536798be45dc1faf5929d9323448384c405e24ce4ab3891ae"
+    },
+    {
+      "path": "ecograd-web/src/lib/ql.ts",
+      "sha256": "b20dc9e8e551b90343dc8c2ad54eea0c87919187ffe623ef91603d4814ca7b70"
+    },
+    {
+      "path": "ecograd-web/src/lib/resultados.ts",
+      "sha256": "373f14c7b2c1a6c52b30b2f354ee8917c34f9741174a7ee34b3669b4a631bda1"
+    },
+    {
+      "path": "ecograd-web/src/lib/selecao.ts",
+      "sha256": "cdeb8c33df06b42e3601450f7ad09db8673688c14e71c3914e9e686e115486b4"
+    },
+    {
+      "path": "ecograd-web/src/lib/session-codec.ts",
+      "sha256": "088f50bad0a7ce4f58ee552680ea1d1603f0f2477141536f9be4f4687cab47db"
+    },
+    {
+      "path": "ecograd-web/src/lib/session-db.ts",
+      "sha256": "204c5590a9934a82d1825d58d35b90e2f5a8a43788cc9e9b86eaccc97444a1f7"
+    },
+    {
+      "path": "ecograd-web/src/lib/similarity.ts",
+      "sha256": "f2786a99a251f5066c0e01b779936ac79dd957d6c6878656e853227d0fff45c6"
+    },
+    {
+      "path": "ecograd-web/src/lib/sna-engine.ts",
+      "sha256": "d69f4eb2d7636e63dba141a4d1a5124e39c2a08057899bd57fdaed4e5180acbe"
+    },
+    {
+      "path": "ecograd-web/src/lib/stats.ts",
+      "sha256": "cd643ddfad0565ba29500a644cf9214508e8a0d563989b734e8f6e1353732265"
+    },
+    {
+      "path": "ecograd-web/src/lib/stopwords.ts",
+      "sha256": "12cb370f4e4b19a05f7fa4dfaecde4d955425b8e36b497e61343dd00b0528b69"
+    },
+    {
+      "path": "ecograd-web/src/lib/utils.ts",
+      "sha256": "e9416d894d109b9ee12783e4d19cfc60d2a848edc8bf0d3f14730c2dd8a19ef6"
+    },
+    {
+      "path": "ecograd-web/src/lib/visualizacao-termos.ts",
+      "sha256": "57b7a05dcbbcc3a29523f79c4b73f79153d066ecc3cbfa69fa7893ca693a9a0d"
+    },
+    {
+      "path": "ecograd-web/src/lib/visualizacao.ts",
+      "sha256": "247300fe65b20560cd7b08a31e1d8ef4f8c7ffd1194bcd67c6cf124bf456cf17"
+    },
+    {
+      "path": "ecograd-web/src/lib/worker-tasks.ts",
+      "sha256": "8a4ce23fe57a988dc8a9ed48a59d847c99ea60d16f672d051dd4bd83bbf133a8"
+    },
+    {
+      "path": "ecograd-web/src/main.tsx",
+      "sha256": "32b11e0162f3d10997538ee67fb07ef827913f7f826dddb05aa14d710ba744a8"
+    },
+    {
+      "path": "ecograd-web/src/services/aparencia.ts",
+      "sha256": "3394d4e181eba00435a617b093ac9618ed42aa6c8c1c70a1ea1efe9f068a71a8"
+    },
+    {
+      "path": "ecograd-web/src/services/calculos.ts",
+      "sha256": "683d7735fccda2656f5310e1baf558e87ca923917373797446ab510c55815332"
+    },
+    {
+      "path": "ecograd-web/src/services/chat.ts",
+      "sha256": "92b7ccceaabde1291bc26d048df4107861606a5d106a2d59723a78a3f52e4027"
+    },
+    {
+      "path": "ecograd-web/src/services/ia.ts",
+      "sha256": "d65073ecaba55d45625885b780534657319c935cb2ced8e9078aa2339f0c5c5c"
+    },
+    {
+      "path": "ecograd-web/src/services/navigation.ts",
+      "sha256": "fa0ab7d0fb8adc2af75d6d6705c530b353d9d42bb8cb15e53d6aa56c5aeb922a"
+    },
+    {
+      "path": "ecograd-web/src/services/session.ts",
+      "sha256": "156b8da846ce19cdacb8f38142e5307ece271c8691d7ec53a2acdef89545105a"
+    },
+    {
+      "path": "ecograd-web/src/stores/useEcoGradStore.ts",
+      "sha256": "312d193e6aa5519fce1cd6719f0ed32e03d8c428a35727746599d44e92186673"
+    },
+    {
+      "path": "ecograd-web/src/types/index.ts",
+      "sha256": "a97619cbcf34e890dcdfe08ede74f3e721bfc861e3c43e8f49c74595638ee29b"
+    },
+    {
+      "path": "ecograd-web/src/workers/data.worker.ts",
+      "sha256": "53e05fdf4688422a7748e75aeb2c767891df91d2257eaa7fa2fed88aef12adb9"
+    },
+    {
+      "path": "ecograd-web/src/workers/sna.worker.ts",
+      "sha256": "c6f6a21285377bad913f04fd4e87439bf7a40b53fafa853784cdcc59f596493c"
+    },
+    {
+      "path": "ecograd-web/tests/aparencia.test.ts",
+      "sha256": "b81db53ae9dd110b39aa0ee0a49022de80608db33202d33c20b675274004f094"
+    },
+    {
+      "path": "ecograd-web/tests/capes.test.ts",
+      "sha256": "0f1422001a26754f75bbd01eb424d37de833dd12405c47467298310f09a7f668"
+    },
+    {
+      "path": "ecograd-web/tests/colecoes.test.ts",
+      "sha256": "a151d9023629710d067a06d01c67c967b333678cd24fc70429d4473beb588609"
+    },
+    {
+      "path": "ecograd-web/tests/collection-metadata.test.mjs",
+      "sha256": "8b76d1c4e9284c7af51f58952f9e0c9be8fd1b1bc68689069730af1f80a7b336"
+    },
+    {
+      "path": "ecograd-web/tests/ia-endpoints.test.ts",
+      "sha256": "5b3b6e51da1cfd57e3d32e94e352fa50e0ee5733d2685c5cd3e1bb29fdaa1f76"
+    },
+    {
+      "path": "ecograd-web/tests/ia.test.ts",
+      "sha256": "fc02d8d89d04ac0128fc37ed84b4f62ea94983b526d991fa7a231c57237d3ede"
+    },
+    {
+      "path": "ecograd-web/tests/interpretacao.test.ts",
+      "sha256": "071aba81ba0a9f6a711006e3d06ea8cd28e59c008dd2cafe23ce302125b51221"
+    },
+    {
+      "path": "ecograd-web/tests/manual-ia-server.mjs",
+      "sha256": "ea67bf9af3cfe59f84a016773c0108018b82956e0e44883dbab9b4deb9f3af24"
+    },
+    {
+      "path": "ecograd-web/tests/navigation.test.ts",
+      "sha256": "ec5fd56c77db4fda937abc8fd6a29d7cc4bd5446feb60fb72c4707cc75baee48"
+    },
+    {
+      "path": "ecograd-web/tests/resultados.test.ts",
+      "sha256": "3762f1947e7c83492971c0cb6c2bdb9484cf313303b1e7a0ff50f7ddc626a246"
+    },
+    {
+      "path": "ecograd-web/tests/selecao.test.ts",
+      "sha256": "33c1b69a91e2d6bfd4ecec9407264c12cf7dddaea7ae9a2c9d8a4f52c55ef94b"
+    },
+    {
+      "path": "ecograd-web/tests/session.test.ts",
+      "sha256": "714351eb1ab538c217258dac68bbe4da9fea0b55982a54c9e6876144ea5d0c3e"
+    },
+    {
+      "path": "ecograd-web/tests/tsconfig.json",
+      "sha256": "7e62aee5fdbeb57ca58accf13f4678f684d36e9489702310c6862de271b7e2b7"
+    },
+    {
+      "path": "ecograd-web/tests/visualizacao.test.ts",
+      "sha256": "adce904d51f6ffd069bbdf9912ac57810dbbf556fb4577fb1677e604e8f538c9"
+    },
+    {
+      "path": "ecograd-web/tests/worker-tasks.test.ts",
+      "sha256": "840d3af9f446ed55ea17e3fb803bd049004f72ba6a7248a1d2c469ad4020a398"
+    },
+    {
+      "path": "ecograd-web/vite.config.ts",
+      "sha256": "e882809d63c299c5c97a7d341ebb34c41ee1011b77628d786dcbdf1442cd2bf9"
+    },
+    {
+      "path": "netlify.toml",
+      "sha256": "95458c9719fa5ff72eb79e8fcdaca4b58ac4f2319054a39b9316b7e0596eba0b"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "version": "6c9b93b97aa1376dfc0a2df092b84a8c74ac311872900bbf8f57ea429c936acd",
+  "colecoes": [
+    {
+      "nome": "Programa de P\u00f3s-Gradua\u00e7\u00e3o em Ecologia",
+      "path": "/data/colecao-757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391.json.gz",
+      "sha256": "757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391",
+      "bytes": 324638,
+      "total": 264
+    },
+    {
+      "nome": "TCC Administra\u00e7\u00e3o P\u00fablica EAD",
+      "path": "/data/colecao-1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000.json.gz",
+      "sha256": "1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000",
+      "bytes": 39013,
+      "total": 58
+    }
+  ],
+  "bytesDocumentos": 363651,
+  "bytesBasesAnteriores": 64877098,
+  "manifestBytes": 68434,
+  "medicoes": [
+    {
+      "http_code": 200,
+      "size_download": 324638,
+      "time_total": 2.1604,
+      "speed_download": 150267,
+      "url_effective": "http://localhost:8888/data/colecao-757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391.json.gz"
+    },
+    {
+      "http_code": 200,
+      "size_download": 39013,
+      "time_total": 0.006782,
+      "speed_download": 5752432,
+      "url_effective": "http://localhost:8888/data/colecao-1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000.json.gz"
+    }
+  ]
+}

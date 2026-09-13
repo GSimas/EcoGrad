@@ -1,0 +1,69 @@
+{
+  "escopo": "Transferência HTTP local via curl com limit-rate 125000 bytes/s; sem navegador, latência adicional, upload condicionado ou dispositivo físico. Curl pode ter rajadas em arquivos pequenos. Não mede carregamento da aplicação, frio/quente, LCP, INP ou CLS.",
+  "baseVersion": "6c9b93b97aa1376dfc0a2df092b84a8c74ac311872900bbf8f57ea429c936acd",
+  "bytesDocumentos": 363651,
+  "execucoes": [
+    {
+      "repeticao": 1,
+      "arquivos": [
+        {
+          "colecao": "Programa de Pós-Graduação em Ecologia",
+          "bytes": 324638,
+          "sha256": "757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391",
+          "tempoSegundos": 2.423058,
+          "http": 200
+        },
+        {
+          "colecao": "TCC Administração Pública EAD",
+          "bytes": 39013,
+          "sha256": "1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000",
+          "tempoSegundos": 0.005238,
+          "http": 200
+        }
+      ],
+      "totalSegundos": 2.428296
+    },
+    {
+      "repeticao": 2,
+      "arquivos": [
+        {
+          "colecao": "Programa de Pós-Graduação em Ecologia",
+          "bytes": 324638,
+          "sha256": "757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391",
+          "tempoSegundos": 2.416763,
+          "http": 200
+        },
+        {
+          "colecao": "TCC Administração Pública EAD",
+          "bytes": 39013,
+          "sha256": "1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000",
+          "tempoSegundos": 0.020137,
+          "http": 200
+        }
+      ],
+      "totalSegundos": 2.4369
+    },
+    {
+      "repeticao": 3,
+      "arquivos": [
+        {
+          "colecao": "Programa de Pós-Graduação em Ecologia",
+          "bytes": 324638,
+          "sha256": "757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391",
+          "tempoSegundos": 2.287922,
+          "http": 200
+        },
+        {
+          "colecao": "TCC Administração Pública EAD",
+          "bytes": 39013,
+          "sha256": "1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000",
+          "tempoSegundos": 0.00299,
+          "http": 200
+        }
+      ],
+      "totalSegundos": 2.290912
+    }
+  ],
+  "medianaSegundos": 2.428296,
+  "piorSegundos": 2.4369
+}

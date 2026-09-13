@@ -1,0 +1,7 @@
+{
+  "url": "https://6a947f736239ed000876648d--ecograd.netlify.app/api/neo4j-query",
+  "status": 502,
+  "body": {
+    "error": "Falha na consulta ao Neo4j: Could not perform discovery. No routing servers available. Known routing table: RoutingTable[database=default database, expirationTime=0, currentTime=1789259454570, routers=[], readers=[], writers=[]]"
+  }
+}

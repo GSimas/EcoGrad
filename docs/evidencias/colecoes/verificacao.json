@@ -1,0 +1,36 @@
+{
+  "testes": 123,
+  "falhas": 0,
+  "arquivosDeTeste": 16,
+  "mesmaVersaoCientificaParte12": true,
+  "mesmosHashesFontesParte12": true,
+  "GETsColecoesProducaoLocal": [
+    "/data/colecao-757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391.json.gz",
+    "/data/colecao-1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000.json.gz"
+  ],
+  "GETsBasesCompletasProducaoLocal": [],
+  "uiObservada": {
+    "documentos": 322,
+    "recuperadosAposReload": 322,
+    "origens": [
+      "http://localhost:8888",
+      "http://127.0.0.1:8894"
+    ],
+    "modo": "IAB desktop, não aparelho físico"
+  },
+  "sha256Fontes": {
+    "ecograd-web/scripts/collection-shards.mjs": "a303ece9509eb38294e17be300969bca1e271112210616a547ffdd3996ba70ef",
+    "ecograd-web/scripts/sync-data.mjs": "f5e5a958e32d664752ec2200d86f7d5735e96680e430b15da51b5e7b26d73f25",
+    "ecograd-web/scripts/collection-metadata.mjs": "a4c4a26e0bc90f8463facde2cb8b3390ecb7920ba838310e95117d3dadbdbdab",
+    "ecograd-web/scripts/test-all.mjs": "e3554b7b3d34b9692284af9607620f312802d72c65dd9f0c403b006e6f946bc8",
+    "ecograd-web/scripts/report-build.mjs": "0e3f84ea1abe57fe891e053c0285760b986c977a28775a066ca3684015f7edcf",
+    "ecograd-web/src/lib/collection-loader.ts": "c88da77949e41e760f26fb3cf64e171860ea24d270b559d03fd8c73ebcd17205",
+    "ecograd-web/src/lib/data-loader.ts": "975ea380edaa53d93fd058ac94e8ad2dae054a37280ee2dbaca31e11c375cb72",
+    "ecograd-web/src/lib/colecoes.ts": "32a0db68a4490f6382708c263cdab131ddac2e6c100c7b39e48018ed91d6d9c4",
+    "ecograd-web/src/workers/data.worker.ts": "1defab0fb96750e44a98789ceec44558f4bd8922faced9fd211f1f2b0e54efb9",
+    "ecograd-web/src/components/layout/SelecaoInicial.tsx": "bbea2e8a03e382c0e4c82751388a28323591464ea689a2f59fd7485929132651",
+    "ecograd-web/tests/collection-loader.test.ts": "73ab6e8191d07ba56f2b882c8cbf18e4a02abfe0e05ee0b2eae50e13842f1a54",
+    "ecograd-web/tests/data-worker.test.ts": "d1e60d0c073197f5d404d4bf129df201d995b1993e4b2d0f5412a04c3e563e88",
+    "ecograd-web/tests/collection-shards.test.mjs": "f8cc58a85a4c1a948baf7ac36ea19c5b073a9e33b3c91122acd513c3851a5991"
+  }
+}

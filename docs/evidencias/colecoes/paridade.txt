@@ -1,0 +1,172 @@
+
+> ecograd-web@1.0.0 verify:parity
+> bash scripts/verify-parity.sh
+
+▶ Referência Python (/Users/simasgs/Downloads/Ecology-Graph/.venv/bin/python)...
+2026-09-12 19:47:24.733 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-09-12 19:47:26.356 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.357 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.357 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.358 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.359 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.360 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.360 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.360 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.361 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.361 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.361 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.362 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.362 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.363 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.363 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.363 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.364 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.364 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.364 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.365 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.365 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.365 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.366 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.366 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.367 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.367 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.368 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.368 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.368 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.369 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.369 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.369 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:26.369 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:38.688 No runtime found, using MemoryCacheStorageManager
+2026-09-12 19:47:38.691 Pandas DataFrame hash failed. Falling back to pickling the object.
+Traceback (most recent call last):
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/streamlit/runtime/caching/hashing.py", line 453, in _to_bytes
+    values_hash_bytes = self.to_bytes(hash_pandas_object(df_obj))
+                                      ~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/util/hashing.py", line 174, in hash_pandas_object
+    h = combine_hash_arrays(hashes, num_items)
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/util/hashing.py", line 72, in combine_hash_arrays
+    for i, a in enumerate(arrays):
+                ~~~~~~~~~^^^^^^^^
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/util/hashing.py", line 173, in <genexpr>
+    hashes = (x for x in _hashes)
+                         ^^^^^^^
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/util/hashing.py", line 154, in <genexpr>
+    hash_array(series._values, encoding, hash_key, categorize)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/util/hashing.py", line 279, in hash_array
+    return _hash_ndarray(vals, encoding, hash_key, categorize)
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/util/hashing.py", line 318, in _hash_ndarray
+    codes, categories = factorize(vals, sort=False)
+                        ~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/algorithms.py", line 795, in factorize
+    codes, uniques = factorize_array(
+                     ~~~~~~~~~~~~~~~^
+        values,
+        ^^^^^^^
+        use_na_sentinel=use_na_sentinel,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        size_hint=size_hint,
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/simasgs/Downloads/Ecology-Graph/.venv/lib/python3.14/site-packages/pandas/core/algorithms.py", line 595, in factorize_array
+    uniques, codes = table.factorize(
+                     ~~~~~~~~~~~~~~~^
+        values,
+        ^^^^^^^
+    ...<3 lines>...
+        ignore_na=use_na_sentinel,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7293, in pandas._libs.hashtable.PyObjectHashTable.factorize
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7203, in pandas._libs.hashtable.PyObjectHashTable._unique
+TypeError: unhashable type: 'list'
+2026-09-12 19:47:38.696 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-09-12 19:47:38.748 No runtime found, using MemoryCacheStorageManager
+▶ Motores TypeScript...
+▶ Comparando...
+
+=== 1. TOPOLOGIA DO SUBCONJUNTO (150 docs, cálculo exato) ===
+  OK n_nos                                  py=630                    ts=630                   
+  OK n_arestas                              py=951                    ts=951                   
+  OK deg (amostra de 400 nós)               n=400    maxRelDiff=2.18e-16
+  OK bet (amostra de 400 nós)               n=400    maxRelDiff=0
+  OK clo (amostra de 400 nós)               n=400    maxRelDiff=0
+  OK clu (amostra de 400 nós)               n=400    maxRelDiff=0
+
+=== 2. METRICAS COMPLEXAS (150 docs) ===
+  OK densidade                              py=0.00479975774093       ts=0.00479975774093      
+  OK eficiencia                             py=0.286379909321         ts=0.286379909321        
+  OK entropia                               py=2.19146313193          ts=2.19146313193         
+  OK clustering                             py=0                      ts=0                     
+  OK pagerank_avg                           py=0.0015873015873        ts=0.0015873015873       
+  OK eigen_avg                              py=0.0196099602063        ts=0.0196099602063       
+  OK constraint_avg                         py=0.687539716949         ts=0.687539716949        
+  OK grau_medio                             py=3.01904761905          ts=3.01904761905         
+  OK grau_std                               py=6.44436156018          ts=6.44436156018         
+  OK n_nos                                  py=630                    ts=630                   
+
+=== 2.5 REDE DE COOCORRENCIA (densa: rich-club e clustering ponderado) ===
+  OK n_nos                                  py=287                    ts=287                   
+  OK n_arestas                              py=974                    ts=974                   
+  OK clustering_ponderado                   py=0.0214863012437        ts=0.0214863012437       
+  OK clustering_simples                     py=0.878824956259         ts=0.878824956259        
+  OK assortatividade                        py=-0.2630757992          ts=-0.2630757992         
+  OK gamma_mle                              py=1.63634177747          ts=1.63634177747         
+  OK rich_club (por grau k)                 n=153    maxRelDiff=0
+  OK rich-club dentro de [0,1]              153 valores
+
+=== 3. MATURIDADE TOPOLOGICA (base completa) ===
+  OK assortatividade                        py=-0.119217930936        ts=-0.119217930936       
+  OK rich_club                              py=0                      ts=0                     
+  OK gamma_linregress                       py=1.28802137964          ts=1.28802137964         
+  OK gamma_mle                              py=2.16581094812          ts=2.16581094812         
+  OK n_nos_G3                               py=2816                   ts=2816                  
+  -- Louvain (estocástico: valores informativos, sem asserção de igualdade):
+     py: mod=0.5232 comunidades=29
+     ts: mod=0.5320 comunidades=26
+
+=== 4. RADAR DE FORESIGHT (base completa, bet. exato) ===
+  OK conjunto de termos                    py=43 ts=43
+  OK radar.Total                            n=43     maxRelDiff=0
+  OK radar.Aparições Recentes               n=43     maxRelDiff=0
+  OK radar.Tração (%)                       n=43     maxRelDiff=0
+  OK radar.Momentum (Burst)                 n=43     maxRelDiff=0
+  OK radar.Novidade (Estrutural * IDF)      n=43     maxRelDiff=0
+
+=== 5. BACKTEST HISTORICO (2018/3/4/0.65) ===
+  OK n linhas                               py=89                     ts=89                    
+  OK quadrante ↖️ Sinal Fraco         py=23    ts=23
+  OK quadrante ↗️ Tendência           py=8     ts=8
+  OK quadrante ↘️ Mainstream          py=23    ts=23
+  OK quadrante ↙️ Base/Declínio       py=35    ts=35
+  OK veredito ✅ Confirmado (Caiu/Morreu)             py=35    ts=35
+  OK veredito ✅ Confirmado (Continuou Fogo)          py=4     ts=4
+  OK veredito ✅ Confirmado (Platô/Caiu)              py=16    ts=16
+  OK veredito ✅ Sucesso (Emergiu/Explodiu)           py=4     ts=4
+  OK veredito ❌ Falso Negativo (Voltou a Crescer)    py=7     ts=7
+  OK veredito ❌ Falso Positivo (Esfriou)             py=4     ts=4
+  OK veredito ❌ Falso Positivo (Ruído)               py=19    ts=19
+
+=== 6. MEMETICA ===
+  OK n_memes                                py=3035                   ts=3035                  
+  OK mortos                                 py=1867                   ts=1867                  
+  OK vivos                                  py=1168                   ts=1168                  
+  OK n_longevidade                          py=1168                   ts=1168                  
+  OK meia_vida_mediana                      py=9                      ts=9                     
+  OK top-20 fecundidade                   [('engenharia e gestao do conhecimento', 811), ('gestao do conhecimento', 442), ('inovacao', 108)]
+      (empate no valor de corte 34: ['apoio', 'ontologias (sistema de recuperacao da informacao)'] — ordenação arbitrária no pandas)
+
+=== 7. QUOCIENTE LOCACIONAL ===
+  orientador alvo: py='Lapolli, Edis Mafra' ts='Lapolli, Edis Mafra'
+  OK n_docs do perfil                       py=48                     ts=48                    
+  linhas comparáveis: 95 (py=95 ts=95)
+  OK QL e Total idênticos nas linhas comuns
+
+=== 8. SIMILARES (Jaccard) ===
+  OK Professores: ['Dandolini, Gertrudes Apareci', 'Santos, Neri Dos', 'Willerding, Inara Antunes Vi']
+
+======================================================================
+✅ VERIFICAÇÕES DE PARIDADE APROVADAS: métricas e recortes cobertos coincidem nas tolerâncias documentadas.

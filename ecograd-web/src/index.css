@@ -5,6 +5,47 @@
 @layer base {
   :root {
     color-scheme: dark;
+    --eco-bg: 14 17 23;
+    --eco-panel: 22 27 34;
+    --eco-border: 53 65 82;
+    --eco-accent: 255 182 72;
+    --control-border: 108 126 148;
+    --slate-100: 245 247 250;
+    --slate-200: 226 232 240;
+    --slate-300: 203 213 225;
+    --slate-400: 171 184 202;
+    --slate-500: 157 172 192;
+    --slate-600: 67 82 102;
+    --hover: 255 255 255;
+    --info: 166 220 255;
+    --warning: 255 220 150;
+    --error: 255 177 177;
+    --success: 136 232 188;
+    --card-space: 1.25rem;
+    --table-y: .75rem;
+  }
+  :root[data-tema="claro"] {
+    color-scheme: light;
+    --eco-bg: 245 247 250;
+    --eco-panel: 255 255 255;
+    --eco-border: 202 211 222;
+    --eco-accent: 137 70 0;
+    --control-border: 111 126 145;
+    --slate-100: 17 27 43;
+    --slate-200: 30 41 59;
+    --slate-300: 51 65 85;
+    --slate-400: 71 85 105;
+    --slate-500: 80 94 114;
+    --slate-600: 215 223 233;
+    --hover: 30 41 59;
+    --info: 7 79 119;
+    --warning: 117 65 0;
+    --error: 158 30 37;
+    --success: 6 99 68;
+  }
+  :root[data-densidade="compacta"] {
+    --card-space: 1rem;
+    --table-y: .5rem;
   }
 
   html,
@@ -15,6 +56,7 @@
 
   body {
     @apply bg-eco-bg text-slate-200 antialiased;
+    line-height: 1.6;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
@@ -41,11 +83,11 @@
 
 @layer components {
   .card {
-    @apply rounded-xl border border-eco-border bg-eco-panel/70 p-4 shadow-lg shadow-black/20;
+    @apply rounded-xl border border-eco-border bg-eco-panel p-4;
   }
 
   .kpi {
-    @apply flex flex-col gap-1 rounded-xl border border-eco-border bg-eco-panel/70 p-4;
+    @apply flex flex-col gap-1 rounded-xl border border-eco-border bg-eco-panel p-4;
   }
 
   .kpi-valor {
@@ -53,7 +95,7 @@
   }
 
   .kpi-rotulo {
-    @apply text-xs uppercase tracking-wide text-slate-400;
+    @apply text-sm font-medium text-slate-400;
   }
 
   .btn {
@@ -61,15 +103,15 @@
       bg-eco-panel px-3 py-2 text-sm font-medium text-slate-200 transition
       hover:border-eco-accent/60 hover:bg-eco-accent/10 hover:text-eco-accent
       focus-visible:outline focus-visible:outline-2 focus-visible:outline-eco-accent
-      disabled:cursor-not-allowed disabled:opacity-40;
+      disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply border-eco-accent bg-eco-accent text-black hover:bg-amber-400 hover:text-black;
+    @apply border-eco-action bg-eco-action text-black hover:bg-amber-400 hover:text-black;
   }
 
   .btn-chip {
-    @apply inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-eco-border
+    @apply inline-flex max-w-full items-center gap-1.5 whitespace-normal rounded-full border border-eco-border
       bg-eco-panel px-3 py-1 text-left text-xs text-slate-300 transition
       hover:border-eco-accent/60 hover:text-eco-accent;
   }
@@ -84,13 +126,13 @@
   }
   .tabela th {
     @apply sticky top-0 z-10 whitespace-nowrap border-b border-eco-border bg-eco-panel
-      px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-400;
+      px-3 py-2 text-sm font-semibold text-slate-300;
   }
   .tabela td {
     @apply border-b border-eco-border/50 px-3 py-2 align-top text-slate-300;
   }
   .tabela tbody tr:hover {
-    @apply bg-white/[0.03];
+    background-color: rgb(var(--hover) / .045);
   }
 
   .secao {
@@ -108,6 +150,74 @@
   }
   .sucesso {
     @apply rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200;
+  }
+}
+
+/* Interações da apresentação, sem alterar os cards dos painéis de análise. */
+.apresentacao .intro-block {
+  transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease,
+    background-color 240ms ease;
+}
+
+.apresentacao .intro-mark,
+.apresentacao .intro-logo,
+.apresentacao .btn,
+.apresentacao .btn svg,
+.apresentacao footer a {
+  transition: transform 240ms ease, color 240ms ease, background-color 240ms ease,
+    border-color 240ms ease, box-shadow 240ms ease;
+}
+
+.apresentacao .intro-mark {
+  display: inline-flex;
+}
+
+.apresentacao .intro-block:focus-within {
+  border-color: rgb(var(--eco-accent) / .65);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 25%), 0 0 24px rgb(243 156 18 / 8%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .apresentacao .intro-block:hover {
+    transform: translateY(-3px);
+    border-color: rgb(var(--eco-accent) / .65);
+    background-color: rgb(var(--eco-panel));
+    box-shadow: 0 12px 30px rgb(0 0 0 / 25%), 0 0 24px rgb(243 156 18 / 8%);
+  }
+
+  .apresentacao .intro-block:hover .intro-mark {
+    transform: translateY(-2px) scale(1.08);
+    color: rgb(var(--eco-accent));
+  }
+
+  .apresentacao .intro-logo:hover {
+    transform: translateY(-4px) rotate(-3deg) scale(1.04);
+    box-shadow: 0 12px 30px rgb(243 156 18 / 12%);
+  }
+
+  .apresentacao .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgb(243 156 18 / 15%);
+  }
+
+  .apresentacao .btn:hover svg {
+    transform: translateX(3px);
+  }
+
+  .apresentacao footer a:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apresentacao .intro-block,
+  .apresentacao .intro-mark,
+  .apresentacao .intro-logo,
+  .apresentacao .btn,
+  .apresentacao .btn svg,
+  .apresentacao footer a {
+    transition: none;
+    transform: none !important;
   }
 }
 
@@ -133,4 +243,72 @@
 }
 .markdown code {
   @apply rounded bg-black/40 px-1 py-0.5 text-[0.85em];
+}
+
+/* Contenção responsiva: textos quebram; tabelas e gráficos mantêm seu scroll local. */
+#conteudo-principal { overflow-wrap: anywhere; }
+#conteudo-principal .card, [role="dialog"] .card { min-width: 0; }
+
+@media (max-width: 639px) {
+  #conteudo-principal h1 { font-size: 1.25rem; }
+  #conteudo-principal h2 { font-size: 1.125rem; }
+}
+
+/* Shared data tables keep full labels readable inside their own scroll area. */
+.tabela-exploravel th, .tabela-exploravel td { min-width: 7rem; max-width: 28rem; }
+.tabela-exploravel th { white-space: normal; }
+.tabela-exploravel td:first-child { min-width: 14rem; }
+
+/* Presentation tokens only: data, analysis state and numeric formatting are unchanged. */
+.card, .kpi { padding: var(--card-space); }
+.card { box-shadow: 0 2px 8px rgb(0 0 0 / .07); }
+.btn, .btn-chip, .input { min-height: 2.75rem; border-color: rgb(var(--control-border)); }
+.btn, .btn-chip { transition-property: color, background-color, border-color, box-shadow; transition-duration: 140ms; }
+.btn { white-space: normal; text-align: center; }
+.btn > svg, .btn-chip > svg { flex-shrink: 0; }
+.input { font-size: 1rem; line-height: 1.5; }
+.input::placeholder { color: rgb(var(--slate-500)); opacity: 1; }
+input[type="range"] { min-height: 2.75rem; accent-color: rgb(var(--eco-accent)); }
+input[type="checkbox"], input[type="radio"] { accent-color: rgb(var(--eco-accent)); }
+summary { min-height: 2.75rem; align-content: center; line-height: 1.5; }
+.tabela th, .tabela td { padding-block: var(--table-y); line-height: 1.6; }
+.tabela th button { min-height: 2.75rem; }
+.tabela tbody tr:focus-within { background: rgb(var(--eco-accent) / .07); }
+.btn[aria-pressed="true"], .btn[aria-current="page"] {
+  border-color: rgb(var(--eco-accent)); background: rgb(var(--eco-accent) / .12);
+  color: rgb(var(--eco-accent)); box-shadow: inset 0 -3px 0 rgb(var(--eco-accent));
+}
+.btn:not(:disabled):active, .btn-chip:not(:disabled):active { background-color: rgb(var(--eco-accent) / .2); }
+.btn-primary:not(:disabled):active { background-color: #ef9f23; }
+button:disabled, input:disabled, select:disabled, textarea:disabled {
+  opacity: 1; cursor: not-allowed; color: rgb(var(--slate-500));
+}
+.btn:disabled { background: rgb(var(--eco-bg)); border-color: rgb(var(--eco-border)); box-shadow: none; transform: none; }
+.info { color: rgb(var(--info)); }
+.aviso, .text-amber-200 { color: rgb(var(--warning)); }
+.erro, .text-red-400 { color: rgb(var(--error)); }
+.sucesso, .text-emerald-400 { color: rgb(var(--success)); }
+.hover\:bg-white\/5:hover { background-color: rgb(var(--hover) / .06); }
+.markdown code { background-color: rgb(var(--hover) / .08); overflow-wrap: anywhere; }
+.markdown a:hover { color: rgb(var(--eco-accent)); text-decoration-thickness: 2px; }
+:root :where(button, a, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid rgb(var(--eco-accent)); outline-offset: 3px;
+}
+:where(button, a, summary, input, select, textarea, [tabindex]) { scroll-margin-block: 1rem; }
+@media (max-width: 639px) {
+  :root { --card-space: 1rem; }
+  :root[data-densidade="compacta"] { --card-space: .75rem; }
+}
+/* CSS motion and canvas motion share the same effective preference. Never suppress progress text. */
+:root[data-movimento="reduzido"] *, :root[data-movimento="reduzido"] *::before, :root[data-movimento="reduzido"] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+:root[data-movimento="reduzido"] .apresentacao :is(.intro-block, .intro-mark, .intro-logo, .btn, .btn svg, footer a) { transform: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media (forced-colors: active) {
+  .btn, .input, .btn-chip { border: 1px solid ButtonText; }
+  .btn[aria-pressed="true"], .btn[aria-current="page"] { outline: 2px solid Highlight; outline-offset: -4px; }
+  :root :where(button, a, summary, input, select, textarea, [tabindex]):focus-visible { outline-color: Highlight; }
 }

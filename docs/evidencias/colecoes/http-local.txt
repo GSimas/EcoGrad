@@ -1,0 +1,30 @@
+127.0.0.1 - - [12/Sep/2026 19:50:48] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:48] "GET /assets/index-CIe3WLPX.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:48] "GET /assets/react-CC3K5JGs.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:48] "GET /assets/index-B_6N5mkx.css HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:48] "GET /assets/graph-xZF4dEUc.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:48] "GET /ecograd-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:48] "GET /ecograd-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:50:55] code 404, message File not found
+127.0.0.1 - - [12/Sep/2026 19:50:55] "GET /api/capes-proxy?v=2 HTTP/1.1" 404 -
+127.0.0.1 - - [12/Sep/2026 19:50:55] "GET /data/manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:55] "GET /data/mapa_colecoes_tcc.json HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:55] "GET /data/programas_ufsc.json HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:55] "GET /ecograd-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:50:55] "GET /data/colecoes-cobertura.json HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:55] "GET /data/manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:50:56] code 404, message File not found
+127.0.0.1 - - [12/Sep/2026 19:50:56] "GET /api/capes-proxy?v=2 HTTP/1.1" 404 -
+127.0.0.1 - - [12/Sep/2026 19:51:12] "GET /assets/data.worker-CZBl5D8g.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:51:12] "GET /data/manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:51:12] "GET /data/colecao-757e16900127764f5ed5005c048ffeccfeddfe35457ee0c8d5a2c276787b7391.json.gz HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:51:12] "GET /data/colecao-1642002fa5071f06724bfed4787afc95fdf893ab792a10c5b6a8dcadffb0b000.json.gz HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:51:12] "GET /data/manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:51:12] "GET /assets/sna.worker-DKGMnjLJ.js HTTP/1.1" 200 -
+127.0.0.1 - - [12/Sep/2026 19:51:23] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:51:23] "GET /assets/index-CIe3WLPX.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:51:23] "GET /assets/index-B_6N5mkx.css HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:51:23] "GET /assets/react-CC3K5JGs.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:51:23] "GET /assets/graph-xZF4dEUc.js HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:51:23] "GET /ecograd-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [12/Sep/2026 19:51:23] "GET /data/manifest.json HTTP/1.1" 200 -

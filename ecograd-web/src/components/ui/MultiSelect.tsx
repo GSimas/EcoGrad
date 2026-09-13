@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useSessionField } from '@/hooks/useSessionField';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { Check, Search, X } from 'lucide-react';
 import { cn, chaveBusca } from '@/lib/utils';
 
@@ -14,6 +15,7 @@ export function MultiSelect({
   onChange,
   placeholder = 'Pesquise e selecione...',
   maxVisiveis = 200,
+  acoesSelecao = false,
 }: {
   rotulo: string;
   opcoes: readonly string[];
@@ -21,8 +23,10 @@ export function MultiSelect({
   onChange: (v: string[]) => void;
   placeholder?: string;
   maxVisiveis?: number;
+  acoesSelecao?: boolean;
 }) {
-  const [busca, setBusca] = useState('');
+  const inputId = useId();
+  const [busca, setBusca] = useSessionField('multiselect.' + rotulo, '');
 
   const filtradas = useMemo(() => {
     const alvo = chaveBusca(busca.trim());
@@ -38,8 +42,15 @@ export function MultiSelect({
   };
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-slate-300">{rotulo}</label>
+    <div className="min-w-0 space-y-2">
+      <label htmlFor={inputId} className="block text-sm font-medium text-slate-300">{rotulo}</label>
+      {acoesSelecao && (
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+          <span>{selecionados.length === 0 ? 'Nenhuma selecionada' : selecionados.length === opcoes.length ? 'Todas selecionadas' : `${selecionados.length} ${selecionados.length === 1 ? 'selecionada' : 'selecionadas'}`}</span>
+          <button type="button" className="btn text-xs" onClick={() => onChange([...opcoes])} aria-label={`Selecionar todas: ${rotulo}`}>Todas</button>
+          <button type="button" className="btn text-xs" onClick={() => onChange([])} aria-label={`Desmarcar todas: ${rotulo}`}>Nenhuma</button>
+        </div>
+      )}
 
       {selecionados.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
@@ -49,12 +60,12 @@ export function MultiSelect({
               className="inline-flex max-w-full items-center gap-1 rounded-full border border-eco-accent/40
                 bg-eco-accent/10 px-2.5 py-1 text-xs text-eco-accent"
             >
-              <span className="truncate">{s}</span>
+              <span className="min-w-0 break-words">{s}</span>
               <button
                 type="button"
                 onClick={() => alternar(s)}
                 aria-label={`Remover ${s}`}
-                className="shrink-0 hover:text-amber-200"
+                className="flex h-6 w-6 shrink-0 items-center justify-center hover:text-amber-200"
               >
                 <X size={12} />
               </button>
@@ -66,6 +77,7 @@ export function MultiSelect({
       <div className="relative">
         <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
         <input
+          id={inputId}
           type="search"
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
@@ -85,20 +97,21 @@ export function MultiSelect({
                 key={o}
                 type="button"
                 onClick={() => alternar(o)}
+                aria-pressed={ativo}
                 className={cn(
-                  'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition',
+                  'flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm transition',
                   ativo ? 'bg-eco-accent/10 text-eco-accent' : 'text-slate-300 hover:bg-white/5',
                 )}
               >
                 <span
                   className={cn(
                     'flex h-4 w-4 shrink-0 items-center justify-center rounded border',
-                    ativo ? 'border-eco-accent bg-eco-accent text-black' : 'border-eco-border',
+                    ativo ? 'border-eco-accent bg-eco-action text-black' : 'border-eco-border',
                   )}
                 >
                   {ativo && <Check size={11} />}
                 </span>
-                <span className="truncate">{o}</span>
+                <span className="min-w-0 break-words">{o}</span>
               </button>
             );
           })
@@ -123,6 +136,7 @@ export function SelectBusca({
   onChange,
   placeholder = 'Pesquise aqui...',
   maxSugestoes = 300,
+  sessionKey = rotulo,
 }: {
   rotulo: string;
   opcoes: readonly string[];
@@ -130,8 +144,10 @@ export function SelectBusca({
   onChange: (v: string | null) => void;
   placeholder?: string;
   maxSugestoes?: number;
+  sessionKey?: string;
 }) {
-  const [texto, setTexto] = useState(valor ?? '');
+  const [texto, setTexto] = useSessionField('busca.texto.' + sessionKey, valor ?? '');
+  const campoId = useId();
   const listaId = `lista-${rotulo.replace(/\W+/g, '-')}`;
 
   const sugestoes = useMemo(() => {
@@ -142,26 +158,30 @@ export function SelectBusca({
 
   // Mantém o input sincronizado quando a navegação por botões muda o termo ativo
   const [ultimoValor, setUltimoValor] = useState(valor);
-  if (valor !== ultimoValor) {
-    setUltimoValor(valor);
-    setTexto(valor ?? '');
-  }
+  useEffect(() => {
+    if (valor !== ultimoValor) {
+      setUltimoValor(valor);
+      setTexto(valor ?? '');
+    }
+  }, [valor, ultimoValor, setTexto]);
 
   const confirmar = (v: string) => {
     setTexto(v);
+    setUltimoValor(opcoes.includes(v) ? v : null);
     onChange(opcoes.includes(v) ? v : null);
   };
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-slate-300">{rotulo}</label>
+      <label htmlFor={campoId} className="block text-sm font-medium text-slate-300">{rotulo}</label>
       <div className="flex gap-2">
         <input
+          id={campoId}
           list={listaId}
           value={texto}
           onChange={(e) => confirmar(e.target.value)}
           placeholder={placeholder}
-          className="input"
+          className="input min-w-0"
         />
         {valor && (
           <button type="button" className="btn shrink-0" onClick={() => confirmar('')}>

@@ -1,0 +1,81 @@
+✔ identity is stable across ordering and ontology changes, separating same titles by source and collection (2.436459ms)
+✔ new CSV roundtrip preserves commas, newlines, JSON lists and empty lists (1.308167ms)
+✔ legacy matching is exact and unique; accent, case, whitespace and repeated titles never approximate (0.312833ms)
+✔ unknown IDs never fall back to title; wrong base, metadata and duplicate rows are blocked (0.504708ms)
+✔ validation refuses malformed lists, duplicate headers and files over row limit (0.329667ms)
+✔ application ignores ambiguous identity, preserves existing ontology unless explicitly replacing, and never mutates input (0.308042ms)
+✔ sampling preserves the original stride and exposes actual 20000 character truncation (0.180166ms)
+✔ conversation window respects message and character limits without changing saved history (0.096583ms)
+✔ stream decoder preserves partial text but rejects EOF without terminal confirmation (13.187125ms)
+✔ server streaming handles final SSE without newline and detects MAX_TOKENS or missing STOP (1.191459ms)
+✔ retry does not duplicate question, preserves prior partial and draft, and successful completion clears retry (0.884209ms)
+✔ chat cancellation and analysis changes reject late replies (0.44025ms)
+✔ ontology persists successes, retries only failed items, and applies nothing before review (4014.051291ms)
+✔ ontology refuses mismatched response identity and interruption leaves pending work resumable (4020.67625ms)
+✔ synthesis failures, interruption and empty responses preserve prior result without false success (2.965042ms)
+✔ reload converts active AI work to manual recovery without losing completed items, previews or synthesis (0.615791ms)
+✔ commit revalidates concurrent activity guard before replacing document data (0.979791ms)
+✖ resuming refuses ambiguous document IDs without sending a source to AI (1.627708ms)
+✖ resuming a stale review preserves its proposals instead of replacing the batch (4005.024833ms)
+✖ review changed while IDs are computed cannot be overwritten by extraction (4004.187333ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 17
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16077.210542
+
+✖ failing tests:
+
+test at ecograd-web/node_modules/.cache/capes-tests/tests/ia.test.js:227:22
+✖ resuming refuses ambiguous document IDs without sending a source to AI (1.627708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/simasgs/Downloads/Ecology-Graph/ecograd-web/node_modules/.cache/capes-tests/tests/ia.test.js:236:26)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ecograd-web/node_modules/.cache/capes-tests/tests/ia.test.js:244:22
+✖ resuming a stale review preserves its proposals instead of replacing the batch (4005.024833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 0
+  
+      at TestContext.<anonymous> (/Users/simasgs/Downloads/Ecology-Graph/ecograd-web/node_modules/.cache/capes-tests/tests/ia.test.js:253:26)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ecograd-web/node_modules/.cache/capes-tests/tests/ia.test.js:260:22
+✖ review changed while IDs are computed cannot be overwritten by extraction (4004.187333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 0
+  
+      at TestContext.<anonymous> (/Users/simasgs/Downloads/Ecology-Graph/ecograd-web/node_modules/.cache/capes-tests/tests/ia.test.js:270:26)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,19 @@
+{
+  "ambiente": "IAB desktop local, 1280x720, localhost:8888",
+  "rotuloAntes": "Explorar 1988",
+  "rotuloDepois": "Explorar Analise economica da valorização energetica da madeira",
+  "enterAbreFonte": "https://repositorio.ufsc.br/xmlui/handle/123456789/157542",
+  "voltarPreservaCatalogo": true,
+  "escapeRetornaAoGatilho": true,
+  "cicloFocoTutorial": [
+    "Fechar tutorial + Shift+Tab → Próximo",
+    "Próximo + Tab → Fechar tutorial"
+  ],
+  "tutorialCarregamentoPorColecao": true,
+  "tutorialCuradoriaAtualizado": true,
+  "reloadPreservaCSVporID": true,
+  "catalogoSomenteSimulado": true,
+  "leitorDeTelaReal": false,
+  "celularFisico": false,
+  "avaliacaoParticipantes": false
+}

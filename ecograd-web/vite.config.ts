@@ -21,8 +21,9 @@ export default defineConfig({
     // navegador tenta abrir o WebSocket em 8888, falha, e o hot-reload morre em
     // silêncio — as edições só aparecem após um reload manual.
     hmr: { clientPort: PORTA_DEV },
-    // Encaminha as chamadas /api/* para o Netlify Dev (netlify dev --targetPort 5173)
+    // Permite acessar também pela porta do Vite; funções continuam no Netlify Dev.
     proxy: {
+      '/api': { target: 'http://localhost:8888', changeOrigin: true },
       '/.netlify': { target: 'http://localhost:8888', changeOrigin: true },
     },
   },
@@ -32,10 +33,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
-        manualChunks: {
-          echarts: ['echarts', 'echarts-for-react', 'echarts-wordcloud'],
-          graph: ['graphology', 'graphology-metrics', 'graphology-communities-louvain'],
-          forcegraph: ['react-force-graph-2d'],
+        // Keep shared React/CJS helpers out of the deferred visualization chunks.
+        manualChunks(id) {
+          if (id.includes('commonjsHelpers') || /\/node_modules\/(react|react-dom|react-is|scheduler|tslib)\//.test(id)) return 'react';
+          if (/\/node_modules\/(echarts|echarts-for-react|echarts-wordcloud|zrender)\//.test(id)) return 'echarts';
+          if (/\/node_modules\/graphology[^/]*\//.test(id)) return 'graph';
+          if (/\/node_modules\/(react-force-graph-2d|force-graph)\//.test(id)) return 'forcegraph';
         },
       },
     },

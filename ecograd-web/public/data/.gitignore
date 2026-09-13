@@ -1,1 +1,6 @@
 *.json.gz
+
+# Gerado por sync:data a partir dos hashes das bases
+manifest.json
+
+colecoes-cobertura.json

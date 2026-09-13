@@ -1,0 +1,109 @@
+{
+  "escopo": "Revisão textual pelo agente de respostas reais arquivadas do bloco 14; não é nova execução Gemini nem aceite de especialista. Nenhum resultado aplicado.",
+  "casos": [
+    {
+      "arquivo": "docs/evidencias/ia-semantica/ia-real.json",
+      "arquivoSha256": "91179506f2aa5bebd46a3491a5555a31580051796abbb3f022aadcc8a1f7670e",
+      "id": "doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c",
+      "titulo": "Analise economica da valorização energetica da madeira",
+      "resumoSha256": "b23866c54a1fe68dd7a0879ba8357ad3a654dd645656a9583cd556ce3d58eeed",
+      "ontologiaOriginal": {
+        "teorias_e_modelos": [],
+        "ferramentas_e_artefatos": [],
+        "metodos_e_tecnicas": [
+          "análise econômica"
+        ]
+      },
+      "evidenciasOriginais": [
+        {
+          "categoria": "metodos_e_tecnicas",
+          "termo": "análise econômica",
+          "trecho": "Entretanto, há uma carência de estudos sobre a viabilidade econômica da valorização energética da madeira, quer sob a forma de resíduos industriais, quer sob a forma de lenha oriunda dos reflorestamentos energéticos. Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações."
+        }
+      ],
+      "validacaoTextual": "ID, hash e todos os trechos conferidos",
+      "avaliacaoPreliminar": "Análise econômica é sustentada em sentido amplo pelo objetivo de examinar custos e viabilidade; não especifica um procedimento detalhado. Curador deve avaliar granularidade e nomenclatura.",
+      "aceiteCurador": "pendente",
+      "aplicado": false
+    },
+    {
+      "arquivo": "docs/evidencias/ia-semantica/ia-real.json",
+      "id": "doc-v1-b0700ce1af603cde93e01a7b03a493aa971db7e40b6b22de4334a6d81e00e03d",
+      "estado": "falha preservada",
+      "erro": "Evidência não corresponde a um trecho literal do resumo ou à extração."
+    },
+    {
+      "arquivo": "docs/evidencias/ia-semantica/ia-real.json",
+      "arquivoSha256": "91179506f2aa5bebd46a3491a5555a31580051796abbb3f022aadcc8a1f7670e",
+      "id": "doc-v1-0dfa99814b8c71e859e9dccd15f7b465ccec9ddfc11320c029e3dcd6bb923939",
+      "titulo": "Boletim Informativo do PGA",
+      "resumoSha256": "6ac0be2ef617a738bed512a94223badd7b92c89e09d1927bc4dfe6d76e547906",
+      "ontologiaOriginal": {
+        "teorias_e_modelos": [],
+        "ferramentas_e_artefatos": [],
+        "metodos_e_tecnicas": []
+      },
+      "evidenciasOriginais": [],
+      "validacaoTextual": "ID, hash e todos os trechos conferidos",
+      "avaliacaoPreliminar": "Abstenção coerente com o resumo informativo; não prova ausência de métodos no texto completo.",
+      "aceiteCurador": "pendente",
+      "aplicado": false
+    },
+    {
+      "arquivo": "docs/evidencias/ia-semantica/metodo-final.json",
+      "arquivoSha256": "d150cc16025a4d448126ac7fe05977a6fe7dcf394f8467d5ae7860e66d5dd1df",
+      "id": "doc-v1-b0700ce1af603cde93e01a7b03a493aa971db7e40b6b22de4334a6d81e00e03d",
+      "titulo": "Avaliação da produção de aveia preta (Avena strigosa) sobressemeada em diferentes espécies de pastagens perenes de verão em sistema de pastoreiro racional Voisin",
+      "resumoSha256": "31008eea59066070d5e36b8d7aee25d595f2608cde071beb5e7d42b4fac699e9",
+      "ontologiaOriginal": {
+        "teorias_e_modelos": [],
+        "ferramentas_e_artefatos": [],
+        "metodos_e_tecnicas": [
+          "análise de variância",
+          "teste Tukey"
+        ]
+      },
+      "evidenciasOriginais": [
+        {
+          "categoria": "metodos_e_tecnicas",
+          "termo": "análise de variância",
+          "trecho": "Os dados de produção do ano de 2016 foram submetidos à análise de variância e ao teste Tukey a 5% de significância."
+        },
+        {
+          "categoria": "metodos_e_tecnicas",
+          "termo": "teste Tukey",
+          "trecho": "Os dados de produção do ano de 2016 foram submetidos à análise de variância e ao teste Tukey a 5% de significância."
+        }
+      ],
+      "validacaoTextual": "ID, hash e todos os trechos conferidos",
+      "avaliacaoPreliminar": "Análise de variância e teste Tukey são explicitamente declarados como procedimentos utilizados. O desenho de blocos completos casualizados também está no resumo, mas foi omitido: extração não exaustiva. Não acrescentar automaticamente.",
+      "aceiteCurador": "pendente",
+      "aplicado": false
+    },
+    {
+      "arquivo": "docs/evidencias/ia-semantica/revisao-ui.json",
+      "arquivoSha256": "a4aed761990e695eaf0b9087682229e8cab42871de8730dfb90ea8ac3495a774",
+      "id": "doc-v1-3e6a871e3542a5f53bc3c0b2628aa5e8545a82a062101e61d42d7dacc779158c",
+      "titulo": "Analise economica da valorização energetica da madeira",
+      "resumoSha256": "b23866c54a1fe68dd7a0879ba8357ad3a654dd645656a9583cd556ce3d58eeed",
+      "ontologiaOriginal": {
+        "teorias_e_modelos": [],
+        "ferramentas_e_artefatos": [],
+        "metodos_e_tecnicas": [
+          "análise de custos"
+        ]
+      },
+      "evidenciasOriginais": [
+        {
+          "categoria": "metodos_e_tecnicas",
+          "termo": "análise de custos",
+          "trecho": "Esta dissertação se propõe a examinar estes casos analisando os custos envolvidos e a viabilidade econômica dessas valorizações."
+        }
+      ],
+      "validacaoTextual": "ID, hash e todos os trechos conferidos",
+      "avaliacaoPreliminar": "Análise de custos tem apoio direto no objetivo declarado. É uma formulação ampla, sem procedimento específico explicitado. Conservar a proposta distinta da outra rodada; não normalizar silenciosamente.",
+      "aceiteCurador": "pendente",
+      "aplicado": false
+    }
+  ]
+}
