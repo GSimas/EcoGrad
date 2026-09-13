@@ -96,7 +96,7 @@ export function construirGrafoGlobal(docs: readonly Documento[], onProgress?: Pr
     if (onProgress && i % 500 === 0) {
       onProgress(
         Math.round((i / total) * 20),
-        `📦 Mapeando Ecossistema: ${i}/${docs.length} documentos processados...`,
+        `Mapeando Ecossistema: ${i}/${docs.length} documentos processados...`,
       );
     }
   }
@@ -106,15 +106,15 @@ export function construirGrafoGlobal(docs: readonly Documento[], onProgress?: Pr
 
 /** Transcrição de `calcular_sna_global` (backend.py:1993). */
 export function calcularSnaGlobal(docs: readonly Documento[], onProgress?: ProgressCallback): SnaGlobal {
-  onProgress?.(1, '🚀 Iniciando análise de rede complexa...');
+  onProgress?.(1, 'Iniciando análise de rede complexa...');
   const g = construirGrafoGlobal(docs, onProgress);
   const cg = compactar(g);
   const { n } = cg;
 
-  onProgress?.(30, '📐 Calculando Centralidade de Grau (Conexões diretas)...');
+  onProgress?.(30, 'Calculando Centralidade de Grau (Conexões diretas)...');
   const deg = degreeCentrality(cg);
 
-  onProgress?.(45, '🌉 Calculando Betweenness (Intermediação)... Isso pode levar alguns segundos...');
+  onProgress?.(45, 'Calculando Betweenness (Intermediação)... Isso pode levar alguns segundos...');
   // Idêntico ao Python: k = min(250, max(50, sqrt(n)*4)) acima de 1500 nós.
   const kAprox = n > LIMIAR_BETWEENNESS_EXATO
     ? Math.min(250, Math.max(50, Math.floor(Math.sqrt(n) * 4)))
@@ -123,19 +123,19 @@ export function calcularSnaGlobal(docs: readonly Documento[], onProgress?: Progr
     k: kAprox,
     seed: 42,
     onProgress: (feito, tot) =>
-      onProgress?.(45 + Math.round((feito / Math.max(tot, 1)) * 30), '🌉 Calculando Betweenness (Intermediação)...'),
+      onProgress?.(45 + Math.round((feito / Math.max(tot, 1)) * 30), 'Calculando Betweenness (Intermediação)...'),
   });
 
-  onProgress?.(75, '🎯 Calculando Closeness (Proximidade Central)...');
+  onProgress?.(75, 'Calculando Closeness (Proximidade Central)...');
   const close = closenessCentrality(cg, {
     pivots: n > LIMIAR_CLOSENESS_EXATO ? PIVOS_CLOSENESS : null,
     seed: 42,
   });
 
-  onProgress?.(80, '🕸️ Calculando Densidade Local (Clustering)...');
+  onProgress?.(80, 'Calculando Densidade Local (Clustering)...');
   const clust = clusteringCoefficient(cg);
 
-  onProgress?.(85, '🏘️ Detectando Clusters e Comunidades (Algoritmo de Louvain)...');
+  onProgress?.(85, 'Detectando Clusters e Comunidades (Algoritmo de Louvain)...');
   let comunidades: Record<string, number> = {};
   try {
     comunidades = louvain(g, { rng: criarRng(42) }) as Record<string, number>;
@@ -143,7 +143,7 @@ export function calcularSnaGlobal(docs: readonly Documento[], onProgress?: Progr
     comunidades = {};
   }
 
-  onProgress?.(95, '📊 Gerando rankings e consolidando métricas SNA...');
+  onProgress?.(95, 'Gerando rankings e consolidando métricas SNA...');
   // Ranking global por betweenness decrescente (1 = maior ponte da rede)
   const ordem = Array.from({ length: n }, (_, i) => i).sort((a, b) => bet[b] - bet[a]);
   const rank = new Int32Array(n);
@@ -166,7 +166,7 @@ export function calcularSnaGlobal(docs: readonly Documento[], onProgress?: Progr
     };
   }
 
-  onProgress?.(100, '✅ Rede complexa consolidada.');
+  onProgress?.(100, 'Rede complexa consolidada.');
   return resultado;
 }
 

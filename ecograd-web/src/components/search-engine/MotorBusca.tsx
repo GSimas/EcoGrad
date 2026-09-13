@@ -71,7 +71,7 @@ export function MotorBusca() {
 
       {buscaTermo === null && (
         <Aviso>
-          Escolha um tipo, digite parte do nome ou título e confirme uma opção do catálogo. O dossiê mostra primeiro os trabalhos, resumos e fontes; as análises ficam disponíveis ao final.
+          Escolha um tipo, digite parte do nome ou título e confirme uma opção do catálogo. O dossiê reúne trabalhos, resumos e fontes; as análises e métodos ficam recolhidos logo acima dos trabalhos associados.
         </Aviso>
       )}
 

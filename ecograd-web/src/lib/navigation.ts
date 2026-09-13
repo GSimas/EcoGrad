@@ -1,13 +1,13 @@
 import type { EcoGradState } from '../stores/useEcoGradStore';
 import type { Rota } from '../types';
-export const PAGES = ['inicio', 'selecao', 'dashboard', 'busca', 'foresight', 'memetica', 'chat'] as const;
+export const PAGES = ['inicio', 'selecao', 'dashboard', 'busca', 'foresight', 'memetica'] as const;
 export type Page = typeof PAGES[number] | 'nao-encontrada';
-export const PAGE_LABELS: Record<Page, string> = { inicio: 'Início', selecao: 'Seleção de coleções', dashboard: 'Dashboard', busca: 'Motor de Busca', foresight: 'Foresight', memetica: 'Memética e Ontologia', chat: 'Consultor IA', 'nao-encontrada': 'Página não encontrada' };
+export const PAGE_LABELS: Record<Page, string> = { inicio: 'Início', selecao: 'Seleção de coleções', dashboard: 'Dashboard', busca: 'Motor de Busca', foresight: 'Foresight', memetica: 'Memética e Ontologia', 'nao-encontrada': 'Página não encontrada' };
 export const HISTORY_KEY = 'ecograd-navigation-v1';
 export const HISTORY_LIMIT = 256 * 1024;
 export const HISTORY_COUNT = 60;
 export const HISTORY_TTL = 24 * 60 * 60 * 1000;
-export const analysisPage = (page: Page): page is Rota => ['dashboard', 'busca', 'foresight', 'memetica', 'chat'].includes(page);
+export const analysisPage = (page: Page): page is Rota => ['dashboard', 'busca', 'foresight', 'memetica'].includes(page);
 /** Only fixed, public page names can enter a URL. No entity, draft, collection or search query. */
 export const pageUrl = (page: Page) => `#/${page === 'nao-encontrada' ? 'pagina-nao-encontrada' : page}`;
 export function parsePage(hash: string): Page | null {

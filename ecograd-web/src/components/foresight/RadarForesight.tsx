@@ -16,7 +16,7 @@ import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { ForesightRow, Quadrante, TipoForesight } from '@/types';
 
 const TIPOS: TipoForesight[] = ['Palavra-chave', 'Macrotema', 'Artefatos (Ontologia IA)'];
-const QUADRANTES: Quadrante[] = ['↗️ Tendência', '↖️ Sinal Fraco', '↘️ Mainstream', '↙️ Base/Declínio'];
+const QUADRANTES: Quadrante[] = ['↗ Tendência', '↖ Sinal Fraco', '↘ Mainstream', '↙ Base/Declínio'];
 
 /**
  * Radar de Prospecção (Foresight Acadêmico).

@@ -1,3 +1,4 @@
+import { Select } from '@/components/ui/Select';
 import { useAparencia } from '@/services/aparencia';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEffect, useMemo, useState } from 'react';
@@ -166,29 +167,12 @@ export function OrbitaGrafo({
 
         <label className="flex flex-col gap-1 text-xs text-slate-400">
           Profundidade
-          <select
-            value={profundidade}
-            onChange={(e) => setProfundidade(Number(e.target.value))}
-            className="input py-1.5"
-          >
-            <option value={1}>1 salto</option>
-            <option value={2}>2 saltos</option>
-          </select>
+          <Select aria-label="Profundidade" valor={String(profundidade)} onChange={(v) => setProfundidade(Number(v))} opcoes={[{ valor: '1', rotulo: '1 salto' }, { valor: '2', rotulo: '2 saltos' }]} />
         </label>
 
         <label className="flex flex-col gap-1 text-xs text-slate-400">
           Tamanho dos nós
-          <select
-            value={metodoTamanho}
-            onChange={(e) => setMetodoTamanho(e.target.value as MetodoTamanho)}
-            className="input py-1.5"
-          >
-            {METODOS.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
+          <Select aria-label="Tamanho dos nós" valor={metodoTamanho} onChange={(v) => setMetodoTamanho(v as MetodoTamanho)} opcoes={METODOS.map((m) => ({ valor: m, rotulo: m }))} />
         </label>
       </Card>
 

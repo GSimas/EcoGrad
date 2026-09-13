@@ -18,10 +18,10 @@ export const TEMA_GRAFICO = {
 
 /** Cores semânticas dos quadrantes do Radar (idênticas ao Plotly do Streamlit). */
 export const CORES_QUADRANTE: Record<string, string> = {
-  '↗️ Tendência': '#2ECC71',
-  '↖️ Sinal Fraco': '#F1C40F',
-  '↘️ Mainstream': '#3498DB',
-  '↙️ Base/Declínio': '#E74C3C',
+  '↗ Tendência': '#2ECC71',
+  '↖ Sinal Fraco': '#F1C40F',
+  '↘ Mainstream': '#3498DB',
+  '↙ Base/Declínio': '#E74C3C',
 };
 
 export function Grafico({

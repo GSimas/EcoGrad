@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { RedeInterativa } from '@/components/ui/RedeInterativa';
-import { Network, RefreshCw } from 'lucide-react';
+import { Dna, Network, RefreshCw, Table } from 'lucide-react';
 import { Aviso, Card, Expander, Kpi, Tabela } from '@/components/ui/primitives';
 import { Atividade } from '@/components/ui/Atividade';
 import { useSnaWorker, useAtividade, emExecucao } from '@/hooks/useSnaWorker';
@@ -107,7 +107,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
       {dados && (
         <>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-slate-200">🌌 Grafo Interativo</h3>
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-200"><Network size={16} aria-hidden /> Grafo Interativo</h3>
             <p className="text-xs text-slate-500">
               {formatarNumero(dados.nodes.length)} de {formatarNumero(dados.totalNos)} memes e{' '}
               {formatarNumero(dados.links.length)} conexões em exibição. As métricas avançadas usam a
@@ -121,7 +121,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold text-slate-200">
-                  📊 Tabela de Centralidade Global
+                  <Table size={16} aria-hidden className="mr-1.5 inline-block align-text-bottom" />Tabela de Centralidade Global
                 </h3>
                 <p className="text-xs text-slate-500">
                   Conectividade e intermediação de cada termo na rede completa; valores maiores não indicam qualidade científica.
@@ -154,7 +154,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
           <Expander titulo="Indicadores estruturais e interpretação avançada">
             <p className="mb-4 text-sm text-slate-300">Índices descrevem a estrutura observada, não qualidade, inovação ou saúde institucional. Não há intervalos de confiança ou testes de significância apresentados. Redes pequenas, isoladas ou sem variação podem gerar índices indefinidos; alguns cálculos usam zero como fallback, inclusive Rich-Club quando não calculável. Compare coleções considerando tamanho, cobertura e fonte dos termos.</p>
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-slate-200">🧬 Métricas de Redes Complexas</h3>
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-200"><Dna size={16} aria-hidden /> Métricas de Redes Complexas</h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Kpi rotulo="Densidade da Rede" valor={dados.metricas.densidade.toFixed(5)} />
               <Kpi rotulo="Eficiência Global" valor={dados.metricas.eficiencia.toFixed(4)} />
@@ -162,7 +162,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
               <Kpi rotulo="Clustering Médio" valor={dados.metricas.clustering.toFixed(4)} />
             </div>
 
-            <Expander titulo="📊 Estatísticas de Conectividade e Influência (médias)">
+            <Expander titulo="Estatísticas de Conectividade e Influência (médias)">
               <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-200">Conectividade (links por nó)</p>
@@ -188,7 +188,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
 
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-slate-200">
-              🧬 Métricas de Ecologia Profunda (SNA Avançado)
+              <Dna size={16} aria-hidden className="mr-1.5 inline-block align-text-bottom" />Métricas de Ecologia Profunda (SNA Avançado)
             </h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Kpi

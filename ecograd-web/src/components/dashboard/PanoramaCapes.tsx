@@ -1,7 +1,7 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Landmark } from 'lucide-react';
+import { Filter, Landmark } from 'lucide-react';
 import { Aviso, Card, Carregando, Expander, Kpi, Tabela } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO, barrasHorizontais } from '@/components/ui/Chart';
 import { MultiSelect } from '@/components/ui/MultiSelect';
@@ -111,7 +111,7 @@ export function PanoramaCapes() {
       </button>
 
       <Card>
-        <h3 className="mb-3 text-sm font-semibold">🔍 Filtros do Panorama</h3>
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold"><Filter size={16} aria-hidden /> Filtros do Panorama</h3>
         <div className="grid gap-4 md:grid-cols-3">
           <MultiSelect
             acoesSelecao

@@ -1,6 +1,6 @@
 import { LEITURA_QUADRANTE, LEITURA_VEREDITO } from '@/lib/interpretacao';
 import type { Quadrante } from '@/types';
-import { FlaskConical } from 'lucide-react';
+import { FlaskConical, Microscope } from 'lucide-react';
 import { Aviso, Card, Tabela } from '@/components/ui/primitives';
 import { Atividade } from '@/components/ui/Atividade';
 import { useSnaWorker, useAtividade, emExecucao } from '@/hooks/useSnaWorker';
@@ -32,7 +32,7 @@ export function GridSearch({ mostrarAtividade = true }: { mostrarAtividade?: boo
           <FlaskConical size={16} /> Comparar configurações em períodos históricos
         </h3>
         <button type="button" className="btn" onClick={() => void executar()} disabled={rodando || docs.length === 0}>
-          {rodando ? 'Varrendo combinações...' : '🔬 Executar Grid Search (108 combinações)'}
+          {rodando ? 'Varrendo combinações...' : <><Microscope size={16} aria-hidden /> Executar Grid Search (108 combinações)</>}
         </button>
       </div>
 
@@ -112,7 +112,7 @@ export function GridSearch({ mostrarAtividade = true }: { mostrarAtividade?: boo
                 chave: 'Veredito do Modelo',
                 rotulo: 'Resultado segundo o critério',
                 render: (l) => (
-                  <span className={String(l['Veredito do Modelo']).includes('✅') ? 'text-emerald-400' : 'text-red-400'}>
+                  <span className={String(l['Veredito do Modelo']).includes('✓') ? 'text-emerald-400' : 'text-red-400'}>
                     {LEITURA_VEREDITO[String(l['Veredito do Modelo'])] ?? String(l['Veredito do Modelo'])}
                   </span>
                 ),

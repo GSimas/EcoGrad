@@ -1,5 +1,5 @@
 import { useSessionField } from '@/hooks/useSessionField';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react';
 import { Check, Search, X } from 'lucide-react';
 import { cn, chaveBusca } from '@/lib/utils';
 
@@ -127,7 +127,7 @@ export function MultiSelect({
 
 /**
  * Seleção única com busca — equivalente ao `st.selectbox` do Motor de Busca.
- * Combobox nativo (datalist) para manter a digitação fluida com 50k+ opções.
+ * Combobox próprio (lista limitada a `maxSugestoes`) para manter a digitação fluida com 50k+ opções.
  */
 export function SelectBusca({
   rotulo,
@@ -147,8 +147,10 @@ export function SelectBusca({
   sessionKey?: string;
 }) {
   const [texto, setTexto] = useSessionField('busca.texto.' + sessionKey, valor ?? '');
+  const [aberta, setAberta] = useState(false);
+  const [ativo, setAtivo] = useState(-1);
   const campoId = useId();
-  const listaId = `lista-${rotulo.replace(/\W+/g, '-')}`;
+  const listaId = useId();
 
   const sugestoes = useMemo(() => {
     const alvo = chaveBusca(texto.trim());
@@ -165,35 +167,87 @@ export function SelectBusca({
     }
   }, [valor, ultimoValor, setTexto]);
 
+  useEffect(() => {
+    if (ativo >= 0) document.getElementById(`${listaId}-${ativo}`)?.scrollIntoView({ block: 'nearest' });
+  }, [ativo, listaId]);
+
   const confirmar = (v: string) => {
     setTexto(v);
     setUltimoValor(opcoes.includes(v) ? v : null);
     onChange(opcoes.includes(v) ? v : null);
   };
+  const escolher = (v: string) => {
+    confirmar(v);
+    setAberta(false);
+    setAtivo(-1);
+  };
+  const teclar = (e: KeyboardEvent<HTMLInputElement>) => {
+    const n = sugestoes.length;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      setAberta(true);
+      const passo = e.key === 'ArrowDown' ? 1 : -1;
+      setAtivo((i) => (!n ? -1 : i < 0 ? (passo > 0 ? 0 : n - 1) : (i + passo + n) % n));
+    } else if (e.key === 'Enter' && aberta && sugestoes[ativo] !== undefined) {
+      e.preventDefault();
+      escolher(sugestoes[ativo]);
+    } else if (e.key === 'Escape' && aberta) {
+      e.preventDefault();
+      setAberta(false);
+    }
+  };
+  const visivel = aberta && sugestoes.length > 0;
 
   return (
     <div className="space-y-1.5">
       <label htmlFor={campoId} className="block text-sm font-medium text-slate-300">{rotulo}</label>
       <div className="flex gap-2">
-        <input
-          id={campoId}
-          list={listaId}
-          value={texto}
-          onChange={(e) => confirmar(e.target.value)}
-          placeholder={placeholder}
-          className="input min-w-0"
-        />
+        <div className="relative min-w-0 flex-1">
+          <input
+            id={campoId}
+            role="combobox"
+            aria-expanded={visivel}
+            aria-controls={listaId}
+            aria-autocomplete="list"
+            aria-activedescendant={visivel && ativo >= 0 ? `${listaId}-${ativo}` : undefined}
+            autoComplete="off"
+            value={texto}
+            onChange={(e) => { confirmar(e.target.value); setAberta(true); setAtivo(-1); }}
+            onClick={() => setAberta(true)}
+            onBlur={() => setAberta(false)}
+            onKeyDown={teclar}
+            placeholder={placeholder}
+            className="input min-w-0"
+          />
+          {visivel && (
+            <ul id={listaId} role="listbox" aria-label={rotulo} className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-eco-border bg-eco-panel p-1 shadow-xl">
+              {sugestoes.map((o, i) => (
+                <li
+                  key={o}
+                  id={`${listaId}-${i}`}
+                  role="option"
+                  aria-selected={o === valor}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => escolher(o)}
+                  onMouseEnter={() => setAtivo(i)}
+                  className={cn(
+                    'flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm',
+                    i === ativo ? 'bg-eco-accent/10 text-eco-accent' : o === valor ? 'text-eco-accent' : 'text-slate-200',
+                  )}
+                >
+                  <Check size={14} className={cn('shrink-0', o !== valor && 'invisible')} />
+                  <span className="min-w-0 break-words">{o}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         {valor && (
           <button type="button" className="btn shrink-0" onClick={() => confirmar('')}>
             <X size={14} /> Limpar
           </button>
         )}
       </div>
-      <datalist id={listaId}>
-        {sugestoes.map((o) => (
-          <option key={o} value={o} />
-        ))}
-      </datalist>
     </div>
   );
 }

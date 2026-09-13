@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import chat from '../netlify/functions/gemini-chat';
 import sintetizar from '../netlify/functions/gemini-synthesize';
 import ontologia from '../netlify/functions/gemini-ontology';
 const req=(body:unknown,signal?:AbortSignal)=>new Request('http://localhost/api',{method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'application/json'},signal});
@@ -16,8 +15,4 @@ test('ontology endpoint echoes exact identity and marks malformed model JSON as 
 test('ontology accepts valid empty lists, rejects missing or duplicate IDs and never matches titles',async()=>{
  const item={id:'doc-v1-'+'b'.repeat(64),titulo:'Título',resumo:'Resumo'};
  await mock(async()=>{const r=await ontologia(req({itens:[item],delayMs:0}));const data=await r.json();assert.equal(data.resultados[0].erro,null);assert.deepEqual(data.resultados[0].ontologia.teorias_e_modelos,[]);assert.equal((await ontologia(req({itens:[item,item]}))).status,400);assert.equal((await ontologia(req({itens:[{titulo:'Título',resumo:'Resumo'}]}))).status,400);},async()=>Response.json({candidates:[{content:{parts:[{text:'{"teorias_e_modelos":[],"ferramentas_e_artefatos":[],"metodos_e_tecnicas":[],"evidencias":[]}'}]}}]}));
-});
-test('chat endpoint validates limits and returns the terminal-aware protocol',async()=>{
- const dossie={nomePrograma:'TCC A',totalDocumentos:1,lideresVolume:[],pontesInterdisciplinares:[],principaisConceitos:[],docentes:[],catalogo:[]};
- await mock(async()=>{assert.equal((await chat(req({mensagens:[{role:'user',content:'x'.repeat(24001)}],dossie}))).status,400);const r=await chat(req({mensagens:[{role:'user',content:'Pergunta'}],dossie}));assert.match(r.headers.get('content-type')!,/x-ndjson/);assert.match(await r.text(),/"tipo":"fim"/);},async()=>new Response('data: '+JSON.stringify({candidates:[{content:{parts:[{text:'Resposta'}]},finishReason:'STOP'}]})));
 });

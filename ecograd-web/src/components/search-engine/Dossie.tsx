@@ -1,5 +1,6 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useMemo } from 'react';
+import { Cloud, Link2, Orbit, TrendingUp } from 'lucide-react';
 import { Aviso, Card, Expander, Tabela } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs } from '@/components/ui/Tabs';
@@ -24,11 +25,11 @@ interface Props {
 
 const FONTES_NUVEM: FonteNuvem[] = ['Conceitos (Palavras-chave)', 'Títulos', 'Resumos (Abstracts)'];
 
-/** Reading and sources remain above the optional scientific methods. */
+/** The optional scientific methods sit right above the associated works. */
 export function Dossie(props: Props) {
   return <div className="space-y-6">
-    <VisaoEntidade tipo={props.tipo} docs={props.docsAlvo} termo={props.termo} />
-    <Expander titulo="Análises e métodos do dossiê" lazy><AnalisesDossie {...props} /></Expander>
+    <VisaoEntidade tipo={props.tipo} docs={props.docsAlvo} termo={props.termo}
+      analises={<Expander titulo="Análises e métodos do dossiê" lazy><AnalisesDossie {...props} /></Expander>} />
   </div>;
 }
 
@@ -68,11 +69,11 @@ function AnalisesDossie({
         {
           valor: 'perfil',
           rotulo: 'Frequências e relações (QL)',
-          conteudo: tabelaQL.length ? <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></> : <p className="text-sm text-slate-300">QL cruzado não se aplica a este tipo de entidade. Consulte os trabalhos e relações acima ou as outras análises.</p>,
+          conteudo: tabelaQL.length ? <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></> : <p className="text-sm text-slate-300">QL cruzado não se aplica a este tipo de entidade. Consulte os trabalhos e relações do dossiê ou as outras análises.</p>,
         },
         {
           valor: 'evolucao',
-          rotulo: '📈 Evolução Histórica',
+          rotulo: <><TrendingUp size={15} aria-hidden /> Evolução Histórica</>,
           conteudo: (
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -118,7 +119,7 @@ function AnalisesDossie({
         },
         {
           valor: 'lexicometria',
-          rotulo: '☁️ Lexicometria',
+          rotulo: <><Cloud size={15} aria-hidden /> Lexicometria</>,
           conteudo: (
             <div className="space-y-3">
               <div className="flex flex-wrap gap-1 rounded-lg border border-eco-border bg-eco-panel/60 p-1">
@@ -175,7 +176,7 @@ function AnalisesDossie({
         },
         {
           valor: 'orbita',
-          rotulo: '🪐 Órbita de Relacionamentos',
+          rotulo: <><Orbit size={15} aria-hidden /> Órbita de Relacionamentos</>,
           conteudo: (
             <OrbitaGrafo
               grafo={grafoHistorico}
@@ -198,7 +199,7 @@ function AnalisesDossie({
         },
         {
           valor: 'similares',
-          rotulo: '🔗 Itens Semelhantes',
+          rotulo: <><Link2 size={15} aria-hidden /> Itens Semelhantes</>,
           conteudo: (
             <div className="space-y-4">
               <Aviso>

@@ -14,12 +14,3 @@ export function amostraSintese(docs:readonly Documento[]) {
   for(let i=0;i<docs.length&&linhas.length<25;i+=salto)linhas.push(`- ${docs[i].titulo} | ${docs[i].palavras_chave.join(', ')}`);
   const completo=linhas.join('\n');return {texto:completo.slice(0,20000),quantidade:linhas.length,salto,truncada:completo.length>20000,total:docs.length};
 }
-export type EventoChat = {tipo:'texto';texto:string}|{tipo:'fim'}|{tipo:'erro';mensagem:string};
-/** NDJSON never treats EOF as success: a terminal event is required. */
-export async function lerRespostaChat(body:ReadableStream<Uint8Array>,onTexto:(texto:string)=>void,signal:AbortSignal) {
-  const reader=body.getReader();const decoder=new TextDecoder();let buffer='',fim=false;
-  const linha=(v:string)=>{if(!v.trim())return;const e=JSON.parse(v) as EventoChat;if(e.tipo==='texto'&&!fim){if(typeof e.texto!=='string')throw new Error('Resposta inválida.');onTexto(e.texto);}else if(e.tipo==='fim')fim=true;else if(e.tipo==='erro')throw new Error(e.mensagem||'Resposta interrompida.');else throw new Error('Evento de resposta inválido.');};
-  const abort=()=>{void reader.cancel();};signal.addEventListener('abort',abort,{once:true});
-  try{for(;;){signal.throwIfAborted();const r=await reader.read();if(r.done)break;buffer+=decoder.decode(r.value,{stream:true});const linhas=buffer.split('\n');buffer=linhas.pop()??'';for(const l of linhas)linha(l);}buffer+=decoder.decode();if(buffer.trim())linha(buffer);signal.throwIfAborted();if(!fim)throw new Error('Conexão encerrada antes da confirmação de resposta completa.');}
-  finally{signal.removeEventListener('abort',abort);await reader.cancel().catch(()=>{});reader.releaseLock();}
-}

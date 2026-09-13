@@ -26,8 +26,9 @@ O script `dev` roda `sync:data` antes do Vite, copiando as bases da raiz do repo
 A aplicação sobe em <http://localhost:5173>.
 
 > **`npm run dev` sozinho não executa as Netlify Functions.** O Panorama CAPES, a síntese da IA,
-> a extração ontológica e o Consultor IA ficam indisponíveis (a interface avisa e continua
-> funcionando). Para a aplicação completa, use o comando abaixo.
+> e a extração ontológica ficam indisponíveis (a interface avisa e continua funcionando).
+> O Consultor IA não depende delas: usa a chave de API do próprio usuário (BYOK), direto do
+> navegador. Para a aplicação completa, use o comando abaixo.
 
 ### Aplicação completa (frontend + funções)
 
@@ -73,7 +74,6 @@ ecograd-web/
 │   ├── lib/gemini.ts           # cliente Gemini (retry exponencial, fallback de modelos)
 │   ├── gemini-synthesize.ts    # síntese epistemológica do perfil do PPG
 │   ├── gemini-ontology.ts      # extração de teorias/métodos/ferramentas em lote
-│   ├── gemini-chat.ts          # consultor acadêmico com streaming SSE → texto
 │   ├── capes-proxy.ts          # proxy da API Sucupira/CAPES (contorna o CORS)
 │   └── neo4j-query.ts          # endpoint legado desativado (HTTP 410)
 ├── public/data/                # bases estáticas (.json.gz sincronizados, fora do git)
@@ -111,7 +111,8 @@ ecograd-web/
    atalho para voltar).
 2. **Seleção de coleções** — escolha dos PPGs e cursos, com o Panorama CAPES
    sempre visível.
-3. **Análise** — Dashboard, Motor de Busca, Foresight, Memética e Consultor IA.
+3. **Análise** — Dashboard, Motor de Busca, Foresight e Memética. O Consultor IA fica em um botão
+   flutuante e usa a chave de API do próprio usuário (OpenAI, Anthropic, Google, OpenRouter e outros).
 
 O painel lateral recolhe para uma faixa de ícones (o estado fica salvo na sessão).
 

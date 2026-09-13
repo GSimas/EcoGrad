@@ -25,7 +25,7 @@ test('effective method reports the existing K-Means fallback and keeps raw categ
  assert.equal(corteEfetivo(true,4,.9).percentil,null);
  assert.match(corteEfetivo(true,0,.9).metodo,/Aguardando/);
  assert.equal(Object.keys(LEITURA_VEREDITO).length,8);
- assert.match(LEITURA_VEREDITO['✅ Confirmado (Caiu/Morreu)'],/variação ≤ 0% ou volume posterior < 3/);
+ assert.match(LEITURA_VEREDITO['✓ Confirmado (Caiu/Morreu)'],/variação ≤ 0% ou volume posterior < 3/);
  for(const row of segmentarPorKMeans(rows).linhas) assert.ok(LEITURA_QUADRANTE[row.Quadrante!]);
 });
 test('memetic presentation distinguishes zero-year spans, absent spans and zero-title complement',()=>{

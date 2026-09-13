@@ -78,10 +78,10 @@ export function extrairTermosForesight(d: Documento, tipo: TipoForesight): strin
 
 /** Transcrição de `classificar_por_percentil` (backend.py:107). */
 export function classificarPorPercentil(mom: number, nov: number, xMid: number, yMid: number): Quadrante {
-  if (mom > xMid && nov > yMid) return '↗️ Tendência';
-  if (mom <= xMid && nov > yMid) return '↖️ Sinal Fraco';
-  if (mom > xMid && nov <= yMid) return '↘️ Mainstream';
-  return '↙️ Base/Declínio';
+  if (mom > xMid && nov > yMid) return '↗ Tendência';
+  if (mom <= xMid && nov > yMid) return '↖ Sinal Fraco';
+  if (mom > xMid && nov <= yMid) return '↘ Mainstream';
+  return '↙ Base/Declínio';
 }
 
 /** Grafo de coocorrência de termos: aresta por par, peso = nº de coocorrências. */
@@ -210,7 +210,7 @@ export function prepararRadarForesight(
   for (const [termo, total] of freqTotal) {
     const recente = freqRecente.get(termo) ?? 0;
 
-    // 🛡️ Filtro anti-ruído: expressão recente mínima e volume total controlado
+    // Filtro anti-ruído: expressão recente mínima e volume total controlado
     if (total < 3 || recente < 2 || total > limiteSuperior) continue;
 
     const passado = freqPassado.get(termo) ?? 0;
@@ -293,10 +293,10 @@ export function segmentarPorKMeans(linhas: ForesightRow[]): SegmentacaoResultado
   for (const c of info) {
     const altoMom = c.momMedio >= momMediano;
     const altaNov = c.novMedia >= novMediana;
-    if (altoMom && altaNov) mapa.set(c.id, '↗️ Tendência');
-    else if (!altoMom && altaNov) mapa.set(c.id, '↖️ Sinal Fraco');
-    else if (altoMom && !altaNov) mapa.set(c.id, '↘️ Mainstream');
-    else mapa.set(c.id, '↙️ Base/Declínio');
+    if (altoMom && altaNov) mapa.set(c.id, '↗ Tendência');
+    else if (!altoMom && altaNov) mapa.set(c.id, '↖ Sinal Fraco');
+    else if (altoMom && !altaNov) mapa.set(c.id, '↘ Mainstream');
+    else mapa.set(c.id, '↙ Base/Declínio');
   }
 
   return {
@@ -405,22 +405,22 @@ export function validarForesightHistorico(
     const crescimentoReal = taxaT1 > 0 ? ((taxaT2 - taxaT1) / taxaT1) * 100 : 0;
 
     let status = '';
-    if (quad === '↖️ Sinal Fraco') {
+    if (quad === '↖ Sinal Fraco') {
       status = crescimentoReal >= 25 && volT2 >= 3
-        ? '✅ Sucesso (Emergiu/Explodiu)'
-        : '❌ Falso Positivo (Ruído)';
-    } else if (quad === '↗️ Tendência') {
+        ? '✓ Sucesso (Emergiu/Explodiu)'
+        : '✗ Falso Positivo (Ruído)';
+    } else if (quad === '↗ Tendência') {
       status = crescimentoReal >= 10 && volT2 >= 3
-        ? '✅ Confirmado (Continuou Fogo)'
-        : '❌ Falso Positivo (Esfriou)';
-    } else if (quad === '↙️ Base/Declínio') {
+        ? '✓ Confirmado (Continuou Fogo)'
+        : '✗ Falso Positivo (Esfriou)';
+    } else if (quad === '↙ Base/Declínio') {
       status = crescimentoReal <= 0 || volT2 < 3
-        ? '✅ Confirmado (Caiu/Morreu)'
-        : '❌ Falso Negativo (Ressurgiu)';
+        ? '✓ Confirmado (Caiu/Morreu)'
+        : '✗ Falso Negativo (Ressurgiu)';
     } else {
       status = crescimentoReal <= 5
-        ? '✅ Confirmado (Platô/Caiu)'
-        : '❌ Falso Negativo (Voltou a Crescer)';
+        ? '✓ Confirmado (Platô/Caiu)'
+        : '✗ Falso Negativo (Voltou a Crescer)';
     }
 
     analiseFinal.push({
@@ -478,9 +478,9 @@ export function otimizarParametrosForesight(
       const ver = row['Veredito do Modelo'];
       const predicaoPositiva = prev.includes('Sinal Fraco') || prev.includes('Tendência');
       if (predicaoPositiva) {
-        if (ver.includes('✅')) tp += 1;
+        if (ver.includes('✓')) tp += 1;
         else fp += 1;
-      } else if (ver.includes('✅')) tn += 1;
+      } else if (ver.includes('✓')) tn += 1;
       else fn += 1;
     }
 

@@ -6,19 +6,12 @@ import {readFile} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 const port=Number(process.env.ECO_FIXTURE_PORT??8891);
 const failChart=process.env.ECO_FIXTURE_FAIL_CHART==='1';
-const root=resolve('ecograd-web/dist');let chatCalls=0,synthCalls=0,ontologyCalls=0;
+const root=resolve('ecograd-web/dist');let synthCalls=0,ontologyCalls=0;
 const server=http.createServer(async(req,res)=>{
  try{
  const path=new URL(req.url,'http://localhost').pathname;
  res.setHeader('X-EcoGrad-Fixture','simulated-ai');
  if(failChart && /\/assets\/echarts-.*\.js$/.test(path)){res.writeHead(503).end('Simulated chart load failure');return;}
- if(path==='/api/gemini-chat'){
-  let raw='';for await(const c of req)raw+=c;const payload=JSON.parse(raw);chatCalls++;const call=chatCalls;
-  res.writeHead(200,{'Content-Type':'application/x-ndjson'});
-  res.write(JSON.stringify({tipo:'texto',texto:'Resposta simulada para validação. '})+'\n');
-  const delay=payload.mensagens.at(-1)?.content.includes('lenta')?15000:400;
-  setTimeout(()=>{if(res.destroyed)return;if(call===1)res.end(JSON.stringify({tipo:'erro',mensagem:'Interrupção simulada do provedor.'})+'\n');else res.end(JSON.stringify({tipo:'texto',texto:'Consulte os trabalhos e suas fontes.'})+'\n'+JSON.stringify({tipo:'fim'})+'\n');},delay);return;
- }
  if(path==='/api/gemini-synthesize'){
   for await(const _c of req){}synthCalls++;const call=synthCalls;
   setTimeout(()=>{if(res.destroyed)return;res.writeHead(call===2?503:200,{'Content-Type':'application/json'});res.end(JSON.stringify(call===2?{error:'Falha temporária simulada na síntese.'}:{descritivo:'Síntese simulada da amostra de títulos e palavras-chave; confira a produção nas fontes.'}));},call===3?15000:400);return;

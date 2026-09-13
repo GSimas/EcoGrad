@@ -1,3 +1,4 @@
+import { Select } from '@/components/ui/Select';
 import { useId, useMemo } from 'react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { fonteSegura, filtrarTrabalhos, type FiltroTrabalhos } from '@/lib/resultados';
@@ -20,7 +21,7 @@ export function Trabalhos({ docs, sessionKey, titulo = 'Trabalhos para ler' }: {
     <h2 className="text-xl font-semibold">{titulo}</h2>
     <div className="grid gap-3 md:grid-cols-2">
       <label htmlFor={id} className="space-y-1 text-sm"><span>Buscar nestes trabalhos</span><input id={id} type="search" className="input" value={filtro.busca} onChange={(e) => alterar({ busca: e.target.value })} placeholder="Título, pessoa, palavra-chave ou resumo" /></label>
-      <label htmlFor={id + '-colecao'} className="space-y-1 text-sm"><span>Coleção dos trabalhos</span><select id={id + '-colecao'} className="input" value={filtro.colecao} onChange={(e) => alterar({ colecao: e.target.value })}><option value="">Todas as coleções deste conjunto</option>{!!filtro.colecao && !nomes.includes(filtro.colecao) && <option value={filtro.colecao}>{filtro.colecao} (fora deste conjunto)</option>}{nomes.map((n) => <option key={n} value={n}>{n || 'Origem não informada'}</option>)}</select></label>
+      <div className="space-y-1 text-sm"><label htmlFor={id + '-colecao'}>Coleção dos trabalhos</label><Select id={id + '-colecao'} valor={filtro.colecao} onChange={(v) => alterar({ colecao: v })} opcoes={[{ valor: '', rotulo: 'Todas as coleções deste conjunto' }, ...(filtro.colecao && !nomes.includes(filtro.colecao) ? [{ valor: filtro.colecao, rotulo: `${filtro.colecao} (fora deste conjunto)` }] : []), ...nomes.filter(Boolean).map((n) => ({ valor: n, rotulo: n }))]} /></div>
     </div>
     <div className="flex flex-wrap items-center gap-3"><label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={filtro.comResumo} onChange={(e) => alterar({ comResumo: e.target.checked })} /> Somente com resumo</label><button type="button" className="btn" onClick={() => alterar({ busca: '', colecao: '', comResumo: false })}>Limpar filtros dos trabalhos</button></div>
     <p className="text-xs text-slate-400" role="status">{result.length} de {docs.length} registros · anos mais recentes primeiro; sem ano ao final. Os filtros desta lista não alteram os cálculos.</p>

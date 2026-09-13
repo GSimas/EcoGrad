@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Trophy } from 'lucide-react';
+import { useMemo, type ReactNode } from 'react';
+import { ChartColumn, FileText, GraduationCap, Handshake, School, Sprout, Target, Trophy, User, Waypoints } from 'lucide-react';
 import { Aviso, Card, Chip, Expander } from '@/components/ui/primitives';
 import { RankingClicavel, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs } from '@/components/ui/Tabs';
@@ -109,7 +109,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
   const topOriVol = topN(contagens.orientadores, 1)[0];
   const topCooriVol = topN(contagens.coorientadores, 1)[0];
 
-  const botaoSna = (rotulo: string, par: [string, number], tipo: TipoBusca, icone: string) =>
+  const botaoSna = (rotulo: string, par: [string, number], tipo: TipoBusca, icone: ReactNode) =>
     par[0] === 'Nenhum' ? null : (
       <div className="space-y-1">
         <p className="text-xs text-slate-400">{rotulo}</p>
@@ -130,7 +130,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
         abas={[
           {
             valor: 'graficos',
-            rotulo: '📊 Top 10 (Gráficos)',
+            rotulo: <><ChartColumn size={15} aria-hidden /> Top 10 (Gráficos)</>,
             conteudo: (
               <div className="space-y-3">
                 <p className="text-xs text-slate-500">
@@ -175,7 +175,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
           },
           {
             valor: 'volumes',
-            rotulo: '🎓 Volumes e Genealogia',
+            rotulo: <><GraduationCap size={15} aria-hidden /> Volumes e Genealogia</>,
             conteudo: (
               <div className="grid gap-4 lg:grid-cols-2">
                 <Card className="space-y-3">
@@ -183,7 +183,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                     <p className="text-xs text-slate-400">Orientador com maior número de orientações:</p>
                     {topOriVol && (
                       <Chip onClick={() => navegarPara('Orientador', topOriVol[0])}>
-                        🏫 {topOriVol[0]} ({topOriVol[1]} orientações)
+                        <School size={14} aria-hidden /> {topOriVol[0]} ({topOriVol[1]} orientações)
                       </Chip>
                     )}
                   </div>
@@ -191,7 +191,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                     <p className="text-xs text-slate-400">Coorientador com maior número de coorientações:</p>
                     {topCooriVol && (
                       <Chip onClick={() => navegarPara('Co-orientador', topCooriVol[0])}>
-                        🤝 {topCooriVol[0]} ({topCooriVol[1]} coorientações)
+                        <Handshake size={14} aria-hidden /> {topCooriVol[0]} ({topCooriVol[1]} coorientações)
                       </Chip>
                     )}
                   </div>
@@ -199,7 +199,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
 
                 <Card className="space-y-3">
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-slate-200">🌱 Formadores de Professores</p>
+                    <p className="flex items-center gap-1.5 text-sm font-medium text-slate-200"><Sprout size={15} aria-hidden /> Formadores de Professores</p>
                     <p className="text-xs text-slate-500">
                       Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal ou atuação atual.
                     </p>
@@ -208,7 +208,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                         <div className="flex flex-wrap gap-1.5">
                           {genealogia.formadores.map((f) => (
                             <Chip key={f} onClick={() => navegarPara('Orientador', f)}>
-                              🎓 {f}
+                              <GraduationCap size={14} aria-hidden /> {f}
                             </Chip>
                           ))}
                         </div>
@@ -227,7 +227,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                         <div className="flex flex-wrap gap-1.5">
                           {genealogia.mestreDoutor.map(([autor, progs]) => (
                             <Chip key={autor} onClick={() => navegarPara('Autor', autor)} title={progs.join(', ')}>
-                              👤 {autor}
+                              <User size={14} aria-hidden /> {autor}
                             </Chip>
                           ))}
                         </div>
@@ -244,7 +244,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
           },
           {
             valor: 'betweenness',
-            rotulo: '🌉 Intermediação',
+            rotulo: <><Waypoints size={15} aria-hidden /> Intermediação</>,
             conteudo: (
               <div className="space-y-4">
                 <Aviso>
@@ -255,12 +255,12 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                 </Aviso>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <Card className="space-y-3">
-                    {botaoSna('Orientador (Maior Betweenness):', topSna.oriBet, 'Orientador', '🏫')}
-                    {botaoSna('Coorientador (Maior Betweenness):', topSna.cooriBet, 'Co-orientador', '🤝')}
+                    {botaoSna('Orientador (Maior Betweenness):', topSna.oriBet, 'Orientador', <School size={14} aria-hidden />)}
+                    {botaoSna('Coorientador (Maior Betweenness):', topSna.cooriBet, 'Co-orientador', <Handshake size={14} aria-hidden />)}
                   </Card>
                   <Card className="space-y-3">
-                    {botaoSna('Registro classificado como tese (maior intermediação):', topSna.teseBet, 'Documento', '📄')}
-                    {botaoSna('Registro classificado como dissertação (maior intermediação):', topSna.dissBet, 'Documento', '📄')}
+                    {botaoSna('Registro classificado como tese (maior intermediação):', topSna.teseBet, 'Documento', <FileText size={14} aria-hidden />)}
+                    {botaoSna('Registro classificado como dissertação (maior intermediação):', topSna.dissBet, 'Documento', <FileText size={14} aria-hidden />)}
                   </Card>
                 </div>
               </div>
@@ -268,7 +268,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
           },
           {
             valor: 'closeness',
-            rotulo: '🎯 Proximidade',
+            rotulo: <><Target size={15} aria-hidden /> Proximidade</>,
             conteudo: (
               <div className="space-y-4">
                 <Aviso>
@@ -278,12 +278,12 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                 </Aviso>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <Card className="space-y-3">
-                    {botaoSna('Orientador Mais Central:', topSna.oriClose, 'Orientador', '🏫')}
-                    {botaoSna('Coorientador Mais Central:', topSna.cooriClose, 'Co-orientador', '🤝')}
+                    {botaoSna('Orientador Mais Central:', topSna.oriClose, 'Orientador', <School size={14} aria-hidden />)}
+                    {botaoSna('Coorientador Mais Central:', topSna.cooriClose, 'Co-orientador', <Handshake size={14} aria-hidden />)}
                   </Card>
                   <Card className="space-y-3">
-                    {botaoSna('Registro classificado como tese (maior proximidade):', topSna.teseClose, 'Documento', '📄')}
-                    {botaoSna('Registro classificado como dissertação (maior proximidade):', topSna.dissClose, 'Documento', '📄')}
+                    {botaoSna('Registro classificado como tese (maior proximidade):', topSna.teseClose, 'Documento', <FileText size={14} aria-hidden />)}
+                    {botaoSna('Registro classificado como dissertação (maior proximidade):', topSna.dissClose, 'Documento', <FileText size={14} aria-hidden />)}
                   </Card>
                 </div>
               </div>

@@ -2,19 +2,22 @@ import { hashResumo } from '../src/lib/ia-evidencias';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { identidadeDocumento, prepararImportacao, linhasExportacaoOntologia, aplicarPorIdentidade, COLUNAS_ONTOLOGIA, ontologiaValida } from '../src/lib/ontologia-importacao';
-import { amostraSintese, historicoEnviado, lerRespostaChat } from '../src/lib/ia-contexto';
+import { amostraSintese, historicoEnviado } from '../src/lib/ia-contexto';
 import { recuperarIA, iaVazia } from '../src/lib/ia-state';
 import { conversaVazia, useEcoGradStore } from '../src/stores/useEcoGradStore';
 import { enviarMensagem, interromperConversa } from '../src/services/chat';
 import { iniciarExtracao, interromperExtracao, gerarSintese, interromperSintese } from '../src/services/ia';
-import { respostaChat } from '../netlify/functions/_shared/chat-stream';
+import { lerStreamChat, requisicaoChat, validarConfigIA, type ConfigIA } from '../src/lib/provedores-ia';
 import type { Documento, OntologiaIA } from '../src/types';
 const doc=(p:Partial<Documento>={}):Documento=>({titulo:'Mesmo título',ano:2020,programa_origem:'TCC A',url:'https://repositorio.ufsc.br/handle/1/2',autores:['Ana'],orientador:'João',co_orientadores:[],palavras_chave:['A'],macrotema:'M',nivel_academico:'TCC',resumo:'Um resumo',...p});
 const onto:OntologiaIA={teorias_e_modelos:['Teoria, com vírgula'],ferramentas_e_artefatos:[],metodos_e_tecnicas:['Método\ncom quebra']};
 const fields=['Título',...COLUNAS_ONTOLOGIA];
 const legacy=(titulo:string)=>({'Título':titulo,'Teorias e Modelos':'Teoria','Ferramentas e Artefatos':'','Métodos e Técnicas':''});
 const init=()=>useEcoGradStore.setState({analysisId:crypto.randomUUID(),baseVersion:'v1',docs:[doc(),doc({titulo:'Segundo',url:'https://repositorio.ufsc.br/handle/1/3'})],chat:conversaVazia(),ia:iaVazia(),ui:{}});
-const stream=(lines:string[])=>new Response(lines.join('\n')+'\n',{headers:{'Content-Type':'application/x-ndjson'}});
+const sse=(eventos:unknown[])=>new Response(eventos.map(e=>'data: '+JSON.stringify(e)).join('\n\n')+'\n\n',{headers:{'Content-Type':'text/event-stream'}});
+const openai=(texto:string,fim=true)=>sse([{choices:[{delta:{content:texto}}]},...(fim?[{choices:[{delta:{},finish_reason:'stop'}]}]:[])]);
+const cfg:ConfigIA={provedor:'openai',modelo:'gpt-teste',baseUrl:'https://api.openai.com/v1',chave:'sk-teste'};
+const dossie={nomePrograma:'TCC A',totalDocumentos:2,lideresVolume:[],pontesInterdisciplinares:[],principaisConceitos:[],docentes:[],catalogo:[]};
 const tick=()=>new Promise<void>(r=>setTimeout(r,10));
 test('identity is stable across ordering and ontology changes, separating same titles by source and collection',async()=>{
  const a=doc(),b=doc({url:'https://repositorio.ufsc.br/handle/1/3'});assert.notEqual(await identidadeDocumento(a),await identidadeDocumento(b));assert.equal(await identidadeDocumento(a),await identidadeDocumento({...a,ontologia_ia:onto}));assert.notEqual(await identidadeDocumento(a),await identidadeDocumento({...a,programa_origem:'B'}));
@@ -50,25 +53,38 @@ test('sampling preserves the original stride and exposes actual 20000 character 
 test('conversation window respects message and character limits without changing saved history',()=>{
  const m=Array.from({length:30},(_,i)=>({role:i%2?'assistant' as const:'user' as const,content:'x'.repeat(2000)}));const h=historicoEnviado(m);assert.ok(h.length<=12);assert.equal(h[0].role,'user');assert.equal(m.length,30);
 });
-test('stream decoder preserves partial text but rejects EOF without terminal confirmation',async()=>{
- let texto='';await assert.rejects(lerRespostaChat(stream(['{"tipo":"texto","texto":"Parcial"}']).body!,t=>texto+=t,new AbortController().signal));assert.equal(texto,'Parcial');
- await lerRespostaChat(stream(['{"tipo":"texto","texto":"Completa"}','{"tipo":"fim"}']).body!,()=>{},new AbortController().signal);
+test('provider streams preserve partial text but require an explicit successful finish',async()=>{
+ const sinal=new AbortController().signal;let t='';
+ await assert.rejects(lerStreamChat(openai('Parcial',false).body!,'openai',x=>t+=x,sinal));assert.equal(t,'Parcial');
+ await assert.rejects(lerStreamChat(sse([{choices:[{delta:{content:'a'},finish_reason:'length'}]}]).body!,'openai',()=>{},sinal),/length/);
+ t='';await lerStreamChat(sse([{type:'content_block_delta',delta:{type:'thinking_delta',thinking:'x'}},{type:'content_block_delta',delta:{type:'text_delta',text:'Olá'}},{type:'message_delta',delta:{stop_reason:'end_turn'}}]).body!,'anthropic',x=>t+=x,sinal);assert.equal(t,'Olá');
+ await assert.rejects(lerStreamChat(sse([{type:'message_delta',delta:{stop_reason:'refusal'}}]).body!,'anthropic',()=>{},sinal),/recusou/);
+ await assert.rejects(lerStreamChat(sse([{type:'error',error:{message:'Sobrecarga'}}]).body!,'anthropic',()=>{},sinal),/Sobrecarga/);
+ await lerStreamChat(new Response('data: '+JSON.stringify({candidates:[{content:{parts:[{text:'Oi'}]},finishReason:'STOP'}]})).body!,'google',()=>{},sinal);
+ await assert.rejects(lerStreamChat(sse([{candidates:[{content:{parts:[{text:'Oi'}]},finishReason:'MAX_TOKENS'}]}]).body!,'google',()=>{},sinal));
 });
-test('server streaming handles final SSE without newline and detects MAX_TOKENS or missing STOP',async()=>{
- const event=(finishReason?:string)=>'data: '+JSON.stringify({candidates:[{content:{parts:[{text:'Olá'}]},finishReason}]});
- let txt=await respostaChat(new Response(event('STOP')),new AbortController().signal).text();assert.match(txt,/"tipo":"fim"/);
- txt=await respostaChat(new Response(event('MAX_TOKENS')),new AbortController().signal).text();assert.match(txt,/"tipo":"erro"/);assert.doesNotMatch(txt,/"tipo":"fim"/);
- txt=await respostaChat(new Response(event()),new AbortController().signal).text();assert.match(txt,/"tipo":"erro"/);
+test('requests go straight to the chosen provider with its own auth and system prompt placement',()=>{
+ const m=[{role:'user' as const,content:'Pergunta'}];
+ const o=requisicaoChat(cfg,'Sistema',m);assert.equal(o.url,'https://api.openai.com/v1/chat/completions');assert.equal((o.init.headers as Record<string,string>).Authorization,'Bearer sk-teste');assert.deepEqual(JSON.parse(String(o.init.body)).messages[0],{role:'system',content:'Sistema'});
+ const a=requisicaoChat({...cfg,provedor:'anthropic',modelo:'claude-opus-5',baseUrl:'https://api.anthropic.com/v1/'},'Sistema',m);const ah=a.init.headers as Record<string,string>;const ab=JSON.parse(String(a.init.body));
+ assert.equal(a.url,'https://api.anthropic.com/v1/messages');assert.equal(ah['x-api-key'],'sk-teste');assert.equal(ah['anthropic-dangerous-direct-browser-access'],'true');assert.equal(ab.system[0].text,'Sistema');assert.equal(ab.fallbacks,'default');assert.equal(ah['anthropic-beta'],'server-side-fallback-2026-07-01');
+ assert.equal(JSON.parse(String(requisicaoChat({...cfg,provedor:'anthropic',modelo:'claude-haiku-4-5',baseUrl:'https://api.anthropic.com/v1'},'S',m).init.body)).fallbacks,undefined);
+ const g=requisicaoChat({...cfg,provedor:'google',modelo:'gemini-2.5-flash',baseUrl:'https://generativelanguage.googleapis.com/v1beta'},'Sistema',[...m,{role:'assistant',content:'R'}]);assert.match(g.url,/models\/gemini-2\.5-flash:streamGenerateContent\?alt=sse$/);assert.equal(JSON.parse(String(g.init.body)).contents[1].role,'model');
+ assert.equal(validarConfigIA({...cfg,chave:' '}),'Informe a chave de API do provedor.');assert.match(validarConfigIA({...cfg,provedor:'personalizado',baseUrl:'http://exemplo.com/v1'})!,/HTTPS/);assert.equal(validarConfigIA({...cfg,provedor:'personalizado',baseUrl:'http://localhost:11434/v1'}),null);
+});
+test('chat without a configured provider asks for a key and sends nothing',async()=>{
+ init();const original=globalThis.fetch;let calls=0;globalThis.fetch=async()=>{calls++;return new Response();};
+ try{useEcoGradStore.getState().setChat({entrada:'Pergunta'});await enviarMensagem(dossie,false,null);assert.equal(calls,0);assert.match(useEcoGradStore.getState().chat.erro!,/chave/);assert.equal(useEcoGradStore.getState().chat.entrada,'Pergunta');}finally{globalThis.fetch=original;}
 });
 test('retry does not duplicate question, preserves prior partial and draft, and successful completion clears retry',async()=>{
  init();const original=globalThis.fetch;let calls=0;
- globalThis.fetch=async()=>++calls===1?stream(['{"tipo":"texto","texto":"Parcial"}']):stream(['{"tipo":"texto","texto":"Completa"}','{"tipo":"fim"}']);
- try{useEcoGradStore.getState().setChat({entrada:'Pergunta'});await enviarMensagem({});assert.equal(useEcoGradStore.getState().chat.parcial,'Parcial');useEcoGradStore.getState().setChat({entrada:'Outro rascunho'});await enviarMensagem({},true);const c=useEcoGradStore.getState().chat;assert.equal(c.mensagens.filter(m=>m.role==='user').length,1);assert.deepEqual(c.parciaisAnteriores,['Parcial']);assert.equal(c.entrada,'Outro rascunho');assert.equal(c.tentativa,undefined);}finally{globalThis.fetch=original;}
+ globalThis.fetch=async()=>++calls===1?openai('Parcial',false):openai('Completa');
+ try{useEcoGradStore.getState().setChat({entrada:'Pergunta'});await enviarMensagem(dossie,false,cfg);assert.equal(useEcoGradStore.getState().chat.parcial,'Parcial');useEcoGradStore.getState().setChat({entrada:'Outro rascunho'});await enviarMensagem(dossie,true,cfg);const c=useEcoGradStore.getState().chat;assert.equal(c.mensagens.filter(m=>m.role==='user').length,1);assert.deepEqual(c.parciaisAnteriores,['Parcial']);assert.equal(c.entrada,'Outro rascunho');assert.equal(c.tentativa,undefined);}finally{globalThis.fetch=original;}
 });
 test('chat cancellation and analysis changes reject late replies',async()=>{
  init();const original=globalThis.fetch;let release!:(r:Response)=>void;globalThis.fetch=()=>new Promise(r=>release=r);
- try{useEcoGradStore.getState().setChat({entrada:'Pergunta'});const pending=enviarMensagem({});interromperConversa();release(stream(['{"tipo":"texto","texto":"Tardia"}','{"tipo":"fim"}']));await pending;assert.equal(useEcoGradStore.getState().chat.streaming,false);assert.ok(useEcoGradStore.getState().chat.erro);
- useEcoGradStore.getState().setChat({entrada:'Outra'});const second=enviarMensagem({});init();release(stream(['{"tipo":"texto","texto":"Tardia"}','{"tipo":"fim"}']));await second;assert.equal(useEcoGradStore.getState().chat.mensagens.length,0);}finally{globalThis.fetch=original;}
+ try{useEcoGradStore.getState().setChat({entrada:'Pergunta'});const pending=enviarMensagem(dossie,false,cfg);interromperConversa();release(openai('Tardia'));await pending;assert.equal(useEcoGradStore.getState().chat.streaming,false);assert.ok(useEcoGradStore.getState().chat.erro);
+ useEcoGradStore.getState().setChat({entrada:'Outra'});const second=enviarMensagem(dossie,false,cfg);init();release(openai('Tardia'));await second;assert.equal(useEcoGradStore.getState().chat.mensagens.length,0);}finally{globalThis.fetch=original;}
 });
 test('ontology persists successes, retries only failed items, and applies nothing before review',async()=>{
  init();const original=globalThis.fetch;let fail=true;const sent:string[]=[];

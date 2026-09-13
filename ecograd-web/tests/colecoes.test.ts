@@ -56,7 +56,7 @@ test('goal is captured for loading; page routing preserves drafts and conversati
     if (goal.buscaTipo) assert.equal(store.getState().buscaTipo, goal.buscaTipo);
     assert.equal(store.getState().chat.entrada, 'rascunho privado');
     assert.equal(store.getState().ui['selecao.busca.ppg'], 'texto');
-    store.getState().setRota('chat'); assert.equal(store.getState().docs, docs);
+    store.getState().setRota('memetica'); assert.equal(store.getState().docs, docs);
   }
   assert.equal(objetivoPorId('invalid').rota, 'dashboard');
 });

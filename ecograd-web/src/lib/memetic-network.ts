@@ -319,8 +319,8 @@ export function gerarEcologiaMemes(
       color: corBase,
       shape: 'dot',
       title:
-        `🧬 ${termo} · 🔗 Grau ${grauAbs[i]} · ` +
-        `🌉 Betweenness ${bet[i].toFixed(4)} · 🕸️ Closeness ${clo[i].toFixed(4)}`,
+        `${termo} · Grau ${grauAbs[i]} · ` +
+        `Betweenness ${bet[i].toFixed(4)} · Closeness ${clo[i].toFixed(4)}`,
     };
   });
 

@@ -1,7 +1,7 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { mesmaSelecao } from '@/lib/selecao';
 import { useQuery } from '@tanstack/react-query';
-import { Plug, Rocket } from 'lucide-react';
+import { Lightbulb, Plug, Rocket } from 'lucide-react';
 import { ColecoesPicker, DetalhesCobertura, resumoCobertura } from './ColecoesPicker';
 import { ObjetivosUso } from './ObjetivosUso';
 import { carregarCobertura } from '@/lib/colecoes';
@@ -140,7 +140,7 @@ export function SelecaoInicial({ edicao = false, onVoltar }: { edicao?: boolean;
           </button>
         )
       ) : (
-        <Aviso>💡 Aguardando seleção de coleções acima para habilitar a análise detalhada.</Aviso>
+        <Aviso><span className="flex items-start gap-2"><Lightbulb size={16} aria-hidden className="mt-0.5 shrink-0" />Aguardando seleção de coleções acima para habilitar a análise detalhada.</span></Aviso>
       )}
 
       {edicao && <button type="button" className="btn" disabled={carregando} onClick={() => setRascunho({ programas: programasAtivos, cursosTcc: cursosAtivos })}>Descartar alterações do rascunho</button>}

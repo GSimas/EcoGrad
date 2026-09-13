@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { compararColecoes, filtrarTrabalhos, fonteSegura, intervaloComum, periodoTexto, referenciaDocumento, relacionados, resolverDocumento, resumoRegistros } from '../src/lib/resultados';
+import { compararColecoes, filtrarTrabalhos, fonteSegura, intervaloComum, orientandos, periodoTexto, referenciaDocumento, relacionados, resolverDocumento, resumoRegistros } from '../src/lib/resultados';
 import type { Documento } from '../src/types';
 const doc = (p: Partial<Documento>): Documento => ({ titulo: 'Um trabalho', nivel_academico: 'Outros', autores: [], orientador: '', co_orientadores: [], palavras_chave: [], macrotema: '', resumo: '', programa_origem: 'A', url: '', ano: null, ...p });
 const docs = [
@@ -58,4 +58,8 @@ test('duplicate titles require an explicit record; stale or fabricated reference
 test('source links permit web URLs only and preserve missing source state', () => {
   assert.equal(fonteSegura('javascript:alert(1)'), null); assert.equal(fonteSegura('data:text/html,test'), null);
   assert.equal(fonteSegura(''), null); assert.equal(fonteSegura('https://repositorio.ufsc.br/handle/1/1'), 'https://repositorio.ufsc.br/handle/1/1');
+});
+test('orientandos lists every author with works, levels and period, most recent first', () => {
+  const r = orientandos([...docs, doc({ autores: ['Ana', ' '], ano: 2015, nivel_academico: 'Dissertação (Mestrado)' }), doc({ autores: ['Caio'] })]);
+  assert.deepEqual(r.map((o) => [o.nome, o.trabalhos, o.niveis, o.periodo]), [['Bia', 1, 'Outros', '2020'], ['Ana', 2, 'Dissertação (Mestrado); Outros', '2010–2015'], ['Caio', 1, 'Outros', 'Não informado']]);
 });

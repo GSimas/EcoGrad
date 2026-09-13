@@ -66,7 +66,7 @@ test('duplicates, typing and progress do not fill history; a new branch replaces
     navigatePage('foresight'); navigatePage('foresight');
     for (let i = 0; i < 20; i++) store.setState({ mensagemCarregamento: String(i), ui: { 'busca.texto.Documento': `parcial ${i}` } });
     assert.equal(b.entries.length, 2);
-    navigatePage('chat'); navigateBack(); navigatePage('memetica');
+    navigatePage('busca'); navigateBack(); navigatePage('memetica');
     assert.equal(b.entries.length, 3);
     navigateForward();
     assert.equal(useNavigation.getState().page, 'memetica');
@@ -75,13 +75,13 @@ test('duplicates, typing and progress do not fill history; a new branch replaces
 test('reload restores the same history entry and its forward path', () => {
   const b = setup();
   store.getState().navegarPara('Autor', 'Pessoa A');
-  navigatePage('chat'); navigateBack();
+  navigatePage('foresight'); navigateBack();
   b.stop();
   const stop = initializeNavigation(b.port);
   try {
     assert.equal(store.getState().buscaTermo, 'Pessoa A');
     assert.equal(useNavigation.getState().visits.length, 3);
-    navigateForward(); assert.equal(useNavigation.getState().page, 'chat');
+    navigateForward(); assert.equal(useNavigation.getState().page, 'foresight');
     navigateVisit(useNavigation.getState().visits[0].id);
     assert.equal(useNavigation.getState().page, 'dashboard');
   } finally { stop(); }
@@ -129,7 +129,7 @@ test('expired, corrupt and oversized histories are discarded; storage rejection 
   b.port.storage.setItem = () => { throw new Error('QuotaExceededError'); };
   const stop = initializeNavigation(b.port);
   try {
-    navigatePage('chat'); navigateBack();
+    navigatePage('foresight'); navigateBack();
     assert.equal(useNavigation.getState().page, 'dashboard');
     assert.match(useNavigation.getState().storageError, /não pôde ser salvo/);
     const visit = useNavigation.getState().visits[0];
@@ -147,7 +147,7 @@ test('scroll and focus belong to each visit and survive reload', () => {
   const release = registerPosition(() => ({ top, focus: { tag: 'BUTTON', label: '', text: 'Abrir trabalho', ordinal: 0 } }));
   try {
     navigatePage('busca'); top = 900;
-    navigatePage('chat'); top = 0;
+    navigatePage('foresight'); top = 0;
     navigateBack();
     assert.equal(useNavigation.getState().restore?.top, 900);
     assert.equal(useNavigation.getState().restore?.focus?.text, 'Abrir trabalho');

@@ -1,3 +1,4 @@
+import { Select } from '@/components/ui/Select';
 import { useState, useEffect } from 'react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { propostas, decisaoAtual, ROTULOS_CATEGORIA, type CategoriaTermo } from '@/lib/curadoria';
@@ -47,7 +48,7 @@ function EditorTermo({item,proposta:p,bloqueado,revisaoId}:{item:ItemExtracao;pr
     <p role="status">Decisão salva: {atual?.estado??'pendente'}{alterado?' · Há alterações no rascunho; salve uma decisão para usá-las.':''}</p>
     {p.trecho&&<blockquote className="border-l-2 pl-2">{p.trecho}</blockquote>}
     <label className="block">Termo revisado<input className="input mt-1 w-full" value={draft.termo} maxLength={500} onChange={e=>setDraft({...draft,termo:e.target.value})}/></label>
-    <label className="block">Categoria revisada<select className="input mt-1 w-full" value={draft.categoria} onChange={e=>setDraft({...draft,categoria:e.target.value as CategoriaTermo})}>{CATEGORIAS_EVIDENCIA.map((c,i)=><option key={c} value={c}>{ROTULOS_CATEGORIA[i]}</option>)}</select></label>
+    <label className="block">Categoria revisada<Select aria-label="Categoria revisada" className="mt-1" valor={draft.categoria} onChange={v=>setDraft({...draft,categoria:v as CategoriaTermo})} opcoes={CATEGORIAS_EVIDENCIA.map((c,i)=>({valor:c,rotulo:ROTULOS_CATEGORIA[i]}))} /></label>
     <label className="block">Trecho literal de apoio<textarea className="input mt-1 w-full min-h-24" maxLength={1000} value={draft.trecho} onChange={e=>setDraft({...draft,trecho:e.target.value})}/></label>
     <label className="block">Justificativa da decisão<textarea className="input mt-1 w-full min-h-20" maxLength={2000} value={draft.justificativa} onChange={e=>setDraft({...draft,justificativa:e.target.value})}/></label>
     <p className="text-xs">Aprovar ou corrigir exige justificativa e trecho literal de 10 a 1.000 caracteres. Rejeitar exige justificativa; a proposta original será mantida.</p>

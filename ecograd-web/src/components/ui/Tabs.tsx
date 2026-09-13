@@ -36,7 +36,7 @@ export function Tabs({
           <TabsPrimitive.Trigger
             key={a.valor}
             value={a.valor}
-            className="-mb-px rounded-t-lg border-b-2 border-transparent px-4 py-2 text-sm font-medium
+            className="-mb-px inline-flex items-center gap-1.5 rounded-t-lg border-b-2 border-transparent px-4 py-2 text-sm font-medium
               text-slate-400 transition hover:text-slate-200
               data-[state=active]:border-eco-accent data-[state=active]:text-eco-accent"
           >

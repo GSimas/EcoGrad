@@ -1,3 +1,4 @@
+import { Select } from '@/components/ui/Select';
 import { useId, useMemo } from 'react';
 import { Expander, Tabela } from '@/components/ui/primitives';
 import { useSessionField } from '@/hooks/useSessionField';
@@ -13,7 +14,7 @@ export function ComparacaoColecoes({ docs, nomes, tcc, ppg }: { docs: readonly D
   return <section className="space-y-4" aria-label="Comparar coleções">
     <h2 className="text-xl font-semibold">Comparar coleções</h2>
     <p className="text-sm text-slate-300">Compare volumes e cobertura antes de interpretar diferenças. Coleções de TCC e de pós-graduação têm finalidades e classificações distintas; o tamanho do acervo não é uma medida de qualidade.</p>
-    <label htmlFor={id} className="block max-w-xl space-y-1 text-sm"><span>Período da comparação</span><select id={id} className="input" value={usarComum ? 'comum' : 'integral'} onChange={(e) => setModo(e.target.value)}><option value="integral">Todo o período de cada coleção</option><option value="comum" disabled={!comum}>{comum ? `Janela comum: ${comum[0]}–${comum[1]}` : 'Janela comum indisponível'}</option></select></label>
+    <div className="block max-w-xl space-y-1 text-sm"><label htmlFor={id}>Período da comparação</label><Select id={id} valor={usarComum ? 'comum' : 'integral'} onChange={setModo} opcoes={[{ valor: 'integral', rotulo: 'Todo o período de cada coleção' }, { valor: 'comum', rotulo: comum ? `Janela comum: ${comum[0]}–${comum[1]}` : 'Janela comum indisponível', desabilitada: !comum }]} /></div>
     <p className="text-xs text-slate-400">{usarComum ? 'A janela comum é a interseção dos intervalos observados, não a garantia de registros em todos os anos. Registros sem ano ficam fora desta comparação.' : 'Os volumes podem cobrir períodos diferentes. A janela comum exige ao menos um ano informado em cada coleção e intervalos sobrepostos.'} Este filtro muda somente a comparação; busca, dossiês e cálculos continuam usando toda a análise.</p>
     <Tabela titulo="Comparação de coleções" linhas={linhas}
       contexto={{periodoComparacao:usarComum?comum:'Integral', catalogos:{ppg,tcc}}}

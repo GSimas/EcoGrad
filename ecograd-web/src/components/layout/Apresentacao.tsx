@@ -39,7 +39,7 @@ export function Apresentacao() {
       <section className="card intro-block mt-10 space-y-3">
         <h2 className="text-lg font-semibold">O que os dados permitem saber</h2>
         <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama CAPES é uma consulta institucional independente; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
-        <p className="text-sm leading-relaxed text-slate-300">O Consultor IA recebe contexto limitado da análise. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
+        <p className="text-sm leading-relaxed text-slate-300">O Consultor IA fica no botão do canto inferior direito e usa a chave de API do provedor que você escolher. Ele recebe contexto limitado da análise. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
         <button type="button" className="btn" onClick={() => navigatePage('selecao')}>{carregada ? 'Editar seleção de coleções' : 'Conferir coleções e Panorama CAPES'} <ArrowRight size={16} /></button>
       </section>
       <footer className="mt-12 flex flex-col items-center gap-2 text-xs text-slate-400">

@@ -3,7 +3,7 @@ import { PAGE_LABELS } from '@/lib/navigation';
 import { navigatePage, useNavigation } from '@/services/navigation';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { BookOpen, BotMessageSquare, Dna, Github, Landmark, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Pencil, Plus, Radar, Search, X } from 'lucide-react';
+import { BookOpen, Dna, Github, Landmark, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Pencil, Plus, Radar, Search, X } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { Janela } from './Janela';
 import { PanoramaCapes } from '@/components/dashboard/PanoramaCapes';
@@ -17,7 +17,6 @@ const ITENS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }
   { rota: 'busca', rotulo: 'Motor de Busca', icone: Search },
   { rota: 'foresight', rotulo: 'Foresight', icone: Radar },
   { rota: 'memetica', rotulo: 'Memética e Ontologia', icone: Dna },
-  { rota: 'chat', rotulo: 'Consultor IA', icone: BotMessageSquare },
 ];
 
 export function AcessosAjuda({ compacto = false }: { compacto?: boolean }) {

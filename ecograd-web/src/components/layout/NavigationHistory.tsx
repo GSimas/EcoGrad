@@ -1,3 +1,4 @@
+import { Select } from '@/components/ui/Select';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { navigateBack, navigateForward, navigatePage, navigateVisit, useNavigation } from '@/services/navigation';
 import { visitLabel } from '@/lib/navigation';
@@ -10,9 +11,7 @@ export function NavigationHistory() {
       <button type="button" className="btn min-h-11" disabled={!previous} onClick={navigateBack} title={previous ? `Voltar para ${visitLabel(previous)}` : 'Nenhuma página anterior nesta análise'} aria-label="Voltar no percurso"><ArrowLeft size={16} />Voltar</button>
       <button type="button" className="btn min-h-11" disabled={index < 0 || index >= visits.length - 1} onClick={navigateForward} aria-label="Avançar no percurso"><ArrowRight size={16} />Avançar</button>
       <label className="flex min-w-0 w-full flex-none flex-col sm:w-auto sm:flex-1 gap-1 text-slate-300">Histórico desta análise
-        <select className="input min-w-0 w-full" value={current} onChange={(e) => navigateVisit(e.target.value)}>
-          {visits.map((v, i) => <option key={v.id} value={v.id}>{i + 1}. {visitLabel(v)}</option>)}
-        </select>
+        <Select aria-label="Histórico desta análise" className="min-w-0" valor={current ?? ''} onChange={(v) => navigateVisit(v)} opcoes={visits.map((v, i) => ({ valor: v.id, rotulo: `${i + 1}. ${visitLabel(v)}` }))} />
       </label>
     </div>
     {previous && <p className="break-words text-slate-400">Origem: {visitLabel(previous)}</p>}

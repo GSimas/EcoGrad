@@ -63,6 +63,22 @@ export function relacionados(docs: readonly Documento[], tipo: TipoBusca) {
   }
   return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'));
 }
+export type Orientando = { nome: string; trabalhos: number; niveis: string; periodo: string; ultimoAno: number | null };
+/** Todos os autores dos trabalhos de um orientador/coorientador, do mais recente ao mais antigo. */
+export function orientandos(docs: readonly Documento[]): Orientando[] {
+  const mapa = new Map<string, { trabalhos: number; niveis: Set<string>; anos: number[] }>();
+  for (const d of docs) for (const nome of new Set(d.autores.filter((v) => v.trim()))) {
+    const o = mapa.get(nome) ?? { trabalhos: 0, niveis: new Set<string>(), anos: [] };
+    o.trabalhos++;
+    if (d.nivel_academico) o.niveis.add(d.nivel_academico);
+    if (d.ano !== null) o.anos.push(d.ano);
+    mapa.set(nome, o);
+  }
+  return [...mapa].map(([nome, o]) => {
+    const ini = o.anos.length ? Math.min(...o.anos) : null, fim = o.anos.length ? Math.max(...o.anos) : null;
+    return { nome, trabalhos: o.trabalhos, niveis: [...o.niveis].sort().join('; ') || 'Não informado', periodo: ini === null ? 'Não informado' : ini === fim ? String(ini) : `${ini}–${fim}`, ultimoAno: fim };
+  }).sort((a, b) => (b.ultimoAno ?? -Infinity) - (a.ultimoAno ?? -Infinity) || a.nome.localeCompare(b.nome, 'pt-BR'));
+}
 export interface ReferenciaDocumento { indice: number; titulo: string; origem: string; url: string }
 export function referenciaDocumento(docs: readonly Documento[], indice: number): ReferenciaDocumento | null {
   const d = Number.isInteger(indice) && indice >= 0 ? docs[indice] : undefined;

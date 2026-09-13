@@ -3,22 +3,22 @@ import type { Documento, Quadrante, TipoForesight } from '../types';
 import { extrairTermosForesight } from './foresight-math';
 
 export const LEITURA_QUADRANTE: Record<Quadrante, string> = {
-  '↗️ Tendência': 'Momentum alto · novidade alta',
-  '↖️ Sinal Fraco': 'Momentum baixo · novidade alta',
-  '↘️ Mainstream': 'Momentum alto · novidade baixa',
-  '↙️ Base/Declínio': 'Momentum baixo · novidade baixa',
+  '↗ Tendência': 'Momentum alto · novidade alta',
+  '↖ Sinal Fraco': 'Momentum baixo · novidade alta',
+  '↘ Mainstream': 'Momentum alto · novidade baixa',
+  '↙ Base/Declínio': 'Momentum baixo · novidade baixa',
 };
 
 /** Rótulos de leitura; as chaves e os vereditos originais continuam exportados. */
 export const LEITURA_VEREDITO: Record<string, string> = {
-  '✅ Sucesso (Emergiu/Explodiu)': 'Critério atendido: crescimento ≥ 25% e volume posterior ≥ 3',
-  '❌ Falso Positivo (Ruído)': 'Critério não atendido: crescimento ≥ 25% e volume posterior ≥ 3',
-  '✅ Confirmado (Continuou Fogo)': 'Critério atendido: crescimento ≥ 10% e volume posterior ≥ 3',
-  '❌ Falso Positivo (Esfriou)': 'Critério não atendido: crescimento ≥ 10% e volume posterior ≥ 3',
-  '✅ Confirmado (Caiu/Morreu)': 'Critério atendido: variação ≤ 0% ou volume posterior < 3',
-  '❌ Falso Negativo (Ressurgiu)': 'Critério não atendido: variação ≤ 0% ou volume posterior < 3',
-  '✅ Confirmado (Platô/Caiu)': 'Critério atendido: variação ≤ 5%',
-  '❌ Falso Negativo (Voltou a Crescer)': 'Critério não atendido: variação ≤ 5%',
+  '✓ Sucesso (Emergiu/Explodiu)': 'Critério atendido: crescimento ≥ 25% e volume posterior ≥ 3',
+  '✗ Falso Positivo (Ruído)': 'Critério não atendido: crescimento ≥ 25% e volume posterior ≥ 3',
+  '✓ Confirmado (Continuou Fogo)': 'Critério atendido: crescimento ≥ 10% e volume posterior ≥ 3',
+  '✗ Falso Positivo (Esfriou)': 'Critério não atendido: crescimento ≥ 10% e volume posterior ≥ 3',
+  '✓ Confirmado (Caiu/Morreu)': 'Critério atendido: variação ≤ 0% ou volume posterior < 3',
+  '✗ Falso Negativo (Ressurgiu)': 'Critério não atendido: variação ≤ 0% ou volume posterior < 3',
+  '✓ Confirmado (Platô/Caiu)': 'Critério atendido: variação ≤ 5%',
+  '✗ Falso Negativo (Voltou a Crescer)': 'Critério não atendido: variação ≤ 5%',
 };
 
 export function coberturaRadar(docs: readonly Documento[], janela: number, tipo: TipoForesight) {
