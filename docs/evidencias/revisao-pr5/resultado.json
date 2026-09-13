@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-13T01:16:30.928978+00:00",
+  "pr": "https://github.com/GSimas/EcoGrad/pull/5",
+  "headRevisado": "70343a5d5f2252bcea735b8ca57a104aac4f5e38",
+  "correcoes": "Somente locais; sem commit, push, merge ou deploy",
+  "testes": 143,
+  "falhas": 0,
+  "build": "aprovado",
+  "diffCheck": "aprovado",
+  "netlifyNaConsulta": {
+    "stop_builds": true,
+    "deployPublicado": "6aa5ee23875c3a0006f75f26"
+  },
+  "sha256": {
+    "ecograd-web/src/services/ia.ts": "516fb87fcf348cbb25dcd9992b447e96ac73801bc4ab6fca4d20a7ecf6bfbef6",
+    "ecograd-web/tests/ia.test.ts": "74ffccf8e9bb93d1b60e072ef09d428b06acd61ab2550634fd619e7904d7713f"
+  }
+}

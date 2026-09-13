@@ -94,3 +94,18 @@ test('commit revalidates concurrent activity guard before replacing document dat
  await assert.rejects(s.aplicarOntologia(new Map([[id,onto]]),false,()=>{throw new Error('Cálculo em andamento');}),/Cálculo em andamento/);
  assert.equal(useEcoGradStore.getState().docs,docs);assert.equal(docs[0].ontologia_ia,undefined);
 });
+
+test('resuming refuses ambiguous document IDs without sending a source to AI',async()=>{
+ init();const d=doc(),id=await identidadeDocumento(d);useEcoGradStore.setState({docs:[d,{...d,resumo:'Outro resumo'}],ia:{...iaVazia(),lote:{baseVersion:'v1',estado:'interrompido',itens:[{id,titulo:d.titulo,estado:'pendente'}]}}});
+ const original=globalThis.fetch;let calls=0;globalThis.fetch=async()=>{calls++;return Response.json({resultados:[]});};
+ try{await iniciarExtracao(5,true);assert.equal(calls,0);assert.match(useEcoGradStore.getState().ia.lote!.itens[0].erro!,/ambígua/);assert.ok(useEcoGradStore.getState().docs.every(d=>!d.ontologia_ia));}finally{globalThis.fetch=original;}
+});
+test('resuming a stale review preserves its proposals instead of replacing the batch',async()=>{
+ init();const lote={baseVersion:'old',estado:'interrompido' as const,itens:[{id:await identidadeDocumento(doc()),titulo:'Original',estado:'pendente' as const}]};useEcoGradStore.getState().setIA({lote});
+ const original=globalThis.fetch;let calls=0;globalThis.fetch=async()=>{calls++;return Response.json({resultados:[]});};
+ try{await iniciarExtracao(5,true);assert.equal(calls,0);assert.equal(useEcoGradStore.getState().ia.lote,lote);}finally{globalThis.fetch=original;}
+});
+test('review changed while IDs are computed cannot be overwritten by extraction',async()=>{
+ init();const original=globalThis.fetch;let calls=0;globalThis.fetch=async()=>{calls++;return Response.json({resultados:[]});};
+ try{const pending=iniciarExtracao(5);const newer={baseVersion:'v1',estado:'concluido' as const,itens:[]};useEcoGradStore.getState().setIA({lote:newer});await pending;assert.equal(calls,0);assert.equal(useEcoGradStore.getState().ia.lote,newer);}finally{globalThis.fetch=original;}
+});

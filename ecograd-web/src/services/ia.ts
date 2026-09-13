@@ -21,13 +21,17 @@ export async function iniciarExtracao(tamanho:number,retomar=false){
  const s=useEcoGradStore.getState();const analysisId=s.analysisId;let lote:LoteExtracao|null=null;
  const atualizar=()=>{const atual=useEcoGradStore.getState();if(atual.analysisId!==analysisId||extracao!==controller||!lote)return;atual.setIA({lote:{...lote,itens:lote.itens.map(i=>({...i}))}});useEcoGradStore.setState(a=>({ui:{...a.ui,'ontologia.processando':lote!.estado==='executando','ontologia.status':`${lote!.itens.filter(i=>i.estado==='concluido').length}/${lote!.itens.length} documentos concluídos no lote.`}}));};
  try{
-  const index=await indexarDocumentos(s.docs);controller.signal.throwIfAborted();
-  const counts=new Map<string,number>();for(const x of index)counts.set(x.id,(counts.get(x.id)??0)+1);
   const anterior=s.ia.lote;
+  if(retomar&&(!anterior||anterior.aplicado||anterior.baseVersion!==s.baseVersion))return;
+  const index=await indexarDocumentos(s.docs);controller.signal.throwIfAborted();
+  const atual=useEcoGradStore.getState();
+  if(atual.analysisId!==analysisId||atual.docs!==s.docs||atual.baseVersion!==s.baseVersion||atual.ia.lote!==anterior)return;
+  const counts=new Map<string,number>();for(const x of index)counts.set(x.id,(counts.get(x.id)??0)+1);
   lote=retomar&&anterior&&anterior.baseVersion===s.baseVersion&&!anterior.aplicado?{...anterior,estado:'executando',itens:anterior.itens.map(i=>({...i,estado:i.estado==='concluido'?'concluido':'pendente',erro:undefined}))}:{revisaoId:crypto.randomUUID(),baseVersion:s.baseVersion,estado:'executando',itens:index.filter(x=>!parseOntologia(x.documento.ontologia_ia)&&x.documento.resumo.trim()&&counts.get(x.id)===1).slice(0,Math.max(1,Math.min(tamanho,1000))).map(x=>({id:x.id,titulo:x.documento.titulo,estado:'pendente'}))};
   atualizar();
   for(const item of lote.itens){
    if(item.estado==='concluido')continue;controller.signal.throwIfAborted();
+   if(counts.get(item.id)!==1){item.estado='erro';item.erro='Identidade ausente ou ambígua na análise. Nenhuma fonte foi enviada.';atualizar();continue;}
    const d=index.find(x=>x.id===item.id)?.documento;
    if(!d){item.estado='erro';item.erro='Identidade não encontrada na análise.';atualizar();continue;}
    item.estado='executando';atualizar();
