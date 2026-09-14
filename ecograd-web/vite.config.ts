@@ -16,6 +16,11 @@ export default defineConfig({
   },
   server: {
     port: PORTA_DEV,
+    // `localhost` fazia o Node resolver para `::1` e o Vite escutar so em IPv6.
+    // O navegador resolve `localhost` para 127.0.0.1, entao o socket de HMR nao
+    // conectava, caia no fallback da origem da pagina (a porta do proxy) e o
+    // console enchia de `WebSocket connection failed`. Fixar IPv4 resolve.
+    host: '127.0.0.1',
     // Sob `netlify dev` a página é servida pelo proxy (8888), mas o socket de
     // HMR do Vite continua no servidor real. Sem apontar a porta do cliente, o
     // navegador tenta abrir o WebSocket em 8888, falha, e o hot-reload morre em

@@ -21,11 +21,15 @@
 
 [dev]
   # O Netlify Dev executa este comando a partir da RAIZ do repositório (não de
-  # `base`), por isso o `--prefix`. O `PORT` alimenta tanto `server.port` quanto
-  # `server.hmr.clientPort` no vite.config — sem esse alinhamento o WebSocket de
-  # HMR tenta a porta do proxy e o hot-reload para de funcionar.
-  # Ajuste `PORT` e `targetPort` juntos se 5176 estiver ocupada.
-  command = "PORT=5176 npm --prefix ecograd-web run dev"
+  # `base`), por isso o caminho completo do script. O wrapper define `PORT`, que
+  # alimenta tanto `server.port` quanto `server.hmr.clientPort` no vite.config —
+  # sem esse alinhamento o WebSocket de HMR tenta a porta do proxy e o
+  # hot-reload para de funcionar. O prefixo POSIX `PORT=5176 npm ...` não serve
+  # aqui: a CLI roda o comando pelo shell do sistema e o `cmd.exe` do Windows
+  # trataria `PORT=5176` como nome de executável.
+  # Ajuste `PORTA_VITE` (em scripts/dev-vite.mjs) e `targetPort` juntos se 5176
+  # estiver ocupada.
+  command = "node ecograd-web/scripts/dev-vite.mjs"
   targetPort = 5176
   port = 8888
   framework = "#custom"
