@@ -6,7 +6,8 @@ const ForceGraph2D = lazy(() => import('react-force-graph-2d'));
 import { useSessionField } from '@/hooks/useSessionField';
 import { Tabela } from './Tabela';
 import type { GraphNode, GraphLink } from '@/types';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Maximize2, Pause, Play, ZoomIn, ZoomOut } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ImageDown, Maximize2, Pause, Play, ZoomIn, ZoomOut } from 'lucide-react';
+import { baixarCanvas, type FormatoImagem } from '@/lib/exportar-imagem';
 
 type Camera = { zoom: number; x: number; y: number };
 export function RedeInterativa({ id, titulo, nodes, links, descricao, contexto, onSelecionar, desenharNo }: {
@@ -102,6 +103,9 @@ export function RedeInterativa({ id, titulo, nodes, links, descricao, contexto, 
     r.centerAt(c.x + x * passo, c.y + y * passo, 0);
   };
   const zoom = (fator: number) => { const r = ref.current; if (r) r.zoom(Math.max(0.1, Math.min(12, r.zoom() * fator)), 0); };
+  // O force-graph desenha num `<canvas>` próprio; a exportação copia o bitmap
+  // como ele está na tela, respeitando zoom e enquadramento atuais.
+  const baixarImagem = (formato: FormatoImagem) => baixarCanvas(container.current?.querySelector('canvas'), titulo, formato);
   return <section className="min-w-0 space-y-3" aria-label={titulo}>
     <p className="text-sm text-slate-300">{nodes.length} nós · {links.length} conexões visíveis. {descricao}</p>
     <div className="flex flex-wrap gap-2" role="group" aria-label={`Visualização de ${titulo}`}>
@@ -139,6 +143,8 @@ export function RedeInterativa({ id, titulo, nodes, links, descricao, contexto, 
           <button type="button" className="btn" disabled={!hasNodes} onClick={()=>mover(1,0)}><ArrowRight size={16} aria-hidden="true" />Mover à direita</button>
           <button type="button" className="btn" disabled={!hasNodes} onClick={()=>mover(0,-1)}><ArrowUp size={16} aria-hidden="true" />Mover acima</button>
           <button type="button" className="btn" disabled={!hasNodes} onClick={()=>mover(0,1)}><ArrowDown size={16} aria-hidden="true" />Mover abaixo</button>
+          <button type="button" className="btn" disabled={!hasNodes} onClick={()=>baixarImagem('jpg')} title={`Baixar ${titulo} em JPG, com o fundo do tema atual`}><ImageDown size={16} aria-hidden="true" />Baixar JPG (com fundo)</button>
+          <button type="button" className="btn" disabled={!hasNodes} onClick={()=>baixarImagem('png')} title={`Baixar ${titulo} em PNG, com fundo transparente`}><ImageDown size={16} aria-hidden="true" />Baixar PNG (sem fundo)</button>
         </div>
         <p className="text-xs text-slate-300" role="status">Zoom: {Math.round((camera?.zoom ?? 1)*100)}%.</p>
         <ul className="flex flex-wrap gap-3 text-xs" aria-label={`Legenda de ${titulo}`}>{tipos.map((tipo)=><li key={tipo} className="flex items-center gap-2"><span aria-hidden="true" className="h-3 w-3 rounded-full border border-slate-500" style={{backgroundColor:(nodes.find((n)=>n.tipo===tipo && n.color!=='#FFFFFF') ?? nodes.find((n)=>n.tipo===tipo))?.color}} />{tipo}</li>)}</ul>

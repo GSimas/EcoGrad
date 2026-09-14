@@ -6,6 +6,8 @@ const ReactECharts = lazy(() => import('./EChartsCanvas'));
 import type { EChartsOption } from 'echarts';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Tabela, type LeituraDados } from './Tabela';
+import { baixarGraficoECharts, ehExportavel, type FormatoImagem } from '@/lib/exportar-imagem';
+import { ImageDown } from 'lucide-react';
 
 /** Tokens visuais compartilhados por todos os gráficos (tema escuro do EcoGrad). */
 export const TEMA_GRAFICO = {
@@ -48,6 +50,17 @@ export function Grafico({
 }) {
   const { claro, reduzir } = useAparencia();
   const [vista, setVista] = useSessionField('grafico.' + leitura.titulo, 'grafico');
+  // Instância do ECharts, guardada para exportar a imagem. O `onReady` do
+  // chamador continua sendo chamado: a exportação não toma o lugar dele.
+  const instancia = useRef<unknown>(null);
+  const aoMontar = useCallback((eci: unknown) => {
+    instancia.current = eci;
+    onReady?.(eci);
+  }, [onReady]);
+  const baixar = useCallback((formato: FormatoImagem) => {
+    const eci = instancia.current;
+    if (ehExportavel(eci)) baixarGraficoECharts(eci, leitura.titulo, formato);
+  }, [leitura.titulo]);
   const opcaoFinal = useMemo<EChartsOption>(
     () => adaptarGrafico({
       backgroundColor: 'transparent',
@@ -76,6 +89,16 @@ export function Grafico({
       <div className="flex flex-wrap gap-2" role="group" aria-label={`Visualização de ${leitura.titulo}`}>
         <button type="button" className="btn" aria-pressed={vista !== 'tabela'} onClick={() => setVista('grafico')}>Ver gráfico</button>
         <button type="button" className="btn" aria-pressed={vista === 'tabela'} onClick={() => setVista('tabela')}>Ver dados em tabela</button>
+        {vista !== 'tabela' && (
+          <>
+            <button type="button" className="btn" onClick={() => baixar('jpg')} title={`Baixar ${leitura.titulo} em JPG, com o fundo do tema atual`}>
+              <ImageDown size={16} aria-hidden="true" />Baixar JPG (com fundo)
+            </button>
+            <button type="button" className="btn" onClick={() => baixar('png')} title={`Baixar ${leitura.titulo} em PNG, com fundo transparente`}>
+              <ImageDown size={16} aria-hidden="true" />Baixar PNG (sem fundo)
+            </button>
+          </>
+        )}
       </div>
       {vista === 'tabela' ? <Tabela {...leitura} /> : <><div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
     <CanvasBoundary><ReactECharts
@@ -85,7 +108,7 @@ export function Grafico({
       notMerge
       lazyUpdate
       onEvents={onEvents}
-      onChartReady={onReady}
+      onChartReady={aoMontar}
     /></CanvasBoundary></div></div>{rodape}</>}
     </section>
   );
