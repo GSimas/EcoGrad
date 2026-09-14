@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react';
-import { ChartColumn, FileText, GraduationCap, Handshake, School, Sprout, Target, Trophy, User, Waypoints } from 'lucide-react';
+import { ChartColumn, FileText, GraduationCap, Handshake, Radius, School, Sprout, Target, Trophy, User, Waypoints } from 'lucide-react';
 import { Aviso, Card, Chip, Expander } from '@/components/ui/primitives';
+import { RedeRadial } from './RedeRadial';
 import { RankingClicavel, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs } from '@/components/ui/Tabs';
 import { formatarDecimal } from '@/lib/utils';
@@ -303,6 +304,11 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
               </div>
             )
             ),
+          },
+          {
+            valor: 'radial',
+            rotulo: <><Radius size={15} aria-hidden /> Diagrama radial</>,
+            conteudo: <RedeRadial docs={docs} />,
           },
         ]}
       />

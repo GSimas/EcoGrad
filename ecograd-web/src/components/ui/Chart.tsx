@@ -1,6 +1,6 @@
 import { useAparencia } from '@/services/aparencia';
 import { adaptarGrafico } from '@/lib/aparencia-graficos';
-import { lazy, useCallback, useMemo, useRef } from 'react';
+import { lazy, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { CanvasBoundary } from './CanvasBoundary';
 const ReactECharts = lazy(() => import('./EChartsCanvas'));
 import type { EChartsOption } from 'echarts';
@@ -31,6 +31,7 @@ export function Grafico({
   larguraMinima = 0,
   onEvents,
   onReady,
+  rodape,
 }: {
   option: EChartsOption;
   leitura: LeituraDados;
@@ -38,6 +39,12 @@ export function Grafico({
   larguraMinima?: number;
   onEvents?: Record<string, (params: unknown) => void>;
   onReady?: (instancia: unknown) => void;
+  /**
+   * Conteúdo abaixo do desenho — tipicamente uma legenda em HTML, que não é
+   * sobreposta pelo gráfico nem cortada como a legenda interna do ECharts.
+   * Só aparece na vista de gráfico: na tabela não haveria a que se referir.
+   */
+  rodape?: ReactNode;
 }) {
   const { claro, reduzir } = useAparencia();
   const [vista, setVista] = useSessionField('grafico.' + leitura.titulo, 'grafico');
@@ -70,7 +77,7 @@ export function Grafico({
         <button type="button" className="btn" aria-pressed={vista !== 'tabela'} onClick={() => setVista('grafico')}>Ver gráfico</button>
         <button type="button" className="btn" aria-pressed={vista === 'tabela'} onClick={() => setVista('tabela')}>Ver dados em tabela</button>
       </div>
-      {vista === 'tabela' ? <Tabela {...leitura} /> : <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
+      {vista === 'tabela' ? <Tabela {...leitura} /> : <><div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
     <CanvasBoundary><ReactECharts
       option={opcaoFinal}
       style={{ height: altura, width: '100%' }}
@@ -79,7 +86,7 @@ export function Grafico({
       lazyUpdate
       onEvents={onEvents}
       onChartReady={onReady}
-    /></CanvasBoundary></div></div>}
+    /></CanvasBoundary></div></div>{rodape}</>}
     </section>
   );
 }
