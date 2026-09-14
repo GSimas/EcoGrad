@@ -37,9 +37,45 @@ export function Dashboard() {
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi rotulo="Registros carregados" valor={docs.length} detalhe="Não necessariamente trabalhos únicos" />
+        <Kpi
+          rotulo="Trabalhos únicos"
+          valor={cobertura.trabalhosUnicos}
+          detalhe={`${cobertura.comFonte - cobertura.fontesDistintas} registros repetem um link`}
+          ajuda="Links distintos do repositório somados aos registros sem link, que não são deduplicáveis e contam um cada. Nada é fundido por semelhança de título; não é deduplicação científica."
+        />
         <Kpi rotulo="Coleções selecionadas" valor={nomes.length} />
         <Kpi rotulo="Período observado" valor={periodoTexto(cobertura)} detalhe={`${cobertura.semAno} registros sem ano`} />
         <Kpi rotulo="Resumos disponíveis" valor={`${cobertura.comResumo}/${docs.length}`} />
+        <Kpi
+          rotulo="Autores"
+          valor={conjuntos.autores.size}
+          detalhe="Nomes distintos na autoria"
+          ajuda="Contagem de nomes, não de pessoas: homônimos colapsam num nome só e grafias diferentes da mesma pessoa contam separado."
+        />
+        <Kpi
+          rotulo="Orientadores"
+          valor={conjuntos.orientadores.size}
+          detalhe="Nomes distintos na orientação"
+          ajuda="Contagem de nomes, não de pessoas. Quem também coorienta aparece nos dois blocos."
+        />
+        <Kpi
+          rotulo="Coorientadores"
+          valor={conjuntos.coorientadores.size}
+          detalhe="Nomes distintos na coorientação"
+          ajuda="Contagem de nomes, não de pessoas. Quem também orienta aparece nos dois blocos."
+        />
+        <Kpi
+          rotulo="Palavras-chave"
+          valor={conjuntos.keywords.size}
+          detalhe="Termos distintos declarados"
+          ajuda="Termos como vieram da base, sem unificação de sinônimos, plural ou grafia."
+        />
+        <Kpi
+          rotulo="Macrotemas"
+          valor={contagens.macrotemas.size}
+          detalhe="Classes atribuídas pelo pipeline"
+          ajuda="Macrotemas são atribuídos por `pipeline_ufsc.py` (NMF + Gemini), não declarados pelos autores."
+        />
       </div>
       <CoberturaAnalise docs={docs} />
       <div className="flex flex-wrap gap-3">
@@ -55,15 +91,10 @@ export function Dashboard() {
       </section>
       <Expander titulo="Indicadores e métodos da rede" lazy>
       <p className="mb-4 text-sm text-slate-300">Indicadores descritivos do conjunto carregado. Centralidade, volume e comunidade não são avaliações de mérito das pessoas ou trabalhos. Nomes podem representar homônimos.</p>
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi rotulo="Nomes na autoria" valor={conjuntos.autores.size} /><Kpi rotulo="Nomes de orientadores" valor={conjuntos.orientadores.size} /><Kpi rotulo="Nomes de coorientadores" valor={conjuntos.coorientadores.size} /><Kpi rotulo="Palavras-chave distintas" valor={conjuntos.keywords.size} />
-      </div>
       <Atividade id="sna-global" />
       <Atividade id="maturidade" />
 
-      {statusSNA === 'pronto' && (
-        <>
-          {maturidade && (
+      {statusSNA === 'pronto' && maturidade && (
             <section className="space-y-3">
               <h3 className="flex items-center gap-2 text-lg font-semibold">
                 <Activity size={18} /> Maturidade e Robustez Topológica
@@ -91,18 +122,16 @@ export function Dashboard() {
                 />
               </div>
             </section>
-          )}
-
-          <Destaques
-            docs={docs}
-            snaGlobal={snaGlobal}
-            contagens={contagens}
-            conjuntos={conjuntos}
-            niveis={niveis}
-          />
-        </>
       )}
       </Expander>
+      <Destaques
+        docs={docs}
+        snaGlobal={snaGlobal}
+        contagens={contagens}
+        conjuntos={conjuntos}
+        niveis={niveis}
+        statusSNA={statusSNA}
+      />
       <Trabalhos docs={docs} sessionKey="dashboard.trabalhos" />
       <div className="grid gap-4 lg:grid-cols-2">
         <Relacoes docs={docs} tipo="Palavra-chave" titulo="Temas para começar a exploração" />

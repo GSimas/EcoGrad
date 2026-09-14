@@ -17,6 +17,11 @@ export function resumoRegistros(docs: readonly Documento[]) {
     semAno: docs.filter((d) => d.ano === null || !Number.isFinite(d.ano)).length,
     comResumo: docs.filter((d) => d.resumo.trim()).length,
     comFonte: fontes.length, fontesDistintas: new Set(fontes).size,
+    // Trabalhos únicos = links distintos do repositório + registros sem link.
+    // Dois registros só colapsam quando apontam para o mesmo handle; nada é
+    // fundido por semelhança de título, e um registro sem link nunca é
+    // deduplicado (conta 1). Continua não sendo deduplicação científica.
+    trabalhosUnicos: new Set(fontes).size + (docs.length - fontes.length),
     comPalavras: docs.filter((d) => d.palavras_chave.some((p) => p.trim())).length,
     comOrientador: docs.filter((d) => d.orientador.trim()).length,
     autores: new Set(docs.flatMap((d) => d.autores).filter(Boolean)).size,

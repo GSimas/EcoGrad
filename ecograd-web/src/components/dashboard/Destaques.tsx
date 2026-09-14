@@ -5,7 +5,7 @@ import { RankingClicavel, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs } from '@/components/ui/Tabs';
 import { formatarDecimal } from '@/lib/utils';
 import { topN } from '@/lib/lexicon';
-import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { useEcoGradStore, type StatusSNA } from '@/stores/useEcoGradStore';
 import type { Documento, SnaGlobal, TipoBusca } from '@/types';
 
 interface Props {
@@ -22,6 +22,12 @@ interface Props {
     coorientadores: Set<string>;
   };
   niveis: { titulosTeses: string[]; titulosDissertacoes: string[] };
+  /**
+   * As abas de Intermediação e Proximidade dependem do cálculo SNA, que roda em
+   * worker. As demais não dependem: por isso o bloco inteiro é renderizado
+   * assim que os documentos chegam, e só essas duas esperam.
+   */
+  statusSNA: StatusSNA;
 }
 
 /**
@@ -29,7 +35,7 @@ interface Props {
  * liderança topológica (Betweenness/Closeness).
  * Transcrição de Principal.py:432-596.
  */
-export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Props) {
+export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statusSNA }: Props) {
   const navegarPara = useEcoGradStore((s) => s.navegarPara);
 
   const genealogia = useMemo(() => {
@@ -108,6 +114,22 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
 
   const topOriVol = topN(contagens.orientadores, 1)[0];
   const topCooriVol = topN(contagens.coorientadores, 1)[0];
+
+  /**
+   * Intermediação e Proximidade só existem depois do SNA. Em vez de esconder o
+   * bloco inteiro até o worker terminar, cada aba declara o próprio estado.
+   */
+  const comSna = (conteudo: ReactNode) => {
+    if (statusSNA === 'pronto' && snaGlobal) return conteudo;
+    const mensagem = statusSNA === 'calculando'
+      ? 'Calculando as métricas da rede. Os valores aparecem aqui assim que o cálculo terminar.'
+      : statusSNA === 'erro'
+        ? 'O cálculo das métricas da rede falhou. Recarregue a análise para tentar de novo.'
+        : statusSNA === 'cancelado'
+          ? 'O cálculo das métricas da rede foi cancelado. Reinicie-o no bloco Indicadores e métodos da rede.'
+          : 'Estas métricas dependem do cálculo da rede, que ainda não foi executado para este recorte. Abra o bloco Indicadores e métodos da rede para acompanhá-lo.';
+    return <Aviso>{mensagem}</Aviso>;
+  };
 
   const botaoSna = (rotulo: string, par: [string, number], tipo: TipoBusca, icone: ReactNode) =>
     par[0] === 'Nenhum' ? null : (
@@ -236,7 +258,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
           {
             valor: 'betweenness',
             rotulo: <><Waypoints size={15} aria-hidden /> Intermediação</>,
-            conteudo: (
+            conteudo: (comSna(
               <div className="space-y-4">
                 <Aviso>
                   <strong>O que é Betweenness (Intermediação)?</strong> Mede quantas vezes um nó
@@ -255,12 +277,13 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                   </Card>
                 </div>
               </div>
+            )
             ),
           },
           {
             valor: 'closeness',
             rotulo: <><Target size={15} aria-hidden /> Proximidade</>,
-            conteudo: (
+            conteudo: (comSna(
               <div className="space-y-4">
                 <Aviso>
                   <strong>O que é Closeness (Proximidade)?</strong> Mede a distância média de um nó
@@ -278,6 +301,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                   </Card>
                 </div>
               </div>
+            )
             ),
           },
         ]}
