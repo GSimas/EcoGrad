@@ -3,7 +3,7 @@ import { amostraSintese } from '@/lib/ia-contexto';
 import { gerarSintese, interromperSintese } from '@/services/ia';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { baixarArquivo } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Landmark, Sparkles } from 'lucide-react';
 import { Aviso, Card, Carregando, Expander } from '@/components/ui/primitives';
 import { carregarCatalogoCapes, encontrarFichaCapes } from '@/lib/capes';
@@ -18,6 +18,7 @@ import type { Documento } from '@/types';
  * Transcrição de Principal.py:358-418.
  */
 export function FichaTecnica({ docs, programas }: { docs: readonly Documento[]; programas: readonly string[] }) {
+  const queryClient = useQueryClient();
   const capes = useQuery({
     queryKey: ['catalogo-capes', 2],
     queryFn: ({ signal }) => carregarCatalogoCapes(signal),
@@ -29,10 +30,10 @@ export function FichaTecnica({ docs, programas }: { docs: readonly Documento[]; 
   const id=JSON.stringify([programas,amostra.texto]);
   const sintese=useEcoGradStore(s=>s.ia.sinteses[id]);
   const executando=sintese?.estado==='executando';
-  const legado=useQuery<string>({queryKey:['sintese',programas.join('|'),amostra.texto],enabled:false});
-  useEffect(()=>{if(!sintese&&typeof legado.data==='string'&&legado.data.trim()&&!legado.data.startsWith('Não foi possível')){
-    const s=useEcoGradStore.getState();s.setIA({sinteses:{...s.ia.sinteses,[id]:{texto:legado.data,estado:'concluida',amostra:amostra.texto,programas:[...programas]}}});
-  }},[legado.data,sintese,id,amostra.texto,programas]);
+  const legado=queryClient.getQueryData<string>(['sintese',programas.join('|'),amostra.texto]);
+  useEffect(()=>{if(!sintese&&typeof legado==='string'&&legado.trim()&&!legado.startsWith('Não foi possível')){
+    const s=useEcoGradStore.getState();s.setIA({sinteses:{...s.ia.sinteses,[id]:{texto:legado,estado:'concluida',amostra:amostra.texto,programas:[...programas]}}});
+  }},[legado,sintese,id,amostra.texto,programas]);
 
   return (
     <section className="space-y-4">
@@ -97,10 +98,10 @@ export function FichaTecnica({ docs, programas }: { docs: readonly Documento[]; 
         })}
       </div>
 
-      <Card className="space-y-3">
-        <h3 className="flex items-center gap-2 font-semibold"><Sparkles size={16}/>Síntese da amostra por IA</h3>
+      <Expander titulo="Síntese da amostra por IA" icone={<Sparkles size={16} aria-hidden />} persistir={false}>
+        <div className="space-y-3">
         <p className="text-sm text-slate-300">Etapa opcional. Envia ao Google Gemini os nomes das coleções e títulos/palavras-chave de até 25 documentos, espaçados na ordem da seleção (salto {amostra.salto}). Amostra atual: {amostra.quantidade} de {amostra.total} registros, {amostra.texto.length} caracteres. {amostra.truncada?'O texto foi cortado em 20.000 caracteres, podendo terminar no meio de um registro.':'Não houve corte por tamanho.'} Não envia resumos, chat ou dados CAPES. A amostra não é aleatória nem garante representação de todas as coleções.</p>
-        <Expander titulo="Conferir amostra da síntese"><pre className="whitespace-pre-wrap break-words text-xs">{amostra.texto}</pre></Expander>
+        <Expander titulo="Conferir registros enviados à síntese" persistir={false}><pre className="whitespace-pre-wrap break-words text-xs">{amostra.texto}</pre></Expander>
         <div className="flex flex-wrap gap-2">
           <button type="button" className="btn" disabled={executando||!docs.length} onClick={()=>void gerarSintese(id,[...programas],amostra.texto,amostra)}>{sintese?'Gerar síntese novamente':'Gerar síntese da amostra'}</button>
           {executando&&<button type="button" className="btn" onClick={()=>interromperSintese(id)}>Interromper síntese</button>}
@@ -109,7 +110,8 @@ export function FichaTecnica({ docs, programas }: { docs: readonly Documento[]; 
         {executando&&<p role="status">Gerando síntese. Você pode navegar; a solicitação continua nesta sessão.</p>}
         {sintese?.erro&&<Aviso tipo="aviso"><p role="status">{sintese.erro}</p></Aviso>}
         {sintese?.texto&&<Aviso><p><strong>{sintese.estado==='concluida'?'Síntese gerada':'Última síntese concluída'}:</strong> {sintese.texto}</p><p className="mt-2">Descrição da amostra, não avaliação oficial ou resumo exaustivo da produção. Confira os trabalhos na fonte.</p></Aviso>}
-      </Card>
+        </div>
+      </Expander>
     </section>
   );
 }

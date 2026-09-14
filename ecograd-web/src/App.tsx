@@ -53,13 +53,13 @@ export default function App() {
         <AtividadesIA />
         <NavigationHistory />
         {page === 'nao-encontrada' ? <UnknownPage /> : !dadosCarregados || page === 'selecao' ? (
-          <div className="px-3 py-4 sm:px-6"><SelecaoInicial edicao={dadosCarregados} onVoltar={() => navigatePage('dashboard')} /></div>
+          <div key={`selecao-${page}`} className="eco-page-enter px-3 py-4 sm:px-6"><SelecaoInicial edicao={dadosCarregados} onVoltar={() => navigatePage('dashboard')} /></div>
         ) : (
           // `min-h-full` (e não `h-full`): com altura fixa em 100%, o conteúdo
           // que transborda escapa da caixa e o `padding-bottom` fica desenhado
           // uma tela acima do fim real — o respiro simplesmente não aparece.
           // `pb-24` também deixa o fim da página livre do botão do Consultor IA.
-          <div className="mx-auto min-h-full w-full min-w-0 max-w-[1400px] px-3 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-8">
+          <div key={rota} className="eco-page-enter mx-auto min-h-full w-full min-w-0 max-w-[1400px] px-3 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-8">
             {rota === 'dashboard' && <Dashboard />}
             {rota === 'busca' && <MotorBusca />}
             {rota === 'foresight' && <RadarForesight />}

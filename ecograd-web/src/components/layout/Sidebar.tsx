@@ -97,8 +97,10 @@ export function Sidebar() {
     return () => desktop.removeEventListener('change', ajustar);
   }, []);
   return <>
-    <aside aria-label="Navegação principal" className={cn('hidden h-full shrink-0 flex-col gap-3 overflow-y-auto border-r border-eco-border bg-eco-panel/40 lg:flex', recolhida ? 'w-16 p-2' : 'w-72 p-4')}>
-      <div className="flex items-center gap-3"><img src="/ecograd-logo.png" alt="EcoGrad" className="h-10 w-10 object-contain" />{!recolhida && <strong className="text-eco-accent">EcoGrad · UFSC</strong>}</div>
+    <aside aria-label="Navegação principal" className={cn('eco-sidebar hidden h-full shrink-0 flex-col gap-3 overflow-y-auto border-r border-eco-border bg-eco-panel/40 lg:flex', recolhida ? 'w-16 p-2' : 'w-72 p-4')}>
+      <button type="button" onClick={() => navigatePage('inicio')} className={cn('eco-brand-home flex min-h-12 items-center gap-3 rounded-lg text-left', recolhida ? 'w-12 justify-center' : 'w-full px-2')} aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
+        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <strong className="text-eco-accent">EcoGrad · UFSC</strong>}
+      </button>
       <button type="button" className="btn min-h-11" onClick={alternar} aria-expanded={!recolhida} aria-label={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'} title={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'}>
         {recolhida ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}
       </button>
@@ -107,8 +109,8 @@ export function Sidebar() {
     <header className="flex shrink-0 items-center gap-2 border-b border-eco-border bg-eco-panel px-2 py-2 lg:hidden">
       <Dialog.Root open={menu} onOpenChange={setMenu}>
         <Dialog.Trigger asChild><button className="btn h-11 w-11 shrink-0 px-0" aria-label="Abrir menu de navegação"><Menu size={20} /></button></Dialog.Trigger>
-        <Dialog.Portal><Dialog.Overlay className="fixed inset-0 z-40 bg-black/70 lg:hidden" />
-          <Dialog.Content className="fixed inset-y-0 left-0 z-50 flex w-[min(20rem,90vw)] flex-col gap-3 overflow-y-auto overscroll-contain border-r border-eco-border bg-eco-bg p-4 lg:hidden"
+        <Dialog.Portal><Dialog.Overlay className="eco-dialog-overlay fixed inset-0 z-40 bg-black/70 lg:hidden" />
+          <Dialog.Content className="eco-drawer-content fixed inset-y-0 left-0 z-50 flex w-[min(20rem,90vw)] flex-col gap-3 overflow-y-auto overscroll-contain border-r border-eco-border bg-eco-bg p-4 lg:hidden"
             onCloseAutoFocus={(event) => { if (navegou.current) { event.preventDefault(); navegou.current = false; document.getElementById('conteudo-principal')?.focus(); } }}>
             <div className="flex items-center justify-between gap-2"><Dialog.Title className="font-semibold text-eco-accent">Menu EcoGrad</Dialog.Title><Dialog.Close className="btn h-11 w-11 px-0" aria-label="Fechar menu de navegação"><X size={20} /></Dialog.Close></div>
             <Dialog.Description className="sr-only">Navegue pela análise, edite as coleções ou abra a ajuda e os dados CAPES.</Dialog.Description>

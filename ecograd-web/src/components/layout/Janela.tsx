@@ -9,8 +9,8 @@ export function Janela({ titulo, descricao, children, trigger, aberta, onOpenCha
   return <Dialog.Root open={aberta} onOpenChange={onOpenChange}>
     {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
     <Dialog.Portal>
-      <Dialog.Overlay className="fixed inset-0 z-40 bg-black/70" />
-      <Dialog.Content className={`fixed left-1/2 top-1/2 z-50 flex max-h-[92dvh] w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-eco-border bg-eco-bg shadow-xl ${larga ? 'max-w-6xl' : 'max-w-lg'}`}>
+      <Dialog.Overlay className="eco-dialog-overlay fixed inset-0 z-40 bg-black/70" />
+      <Dialog.Content className={`eco-dialog-content fixed left-1/2 top-1/2 z-50 flex max-h-[92dvh] w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-eco-border bg-eco-bg shadow-xl ${larga ? 'max-w-6xl' : 'max-w-lg'}`}>
         <header className="flex shrink-0 items-start gap-3 border-b border-eco-border p-4">
           <div className="min-w-0 flex-1">
             <Dialog.Title className="text-lg font-semibold text-eco-accent">{titulo}</Dialog.Title>

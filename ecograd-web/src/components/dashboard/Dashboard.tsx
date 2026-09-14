@@ -48,11 +48,6 @@ export function Dashboard() {
         <button type="button" className="btn" onClick={() => navegar('Orientador', null)}>Buscar orientador pelo nome</button>
       </div>
       {nomes.length > 1 && <ComparacaoColecoes docs={docs} nomes={nomes} tcc={tcc} ppg={ppg} />}
-      <Trabalhos docs={docs} sessionKey="dashboard.trabalhos" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Relacoes docs={docs} tipo="Palavra-chave" titulo="Temas para começar a exploração" />
-        <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores presentes no recorte" />
-      </div>
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Fontes e contexto institucional</h2>
         {tcc.length > 0 && <p className="text-sm text-slate-300">O catálogo de TCCs inclui graduação ou especialização; há {tcc.length} {tcc.length === 1 ? 'coleção selecionada' : 'coleções selecionadas'}. Essas coleções não recebem nota de programa CAPES. Tipos inconsistentes ou “Outros” são mantidos como registrados na base.</p>}
@@ -108,6 +103,11 @@ export function Dashboard() {
         </>
       )}
       </Expander>
+      <Trabalhos docs={docs} sessionKey="dashboard.trabalhos" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Relacoes docs={docs} tipo="Palavra-chave" titulo="Temas para começar a exploração" />
+        <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores presentes no recorte" />
+      </div>
     </div>
   );
 }

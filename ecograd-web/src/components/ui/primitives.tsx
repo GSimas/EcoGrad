@@ -1,6 +1,7 @@
 import { useSessionField } from '@/hooks/useSessionField';
-import type { ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
+import { ChevronDown, Info } from 'lucide-react';
 import { cn, formatarNumero } from '@/lib/utils';
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
@@ -20,16 +21,27 @@ export function Kpi({
   rotulo,
   valor,
   detalhe,
+  ajuda,
   className,
 }: {
   rotulo: string;
   valor: number | string;
   detalhe?: string;
+  ajuda?: string;
   className?: string;
 }) {
+  const ajudaId = useId();
   return (
     <div className={cn('kpi', className)}>
-      <span className="kpi-rotulo">{rotulo}</span>
+      <span className="kpi-rotulo flex items-start justify-between gap-2">
+        <span>{rotulo}</span>
+        {ajuda && <span className="eco-metric-help relative inline-flex shrink-0">
+          <button type="button" className="eco-metric-help-trigger inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-400" aria-label={`Informações sobre ${rotulo}`} aria-describedby={ajudaId}>
+            <Info size={15} aria-hidden="true" />
+          </button>
+          <span id={ajudaId} role="tooltip" className="eco-metric-tooltip">{ajuda}</span>
+        </span>}
+      </span>
       <span className="kpi-valor">{typeof valor === 'number' ? formatarNumero(valor) : valor}</span>
       {detalhe && <span className="text-xs text-slate-400">{detalhe}</span>}
     </div>
@@ -81,20 +93,38 @@ export function Expander({
   children,
   aberto = false,
   lazy = false,
+  icone,
+  persistir = true,
 }: {
   titulo: string;
   children: ReactNode;
   aberto?: boolean;
   lazy?: boolean;
+  icone?: ReactNode;
+  persistir?: boolean;
 }) {
-  const [expanded, setExpanded] = useSessionField('expander.' + titulo, aberto);
+  const [expandedPersistido, setExpandedPersistido] = useSessionField('expander.' + titulo, aberto);
+  const [expandedLocal, setExpandedLocal] = useState(aberto);
+  const expanded = persistir ? expandedPersistido : expandedLocal;
+  const contentId = useId();
+  const carregado = useRef(expanded);
+  if (expanded) carregado.current = true;
+  const alternar = () => {
+    if (persistir) setExpandedPersistido((valor) => !valor);
+    else setExpandedLocal((valor) => !valor);
+  };
   return (
-    <details className="rounded-lg border border-eco-border bg-eco-panel/50" open={expanded} onToggle={(event) => { if (event.currentTarget.open !== expanded) setExpanded(event.currentTarget.open); }}>
-      <summary className="cursor-pointer select-none px-4 py-2 text-sm font-medium text-slate-300 hover:text-eco-accent">
-        {titulo}
-      </summary>
-      <div className="border-t border-eco-border px-4 py-3">{!lazy || expanded ? children : null}</div>
-    </details>
+    <div className="eco-expander rounded-lg border border-eco-border bg-eco-panel/50" data-state={expanded ? 'open' : 'closed'}>
+      <button type="button" className="eco-expander-trigger flex min-h-11 w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm font-medium text-slate-300 hover:text-eco-accent"
+        aria-expanded={expanded} aria-controls={contentId} onClick={alternar}>
+        <span className="flex min-w-0 items-center gap-2">{icone}<span className="min-w-0 break-words">{titulo}</span></span><ChevronDown size={17} className="eco-expander-chevron shrink-0" aria-hidden="true" />
+      </button>
+      <div id={contentId} className="eco-expander-region" aria-hidden={!expanded}>
+        <div className="eco-expander-content">
+          <div className="eco-expander-body border-t border-eco-border px-4 py-3">{!lazy || carregado.current ? children : null}</div>
+        </div>
+      </div>
+    </div>
   );
 }
 

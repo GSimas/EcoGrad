@@ -29,7 +29,7 @@ export function Tabs({
       defaultValue={padrao ?? abas[0]?.valor}
       value={valor ?? (abas.some((a) => a.valor === saved) ? saved : abas[0]?.valor)}
       onValueChange={(v) => { setSaved(v); onValorChange?.(v); }}
-      className={cn('w-full', className)}
+      className={cn('eco-tabs w-full', className)}
     >
       <TabsPrimitive.List className="mb-4 flex flex-wrap gap-1 border-b border-eco-border">
         {abas.map((a) => (
@@ -45,7 +45,7 @@ export function Tabs({
         ))}
       </TabsPrimitive.List>
       {abas.map((a) => (
-        <TabsPrimitive.Content key={a.valor} value={a.valor} className="focus:outline-none">
+        <TabsPrimitive.Content key={a.valor} value={a.valor} className="eco-tab-content focus:outline-none">
           {a.conteudo}
         </TabsPrimitive.Content>
       ))}

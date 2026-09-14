@@ -5,6 +5,7 @@ import { Relacoes } from '@/components/results/Relacoes';
 import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
 import { orientandos } from '@/lib/resultados';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { ChevronRight, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';
 import type { Documento, TipoBusca } from '@/types';
 const JUSTIFICATIVA: Record<TipoBusca, string> = {
   Documento: 'Metadados do registro selecionado no recorte local.',
@@ -21,7 +22,11 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
   if (tipo === 'Documento') {
     const doc = docs[0];
     if (!doc) return null;
-    const pessoas = [...doc.autores.map((nome) => ({ nome, tipo: 'Autor' as TipoBusca })), ...(doc.orientador ? [{ nome: doc.orientador, tipo: 'Orientador' as TipoBusca }] : []), ...doc.co_orientadores.map((nome) => ({ nome, tipo: 'Co-orientador' as TipoBusca }))];
+    const pessoas = [
+      ...doc.autores.map((nome) => ({ nome, tipo: 'Autor' as TipoBusca, icone: UserRound })),
+      ...(doc.orientador ? [{ nome: doc.orientador, tipo: 'Orientador' as TipoBusca, icone: GraduationCap }] : []),
+      ...doc.co_orientadores.map((nome) => ({ nome, tipo: 'Co-orientador' as TipoBusca, icone: Handshake })),
+    ];
     return <><section className="space-y-4" aria-label="Resumo e fonte do trabalho">
       <Card className="space-y-3">
         <p className="text-sm text-slate-300">{doc.ano ?? 'Ano não informado'} · Tipo registrado: {doc.nivel_academico || 'não informado'}</p>
@@ -31,11 +36,29 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
         <p className="break-words text-xs text-slate-400">Fonte informada no registro: {doc.url || 'ausente'}. O acesso ao texto completo depende do repositório.</p>
       </Card>
       <Card className="space-y-3"><h3 className="text-lg font-semibold">Resumo</h3><p className="whitespace-pre-line break-words text-sm leading-relaxed text-slate-200">{doc.resumo.trim() || 'Resumo não disponível no recorte local. Consulte a fonte original, quando houver link.'}</p></Card>
-      <Card className="space-y-4">
-        <h3 className="text-lg font-semibold">Autoria, orientação e temas</h3>
-        {pessoas.length ? <ul className="space-y-2">{pessoas.map((p, i) => <li key={i}><button type="button" className="min-h-11 text-left text-sm text-eco-accent hover:underline" onClick={() => navegar(p.tipo, p.nome)}>{p.tipo}: {p.nome}</button></li>)}</ul> : <p className="text-sm">Autoria e orientação não informadas.</p>}
-        {doc.palavras_chave.length ? <div className="flex flex-wrap gap-2" aria-label="Palavras-chave do trabalho">{[...new Set(doc.palavras_chave)].map((p) => <button key={p} className="btn min-h-11 text-left" type="button" onClick={() => navegar('Palavra-chave', p)}>{p}</button>)}</div> : <p className="text-sm">Palavras-chave não informadas.</p>}
-        {doc.macrotema && <p className="text-sm">Classificação temática da base: <button className="min-h-11 text-left text-eco-accent hover:underline" type="button" onClick={() => navegar('Macrotema', doc.macrotema)}>{doc.macrotema}</button></p>}
+      <Card className="space-y-5">
+        <header className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-eco-accent/15 text-eco-accent"><UsersRound size={20} aria-hidden="true" /></span>
+          <div><h3 className="text-lg font-semibold">Autoria, orientação e temas</h3><p className="mt-1 text-xs text-slate-400">Explore as pessoas e os assuntos vinculados a este registro.</p></div>
+        </header>
+        {pessoas.length ? <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{pessoas.map((p) => {
+          const Icone = p.icone;
+          return <li key={`${p.tipo}:${p.nome}`}><button type="button" className="eco-entity-link group flex h-full min-h-20 w-full items-center gap-3 rounded-lg border border-eco-border bg-eco-bg/45 p-3 text-left" onClick={() => navegar(p.tipo, p.nome)}>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-eco-accent/10 text-eco-accent"><Icone size={18} aria-hidden="true" /></span>
+            <span className="min-w-0 flex-1"><span className="block text-[.68rem] font-semibold uppercase tracking-wide text-slate-400">{p.tipo}</span><span className="mt-0.5 block break-words text-sm font-medium text-slate-100">{p.nome}</span></span>
+            <ChevronRight size={17} className="shrink-0 text-slate-500" aria-hidden="true" />
+          </button></li>;
+        })}</ul> : <p className="rounded-lg border border-dashed border-eco-border p-4 text-sm text-slate-400">Autoria e orientação não informadas.</p>}
+        <div className={`grid gap-3 ${doc.macrotema ? 'lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]' : ''}`}>
+          <section className="rounded-lg border border-eco-border bg-eco-bg/35 p-4" aria-label="Palavras-chave do trabalho">
+            <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Tag size={17} className="text-eco-accent" aria-hidden="true" />Palavras-chave</h4>
+            {doc.palavras_chave.length ? <div className="flex flex-wrap gap-2">{[...new Set(doc.palavras_chave)].map((p) => <button key={p} className="btn-chip min-h-10 text-left" type="button" onClick={() => navegar('Palavra-chave', p)}>{p}</button>)}</div> : <p className="text-sm text-slate-400">Palavras-chave não informadas.</p>}
+          </section>
+          {doc.macrotema && <section className="rounded-lg border border-eco-border bg-eco-bg/35 p-4">
+            <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Layers3 size={17} className="text-eco-accent" aria-hidden="true" />Classificação temática da base</h4>
+            <button className="eco-entity-link flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-eco-accent/30 bg-eco-accent/10 px-3 py-2 text-left text-sm font-medium text-eco-accent" type="button" onClick={() => navegar('Macrotema', doc.macrotema)}><span>{doc.macrotema}</span><ChevronRight size={17} className="shrink-0" aria-hidden="true" /></button>
+          </section>}
+        </div>
       </Card>
     </section>{analises}</>;
   }
@@ -46,7 +69,7 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
     {analises}
     <Trabalhos docs={docs} sessionKey="dossie.trabalhos" titulo="Trabalhos associados" />
     {(tipo === 'Orientador' || tipo === 'Co-orientador') && <Orientandos docs={docs} termo={termo} co={tipo === 'Co-orientador'} />}
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className={`grid gap-4 ${tipo !== 'Orientador' && tipo !== 'Co-orientador' ? 'lg:grid-cols-2' : ''}`}>
       {tipo !== 'Orientador' && tipo !== 'Co-orientador' && <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores dos trabalhos associados" />}
       <Relacoes docs={docs} tipo={tipo === 'Autor' ? 'Co-orientador' : 'Palavra-chave'} titulo={tipo === 'Autor' ? 'Coorientadores dos trabalhos associados' : 'Palavras-chave dos trabalhos associados'} />
     </div>
@@ -56,15 +79,17 @@ function Orientandos({ docs, termo, co }: { docs: readonly Documento[]; termo: s
   const navegar = useEcoGradStore((s) => s.navegarPara);
   const linhas = useMemo(() => orientandos(docs), [docs]);
   const rotulo = co ? 'Coorientandos' : 'Orientandos';
-  return <section className="card space-y-3" aria-label={rotulo}>
-    <h3 className="text-lg font-semibold">{rotulo} ({linhas.length})</h3>
-    <p className="text-xs text-slate-400">Todos os autores dos trabalhos em que este nome aparece como {co ? 'coorientador' : 'orientador'}, do mais recente ao mais antigo. Nomes iguais podem representar pessoas diferentes; confira as fontes.</p>
-    <Tabela titulo={`${rotulo} de ${termo}`} linhas={linhas} vazio="Nenhuma autoria preenchida nestes trabalhos."
+  return <section className="card space-y-4" aria-label={rotulo}>
+    <header className="flex items-start gap-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-eco-accent/12 text-eco-accent"><UsersRound size={19} aria-hidden="true" /></span>
+      <div><h3 className="text-lg font-semibold">{rotulo} <span className="text-eco-accent">({linhas.length})</span></h3><p className="mt-1 text-xs leading-relaxed text-slate-400">Todos os autores dos trabalhos em que este nome aparece como {co ? 'coorientador' : 'orientador'}, do mais recente ao mais antigo. Nomes iguais podem representar pessoas diferentes; confira as fontes.</p></div>
+    </header>
+    <div className="eco-related-table"><Tabela titulo={`${rotulo} de ${termo}`} linhas={linhas} vazio="Nenhuma autoria preenchida nestes trabalhos."
       colunas={[
-        { chave: 'nome', rotulo: co ? 'Coorientando' : 'Orientando', render: (l) => <button type="button" className="min-h-11 text-left text-eco-accent hover:underline" onClick={() => navegar('Autor', l.nome)}>{l.nome}</button> },
+        { chave: 'nome', rotulo: co ? 'Coorientando' : 'Orientando', render: (l) => <button type="button" className="eco-entity-link group flex min-h-11 w-full min-w-48 items-center gap-2 rounded-lg border border-eco-border bg-eco-bg/40 px-3 py-2 text-left" onClick={() => navegar('Autor', l.nome)}><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-eco-accent/10 text-eco-accent"><UserRound size={14} aria-hidden="true" /></span><span className="min-w-0 flex-1 break-words text-sm font-medium text-slate-100">{l.nome}</span><ChevronRight size={16} className="shrink-0 text-slate-500" aria-hidden="true" /></button> },
         { chave: 'trabalhos', rotulo: 'Trabalhos (n)' },
         { chave: 'niveis', rotulo: 'Tipo registrado' },
         { chave: 'periodo', rotulo: 'Período' },
-      ]} />
+      ]} /></div>
   </section>;
 }

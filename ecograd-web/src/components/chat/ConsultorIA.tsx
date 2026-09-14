@@ -11,6 +11,7 @@ import { useDadosDerivados } from '@/hooks/useDadosDerivados';
 import { esquecerChaveIA, lerConfigIA, PROVEDORES, provedorPorId, salvarConfigIA, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
 import type { DossieConsultor } from '@/lib/consultor-prompt';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
+import { useAparencia } from '@/services/aparencia';
 import type { SnaGlobal } from '@/types';
 
 /** Top-N nós de um tipo, ordenados por uma métrica do SNA global. */
@@ -31,17 +32,35 @@ function topPorMetrica(
 /** Consultor Acadêmico IA: botão flutuante sobre as páginas da análise, com a chave do próprio usuário (BYOK). */
 export function ConsultorFlutuante() {
   const [aberto, setAberto] = useSessionField('consultor.aberto', false);
+  const { reduzir } = useAparencia();
+  const [painelMontado, setPainelMontado] = useState(aberto);
   const streaming = useEcoGradStore((s) => s.chat.streaming);
   const botaoRef = useRef<HTMLButtonElement>(null);
-  const fechar = () => { setAberto(false); setTimeout(() => botaoRef.current?.focus()); };
+  const timerFechamento = useRef<number | null>(null);
+  useEffect(() => () => { if (timerFechamento.current !== null) window.clearTimeout(timerFechamento.current); }, []);
+  const abrir = () => {
+    if (timerFechamento.current !== null) window.clearTimeout(timerFechamento.current);
+    timerFechamento.current = null;
+    setPainelMontado(true);
+    setAberto(true);
+  };
+  const fechar = () => {
+    setAberto(false);
+    if (timerFechamento.current !== null) window.clearTimeout(timerFechamento.current);
+    timerFechamento.current = window.setTimeout(() => {
+      timerFechamento.current = null;
+      setPainelMontado(false);
+      requestAnimationFrame(() => botaoRef.current?.focus());
+    }, reduzir ? 0 : 220);
+  };
   return <>
-    {!aberto && <button ref={botaoRef} type="button" onClick={() => setAberto(true)} aria-label="Abrir Consultor IA" title="Consultor IA"
-      className="fixed bottom-4 right-4 z-40 flex min-h-12 items-center gap-2 rounded-full bg-eco-action px-4 text-sm font-semibold text-black shadow-xl transition hover:bg-amber-400 sm:bottom-6 sm:right-6">
+    {!painelMontado && <button ref={botaoRef} type="button" onClick={abrir} aria-label="Abrir Consultor IA" title="Consultor IA"
+      className="eco-consultor-launch fixed bottom-4 right-4 z-40 flex min-h-12 items-center gap-2 rounded-full bg-eco-action px-4 text-sm font-semibold text-black shadow-xl transition hover:bg-amber-400 sm:bottom-6 sm:right-6">
       <BotMessageSquare size={20} aria-hidden /><span className="hidden sm:inline">Consultor IA</span>
       {streaming && <span className="h-2 w-2 rounded-full bg-black motion-safe:animate-pulse" aria-label="Resposta em andamento" />}
     </button>}
-    {aberto && <section role="dialog" aria-label="Consultor IA" onKeyDown={(e) => { if (e.key === 'Escape' && !e.defaultPrevented) fechar(); }}
-      className="fixed inset-2 z-40 flex flex-col overflow-hidden rounded-xl border border-eco-border bg-eco-bg shadow-2xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[min(46rem,calc(100dvh-3rem))] sm:w-[30rem]">
+    {painelMontado && <section role="dialog" aria-label="Consultor IA" data-state={aberto ? 'open' : 'closed'} onKeyDown={(e) => { if (e.key === 'Escape' && !e.defaultPrevented) fechar(); }}
+      className="eco-consultor-panel fixed inset-2 z-40 flex flex-col overflow-hidden rounded-xl border border-eco-border bg-eco-bg shadow-2xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[min(46rem,calc(100dvh-3rem))] sm:w-[30rem]">
       <PainelConsultor onFechar={fechar} />
     </section>}
   </>;

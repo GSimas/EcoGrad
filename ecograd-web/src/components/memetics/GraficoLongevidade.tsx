@@ -3,6 +3,7 @@ import { useSessionField } from '@/hooks/useSessionField';
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
+import { useAparencia } from '@/services/aparencia';
 import type { LongevidadeRow } from '@/types';
 
 /** Escala perceptual (roxo → magenta → laranja → amarelo) do ano de extinção. */
@@ -18,6 +19,7 @@ const ESCALA_ANO = ['#3B0F70', '#8C2981', '#DE4968', '#FE9F6D', '#FCFDBF'];
  */
 export function GraficoLongevidade({ longevidade, onSelecionar }: { longevidade: readonly LongevidadeRow[]; onSelecionar: (termo: string) => void }) {
   const fonte = useEcoGradStore((s)=>s.fonteMemes);
+  const { reduzir } = useAparencia();
   const [minReplicacoes, setMinReplicacoes] = useSessionField('memes.replicacoes', 2);
 
   const maxReplicacoes = useMemo(
@@ -87,6 +89,7 @@ export function GraficoLongevidade({ longevidade, onSelecionar }: { longevidade:
           onEvents={{click:(p)=>{const nome=(p as {name?:string}).name;if(nome) onSelecionar(nome);}}}
           altura={480}
           option={{
+            stateAnimation: { duration: reduzir ? 0 : 240, easing: 'cubicOut' },
             tooltip: {
               trigger: 'item',
               formatter: (p: unknown) => {
@@ -154,8 +157,14 @@ export function GraficoLongevidade({ longevidade, onSelecionar }: { longevidade:
               {
                 type: 'scatter',
                 data: pontos,
-                itemStyle: { borderColor: 'rgba(255,255,255,0.35)', borderWidth: 0.5 },
-                emphasis: { focus: 'self', itemStyle: { borderColor: '#fff', borderWidth: 1.5 } },
+                itemStyle: { opacity: 0.76, borderColor: 'rgba(255,255,255,0.35)', borderWidth: 0.5 },
+                emphasis: {
+                  focus: 'self',
+                  blurScope: 'coordinateSystem',
+                  scale: 1.08,
+                  itemStyle: { opacity: 1, borderColor: '#fff', borderWidth: 1.5 },
+                },
+                blur: { itemStyle: { opacity: 0.24 } },
               },
             ],
           }}

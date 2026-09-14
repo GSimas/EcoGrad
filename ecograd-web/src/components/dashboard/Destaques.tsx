@@ -198,13 +198,11 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                 </Card>
 
                 <Card className="space-y-3">
-                  <div className="space-y-1">
-                    <p className="flex items-center gap-1.5 text-sm font-medium text-slate-200"><Sprout size={15} aria-hidden /> Formadores de Professores</p>
-                    <p className="text-xs text-slate-500">
-                      Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal ou atuação atual.
-                    </p>
-                    {genealogia.formadores.length > 0 ? (
-                      <Expander titulo={`Ver lista de formadores (${genealogia.formadores.length})`}>
+                  {genealogia.formadores.length > 0 ? (
+                      <Expander titulo={`Formadores de Professores (${genealogia.formadores.length})`} icone={<Sprout size={16} aria-hidden />} persistir={false}>
+                        <p className="mb-3 text-xs leading-relaxed text-slate-400">
+                          Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal ou atuação atual.
+                        </p>
                         <div className="flex flex-wrap gap-1.5">
                           {genealogia.formadores.map((f) => (
                             <Chip key={f} onClick={() => navegarPara('Orientador', f)}>
@@ -214,16 +212,10 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                         </div>
                       </Expander>
                     ) : (
-                      <Aviso>Nenhum ciclo genealógico detectado nesta amostra.</Aviso>
+                      <div className="space-y-2"><p className="flex items-center gap-1.5 text-sm font-medium text-slate-200"><Sprout size={15} aria-hidden /> Formadores de Professores</p><Aviso>Nenhum ciclo genealógico detectado nesta amostra.</Aviso></div>
                     )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-slate-200">
-                      Nomes na autoria de tese e dissertação na mesma coleção
-                    </p>
-                    {genealogia.mestreDoutor.length > 0 ? (
-                      <Expander titulo={`Ver autores Mestre+Doutor (${genealogia.mestreDoutor.length})`}>
+                  {genealogia.mestreDoutor.length > 0 ? (
+                      <Expander titulo={`Autores com dissertação e tese na mesma coleção (${genealogia.mestreDoutor.length})`} icone={<User size={16} aria-hidden />} persistir={false}>
                         <div className="flex flex-wrap gap-1.5">
                           {genealogia.mestreDoutor.map(([autor, progs]) => (
                             <Chip key={autor} onClick={() => navegarPara('Autor', autor)} title={progs.join(', ')}>
@@ -233,11 +225,10 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis }: Pro
                         </div>
                       </Expander>
                     ) : (
-                      <Aviso>
+                      <div className="space-y-2"><p className="flex items-center gap-1.5 text-sm font-medium text-slate-200"><User size={15} aria-hidden /> Autores com dissertação e tese na mesma coleção</p><Aviso>
                         Nenhum autor com Dissertação + Tese no mesmo programa foi encontrado.
-                      </Aviso>
+                      </Aviso></div>
                     )}
-                  </div>
                 </Card>
               </div>
             ),
