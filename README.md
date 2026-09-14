@@ -14,19 +14,27 @@ o papel topológico de pesquisadores e conceitos.
 
 ---
 
-## 📦 Duas implementações neste repositório
+## 📦 O que vive na raiz do repositório
 
-| | Aplicação web (atual) | Streamlit (original) |
-| --- | --- | --- |
-| **Onde** | [`ecograd-web/`](ecograd-web/) | raiz do repositório |
-| **Stack** | React 18 + Vite + TypeScript + Tailwind, Netlify Functions | Python + Streamlit + NetworkX + Plotly |
-| **Execução** | No navegador (Web Workers) + funções serverless | Servidor Python |
-| **Como rodar** | `cd ecograd-web && npm install && npm run netlify:dev` | `pip install -r requirements.txt && streamlit run Principal.py` |
-| **Documentação** | [`ecograd-web/README.md`](ecograd-web/README.md) | esta página |
+A aplicação é a versão web, em [`ecograd-web/`](ecograd-web/) — React 18 + Vite + TypeScript +
+Tailwind, com Netlify Functions. Rode com `cd ecograd-web && npm install && npm run netlify:dev`;
+detalhes no [README da aplicação](ecograd-web/README.md).
 
-A versão web é uma migração da versão Streamlit. Toda a matemática de redes complexas, foresight
+A raiz guarda o que alimenta e valida essa aplicação:
+
+| Arquivo | Papel |
+| --- | --- |
+| `backend.py` (+ `app_config.py`, `gemini_utils.py`) | Referência numérica do Python original, importada por `npm run verify:parity` |
+| `pipeline_ufsc.py` | Enriquecimento da base: macrotemas (NMF + Gemini), normalização, consolidação |
+| [`coleta/`](coleta/) | Coleta semanal do Repositório Institucional, executada pelo GitHub Actions |
+| `base_*.json.gz`, `programas_ufsc.json`, `mapa_colecoes_tcc.json` | Bases copiadas para `ecograd-web/public/data/` no `sync:data` |
+| `base_ppgegc.json` | Base de referência da comparação de paridade |
+
+A versão web é uma migração de um app Streamlit. Toda a matemática de redes complexas, foresight
 e memética foi **transcrita e verificada numericamente** contra o `backend.py` original — veja
-[Paridade](#-paridade-numérica-com-o-backend-python).
+[Paridade](#-paridade-numérica-com-o-backend-python). A interface Streamlit em si (`Principal.py`
+e `pages/`) foi removida do repositório em favor da versão web; ela continua acessível no
+histórico do git, até o commit `cad47e3`.
 
 ---
 
@@ -197,14 +205,17 @@ Para trabalhar só na interface, sem as funções, use `npm run dev`. As bases d
 para `public/data/` automaticamente. Detalhes, comandos e notas de deploy no
 [README da aplicação](ecograd-web/README.md).
 
-### Versão Streamlit (original)
+### Referência Python (paridade e pipeline)
+
+A interface Streamlit foi removida; o que ficou na raiz é a referência numérica usada pela
+comparação de paridade e o pipeline de enriquecimento da base.
 
 ```bash
 pip install -r requirements.txt
-streamlit run Principal.py
 ```
 
-As credenciais são lidas de `.streamlit/secrets.toml` ou de variáveis de ambiente:
+As credenciais são lidas de variáveis de ambiente (ou de `.streamlit/secrets.toml`, que
+`app_config.py` ainda aceita):
 
 ```bash
 GEMINI_API_KEY=...
@@ -217,8 +228,8 @@ NEO4J_PASSWORD=...
 
 ## 📋 Estado da migração
 
-A migração cobre os módulos centrais, mas **nem tudo do app Streamlit foi portado**. O que ainda
-vive só na versão Python:
+A migração cobre os módulos centrais, mas **nem tudo do app Streamlit foi portado**. O que não
+foi portado e hoje só existe no histórico do git (até o commit `cad47e3`):
 
 | Módulo original | Onde estava | Status |
 | --- | --- | --- |

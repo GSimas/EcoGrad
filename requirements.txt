@@ -1,6 +1,8 @@
+# Dependências da referência Python usada por `npm run verify:parity`
+# (ecograd-web/scripts/verify-parity-reference.py importa `backend`) e do
+# pipeline de enriquecimento `pipeline_ufsc.py`.
+# A coleta semanal tem requisitos próprios em coleta/requirements.txt.
 google-genai>=1.0.0
-groq
-matplotlib
 neo4j
 networkx
 numpy
@@ -13,5 +15,3 @@ scipy
 sickle
 streamlit>=1.40.0
 streamlit-agraph
-wordcloud
-setuptools

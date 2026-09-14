@@ -5,9 +5,19 @@ base_consolidada_ufsc.json
 # Local Netlify folder
 .netlify
 
-# Artefatos e segredos locais (arquivos já rastreados exigem revisão separada)
+# Artefatos e segredos locais
 .DS_Store
 node_modules/
 .env
 .env.*
 !.env.example
+
+# Bytecode Python (chegou a ser versionado por engano)
+__pycache__/
+*.py[cod]
+
+# Grafo interativo gerado em runtime por backend.py
+temp_gen.html
+
+# Grafo de conhecimento gerado pelo graphify (ver CLAUDE.md)
+graphify-out/
