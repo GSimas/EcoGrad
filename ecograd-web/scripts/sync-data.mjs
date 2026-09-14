@@ -2,6 +2,7 @@ import { gunzipSync } from 'node:zlib';
 import { COVERAGE_SCHEMA, summarizeCollections, catalogEntries } from './collection-metadata.mjs';
 import { collectionShards, SHARD_SCHEMA } from './collection-shards.mjs';
 import { aplicarColetas, BATCH_FILE } from './collection-batches.mjs';
+import { orientacoesShard } from './orientacoes-index.mjs';
 import { createHash } from 'node:crypto';
 /**
  * Copia as bases do repositório Python (raiz do projeto) para `public/data/`,
@@ -82,11 +83,18 @@ for (const tipo of ['ppg', 'tcc']) {
   const sizes = new Map(shards.map(s => [s.descriptor.nome, s.descriptor.bytes]));
   colecoes.push(...summarizeCollections(catalog, records).map(c => ({ ...c, downloadBytes: sizes.get(c.nome) })));
 }
+// Orientações de todo o acervo, para o perfil de pessoa mostrar quem ela orientou
+// também nas coleções que não foram carregadas.
+const orientacoes = orientacoesShard([...bases.ppg, ...bases.tcc]);
+const arquivoOrientacoes = orientacoes.descriptor.path.split('/').pop();
+generated.add(arquivoOrientacoes);
+const caminhoOrientacoes = join(destino, arquivoOrientacoes);
+if (!existsSync(caminhoOrientacoes) || !readFileSync(caminhoOrientacoes).equals(orientacoes.compressed)) writeFileSync(caminhoOrientacoes, orientacoes.compressed);
 writeFileSync(coveragePath, JSON.stringify({ schema: COVERAGE_SCHEMA, version, bytes: { ppg: statSync(join(destino, ARQUIVOS[2])).size, tcc: statSync(join(destino, ARQUIVOS[3])).size }, colecoes }));
 // Stable scientific version: delivery changes do not invalidate equivalent checkpoints.
-writeFileSync(join(destino, 'manifest.json.tmp'), JSON.stringify({ version, files: hashes, collections }));
+writeFileSync(join(destino, 'manifest.json.tmp'), JSON.stringify({ version, files: hashes, collections, orientacoes: orientacoes.descriptor }));
 renameSync(join(destino, 'manifest.json.tmp'), join(destino, 'manifest.json'));
 for (const filename of readdirSync(destino)) {
-  if (/^colecao-[a-f0-9]{64}\.json\.gz$/.test(filename) && !generated.has(filename)) unlinkSync(join(destino, filename));
+  if (/^(colecao|orientacoes)-[a-f0-9]{64}\.json\.gz$/.test(filename) && !generated.has(filename)) unlinkSync(join(destino, filename));
 }
 console.log(`[sync-data] Prévia de ${colecoes.length} coleções gerada.`);

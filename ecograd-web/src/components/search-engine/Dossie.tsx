@@ -25,30 +25,34 @@ interface Props {
 
 const FONTES_NUVEM: FonteNuvem[] = ['Conceitos (Palavras-chave)', 'Títulos', 'Resumos (Abstracts)'];
 
-/** The optional scientific methods sit right above the associated works. */
+/**
+ * Os gráficos ficam à vista, logo acima dos trabalhos associados; indicadores e
+ * métodos seguem recolhidos em "Análises e métodos do dossiê".
+ */
 export function Dossie(props: Props) {
   return <div className="space-y-6">
     <VisaoEntidade tipo={props.tipo} docs={props.docsAlvo} termo={props.termo}
-      analises={<Expander titulo="Análises e métodos do dossiê" lazy><AnalisesDossie {...props} /></Expander>} />
+      analises={<>
+        <GraficosDossie {...props} />
+        <Expander titulo="Análises e métodos do dossiê" lazy>
+          <MetricasEntidade termo={props.termo} docsAlvo={props.docsAlvo} docs={props.dadosCompletos} snaGlobal={props.snaGlobal} />
+        </Expander>
+      </>} />
   </div>;
 }
 
-function AnalisesDossie({
+function GraficosDossie({
   termo,
   tipo,
   docsAlvo,
   dadosCompletos,
   snaGlobal,
 }: Props) {
-  const perfis = usePerfisSimilaridade(dadosCompletos);
-  const grafoHistorico = useGrafoHistorico(dadosCompletos);
-  const navegarPara = useEcoGradStore((s) => s.navegarPara);
   const [cumulativo, setCumulativo] = useSessionField('dossie.cumulativo', false);
   const [fonteNuvem, setFonteNuvem] = useSessionField<FonteNuvem>('dossie.nuvem', 'Conceitos (Palavras-chave)');
 
   const serie = useMemo(() => evolucaoAnual(docsAlvo, cumulativo), [docsAlvo, cumulativo]);
   const nuvem = useMemo(() => obterFrequenciasTexto(docsAlvo, fonteNuvem), [docsAlvo, fonteNuvem]);
-  const similares = useMemo(() => calcularSimilaresRede(termo, tipo, perfis), [termo, tipo, perfis]);
 
   const tabelaQL = useMemo(() => {
     if (tipo === 'Orientador' || tipo === 'Co-orientador') {
@@ -64,13 +68,8 @@ function AnalisesDossie({
   }, [tipo, docsAlvo, dadosCompletos]);
 
   return (
-    <div className="space-y-5"><MetricasEntidade termo={termo} docsAlvo={docsAlvo} docs={dadosCompletos} snaGlobal={snaGlobal} /><Tabs
+    <section aria-label="Gráficos do dossiê"><Tabs
       abas={[
-        {
-          valor: 'perfil',
-          rotulo: 'Frequências e relações (QL)',
-          conteudo: tabelaQL.length ? <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></> : <p className="text-sm text-slate-300">QL cruzado não se aplica a este tipo de entidade. Consulte os trabalhos e relações do dossiê ou as outras análises.</p>,
-        },
         {
           valor: 'evolucao',
           rotulo: <><TrendingUp size={15} aria-hidden /> Evolução Histórica</>,
@@ -177,7 +176,28 @@ function AnalisesDossie({
         {
           valor: 'orbita',
           rotulo: <><Orbit size={15} aria-hidden /> Órbita de Relacionamentos</>,
-          conteudo: (
+          conteudo: <OrbitaAba termo={termo} dadosCompletos={dadosCompletos} snaGlobal={snaGlobal} />,
+        },
+        {
+          valor: 'perfil',
+          rotulo: 'Frequências e relações (QL)',
+          conteudo: tabelaQL.length ? <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></> : <p className="text-sm text-slate-300">QL cruzado não se aplica a este tipo de entidade. Consulte os trabalhos e relações do dossiê ou as outras análises.</p>,
+        },
+        {
+          valor: 'similares',
+          rotulo: <><Link2 size={15} aria-hidden /> Itens Semelhantes</>,
+          conteudo: <ItensSemelhantes termo={termo} tipo={tipo} dadosCompletos={dadosCompletos} />,
+        },
+      ]}
+    /></section>
+  );
+}
+
+/** Só monta com a aba ativa, então o grafo histórico não é calculado à toa. */
+function OrbitaAba({ termo, dadosCompletos, snaGlobal }: Pick<Props, 'termo' | 'dadosCompletos' | 'snaGlobal'>) {
+  const grafoHistorico = useGrafoHistorico(dadosCompletos);
+  const navegarPara = useEcoGradStore((s) => s.navegarPara);
+  return (
             <OrbitaGrafo
               grafo={grafoHistorico}
               termoFoco={termo}
@@ -195,12 +215,15 @@ function AnalisesDossie({
                 if (destino) navegarPara(destino, id);
               }}
             />
-          ),
-        },
-        {
-          valor: 'similares',
-          rotulo: <><Link2 size={15} aria-hidden /> Itens Semelhantes</>,
-          conteudo: (
+  );
+}
+
+/** Só monta com a aba ativa, então os perfis de similaridade não são calculados à toa. */
+function ItensSemelhantes({ termo, tipo, dadosCompletos }: Pick<Props, 'termo' | 'tipo' | 'dadosCompletos'>) {
+  const perfis = usePerfisSimilaridade(dadosCompletos);
+  const navegarPara = useEcoGradStore((s) => s.navegarPara);
+  const similares = useMemo(() => calcularSimilaresRede(termo, tipo, perfis), [termo, tipo, perfis]);
+  return (
             <div className="space-y-4">
               <Aviso>
                 Recomendação topológica por <strong>Índice de Jaccard</strong>: mede a sobreposição
@@ -251,9 +274,5 @@ function AnalisesDossie({
                 ))
               )}
             </div>
-          ),
-        },
-      ]}
-    /></div>
   );
 }

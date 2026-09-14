@@ -1,11 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { EChartsOption } from 'echarts';
 import { Aviso, Card } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
+import { SelectBusca } from '@/components/ui/MultiSelect';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { construirRedeRadial, type ModoRadial } from '@/lib/rede-radial';
+import { construirRedeRadial, PAPEL_COORIENTADOR, type ModoRadial } from '@/lib/rede-radial';
+import { chaveBusca } from '@/lib/utils';
 import type { Documento, TipoBusca } from '@/types';
 
 const OPCOES = ['Orientação conjunta', 'Palavras-chave (coocorrência)'] as const;
@@ -41,12 +43,49 @@ export function RedeRadial({ docs }: Props) {
     [docs, modo],
   );
 
-  const tipoBusca: TipoBusca = modo === 'supervisao' ? 'Orientador' : 'Palavra-chave';
+  // Destaque: o clique fixa um nó; a busca destaca os que casam com o texto.
+  // O clique tem precedência, e clicar fora volta ao destaque da busca.
+  const [selecionado, setSelecionado] = useState<string | null>(null);
+  // Mesmo campo de sessão em que o `SelectBusca` guarda o texto digitado
+  // ('busca.texto.' + sessionKey), um por modo.
+  const [busca] = useSessionField('busca.texto.radial.' + modo, '');
+  const nomesNos = useMemo(
+    () => rede.nos.map((n) => n.id).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    [rede],
+  );
+
+  const trocarOpcao = (valor: Opcao) => {
+    setOpcao(valor);
+    setSelecionado(null);
+  };
+
+  const encontrados = useMemo(() => {
+    const termo = chaveBusca(busca.trim());
+    return termo ? rede.nos.filter((n) => chaveBusca(n.id).includes(termo)).map((n) => n.id) : [];
+  }, [rede, busca]);
+
+  const focais = useMemo(
+    () => new Set(selecionado ? [selecionado] : encontrados),
+    [selecionado, encontrados],
+  );
+
+  /** Coorientador abre o perfil de coorientador; quem tem os dois papéis, o de orientador. */
+  const tipoDoNo = (grupo: string | undefined): TipoBusca => {
+    if (modo === 'palavras') return 'Palavra-chave';
+    return grupo === PAPEL_COORIENTADOR ? 'Co-orientador' : 'Orientador';
+  };
 
   const option = useMemo<EChartsOption>(() => {
     const maiorGrau = Math.max(1, ...rede.nos.map((n) => n.grauPonderado));
     const maiorPeso = Math.max(1, ...rede.arestas.map((a) => a.peso));
     const indiceGrupo = new Map(rede.grupos.map((g, i) => [g, i]));
+
+    const destacando = focais.size > 0;
+    const vizinhos = new Set<string>();
+    for (const a of rede.arestas) {
+      if (focais.has(a.origem)) vizinhos.add(a.destino);
+      if (focais.has(a.destino)) vizinhos.add(a.origem);
+    }
 
     return {
       tooltip: {
@@ -93,12 +132,24 @@ export function RedeRadial({ docs }: Props) {
           ocorrencias: n.ocorrencias,
           category: indiceGrupo.get(n.grupo) ?? 0,
           symbolSize: 6 + 18 * Math.sqrt(n.grauPonderado / maiorGrau),
+          ...(!destacando ? {} : focais.has(n.id) ? {
+            itemStyle: { borderColor: TEMA_GRAFICO.texto, borderWidth: 2 },
+            label: { fontSize: 13, fontWeight: 'bold' as const },
+          } : vizinhos.has(n.id) ? {} : {
+            itemStyle: { opacity: 0.15 },
+            label: { color: 'rgba(148, 163, 184, 0.3)' },
+          }),
         })),
         links: rede.arestas.map((a) => ({
           source: a.origem,
           target: a.destino,
           value: a.peso,
-          lineStyle: { width: 0.6 + 3 * (a.peso / maiorPeso) },
+          lineStyle: {
+            width: 0.6 + 3 * (a.peso / maiorPeso),
+            ...(!destacando ? {} : focais.has(a.origem) || focais.has(a.destino)
+              ? { opacity: 0.85, width: 1.5 + 3 * (a.peso / maiorPeso) }
+              : { opacity: 0.04 }),
+          },
         })),
         roam: true,
         label: {
@@ -111,16 +162,18 @@ export function RedeRadial({ docs }: Props) {
             return nome.length > 28 ? `${nome.slice(0, 28)}…` : nome;
           },
         },
-        labelLayout: { hideOverlap: true },
+        // Rótulo de nó destacado nunca é escondido pela sobreposição.
+        labelLayout: (p: { dataIndex?: number }) => ({ hideOverlap: !focais.has(rede.nos[p.dataIndex ?? -1]?.id ?? '') }),
         lineStyle: { color: 'source', curveness: 0.3, opacity: 0.22 },
         emphasis: {
-          focus: 'adjacency',
+          // Com um destaque fixo, o hover não isola outra vizinhança por cima dele.
+          focus: destacando ? 'none' : 'adjacency',
           label: { show: true, fontSize: 12 },
           lineStyle: { width: 3, opacity: 0.85 },
         },
       }],
     };
-  }, [rede]);
+  }, [rede, focais]);
 
   const rotuloEntidade = modo === 'supervisao' ? 'Pessoa' : 'Palavra-chave';
   const rotuloGrupo = modo === 'supervisao' ? 'Papel' : 'Macrotema dominante';
@@ -137,7 +190,7 @@ export function RedeRadial({ docs }: Props) {
   if (rede.nos.length === 0) {
     return (
       <Card className="space-y-3">
-        <GrupoOpcoes opcoes={OPCOES} valor={escolha} onChange={setOpcao} rotulo="O que ligar no diagrama" />
+        <GrupoOpcoes opcoes={OPCOES} valor={escolha} onChange={trocarOpcao} rotulo="O que ligar no diagrama" />
         <Aviso>
           {modo === 'supervisao'
             ? 'Nenhum registro do recorte tem orientador e coorientador juntos, então não há par de orientação para desenhar.'
@@ -149,16 +202,37 @@ export function RedeRadial({ docs }: Props) {
 
   return (
     <div className="space-y-3">
-      <GrupoOpcoes opcoes={OPCOES} valor={escolha} onChange={setOpcao} rotulo="O que ligar no diagrama" />
+      <GrupoOpcoes opcoes={OPCOES} valor={escolha} onChange={trocarOpcao} rotulo="O que ligar no diagrama" />
       <p className="text-xs text-slate-500">
         Mostrando {rede.nos.length} de {rede.totalNos} {rede.totalNos === 1 ? 'nó' : 'nós'} com pelo menos uma ligação,
         escolhidos pelo maior grau ponderado, e {rede.arestas.length} de {rede.totalArestas}{' '}
         {rede.totalArestas === 1 ? 'par' : 'pares'}. O corte é visual: as contagens acima descrevem a rede completa.
-        Arraste para mover o diagrama e use a roda do mouse para aproximar. Passe o cursor em um ponto
-        para isolar a vizinhança dele, ou clique para abrir o dossiê no Motor de Busca.
+        Arraste para mover o diagrama e use a roda do mouse para aproximar. Clique em um ponto para destacar
+        a vizinhança dele, clique de novo no mesmo ponto para abrir o dossiê no Motor de Busca, ou clique fora
+        para limpar o destaque.
       </p>
+      <div className="space-y-1">
+        <SelectBusca
+          key={modo}
+          sessionKey={`radial.${modo}`}
+          rotulo={modo === 'supervisao' ? 'Buscar orientador ou coorientador no diagrama' : 'Buscar palavra-chave no diagrama'}
+          placeholder={modo === 'supervisao' ? 'Digite parte do nome' : 'Digite parte do termo'}
+          opcoes={nomesNos}
+          valor={nomesNos.includes(busca) ? busca : null}
+          onChange={() => setSelecionado(null)}
+        />
+        {busca.trim() && (
+          <p role="status" className="text-xs text-slate-400">
+            {encontrados.length === 0
+              ? `Nenhum dos ${rede.nos.length} nós desenhados corresponde a “${busca.trim()}”. Itens fora do corte visual não aparecem no diagrama.`
+              : `${encontrados.length} ${encontrados.length === 1 ? 'item destacado' : 'itens destacados'}, com a vizinhança.`}
+          </p>
+        )}
+      </div>
       <Card>
         <Grafico
+          key={modo}
+          mesclar
           altura={620}
           larguraMinima={520}
           option={option}
@@ -178,9 +252,21 @@ export function RedeRadial({ docs }: Props) {
           )}
           onEvents={{
             click: (params: unknown) => {
-              const p = params as { dataType?: string; data?: { name?: string } };
-              if (p.dataType === 'node' && p.data?.name) navegarPara(tipoBusca, p.data.name);
+              const p = params as { dataType?: string; data?: { name?: string; grupo?: string } };
+              if (p.dataType !== 'node' || !p.data?.name) return;
+              if (selecionado === p.data.name) navegarPara(tipoDoNo(p.data.grupo), p.data.name);
+              else setSelecionado(p.data.name);
             },
+          }}
+          onReady={(instancia) => {
+            // Clique no vazio (sem elemento sob o cursor) limpa o destaque fixo.
+            // O zrender não dispara `click` ao fim de um arrasto, então mover o
+            // diagrama não apaga a seleção.
+            (instancia as { getZr: () => { on: (e: string, h: (ev: { target?: unknown }) => void) => void } })
+              .getZr()
+              .on('click', (ev) => {
+                if (!ev.target) setSelecionado(null);
+              });
           }}
           leitura={{
             titulo: modo === 'supervisao' ? 'Rede radial de orientação conjunta' : 'Rede radial de coocorrência de palavras-chave',

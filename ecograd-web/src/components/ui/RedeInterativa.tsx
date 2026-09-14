@@ -10,9 +10,11 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ImageDown, Maximize2, Pause,
 import { baixarCanvas, type FormatoImagem } from '@/lib/exportar-imagem';
 
 type Camera = { zoom: number; x: number; y: number };
-export function RedeInterativa({ id, titulo, nodes, links, descricao, contexto, onSelecionar, desenharNo }: {
+export function RedeInterativa({ id, titulo, nodes, links, descricao, contexto, onSelecionar, desenharNo, pausadoPadrao = true }: {
   id: string; titulo: string; nodes: readonly GraphNode[]; links: readonly GraphLink[]; descricao: string;
   contexto?: Record<string, unknown>; onSelecionar: (no: GraphNode) => void;
+  /** Estado inicial do movimento, antes de o usuário pausar ou retomar. */
+  pausadoPadrao?: boolean;
   desenharNo?: (no: GraphNode & { x?: number; y?: number }, ctx: CanvasRenderingContext2D, escala: number, corTexto: string) => void;
 }) {
   const { claro, reduzir } = useAparencia();
@@ -20,7 +22,7 @@ export function RedeInterativa({ id, titulo, nodes, links, descricao, contexto, 
   const container = useRef<HTMLDivElement>(null);
   const [largura, setLargura] = useState(300);
   const [vista, setVista] = useSessionField('rede.' + id + '.vista', 'rede');
-  const [pausado, setPausado] = useSessionField('rede.' + id + '.pausado', true);
+  const [pausado, setPausado] = useSessionField('rede.' + id + '.pausado', pausadoPadrao);
   const pausaEfetiva = pausado || reduzir;
   const [camera, setCamera] = useSessionField<Camera | null>('rede.' + id + '.camera', null);
   const cameraAtual = useRef(camera); cameraAtual.current = camera;

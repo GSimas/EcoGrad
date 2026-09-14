@@ -51,7 +51,7 @@ export interface RedeRadial {
 
 const SEM_MACROTEMA = 'Sem macrotema';
 const PAPEL_ORIENTADOR = 'Orientador';
-const PAPEL_COORIENTADOR = 'Coorientador';
+export const PAPEL_COORIENTADOR = 'Coorientador';
 const PAPEL_AMBOS = 'Orientador e coorientador';
 
 /**

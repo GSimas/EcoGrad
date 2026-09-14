@@ -419,6 +419,7 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
 .eco-related-table tbody tr:nth-child(even) { background-color: rgb(var(--eco-bg) / .2); }
 .eco-brand-home { transition: color var(--motion-fast) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-emphasized); }
 .eco-brand-home img { transition: transform var(--motion-base) var(--ease-emphasized), filter var(--motion-base) var(--ease-standard); }
+.eco-analise-ativa { transition: border-color var(--motion-base) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-emphasized); }
 .eco-entity-link > svg { transition: color var(--motion-fast) var(--ease-standard), transform var(--motion-base) var(--ease-emphasized); }
 .eco-metric-help-trigger { transition: color var(--motion-fast) var(--ease-standard), background-color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-emphasized); }
 .eco-metric-tooltip {
@@ -436,6 +437,7 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
   .eco-brand-home:hover { background-color: rgb(var(--eco-accent) / .08); transform: translateY(-1px); }
   .eco-brand-home:hover img { filter: drop-shadow(0 4px 8px rgb(var(--eco-accent) / .22)); transform: rotate(-3deg) scale(1.04); }
   .eco-entity-link:hover { border-color: rgb(var(--eco-accent) / .5); background-color: rgb(var(--eco-accent) / .07); box-shadow: 0 8px 22px rgb(0 0 0 / .12); transform: translateY(-1px); }
+  .eco-analise-ativa:hover { border-color: rgb(var(--eco-accent) / .65); background-color: rgb(var(--eco-accent) / .14); box-shadow: 0 8px 22px rgb(var(--eco-accent) / .12); transform: translateY(-1px); }
   .eco-related-table tbody tr:hover { background-color: rgb(var(--eco-accent) / .035); }
   .eco-entity-link:hover > svg { color: rgb(var(--eco-accent)); transform: translateX(2px); }
   .eco-metric-help-trigger:hover { color: rgb(var(--eco-accent)); background-color: rgb(var(--eco-accent) / .12); transform: scale(1.06); }

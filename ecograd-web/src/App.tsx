@@ -32,10 +32,8 @@ export default function App() {
   if (page === 'inicio') {
     return (
       <main ref={conteudoRef} tabIndex={-1} aria-label="Conteúdo principal" className="relative h-screen overflow-y-auto">
-        <SessionStatus />
         <PainelAtividades />
         <AtividadesIA />
-        <NavigationHistory />
         <div className="mx-auto flex max-w-6xl justify-end px-4 pt-2"><Aparencia /></div>
         <Apresentacao />
       </main>

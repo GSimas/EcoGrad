@@ -57,6 +57,14 @@
     Cache-Control = "public, max-age=31536000, immutable"
     Access-Control-Allow-Origin = "*"
 
+[[headers]]
+  for = "/data/orientacoes-*.json.gz"
+  [headers.values]
+    Content-Type = "application/gzip"
+    Content-Encoding = "identity"
+    Cache-Control = "public, max-age=31536000, immutable"
+    Access-Control-Allow-Origin = "*"
+
 # Bases completas de nome fixo são legadas; não podem ser immutable.
 [[headers]]
   for = "/data/base_*.json.gz"

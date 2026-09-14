@@ -8,6 +8,7 @@ import { useDadosDerivados } from '@/hooks/useDadosDerivados';
 import { docsDoTermo, opcoesPorTipo } from '@/lib/entities';
 import { resolverDocumento } from '@/lib/resultados';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { useSessionField } from '@/hooks/useSessionField';
 import type { TipoBusca } from '@/types';
 
 const TIPOS: TipoBusca[] = [
@@ -18,6 +19,9 @@ const TIPOS: TipoBusca[] = [
   'Palavra-chave',
   'Macrotema',
 ];
+
+const TODOS = 'Todos';
+const ordemNome = new Intl.Collator('pt-BR').compare;
 
 /** Motor de Busca e Dossiê (Principal.py:601-1190). */
 export function MotorBusca() {
@@ -32,6 +36,18 @@ export function MotorBusca() {
   const candidatos = useMemo(() => buscaTipo === 'Documento' && buscaTermo !== null ? docs.map((doc, indice) => ({ doc, indice })).filter(({ doc }) => doc.titulo === buscaTermo) : [], [docs, buscaTipo, buscaTermo]);
 
   const opcoes = useMemo(() => opcoesPorTipo(indices, buscaTipo), [indices, buscaTipo]);
+
+  // "Todos" é um modo da tela, não um tipo: ao escolher um item, o dossiê abre
+  // com o tipo real dele, e histórico e sessão seguem validando só tipos reais.
+  const [todos, setTodos] = useSessionField('busca.todos', false);
+  const catalogoTodos = useMemo(() => {
+    if (!todos) return new Map<string, { tipo: TipoBusca; nome: string }>();
+    // ponytail: filtro linear sobre todos os tipos a cada tecla; indexar por prefixo se ficar lento
+    const itens = TIPOS.flatMap((tipo) => opcoesPorTipo(indices, tipo).map((nome) => ({ rotulo: `${nome} (${tipo})`, tipo, nome })));
+    itens.sort((a, b) => ordemNome(a.nome, b.nome) || ordemNome(a.tipo, b.tipo));
+    return new Map(itens.map((i) => [i.rotulo, { tipo: i.tipo, nome: i.nome }]));
+  }, [todos, indices]);
+  const opcoesTodos = useMemo(() => [...catalogoTodos.keys()], [catalogoTodos]);
   const docsAlvo = useMemo(
     () => {
       if (buscaTermo === null) return [];
@@ -55,23 +71,40 @@ export function MotorBusca() {
       <Card className="space-y-4">
         <GrupoOpcoes
           rotulo="Procurar por entidade"
-          opcoes={TIPOS}
-          valor={buscaTipo}
-          onChange={(t) => navegarPara(t, null)}
+          opcoes={[TODOS, ...TIPOS]}
+          valor={todos ? TODOS : buscaTipo}
+          onChange={(t) => {
+            setTodos(t === TODOS);
+            navegarPara(t === TODOS ? buscaTipo : t as TipoBusca, null);
+          }}
         />
-        <SelectBusca
-          key={buscaTipo}
-          sessionKey={buscaTipo}
-          rotulo={`Selecione ${buscaTipo.toLowerCase()}`}
-          opcoes={opcoes}
-          valor={buscaTermo}
-          onChange={(v) => navegarPara(buscaTipo, v)}
-        />
+        {todos ? (
+          <SelectBusca
+            key={TODOS}
+            sessionKey={TODOS}
+            rotulo="Selecione qualquer item (documento, pessoa, palavra-chave ou macrotema)"
+            opcoes={opcoesTodos}
+            valor={buscaTermo !== null ? `${buscaTermo} (${buscaTipo})` : null}
+            onChange={(v) => {
+              const item = v ? catalogoTodos.get(v) : undefined;
+              navegarPara(item?.tipo ?? buscaTipo, item?.nome ?? null);
+            }}
+          />
+        ) : (
+          <SelectBusca
+            key={buscaTipo}
+            sessionKey={buscaTipo}
+            rotulo={`Selecione ${buscaTipo.toLowerCase()}`}
+            opcoes={opcoes}
+            valor={buscaTermo}
+            onChange={(v) => navegarPara(buscaTipo, v)}
+          />
+        )}
       </Card>
 
       {buscaTermo === null && (
         <Aviso>
-          Escolha um tipo, digite parte do nome ou título e confirme uma opção do catálogo. O dossiê reúne trabalhos, resumos e fontes; as análises e métodos ficam recolhidos logo acima dos trabalhos associados.
+          Escolha um tipo, digite parte do nome ou título e confirme uma opção do catálogo. Em Todos, a lista reúne itens de qualquer tipo. O dossiê reúne trabalhos, resumos e fontes; gráficos e análises ficam logo acima dos trabalhos associados.
         </Aviso>
       )}
 

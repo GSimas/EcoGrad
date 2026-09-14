@@ -153,7 +153,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
         abas={[
           {
             valor: 'graficos',
-            rotulo: <><ChartColumn size={15} aria-hidden /> Top 10 (Gráficos)</>,
+            rotulo: <><ChartColumn size={15} aria-hidden /> Top 10</>,
             conteudo: (
               <div className="space-y-3">
                 <p className="text-xs text-slate-500">

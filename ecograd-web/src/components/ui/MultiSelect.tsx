@@ -242,7 +242,7 @@ export function SelectBusca({
             </ul>
           )}
         </div>
-        {valor && (
+        {texto && (
           <button type="button" className="btn shrink-0" onClick={() => confirmar('')}>
             <X size={14} /> Limpar
           </button>

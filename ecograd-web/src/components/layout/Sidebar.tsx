@@ -46,7 +46,7 @@ function Navegacao({ compacto, aoNavegar }: { compacto: boolean; aoNavegar?: () 
   const botao = cn('btn min-h-11', compacto ? 'w-11 px-0' : 'w-full justify-start');
   return <>
     {state.dadosCarregados && <>
-      {!compacto && <div className="rounded-lg border border-eco-accent/40 bg-eco-accent/10 p-3 text-sm">
+      {!compacto && <div className="eco-analise-ativa rounded-lg border border-eco-accent/40 bg-eco-accent/10 p-3 text-sm">
         <p className="text-xs text-slate-300">Análise ativa</p>
         <p className="mt-1 break-words text-eco-accent">{rotuloAnaliseAtiva(state)}</p>
         <p className="mt-1 text-xs text-slate-400">{state.docs.length.toLocaleString('pt-BR')} documentos</p>

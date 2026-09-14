@@ -34,6 +34,7 @@ export function Grafico({
   onEvents,
   onReady,
   rodape,
+  mesclar = false,
 }: {
   option: EChartsOption;
   leitura: LeituraDados;
@@ -47,6 +48,11 @@ export function Grafico({
    * Só aparece na vista de gráfico: na tabela não haveria a que se referir.
    */
   rodape?: ReactNode;
+  /**
+   * Mescla a nova opção na anterior em vez de substituí-la. Preserva o zoom e o
+   * arrasto (`roam`) quando só o estilo muda, como no destaque de um nó.
+   */
+  mesclar?: boolean;
 }) {
   const { claro, reduzir } = useAparencia();
   const [vista, setVista] = useSessionField('grafico.' + leitura.titulo, 'grafico');
@@ -105,7 +111,7 @@ export function Grafico({
       option={opcaoFinal}
       style={{ height: altura, width: '100%' }}
       opts={{ renderer: 'canvas' }}
-      notMerge
+      notMerge={!mesclar}
       lazyUpdate
       onEvents={onEvents}
       onChartReady={aoMontar}
