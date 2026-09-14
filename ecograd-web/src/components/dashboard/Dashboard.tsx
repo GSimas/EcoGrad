@@ -8,6 +8,7 @@ import { Atividade } from '@/components/ui/Atividade';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import { Trabalhos } from '@/components/results/Trabalhos';
 import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
+import { CoberturaTemporal } from '@/components/results/CoberturaTemporal';
 import { Relacoes } from '@/components/results/Relacoes';
 import { ComparacaoColecoes } from './ComparacaoColecoes';
 import { resumoRegistros, periodoTexto } from '@/lib/resultados';
@@ -78,6 +79,9 @@ export function Dashboard() {
         />
       </div>
       <CoberturaAnalise docs={docs} />
+      <Expander titulo="Cobertura de metadados por ano" aberto>
+        <CoberturaTemporal docs={docs} />
+      </Expander>
       <div className="flex flex-wrap gap-3">
         <button type="button" className="btn" onClick={() => navegar('Documento', null)}>Buscar um trabalho pelo título</button>
         <button type="button" className="btn" onClick={() => navegar('Palavra-chave', null)}>Investigar um tema</button>
