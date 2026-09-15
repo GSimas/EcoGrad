@@ -8,12 +8,15 @@ import { versaoPublicada } from '../lib/base-version';
 import { carregarManifestoColecoes } from '../lib/collection-loader';
 import type { Documento } from '@/types';
 import { carregarBasePPG, carregarBaseTCC } from '../lib/data-loader';
+import { recortarDocs, resumoRecorte, type ItemRecorte } from '../lib/recorte';
 
 export interface DataWorkerRequest {
   type: 'carregar';
   programas: string[];
   cursosTcc: string[];
   objetivo?: string;
+  /** Itens que delimitam a análise. Vazio: as coleções inteiras. */
+  recorte?: ItemRecorte[];
 }
 
 export type DataWorkerResponse =
@@ -31,7 +34,7 @@ function responder(msg: DataWorkerResponse): void {
 }
 
 ctx.addEventListener('message', async (evento: MessageEvent<DataWorkerRequest>) => {
-  const { programas, cursosTcc } = evento.data;
+  const { programas, cursosTcc, recorte = [] } = evento.data;
   try {
     responder({ type: 'progress', text: 'Lendo o catálogo de coleções...', value: 0 });
     const manifest = await carregarManifestoColecoes();
@@ -56,8 +59,12 @@ ctx.addEventListener('message', async (evento: MessageEvent<DataWorkerRequest>) 
 
     responder({ type: 'progress', text: `Consolidando ${combinados.length} documentos...`, value: DOWNLOADS_ATE });
     if (!combinados.length) throw new Error('Nenhum documento encontrado para a seleção atual.');
+    // O recorte é aplicado aqui, e não na main thread: só os documentos do item
+    // escolhido atravessam a fronteira do worker e ocupam memória na página.
+    const docs = recortarDocs(combinados, recorte);
+    if (!docs.length) throw new Error(`Nenhum documento das coleções corresponde a ${resumoRecorte(recorte)}. A busca usa um catálogo do acervo inteiro; o recorte local pode estar defasado.`);
     if (await versaoPublicada() !== baseVersion) throw new Error('A base foi atualizada durante a leitura. Reinicie o carregamento.');
-    responder({ type: 'pronto', docs: combinados, baseVersion });
+    responder({ type: 'pronto', docs, baseVersion });
   } catch (erro) {
     responder({ type: 'error', message: erro instanceof Error ? erro.message : String(erro) });
   }

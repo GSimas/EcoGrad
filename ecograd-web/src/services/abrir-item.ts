@@ -1,7 +1,8 @@
 import { colecoesDoItem, type ResultadoBusca } from '@/lib/busca-global';
 import type { TipoBusca } from '@/types';
 import { mesmaSelecao } from '@/lib/selecao';
-import { canonizar, usePessoas } from './pessoas';
+import { canonizar, grupoDe, usePessoas } from './pessoas';
+import { mesmoRecorte, type ItemRecorte } from '@/lib/recorte';
 import { PAPEIS_PESSOA } from '@/types';
 import { carregarDados } from './calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -28,6 +29,27 @@ export function colecoesDaEscolha({ itens, colecoes }: EscolhaAcervo) {
     omitidas += escolha.omitidas;
   }
   return { programas: [...programas], cursosTcc: [...cursosTcc], omitidas };
+}
+
+/**
+ * O recorte que a escolha define: a análise fica restrita aos itens pedidos, e
+ * não às coleções inteiras que precisaram ser baixadas para alcançá-los. Uma
+ * escolha só de coleções não recorta nada — ali o recorte É a coleção.
+ *
+ * Papéis de pessoa levam junto as outras grafias do grupo unificado: os
+ * documentos gravados sob a grafia antiga são da mesma pessoa.
+ */
+export function recorteDaEscolha({ itens, colecoes }: EscolhaAcervo): ItemRecorte[] {
+  if (itens.length === 0) return [];
+  const grupos = usePessoas.getState().grupos;
+  return [
+    ...itens.map((i): ItemRecorte => {
+      const grafias = (PAPEIS_PESSOA as readonly string[]).includes(i.tipo) || i.tipo === 'Pessoa' ? grupoDe(grupos, i.nome)?.grafias : undefined;
+      return grafias?.length ? { tipo: i.tipo, nome: i.nome, grafias } : { tipo: i.tipo, nome: i.nome };
+    }),
+    // Coleção escolhida de propósito entra inteira, ao lado dos itens.
+    ...colecoes.map((c): ItemRecorte => ({ tipo: 'Coleção', nome: c.nome })),
+  ];
 }
 
 /**
@@ -71,13 +93,26 @@ export function abrirEscolhaDoAcervo(escolha: EscolhaAcervo): { carregando: bool
   const { programas, cursosTcc, omitidas } = colecoesDaEscolha(escolha);
   const colecoes = programas.length + cursosTcc.length;
   if (colecoes === 0) return { carregando: false, colecoes, omitidas };
+  const recorte = recorteDaEscolha(escolha);
   const s = useEcoGradStore.getState();
-  if (s.dadosCarregados && mesmaSelecao({ programas, cursosTcc }, { programas: s.programasSelecionados, cursosTcc: s.cursosTccSelecionados })) {
+  // Mesmas coleções com outro recorte é outra base: só reaproveita quando os dois batem.
+  if (s.dadosCarregados && mesmaSelecao({ programas, cursosTcc }, { programas: s.programasSelecionados, cursosTcc: s.cursosTccSelecionados })
+    && mesmoRecorte(recorte, s.recorte)) {
     abrir(escolha);
     return { carregando: false, colecoes, omitidas };
   }
   carregarDados(programas, cursosTcc, alvoUnico(escolha) ? 'trabalhos' : 'panorama', () => {
     if (useEcoGradStore.getState().dadosCarregados) abrir(escolha);
-  });
+  }, recorte);
   return { carregando: true, colecoes, omitidas };
+}
+
+/**
+ * Abandona o recorte e recarrega as mesmas coleções inteiras — o caminho de
+ * volta para quem quer comparar o item com o resto da produção.
+ */
+export function ampliarParaColecoesInteiras(): void {
+  const s = useEcoGradStore.getState();
+  if (!s.recorte.length || s.carregando) return;
+  carregarDados(s.programasSelecionados, s.cursosTccSelecionados, 'panorama', undefined, []);
 }

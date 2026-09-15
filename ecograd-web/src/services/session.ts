@@ -6,15 +6,16 @@ import { atividades, restaurarAtividades, type Pedido, type Resultado } from './
 import type { Task } from '../lib/worker-tasks';
 import { fitsAnalysis, decode, encode, envelope, recoveryDecision, saveText, validateEnvelope, reconcileTasks, recoverConversation } from '../lib/session-codec';
 import { readAnalysis, writeAnalysis } from '../lib/session-db';
+import { validarRecorte } from '../lib/recorte';
 import { versaoPublicada } from '../lib/base-version';
 
 const TEXT_KEY = 'ecograd-session-v1';
 const ID_KEY = 'ecograd-tab-id';
 export const useRecovery = create<{ message: string; error: string; saved: string; saving: boolean }>(() => ({ message: '', error: '', saved: '', saving: false }));
 function light(s: EcoGradState) {
-  const { analysisId, baseVersion, apresentacaoVista, rota, sidebarRecolhida, programasSelecionados, cursosTccSelecionados,
+  const { analysisId, baseVersion, apresentacaoVista, rota, sidebarRecolhida, programasSelecionados, cursosTccSelecionados, recorte,
     buscaTipo, buscaTermo, tipoForesight, janelaRecente, metodoCorte, percentilCorte, usarBootstrap, fonteMemes, minCoocorrencia, ui, chat } = s;
-  return { activityIntents: atividades.getSnapshot().map(({ id, titulo, pedido, status, executionId }) => ({ id, titulo, pedido: compactPedido(pedido), status, executionId })), analysisId, baseVersion, apresentacaoVista, rota, sidebarRecolhida, programasSelecionados, cursosTccSelecionados,
+  return { activityIntents: atividades.getSnapshot().map(({ id, titulo, pedido, status, executionId }) => ({ id, titulo, pedido: compactPedido(pedido), status, executionId })), analysisId, baseVersion, apresentacaoVista, rota, sidebarRecolhida, programasSelecionados, cursosTccSelecionados, recorte,
     buscaTipo, buscaTermo, tipoForesight, janelaRecente, metodoCorte, percentilCorte, usarBootstrap, fonteMemes, minCoocorrencia, ui, chat };
 }
 function validLight(value: Record<string, unknown>): boolean {
@@ -28,7 +29,8 @@ function validLight(value: Record<string, unknown>): boolean {
     && typeof chat.streaming === 'boolean' && (chat.erro === null || typeof chat.erro === 'string')
     && ['apresentacaoVista', 'sidebarRecolhida', 'usarBootstrap'].every((key) => typeof value[key] === 'boolean')
     && ['janelaRecente', 'percentilCorte', 'minCoocorrencia'].every((key) => typeof value[key] === 'number' && Number.isFinite(value[key]))
-    && typeof value.baseVersion === 'string' && !Array.isArray(value.ui);
+    && typeof value.baseVersion === 'string' && !Array.isArray(value.ui)
+    && (value.recorte === undefined || Array.isArray(value.recorte));
 }
 function compactPedido(p: Pedido) { const { docs: _docs, sna: _sna, ...small } = p as Pedido & { docs?: unknown; sna?: unknown }; return small; }
 function snapshot(client: QueryClient) {
@@ -130,6 +132,8 @@ export async function initializeSession(queryClient: QueryClient) {
         ui['ontologia.status'] = 'Extração interrompida pelo recarregamento. Os documentos já enriquecidos foram preservados. Processe o próximo lote para continuar.';
       }
       values.ui = ui;
+      // O recorte volta do armazenamento do navegador: só entra o que está bem formado.
+      values.recorte = validarRecorte(values.recorte);
       useEcoGradStore.setState(values);
     }
     const saved = previousTabId ? await readAnalysis(previousTabId) : undefined;

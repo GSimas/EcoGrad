@@ -4,6 +4,7 @@ import { referenciaDocumento } from '../lib/resultados';
 import { objetivoPorId } from '../lib/objetivos';
 import { aplicarUnificacao, type MapaGrafias } from '../lib/unificacao';
 import type { SelecaoColecoes } from '../lib/selecao';
+import { resumoRecorte, type ItemRecorte } from '../lib/recorte';
 import { create } from 'zustand';
 import type {
   ChatMessage,
@@ -50,6 +51,12 @@ export interface EcoGradState {
   // --- Seleção de coleções (persistida) ---
   programasSelecionados: string[];
   cursosTccSelecionados: string[];
+  /**
+   * Itens que delimitam a análise dentro das coleções carregadas. Vazio: a
+   * análise é das coleções inteiras. A base ativa já chega recortada do worker,
+   * então nenhum consumidor precisa filtrar de novo.
+   */
+  recorte: ItemRecorte[];
 
   // --- Base ativa (checkpoint limitado no IndexedDB) ---
   /** Base como veio das coleções, sem as fusões de pessoa aplicadas. */
@@ -96,7 +103,7 @@ export interface EcoGradState {
   setCursosTcc: (v: string[]) => void;
   iniciarCarregamento: () => void;
   setMensagemCarregamento: (v: string) => void;
-  concluirCarregamento: (docs: Documento[], selecao?: SelecaoColecoes, baseVersion?: string, objetivo?: string) => void;
+  concluirCarregamento: (docs: Documento[], selecao?: SelecaoColecoes, baseVersion?: string, objetivo?: string, recorte?: ItemRecorte[]) => void;
   /** Troca as fusões de pessoa e rederiva a base ativa a partir da original. */
   definirFusoes: (mapa: MapaGrafias) => void;
   falharCarregamento: (msg: string) => void;
@@ -129,7 +136,9 @@ export const baseOriginal = (s: Pick<EcoGradState, 'docsOriginais' | 'docs'>) =>
   (s.docsOriginais.length ? s.docsOriginais : s.docs);
 
 /** Rótulo da badge "Análise Ativa" na Sidebar. */
-export function rotuloAnaliseAtiva(state: Pick<EcoGradState, 'programasSelecionados' | 'cursosTccSelecionados'>): string {
+export function rotuloAnaliseAtiva(state: Pick<EcoGradState, 'programasSelecionados' | 'cursosTccSelecionados' | 'recorte'>): string {
+  const recorte = resumoRecorte(state.recorte ?? []);
+  if (recorte) return recorte;
   const nomes = [...state.programasSelecionados, ...state.cursosTccSelecionados];
   if (nomes.length === 0) return 'Base carregada';
   if (nomes.length === 1) return nomes[0];
@@ -150,6 +159,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
 
       programasSelecionados: [],
       cursosTccSelecionados: [],
+      recorte: [],
 
       docsOriginais: [],
       docs: [],
@@ -199,13 +209,14 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
 
       setMensagemCarregamento: (v) => set({ mensagemCarregamento: v }),
 
-      concluirCarregamento: (docs, selecao, baseVersion = '', objetivo) =>
+      concluirCarregamento: (docs, selecao, baseVersion = '', objetivo, recorte = []) =>
         set({
           analysisId: crypto.randomUUID(),
           ia: iaVazia(),
           baseVersion,
           ui: { ...get().ui, 'selecao.rascunho': undefined, 'dossie.documento': undefined, 'ontologia.processando': false, 'ontologia.status': '', 'ontologia.erros': [], 'ontologia.upload': null },
           ...(selecao && docs.length ? { programasSelecionados: selecao.programas, cursosTccSelecionados: selecao.cursosTcc } : {}),
+          recorte,
           rota: objetivoPorId(objetivo).rota,
           ...(objetivoPorId(objetivo).buscaTipo ? { buscaTipo: objetivoPorId(objetivo).buscaTipo } : {}),
           docsOriginais: docs,
@@ -247,6 +258,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
           buscaTermo: null,
           programasSelecionados: [],
           cursosTccSelecionados: [],
+          recorte: [],
           // Volta para a seleção de coleções, não para a apresentação
           rota: 'dashboard',
         }),

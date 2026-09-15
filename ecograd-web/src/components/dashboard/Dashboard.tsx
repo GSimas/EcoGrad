@@ -12,6 +12,7 @@ import { CoberturaTemporal } from '@/components/results/CoberturaTemporal';
 import { Relacoes } from '@/components/results/Relacoes';
 import { ComparacaoColecoes } from './ComparacaoColecoes';
 import { resumoRegistros, periodoTexto } from '@/lib/resultados';
+import { RecorteAtivo } from '@/components/layout/RecorteAtivo';
 import { formatarDecimal } from '@/lib/utils';
 
 /** Resultados do recorte, trabalhos e comparação; métodos disponíveis sob demanda. */
@@ -22,6 +23,7 @@ export function Dashboard() {
   const maturidade = useEcoGradStore((s) => s.maturidade);
   const rotulo = useEcoGradStore(rotuloAnaliseAtiva);
 
+  const recortada = useEcoGradStore((s) => s.recorte.some((i) => i.tipo !== 'Coleção'));
   const ppg = useEcoGradStore((s) => s.programasSelecionados);
   const tcc = useEcoGradStore((s) => s.cursosTccSelecionados);
   const navegar = useEcoGradStore((s) => s.navegarPara);
@@ -32,9 +34,11 @@ export function Dashboard() {
   return (
     <div className="space-y-8">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">Explore a produção das coleções</h1>
+        <h1 className="text-2xl font-bold">{recortada ? 'Explore o recorte selecionado' : 'Explore a produção das coleções'}</h1>
         <p className="text-sm text-slate-400">Base: {rotulo}</p>
       </header>
+
+      <RecorteAtivo />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi rotulo="Registros carregados" valor={docs.length} detalhe="Não necessariamente trabalhos únicos" />
@@ -44,7 +48,8 @@ export function Dashboard() {
           detalhe={`${cobertura.comFonte - cobertura.fontesDistintas} registros repetem um link`}
           ajuda="Links distintos do repositório somados aos registros sem link, que não são deduplicáveis e contam um cada. Nada é fundido por semelhança de título; não é deduplicação científica."
         />
-        <Kpi rotulo="Coleções selecionadas" valor={nomes.length} />
+        <Kpi rotulo={recortada ? 'Coleções de origem' : 'Coleções selecionadas'} valor={nomes.length}
+          detalhe={recortada ? 'Baixadas para alcançar o recorte' : undefined} />
         <Kpi rotulo="Período observado" valor={periodoTexto(cobertura)} detalhe={`${cobertura.semAno} registros sem ano`} />
         <Kpi rotulo="Resumos disponíveis" valor={`${cobertura.comResumo}/${docs.length}`} />
         <Kpi

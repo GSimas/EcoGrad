@@ -10,6 +10,7 @@ import { Janela } from './Janela';
 import { PanoramaCapes } from '@/components/dashboard/PanoramaCapes';
 import { cn } from '@/lib/utils';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
+import { RecorteAtivo } from './RecorteAtivo';
 import type { Rota } from '@/types';
 
 const ITENS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }> = [
@@ -48,6 +49,7 @@ function Navegacao({ compacto, aoNavegar }: { compacto: boolean; aoNavegar?: () 
           {colecoesAtivas.length > 0 && <>{colecoesAtivas.length.toLocaleString('pt-BR')} {colecoesAtivas.length === 1 ? 'coleção' : 'coleções'} · </>}
           {state.docs.length.toLocaleString('pt-BR')} documentos
         </p>
+        <RecorteAtivo compacto />
       </div>}
       <nav aria-label="Análise" className="space-y-1">
         {ITENS.map(({ rota, rotulo, icone: Icone }) => <button key={rota} type="button"

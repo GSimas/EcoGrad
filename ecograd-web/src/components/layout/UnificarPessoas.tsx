@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Merge, Undo2 } from 'lucide-react';
 import { Janela } from './Janela';
 import { cn } from '@/lib/utils';
@@ -31,11 +31,13 @@ function agrupar(candidatos: readonly Candidato[]) {
  * análise e fica salva neste navegador — é conhecimento sobre o acervo, não
  * sobre o recorte carregado.
  */
-export function UnificarPessoas({ candidatos, classe, desabilitado = false, aoUnificar }: {
+export function UnificarPessoas({ candidatos, classe, desabilitado = false, aoUnificar, rotulo }: {
   candidatos: readonly Candidato[];
   classe?: string;
   desabilitado?: boolean;
   aoUnificar?: (canonico: string) => void;
+  /** Texto fixo do botão. Sem ele o rótulo acompanha a seleção — e muda de largura. */
+  rotulo?: ReactNode;
 }) {
   const [aberta, setAberta] = useState(false);
   const grupos = usePessoas((s) => s.grupos);
@@ -69,7 +71,7 @@ export function UnificarPessoas({ candidatos, classe, desabilitado = false, aoUn
     larga
     trigger={<button type="button" className={cn(classe ?? 'btn', 'disabled:cursor-not-allowed disabled:opacity-60')} disabled={desabilitado || (!suficiente && grupos.length === 0)}
       title={suficiente ? 'Unificar as pessoas selecionadas' : grupos.length ? 'Revisar as pessoas já unificadas' : 'Selecione duas ou mais pessoas para unificar'}>
-      <Merge size={16} className="shrink-0" /> {suficiente ? `Unificar ${grafias.length} pessoas` : grupos.length ? `Pessoas unificadas (${grupos.length})` : 'Unificar pessoas'}
+      <Merge size={16} className="shrink-0" /> {rotulo ?? (suficiente ? `Unificar ${grafias.length} pessoas` : grupos.length ? `Pessoas unificadas (${grupos.length})` : 'Unificar pessoas')}
     </button>}
   >
     <div className="space-y-5">
