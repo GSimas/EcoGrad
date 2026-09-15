@@ -10,12 +10,13 @@ import { construirRedeRadial, PAPEL_COORIENTADOR, type ModoRadial } from '@/lib/
 import { correspondeBusca, termosBusca } from '@/lib/utils';
 import type { Documento, TipoBusca } from '@/types';
 
-const OPCOES = ['Orientação conjunta', 'Palavras-chave (coocorrência)'] as const;
+const OPCOES = ['Orientação conjunta', 'Palavras-chave (coocorrência)', 'Macrotemas (coocorrência)'] as const;
 type Opcao = (typeof OPCOES)[number];
 
 const MODO_DA_OPCAO: Record<Opcao, ModoRadial> = {
   'Orientação conjunta': 'supervisao',
   'Palavras-chave (coocorrência)': 'palavras',
+  'Macrotemas (coocorrência)': 'macrotemas',
 };
 
 /** Quantos nós o desenho circular ainda consegue rotular sem virar borrão. */
@@ -72,6 +73,7 @@ export function RedeRadial({ docs }: Props) {
   /** Coorientador abre o perfil de coorientador; quem tem os dois papéis, o de orientador. */
   const tipoDoNo = (grupo: string | undefined): TipoBusca => {
     if (modo === 'palavras') return 'Palavra-chave';
+    if (modo === 'macrotemas') return 'Macrotema';
     return grupo === PAPEL_COORIENTADOR ? 'Co-orientador' : 'Orientador';
   };
 
@@ -175,10 +177,15 @@ export function RedeRadial({ docs }: Props) {
     };
   }, [rede, focais]);
 
-  const rotuloEntidade = modo === 'supervisao' ? 'Pessoa' : 'Palavra-chave';
-  const rotuloGrupo = modo === 'supervisao' ? 'Papel' : 'Macrotema dominante';
+  const rotuloEntidade = modo === 'supervisao' ? 'Pessoa' : modo === 'macrotemas' ? 'Macrotema' : 'Palavra-chave';
+  const rotuloGrupo = modo === 'supervisao' ? 'Papel' : modo === 'macrotemas' ? 'Grupo' : 'Macrotema dominante';
 
-  const descricao = modo === 'supervisao'
+  const descricao = modo === 'macrotemas'
+    ? 'Cada ponto é um macrotema; a curva liga dois temas quando a mesma pessoa tem trabalhos nos dois. '
+      + 'Espessura da curva é o número de pessoas em comum. Um registro tem um único macrotema, então dois temas '
+      + 'nunca ocorrem juntos num mesmo trabalho: o que este diagrama mostra é quem atravessa fronteiras temáticas, '
+      + 'não proximidade de conteúdo entre as áreas.'
+    : modo === 'supervisao'
     ? 'Cada ponto é um orientador ou coorientador; a curva liga quem assina a orientação do mesmo registro. '
       + 'Espessura da curva é o número de registros em comum, e o arco indica o papel da pessoa no recorte. '
       + 'Isso descreve corresponsabilidade de orientação como a base registra — não é coautoria de publicação, '
@@ -194,7 +201,9 @@ export function RedeRadial({ docs }: Props) {
         <Aviso>
           {modo === 'supervisao'
             ? 'Nenhum registro do recorte tem orientador e coorientador juntos, então não há par de orientação para desenhar.'
-            : 'Nenhum registro do recorte declara duas ou mais palavras-chave, então não há coocorrência para desenhar.'}
+            : modo === 'macrotemas'
+              ? 'Nenhuma pessoa do recorte tem trabalhos em dois macrotemas diferentes, então não há ligação para desenhar.'
+              : 'Nenhum registro do recorte declara duas ou mais palavras-chave, então não há coocorrência para desenhar.'}
         </Aviso>
       </Card>
     );
@@ -215,7 +224,7 @@ export function RedeRadial({ docs }: Props) {
         <SelectBusca
           key={modo}
           sessionKey={`radial.${modo}`}
-          rotulo={modo === 'supervisao' ? 'Buscar orientador ou coorientador no diagrama' : 'Buscar palavra-chave no diagrama'}
+          rotulo={modo === 'supervisao' ? 'Buscar orientador ou coorientador no diagrama' : modo === 'macrotemas' ? 'Buscar macrotema no diagrama' : 'Buscar palavra-chave no diagrama'}
           placeholder={modo === 'supervisao' ? 'Digite parte do nome' : 'Digite parte do termo'}
           opcoes={nomesNos}
           valor={nomesNos.includes(busca) ? busca : null}
@@ -269,7 +278,7 @@ export function RedeRadial({ docs }: Props) {
               });
           }}
           leitura={{
-            titulo: modo === 'supervisao' ? 'Rede radial de orientação conjunta' : 'Rede radial de coocorrência de palavras-chave',
+            titulo: modo === 'supervisao' ? 'Rede radial de orientação conjunta' : modo === 'macrotemas' ? 'Rede radial de macrotemas ligados por pessoas' : 'Rede radial de coocorrência de palavras-chave',
             descricao,
             linhas: rede.arestas
               .slice()

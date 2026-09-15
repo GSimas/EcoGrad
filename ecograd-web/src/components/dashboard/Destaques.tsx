@@ -24,9 +24,9 @@ interface Props {
   };
   niveis: { titulosTeses: string[]; titulosDissertacoes: string[] };
   /**
-   * As abas de Intermediação e Proximidade dependem do cálculo SNA, que roda em
+   * A aba de intermediação e proximidade depende do cálculo SNA, que roda em
    * worker. As demais não dependem: por isso o bloco inteiro é renderizado
-   * assim que os documentos chegam, e só essas duas esperam.
+   * assim que os documentos chegam, e só ela espera.
    */
   statusSNA: StatusSNA;
 }
@@ -257,50 +257,48 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
             ),
           },
           {
-            valor: 'betweenness',
-            rotulo: <><Waypoints size={15} aria-hidden /> Intermediação</>,
+            valor: 'topologia',
+            rotulo: <><Waypoints size={15} aria-hidden /> Intermediação e proximidade</>,
             conteudo: (comSna(
-              <div className="space-y-4">
-                <Aviso>
-                  <strong>O que é Betweenness (Intermediação)?</strong> Mede quantas vezes um nó
-                  atua como &quot;ponte&quot; no caminho mais curto entre outros nós. Alto
-                  Betweenness = elo que conecta bolhas de conhecimento diferentes nos caminhos calculados. Isso não comprova controle real do fluxo
-                  de informação ou interdisciplinaridade.
-                </Aviso>
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <Card className="space-y-3">
-                    {botaoSna('Orientador (Maior Betweenness):', topSna.oriBet, 'Orientador', <School size={14} aria-hidden />)}
-                    {botaoSna('Coorientador (Maior Betweenness):', topSna.cooriBet, 'Co-orientador', <Handshake size={14} aria-hidden />)}
-                  </Card>
-                  <Card className="space-y-3">
-                    {botaoSna('Registro classificado como tese (maior intermediação):', topSna.teseBet, 'Documento', <FileText size={14} aria-hidden />)}
-                    {botaoSna('Registro classificado como dissertação (maior intermediação):', topSna.dissBet, 'Documento', <FileText size={14} aria-hidden />)}
-                  </Card>
-                </div>
-              </div>
-            )
-            ),
-          },
-          {
-            valor: 'closeness',
-            rotulo: <><Target size={15} aria-hidden /> Proximidade</>,
-            conteudo: (comSna(
-              <div className="space-y-4">
-                <Aviso>
-                  <strong>O que é Closeness (Proximidade)?</strong> Mede a distância média de um nó
-                  para todos os outros. Alto Closeness = estar no &quot;centro nervoso&quot; do
-                  ecossistema, acessando ou disseminando conhecimento com menos saltos.
-                </Aviso>
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <Card className="space-y-3">
-                    {botaoSna('Orientador Mais Central:', topSna.oriClose, 'Orientador', <School size={14} aria-hidden />)}
-                    {botaoSna('Coorientador Mais Central:', topSna.cooriClose, 'Co-orientador', <Handshake size={14} aria-hidden />)}
-                  </Card>
-                  <Card className="space-y-3">
-                    {botaoSna('Registro classificado como tese (maior proximidade):', topSna.teseClose, 'Documento', <FileText size={14} aria-hidden />)}
-                    {botaoSna('Registro classificado como dissertação (maior proximidade):', topSna.dissClose, 'Documento', <FileText size={14} aria-hidden />)}
-                  </Card>
-                </div>
+              <div className="space-y-8">
+                <section className="space-y-4" aria-label="Intermediação">
+                  <h3 className="flex items-center gap-2 text-base font-semibold"><Waypoints size={17} aria-hidden /> Intermediação (Betweenness)</h3>
+                  <Aviso>
+                    <strong>O que é Betweenness (Intermediação)?</strong> Mede quantas vezes um nó
+                    atua como &quot;ponte&quot; no caminho mais curto entre outros nós. Alto
+                    Betweenness = elo que conecta bolhas de conhecimento diferentes nos caminhos calculados. Isso não comprova controle real do fluxo
+                    de informação ou interdisciplinaridade.
+                  </Aviso>
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <Card className="space-y-3">
+                      {botaoSna('Orientador (Maior Betweenness):', topSna.oriBet, 'Orientador', <School size={14} aria-hidden />)}
+                      {botaoSna('Coorientador (Maior Betweenness):', topSna.cooriBet, 'Co-orientador', <Handshake size={14} aria-hidden />)}
+                    </Card>
+                    <Card className="space-y-3">
+                      {botaoSna('Registro classificado como tese (maior intermediação):', topSna.teseBet, 'Documento', <FileText size={14} aria-hidden />)}
+                      {botaoSna('Registro classificado como dissertação (maior intermediação):', topSna.dissBet, 'Documento', <FileText size={14} aria-hidden />)}
+                    </Card>
+                  </div>
+                </section>
+
+                <section className="space-y-4 border-t border-eco-border pt-6" aria-label="Proximidade">
+                  <h3 className="flex items-center gap-2 text-base font-semibold"><Target size={17} aria-hidden /> Proximidade (Closeness)</h3>
+                  <Aviso>
+                    <strong>O que é Closeness (Proximidade)?</strong> Mede a distância média de um nó
+                    para todos os outros. Alto Closeness = estar no &quot;centro nervoso&quot; do
+                    ecossistema, acessando ou disseminando conhecimento com menos saltos.
+                  </Aviso>
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <Card className="space-y-3">
+                      {botaoSna('Orientador Mais Central:', topSna.oriClose, 'Orientador', <School size={14} aria-hidden />)}
+                      {botaoSna('Coorientador Mais Central:', topSna.cooriClose, 'Co-orientador', <Handshake size={14} aria-hidden />)}
+                    </Card>
+                    <Card className="space-y-3">
+                      {botaoSna('Registro classificado como tese (maior proximidade):', topSna.teseClose, 'Documento', <FileText size={14} aria-hidden />)}
+                      {botaoSna('Registro classificado como dissertação (maior proximidade):', topSna.dissClose, 'Documento', <FileText size={14} aria-hidden />)}
+                    </Card>
+                  </div>
+                </section>
               </div>
             )
             ),

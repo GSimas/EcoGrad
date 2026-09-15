@@ -10,6 +10,10 @@
  *   de orientação como a base registra.
  * - `palavras`: coocorrência de palavras-chave. Uma aresta liga dois termos
  *   declarados no mesmo registro; o peso é o número de registros em comum.
+ * - `macrotemas`: cada registro tem um único macrotema, então dois deles nunca
+ *   ocorrem no mesmo registro. A ligação aqui é feita pelas PESSOAS que
+ *   transitam entre áreas: uma aresta liga dois macrotemas quando a mesma
+ *   pessoa tem trabalhos nos dois, e o peso é o número de pessoas em comum.
  *
  * O desenho circular só fica legível com poucas dezenas de nós, então o grafo
  * é cortado pelos nós de maior grau ponderado. O corte é informado de volta
@@ -17,7 +21,7 @@
  */
 import type { Documento } from '@/types';
 
-export type ModoRadial = 'supervisao' | 'palavras';
+export type ModoRadial = 'supervisao' | 'palavras' | 'macrotemas';
 
 export interface NoRadial {
   /** Nome da entidade; é a chave usada pelas arestas do ECharts. */
@@ -53,6 +57,7 @@ const SEM_MACROTEMA = 'Sem macrotema';
 const PAPEL_ORIENTADOR = 'Orientador';
 export const PAPEL_COORIENTADOR = 'Coorientador';
 const PAPEL_AMBOS = 'Orientador e coorientador';
+export const GRUPO_MACROTEMA = 'Macrotema';
 
 /**
  * Separador da chave de par: precisa ser um caractere impossível em nome de
@@ -173,28 +178,83 @@ function macrotemaDominante(docs: readonly Documento[]): Map<string, string> {
  * sobreviveram. Assim o corte não inventa vizinhança — ele apenas esconde
  * parte dela, e `totalNos`/`totalArestas` preservam a escala real.
  */
+/** Autoria, orientação e coorientação do registro, sem repetir a mesma pessoa. */
+function pessoasDoRegistro(d: Documento): string[] {
+  const nomes = [d.orientador, ...d.co_orientadores, ...d.autores].map((n) => n?.trim());
+  return [...new Set(nomes.filter((n): n is string => !!n))];
+}
+
+/**
+ * Rede de macrotemas ligada por pessoas. O peso conta quantas pessoas têm
+ * trabalhos nos dois temas — é a medida de quem atravessa as fronteiras
+ * temáticas do recorte, e não de vocabulário compartilhado.
+ */
+function redeMacrotemas(docs: readonly Documento[]) {
+  const temasPorPessoa = new Map<string, Set<string>>();
+  const ocorrencias = new Map<string, number>();
+  for (const d of docs) {
+    const tema = d.macrotema?.trim();
+    if (!tema) continue;
+    incrementar(ocorrencias, tema);
+    for (const pessoa of pessoasDoRegistro(d)) {
+      let temas = temasPorPessoa.get(pessoa);
+      if (!temas) {
+        temas = new Set();
+        temasPorPessoa.set(pessoa, temas);
+      }
+      temas.add(tema);
+    }
+  }
+  const pesos = new Map<string, number>();
+  const comPar = new Set<string>();
+  for (const temas of temasPorPessoa.values()) {
+    const lista = [...temas];
+    for (let i = 0; i < lista.length; i += 1) {
+      for (let j = i + 1; j < lista.length; j += 1) {
+        incrementar(pesos, chavePar(lista[i], lista[j]));
+        comPar.add(lista[i]);
+        comPar.add(lista[j]);
+      }
+    }
+  }
+  let registrosComPar = 0;
+  for (const d of docs) {
+    const tema = d.macrotema?.trim();
+    if (tema && comPar.has(tema)) registrosComPar += 1;
+  }
+  return { pesos, ocorrencias, registrosComPar };
+}
+
 export function construirRedeRadial(
   docs: readonly Documento[],
   modo: ModoRadial,
   { limiteNos = 60, pesoMinimo = 1 }: { limiteNos?: number; pesoMinimo?: number } = {},
 ): RedeRadial {
-  const extrair = modo === 'supervisao' ? paresSupervisao : paresPalavras;
-
   const pesos = new Map<string, number>();
   const ocorrencias = new Map<string, number>();
   let registrosComPar = 0;
 
-  for (const d of docs) {
-    // Ocorrências contam presença no registro, mesmo sem par — é o tamanho da
-    // entidade no recorte, não o seu grau na rede.
-    const entidades = modo === 'supervisao'
-      ? [d.orientador?.trim(), ...d.co_orientadores.map((c) => c?.trim())]
-      : d.palavras_chave.map((p) => p?.trim());
-    for (const e of new Set(entidades.filter((e): e is string => !!e))) incrementar(ocorrencias, e);
+  if (modo === 'macrotemas') {
+    // Agregado por pessoa, e não por registro: o par não existe dentro de um
+    // documento, só na trajetória de quem publica em mais de um tema.
+    const rede = redeMacrotemas(docs);
+    rede.pesos.forEach((v, k) => pesos.set(k, v));
+    rede.ocorrencias.forEach((v, k) => ocorrencias.set(k, v));
+    registrosComPar = rede.registrosComPar;
+  } else {
+    const extrair = modo === 'supervisao' ? paresSupervisao : paresPalavras;
+    for (const d of docs) {
+      // Ocorrências contam presença no registro, mesmo sem par — é o tamanho da
+      // entidade no recorte, não o seu grau na rede.
+      const entidades = modo === 'supervisao'
+        ? [d.orientador?.trim(), ...d.co_orientadores.map((c) => c?.trim())]
+        : d.palavras_chave.map((p) => p?.trim());
+      for (const e of new Set(entidades.filter((e): e is string => !!e))) incrementar(ocorrencias, e);
 
-    const pares = extrair(d);
-    if (pares.length > 0) registrosComPar += 1;
-    for (const [a, b] of pares) incrementar(pesos, chavePar(a, b));
+      const pares = extrair(d);
+      if (pares.length > 0) registrosComPar += 1;
+      for (const [a, b] of pares) incrementar(pesos, chavePar(a, b));
+    }
   }
 
   const totalArestas = [...pesos.values()].filter((p) => p >= pesoMinimo).length;
@@ -229,8 +289,10 @@ export function construirRedeRadial(
     incrementar(grauVisivel, b, peso);
   }
 
-  const grupoDe = modo === 'supervisao' ? papeisSupervisao(docs) : macrotemaDominante(docs);
-  const grupoPadrao = modo === 'supervisao' ? PAPEL_ORIENTADOR : SEM_MACROTEMA;
+  // No modo de macrotemas o próprio nó já é o tema: não há categoria acima dele
+  // para formar arcos, então todos ficam num anel único.
+  const grupoDe = modo === 'supervisao' ? papeisSupervisao(docs) : modo === 'palavras' ? macrotemaDominante(docs) : new Map<string, string>();
+  const grupoPadrao = modo === 'supervisao' ? PAPEL_ORIENTADOR : modo === 'palavras' ? SEM_MACROTEMA : GRUPO_MACROTEMA;
 
   const nos: NoRadial[] = [...mantidos].map((id) => ({
     id,
