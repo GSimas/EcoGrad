@@ -306,6 +306,8 @@
 }
 
 /* Markdown renderizado pelo chat */
+.markdown .eco-citacao { display: inline; min-height: 0; padding: 0 .1rem; border-radius: .25rem; color: rgb(var(--eco-accent)); font-size: .85em; font-weight: 600; cursor: pointer; }
+.markdown .eco-citacao:hover, .markdown .eco-citacao:focus-visible { text-decoration: underline; }
 .markdown a {
   @apply text-eco-accent underline underline-offset-2 hover:text-amber-300;
 }

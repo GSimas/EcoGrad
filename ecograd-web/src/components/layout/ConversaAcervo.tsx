@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, BookOpen, Download, MessageSquare, TriangleAlert } from 'lucide-react';
+import { ArrowRight, BookOpen, Download, ExternalLink, Layers, MessageSquare, Settings, Sparkles, Square, TriangleAlert } from 'lucide-react';
 import { carregarIndiceBusca, prepararBusca, type ResultadoBusca } from '@/lib/busca-global';
 import { construirIndicesInvertidos } from '@/lib/entities';
-import { executarFerramenta, type Recorte } from '@/lib/chat-ferramentas';
+import { executarFerramenta, type ItemRecorte, type Recorte } from '@/lib/chat-ferramentas';
 import { executarFerramentaCatalogo, type NomeFerramentaCatalogo, type PessoaNoCatalogo, type TemaNoCatalogo } from '@/lib/chat-catalogo';
 import { planejar, type Plano } from '@/lib/chat-roteador';
 import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
@@ -11,6 +11,16 @@ import { carregarDados } from '@/services/calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { Progresso } from '@/components/ui/primitives';
 import type { NomeFerramenta } from '@/lib/chat-ferramentas';
+import { ConfiguracaoIA } from '@/components/chat/ConsultorIA';
+import {
+  fontesDaSintese, indiceDoItem, LOTES_SIMULTANEOS, planejarAprofundamento, promptLote, promptReducao, promptSintese, RESUMOS_PADRAO, verificarCitacoes,
+  type FonteSintese, type PlanoAprofundamento,
+} from '@/lib/chat-sintese';
+import { markdownParaHtml } from '@/lib/markdown';
+import { lerConfigIA, provedorPorId, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
+import { referenciaDocumento } from '@/lib/resultados';
+import { escreverSintese } from '@/services/sintese-acervo';
+import type { Documento, IndicesInvertidos } from '@/types';
 
 /** Perguntas de partida: mostram o que o chat sabe fazer sem precisar explicar. */
 const EXEMPLOS = [
@@ -19,7 +29,8 @@ const EXEMPLOS = [
   'Quantos trabalhos a Patricia de Sá Freire tem no acervo, e em quais papéis?',
 ];
 
-interface Resposta { plano: Plano; dados: unknown }
+/** `id` muda a cada envio: uma pergunta repetida recomeça a síntese do zero. */
+interface Resposta { plano: Plano; dados: unknown; pergunta: string; id: number }
 
 /**
  * Conversa sobre o acervo na tela inicial.
@@ -63,12 +74,12 @@ export function ConversaAcervo() {
     if (!limpa) return;
     setErro(null);
     const plano = planejar(limpa, { baseCarregada });
-    if (plano.escopo === 'nenhum' || !plano.ferramenta) { setResposta({ plano, dados: null }); return; }
+    if (plano.escopo === 'nenhum' || !plano.ferramenta) { setResposta({ plano, dados: null, pergunta: limpa, id: Date.now() }); return; }
     try {
       const dados = plano.escopo === 'catalogo'
         ? preparada ? executarFerramentaCatalogo(plano.ferramenta as NomeFerramentaCatalogo, preparada, plano.argumentos) : null
         : executarFerramenta(plano.ferramenta as NomeFerramenta, { docs, indices }, plano.argumentos);
-      setResposta({ plano, dados });
+      setResposta({ plano, dados, pergunta: limpa, id: Date.now() });
     } catch (e) {
       setResposta(null);
       setErro(e instanceof Error ? e.message : 'Não consegui apurar essa pergunta.');
@@ -121,12 +132,14 @@ export function ConversaAcervo() {
     </div>}
     {erroCarregamento && <p role="alert" className="erro mt-3 text-sm">{erroCarregamento}</p>}
 
-    {resposta && <RespostaChat resposta={resposta} baseCarregada={baseCarregada} carregando={carregando} aoCarregar={carregarRecorte} />}
+    {resposta && <RespostaChat resposta={resposta} docs={docs} indices={indices} baseCarregada={baseCarregada} carregando={carregando} aoCarregar={carregarRecorte} />}
   </section>;
 }
 
-function RespostaChat({ resposta, baseCarregada, carregando, aoCarregar }: {
+function RespostaChat({ resposta, docs, indices, baseCarregada, carregando, aoCarregar }: {
   resposta: Resposta;
+  docs: readonly Documento[];
+  indices: IndicesInvertidos;
   baseCarregada: boolean;
   carregando: boolean;
   aoCarregar: (c: { programas: string[]; cursosTcc: string[] }) => void;
@@ -134,6 +147,7 @@ function RespostaChat({ resposta, baseCarregada, carregando, aoCarregar }: {
   const { plano, dados } = resposta;
   const colecoes = colecoesDaResposta(dados);
   const total = colecoes ? colecoes.programas.length + colecoes.cursosTcc.length : 0;
+  const recorte = plano.escopo === 'recorte' ? recorteDe(dados) : null;
 
   return <div className="mt-4 space-y-4">
     {plano.recusa && <p className="aviso flex gap-2 text-sm"><TriangleAlert size={16} className="mt-0.5 shrink-0" aria-hidden /><span>{plano.recusa}</span></p>}
@@ -143,12 +157,16 @@ function RespostaChat({ resposta, baseCarregada, carregando, aoCarregar }: {
         {plano.escopo === 'catalogo' ? 'Catálogo do acervo · rótulos' : 'Recorte carregado · texto completo'}
         {plano.alvo && <> · <span className="normal-case text-slate-300">{plano.alvo}</span></>}
       </p>
-      <CorpoResposta dados={dados} />
+      <CorpoResposta dados={dados} docs={docs} />
     </div>}
 
     {plano.declarar.length > 0 && <ul className="space-y-1 text-xs text-slate-400">
       {plano.declarar.map((d) => <li key={d}>· {d}</li>)}
     </ul>}
+
+    {/* D7: a síntese só vem depois do recorte verificável, e só com resumos em mãos. */}
+    {recorte && recorte.itens.length > 0 && <SinteseCitada key={resposta.id} pergunta={resposta.pergunta} recorte={recorte} declarar={plano.declarar} docs={docs}
+      recorteCompleto={() => recorteDe(executarFerramenta(plano.ferramenta as NomeFerramenta, { docs, indices }, { ...plano.argumentos, limite: Infinity }))} />}
 
     {/* O caminho para a profundidade: ler resumo exige o recorte em mãos. */}
     {plano.exigeResumo && !baseCarregada && colecoes && total > 0 && <div className="info space-y-3 text-sm">
@@ -163,10 +181,10 @@ function RespostaChat({ resposta, baseCarregada, carregando, aoCarregar }: {
 }
 
 /** Cada ferramenta devolve uma forma; a resposta mostra o que aquela forma tem. */
-function CorpoResposta({ dados }: { dados: unknown }) {
+function CorpoResposta({ dados, docs }: { dados: unknown; docs: readonly Documento[] }) {
   const d = dados as Record<string, unknown>;
 
-  if (typeof d.registros === 'number' && Array.isArray(d.itens) && 'trabalhosDistintos' in d) return <RecorteView r={dados as Recorte} />;
+  if (ehRecorte(dados)) return <RecorteView r={dados} docs={docs} />;
   if ('porPapel' in d) return <PessoaView p={dados as PessoaNoCatalogo} />;
   if ('palavrasChave' in d) return <TemaView t={dados as TemaNoCatalogo} />;
   if (Array.isArray(d.ranking)) return <div className="space-y-2">
@@ -197,7 +215,7 @@ function CorpoResposta({ dados }: { dados: unknown }) {
   return <pre className="overflow-auto text-xs text-slate-300">{JSON.stringify(dados, null, 1)}</pre>;
 }
 
-function RecorteView({ r }: { r: Recorte }) {
+function RecorteView({ r, docs }: { r: Recorte; docs: readonly Documento[] }) {
   return <div className="space-y-3">
     <Numeros itens={[
       ['registros', r.registros], ['trabalhos distintos', r.trabalhosDistintos],
@@ -211,7 +229,7 @@ function RecorteView({ r }: { r: Recorte }) {
     {r.macrotemas.length > 0 && <Chips titulo="Macrotemas" itens={r.macrotemas.slice(0, 6)} />}
     {r.itens.length > 0 && <ul className="space-y-1.5 border-t border-eco-border pt-3">
       {r.itens.slice(0, 10).map((i) => <li key={`${i.titulo}-${i.colecao}`} className="text-sm">
-        <a href={i.url} target="_blank" rel="noopener noreferrer" className="text-eco-accent underline">{i.titulo || 'Trabalho sem título'}</a>
+        <CitacaoItem item={i} docs={docs} />
         <span className="text-slate-400"> · {i.ano ?? 'sem ano'} · {i.colecao}</span>
         {i.somenteNoResumo && <span className="ml-1 text-xs text-amber-200">(só no resumo)</span>}
       </li>)}
@@ -278,4 +296,238 @@ function colecoesDaResposta(dados: unknown): { programas: string[]; cursosTcc: s
   const { programas, cursosTcc, omitidas } = c as { programas?: unknown; cursosTcc?: unknown; omitidas?: unknown };
   if (!Array.isArray(programas) || !Array.isArray(cursosTcc)) return null;
   return { programas: programas as string[], cursosTcc: cursosTcc as string[], omitidas: typeof omitidas === 'number' ? omitidas : 0 };
+}
+
+const ehRecorte = (v: unknown): v is Recorte => {
+  const d = v as Record<string, unknown> | null;
+  return !!d && typeof d.registros === 'number' && Array.isArray(d.itens) && 'trabalhosDistintos' in d;
+};
+
+/** O recorte da resposta, direto ou dentro do dossiê de uma pessoa. */
+function recorteDe(dados: unknown): Recorte | null {
+  if (ehRecorte(dados)) return dados;
+  const interno = (dados as { recorte?: unknown } | null)?.recorte;
+  return ehRecorte(interno) ? interno : null;
+}
+
+/** Abre o dossiê do registro exato numa única mudança de estado, sem entrada a mais no histórico. */
+function abrirDocumento(docs: readonly Documento[], indice: number) {
+  const ref = referenciaDocumento(docs, indice);
+  if (!ref) return;
+  useEcoGradStore.setState((s) => ({
+    apresentacaoVista: true,
+    rota: 'busca' as const,
+    buscaTipo: 'Documento' as const,
+    buscaTermo: ref.titulo,
+    ui: { ...s.ui, 'dossie.documento': ref },
+  }));
+}
+
+/** O título abre o dossiê no EcoGrad (regra de citação da aferição); a fonte original fica ao lado. */
+function CitacaoItem({ item, docs }: { item: ItemRecorte; docs: readonly Documento[] }) {
+  const indice = indiceDoItem(docs, item);
+  const titulo = item.titulo || 'Trabalho sem título';
+  if (indice < 0) return <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-eco-accent underline">{titulo}</a>;
+  return <>
+    <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirDocumento(docs, indice)}>{titulo}</button>
+    {item.url && <> <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-eco-accent" title="Fonte original, em nova aba">
+      <ExternalLink size={13} className="inline" aria-hidden /><span className="sr-only">Fonte original (nova aba)</span>
+    </a></>}
+  </>;
+}
+
+const milhares = (n: number) => n.toLocaleString('pt-BR');
+const duracao = ([min, max]: readonly [number, number]) =>
+  max < 60 ? 'menos de 1 minuto' : `cerca de ${Math.max(1, Math.round(min / 60))} a ${Math.ceil(max / 60)} minutos`;
+
+type Leitura = { recorte: Recorte; fontes: FonteSintese[]; aprofundada: boolean };
+type Proposta = { recorte: Recorte; fontes: FonteSintese[]; plano: PlanoAprofundamento };
+
+/**
+ * Síntese citada (decisão D7): o modelo do próprio usuário (BYOK, D10) escreve
+ * só sobre as fontes numeradas, depois do recorte já apurado. A leitura padrão
+ * envia até `RESUMOS_PADRAO` resumos; "aprofundar" (D8) lê todos em lotes, depois
+ * de mostrar chamadas, tokens e tempo. Cada [n] vira botão para o dossiê do
+ * registro, e citação a fonte que não foi enviada é apontada.
+ */
+function SinteseCitada({ pergunta, recorte, declarar, docs, recorteCompleto }: {
+  pergunta: string;
+  recorte: Recorte;
+  declarar: readonly string[];
+  docs: readonly Documento[];
+  /** O mesmo recorte sem o teto de itens da tela, calculado só quando se pede para aprofundar. */
+  recorteCompleto: () => Recorte | null;
+}) {
+  const [config, setConfig] = useState<ConfigSalva | null>(lerConfigIA);
+  const configurado = !!config && !validarConfigIA(config);
+  const [configurando, setConfigurando] = useState(false);
+  const [texto, setTexto] = useState('');
+  const [estado, setEstado] = useState<'ocioso' | 'escrevendo' | 'pronto' | 'erro'>('ocioso');
+  const [erro, setErro] = useState<string | null>(null);
+  const [leitura, setLeitura] = useState<Leitura | null>(null);
+  const [proposta, setProposta] = useState<Proposta | null>(null);
+  const [progresso, setProgresso] = useState<{ feitos: number; lotes: number } | null>(null);
+  const controle = useRef<AbortController | null>(null);
+  const interrompidoPeloUsuario = useRef(false);
+  useEffect(() => () => controle.current?.abort(), []);
+
+  const fontesPadrao = useMemo(() => fontesDaSintese(docs, recorte), [docs, recorte]);
+  const fontes = leitura?.fontes ?? fontesPadrao;
+  // O HTML vem de `markdownParaHtml`, que escapa o texto do modelo antes de
+  // qualquer marcação; só então os [n] válidos viram botões.
+  const html = useMemo(() => markdownParaHtml(texto).replace(/\[(\d{1,4})\]/g, (marca, n: string) => (
+    Number(n) >= 1 && Number(n) <= fontes.length
+      ? `<button type="button" class="eco-citacao" data-citacao="${n}" title="Abrir o dossiê da fonte ${n}">[${n}]</button>`
+      : marca
+  )), [texto, fontes.length]);
+  const provedor = config ? provedorPorId(config.provedor).nome : 'o provedor escolhido';
+
+  if (fontesPadrao.length === 0) return <p className="text-xs text-slate-400">Nenhum dos registros listados neste recorte tem resumo utilizável, então não há texto para a síntese.</p>;
+
+  /** Envolve uma escrita com estado, cancelamento e mensagem de erro. */
+  const executar = async (tarefa: (controle: AbortController, ativa: ConfigSalva) => Promise<void>) => {
+    if (!config || !configurado) { setConfigurando(true); return; }
+    const request = new AbortController();
+    controle.current = request;
+    interrompidoPeloUsuario.current = false;
+    setTexto('');
+    setErro(null);
+    setEstado('escrevendo');
+    try {
+      await tarefa(request, config);
+      setEstado('pronto');
+    } catch (e) {
+      setErro(interrompidoPeloUsuario.current ? 'Interrompido por você. O texto parcial foi mantido.' : e instanceof Error ? e.message : 'Falha ao escrever a síntese.');
+      setEstado('erro');
+    } finally {
+      setProgresso(null);
+      if (controle.current === request) controle.current = null;
+    }
+  };
+
+  const escreverPadrao = () => void executar(async (request, ativa) => {
+    setLeitura(null);
+    const { sistema, mensagem } = promptSintese(pergunta, recorte, fontesPadrao, declarar);
+    await escreverSintese(ativa, sistema, mensagem, setTexto, request.signal);
+  });
+
+  const proporAprofundamento = () => {
+    const completo = recorteCompleto();
+    if (!completo) return;
+    const todas = fontesDaSintese(docs, completo, Infinity);
+    setProposta({ recorte: completo, fontes: todas, plano: planejarAprofundamento(todas) });
+  };
+
+  const aprofundar = (p: Proposta) => {
+    setProposta(null);
+    void executar(async (request, ativa) => {
+      setLeitura({ recorte: p.recorte, fontes: p.fontes, aprofundada: true });
+      const total = p.plano.lotes.length;
+      const notas: string[] = new Array(total).fill('');
+      let proximo = 0;
+      let feitos = 0;
+      setProgresso({ feitos, lotes: total });
+      const trabalhador = async () => {
+        while (proximo < total && !request.signal.aborted) {
+          const i = proximo++;
+          const { sistema, mensagem } = promptLote(pergunta, p.plano.lotes[i]);
+          try {
+            notas[i] = await escreverSintese(ativa, sistema, mensagem, () => {}, request.signal);
+          } catch (e) {
+            // Um lote que falha para os demais: síntese sobre notas incompletas pareceria completa.
+            request.abort();
+            throw e;
+          }
+          feitos += 1;
+          setProgresso({ feitos, lotes: total });
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(LOTES_SIMULTANEOS, total) }, trabalhador));
+      const { sistema, mensagem } = promptReducao(pergunta, p.recorte, p.fontes, notas, declarar);
+      await escreverSintese(ativa, sistema, mensagem, setTexto, request.signal);
+    });
+  };
+
+  const verificacao = estado === 'pronto' ? verificarCitacoes(texto, fontes.length) : null;
+  const abrirCitacao = (e: MouseEvent<HTMLDivElement>) => {
+    const alvo = (e.target as HTMLElement).closest<HTMLElement>('[data-citacao]');
+    const fonte = alvo ? fontes[Number(alvo.dataset.citacao) - 1] : undefined;
+    if (fonte) abrirDocumento(docs, fonte.indice);
+  };
+  // Só vale aprofundar quando a leitura padrão não cobriu o recorte todo.
+  const podeAprofundar = recorte.itensOmitidos > 0 || fontesPadrao.length >= RESUMOS_PADRAO;
+  const registrosLidos = (leitura?.recorte ?? recorte).registros;
+
+  return <div className="card space-y-3" aria-label="Síntese citada">
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <p className="text-xs uppercase tracking-wide text-slate-400">
+        {leitura?.aprofundada ? 'Síntese aprofundada' : 'Síntese com IA'} · {milhares(fontes.length)} {fontes.length === 1 ? 'resumo lido' : 'resumos lidos'} de {milhares(registrosLidos)} {registrosLidos === 1 ? 'registro' : 'registros'}
+      </p>
+      {configurado && !configurando && <button type="button" className="btn text-xs" onClick={() => setConfigurando(true)}>
+        <Settings size={14} className="shrink-0" aria-hidden /> {provedor} · {config?.modelo}
+      </button>}
+    </div>
+    <p className="text-xs leading-relaxed text-slate-400">
+      A pergunta e os resumos lidos vão direto do seu navegador para {provedor}, com a sua chave, e o uso é cobrado na sua conta. O EcoGrad não recebe nem guarda nada disso. A síntese só pode citar as fontes numeradas; confira cada citação no dossiê.
+    </p>
+
+    {configurando
+      ? <ConfiguracaoIA inicial={config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
+      : <div className="flex flex-wrap gap-2">
+        {estado === 'escrevendo'
+          ? <button type="button" className="btn" onClick={() => { interrompidoPeloUsuario.current = true; controle.current?.abort(); }}>
+            <Square size={14} className="shrink-0" aria-hidden /> Interromper
+          </button>
+          : <>
+            <button type="button" className="btn btn-primary" onClick={escreverPadrao}>
+              <Sparkles size={16} className="shrink-0" aria-hidden /> {!configurado ? 'Configurar provedor para a síntese' : texto && !leitura ? 'Escrever de novo' : `Escrever síntese citada (${fontesPadrao.length} resumos)`}
+            </button>
+            {podeAprofundar && <button type="button" className="btn" onClick={proporAprofundamento} aria-expanded={!!proposta}>
+              <Layers size={16} className="shrink-0" aria-hidden /> Aprofundar: ler todos os resumos
+            </button>}
+          </>}
+      </div>}
+
+    {proposta && estado !== 'escrevendo' && !configurando && <div className="info space-y-2 text-sm" role="region" aria-label="Custo de aprofundar">
+      <p>
+        Aprofundar lê <strong>{milhares(proposta.fontes.length)} resumos utilizáveis</strong> de {milhares(proposta.recorte.registros)} registros
+        ({milhares(proposta.recorte.semResumoUtilizavel)} sem resumo utilizável ficam de fora e obra repetida entra uma vez), em {proposta.plano.lotes.length} {proposta.plano.lotes.length === 1 ? 'lote' : 'lotes'}:
+        {' '}<strong>{proposta.plano.chamadas} chamadas</strong> para {provedor}{configurado ? ` (${config?.modelo})` : ', que você configura antes de começar'}, até {LOTES_SIMULTANEOS} ao mesmo tempo.
+      </p>
+      <p>
+        Estimativa: ~{milhares(proposta.plano.tokensEntrada)} tokens de entrada e ~{milhares(proposta.plano.tokensSaida)} de saída, cobrados na sua conta; confira o preço por token do seu modelo.
+        Tempo: {duracao(proposta.plano.segundos)}. É ordem de grandeza: custo e tempo reais variam com o provedor e o modelo.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="btn btn-primary" onClick={() => aprofundar(proposta)} disabled={!proposta.plano.lotes.length}>
+          <Layers size={16} className="shrink-0" aria-hidden /> Aprofundar agora
+        </button>
+        <button type="button" className="btn" onClick={() => setProposta(null)}>Cancelar</button>
+      </div>
+    </div>}
+
+    {estado === 'escrevendo' && !texto && <p role="status" className="text-sm text-slate-400">
+      {progresso
+        ? progresso.feitos < progresso.lotes
+          ? `Lendo os resumos em lotes: ${progresso.feitos} de ${progresso.lotes} concluídos.`
+          : 'Lotes lidos. Escrevendo a síntese sobre as notas…'
+        : 'Lendo os resumos…'}
+    </p>}
+    {texto && <div className="markdown text-sm" aria-live="polite" onClick={abrirCitacao} dangerouslySetInnerHTML={{ __html: html }} />}
+    {erro && <p role="alert" className="erro text-sm">{erro}</p>}
+    {verificacao && verificacao.inexistentes.length > 0 && <p className="aviso text-xs">
+      A síntese citou {verificacao.inexistentes.map((n) => `[${n}]`).join(', ')}, que não {verificacao.inexistentes.length === 1 ? 'é fonte' : 'são fontes'} desta leitura. Desconsidere essas afirmações.
+    </p>}
+    {verificacao?.semCitacao && <p className="aviso text-xs">A síntese não citou nenhuma fonte. Pelas regras do EcoGrad, texto sem citação não deve ser usado.</p>}
+
+    <details className="text-xs text-slate-400">
+      <summary>Fontes {leitura?.aprofundada ? 'lidas' : 'enviadas'} ({milhares(fontes.length)})</summary>
+      <ol className="mt-2 space-y-1">
+        {fontes.map((f) => <li key={f.numero}>
+          <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirDocumento(docs, f.indice)}>[{f.numero}] {f.titulo || 'Trabalho sem título'}</button>
+          <span> · {f.ano ?? 'sem ano'} · {f.colecao}</span>
+        </li>)}
+      </ol>
+    </details>
+  </div>;
 }

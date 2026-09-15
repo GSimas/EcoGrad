@@ -193,7 +193,7 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
   </>;
 }
 
-function ConfiguracaoIA({ inicial, onSalvo, onEsquecer }: { inicial: ConfigSalva | null; onSalvo: (c: ConfigSalva) => void; onEsquecer: () => void }) {
+export function ConfiguracaoIA({ inicial, onSalvo, onEsquecer }: { inicial: ConfigSalva | null; onSalvo: (c: ConfigSalva) => void; onEsquecer: () => void }) {
   const id = useId();
   const [rascunho, setRascunho] = useState<ConfigSalva>(() => inicial ?? { provedor: PROVEDORES[0].id, modelo: PROVEDORES[0].modelo, baseUrl: PROVEDORES[0].baseUrl, chave: '', lembrar: false });
   const [erro, setErro] = useState<string | null>(null);
