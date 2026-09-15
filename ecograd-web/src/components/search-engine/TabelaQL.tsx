@@ -1,6 +1,6 @@
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { TipoBusca } from '@/types';
-import { Tabela } from '@/components/ui/primitives';
+import { BotaoEntidade, Tabela } from '@/components/ui/primitives';
 import type { LinhaQL } from '@/types';
 
 /**
@@ -24,11 +24,19 @@ export function TabelaQL({ linhas, titulo }: { linhas: readonly LinhaQL[]; titul
       <Tabela<Record<string, unknown>>
         titulo={titulo}
         descricao="QL é uma razão adimensional: acima de 1, acima da referência; igual a 1, mesma proporção; abaixo de 1, abaixo da referência. Cores são complementares ao valor. Contagens em registros (n)."
-        onAbrir={(l)=>useEcoGradStore.getState().navegarPara(String(l.Tipo) as TipoBusca, String(l.Entidade))}
         altura="max-h-80"
         linhas={linhas as unknown as Array<Record<string, unknown>>}
         colunas={[
-          { chave: 'Entidade', rotulo: 'Entidade', className: 'max-w-xs truncate' },
+          {
+            chave: 'Entidade',
+            rotulo: 'Entidade',
+            render: (l) => (
+              <BotaoEntidade
+                nome={String(l.Entidade)}
+                onClick={() => useEcoGradStore.getState().navegarPara(String(l.Tipo) as TipoBusca, String(l.Entidade))}
+              />
+            ),
+          },
           { chave: 'Tipo', rotulo: 'Tipo' },
           { chave: 'Teses', rotulo: 'Teses', barra: { max: maxTotal } },
           { chave: 'Dissertações', rotulo: 'Dissertações', barra: { max: maxTotal } },

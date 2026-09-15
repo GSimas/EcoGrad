@@ -1,11 +1,12 @@
+import { correspondeBusca, termosBusca } from './utils';
 /** Presentation only: never mutates scientific rows or recalculates metrics. */
 export interface ConsultaTabela { busca: string; coluna: string; direcao: 'asc' | 'desc'; pagina: number }
 export const consultaInicial: ConsultaTabela = { busca: '', coluna: '', direcao: 'asc', pagina: 0 };
-const texto = (v: unknown) => String(v ?? '').normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase();
 const numero = (v: unknown) => typeof v === 'number' ? v : typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : NaN;
 export function consultarLinhas<T extends Record<string, unknown>>(linhas: readonly T[], colunas: readonly string[], consulta: ConsultaTabela): T[] {
-  const busca = texto(consulta.busca).trim();
-  const result = linhas.filter((l) => !busca || colunas.some((c) => texto(l[c]).includes(busca)));
+  const termos = termosBusca(consulta.busca);
+  // Termos podem estar em colunas diferentes da mesma linha (ex.: sobrenome e ano).
+  const result = linhas.filter((l) => !termos.length || correspondeBusca(colunas.map((c) => String(l[c] ?? '')).join(' '), termos));
   if (!colunas.includes(consulta.coluna)) return result;
   return result.sort((a, b) => {
     const x = a[consulta.coluna], y = b[consulta.coluna];

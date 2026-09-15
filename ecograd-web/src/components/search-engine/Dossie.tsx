@@ -1,7 +1,7 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useMemo } from 'react';
 import { Cloud, Link2, Orbit, TrendingUp } from 'lucide-react';
-import { Aviso, Card, Expander, Tabela } from '@/components/ui/primitives';
+import { Aviso, BotaoEntidade, Card, Expander, Tabela } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs } from '@/components/ui/Tabs';
 import { TabelaQL } from './TabelaQL';
@@ -246,13 +246,7 @@ function ItensSemelhantes({ termo, tipo, dadosCompletos }: Pick<Props, 'termo' |
                           chave: 'Item',
                           rotulo: 'Item',
                           render: (l) => (
-                            <button
-                              type="button"
-                              className="text-left text-eco-accent hover:underline"
-                              onClick={() => navegarPara(tipo, String(l.Item))}
-                            >
-                              {String(l.Item)}
-                            </button>
+                            <BotaoEntidade nome={String(l.Item)} onClick={() => navegarPara(tipo, String(l.Item))} />
                           ),
                         },
                         {

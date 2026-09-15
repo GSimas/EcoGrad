@@ -1,3 +1,4 @@
+import { correspondeBusca, termosBusca } from './utils';
 /** Presentation-only summaries and filters. Scientific inputs and algorithms are untouched. */
 import type { Documento, TipoBusca } from '../types';
 export const textoBusca = (v: string) => v.normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase();
@@ -54,9 +55,9 @@ export function compararColecoes(docs: readonly Documento[], nomes: readonly str
 }
 export interface FiltroTrabalhos { busca: string; colecao: string; comResumo: boolean }
 export function filtrarTrabalhos(docs: readonly Documento[], filtro: FiltroTrabalhos) {
-  const busca = textoBusca(filtro.busca.trim());
+  const termos = termosBusca(filtro.busca);
   return docs.filter((d) => (!filtro.colecao || d.programa_origem === filtro.colecao) && (!filtro.comResumo || !!d.resumo.trim()) &&
-    (!busca || textoBusca([d.titulo, ...d.autores, d.orientador, ...d.palavras_chave, d.resumo].join(' ')).includes(busca)))
+    (!termos.length || correspondeBusca([d.titulo, ...d.autores, d.orientador, ...d.palavras_chave, d.resumo].join(' '), termos)))
     .slice().sort((a, b) => (b.ano ?? -Infinity) - (a.ano ?? -Infinity) || a.titulo.localeCompare(b.titulo, 'pt-BR'));
 }
 /** Once per record: labels may be duplicated in the raw metadata. */

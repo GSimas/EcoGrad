@@ -27,9 +27,12 @@ export const calcularEcologiaMemes = (docs: Documento[], minCoocorrencia: number
   atividades.start('ecologia-memes', `Rede memética — ${fonte}, mínimo ${minCoocorrencia}`, { type: 'ecologia-memes', docs, minCoocorrencia, fonte });
 export const calcularMetricasComplexas = (docs: Documento[]) =>
   atividades.start('metricas-complexas', 'Métricas complexas', { type: 'metricas-complexas', docs });
-export function carregarDados(programas: string[], cursosTcc: string[], objetivo?: string) {
+/** `aoConcluir` roda depois de a análise ser aplicada (não sobrevive a recarregar a página). */
+export function carregarDados(programas: string[], cursosTcc: string[], objetivo?: string, aoConcluir?: () => void) {
   atividades.start('dados', 'Carregamento das coleções', { type: 'carregar', objetivo, programas: [...programas], cursosTcc: [...cursosTcc] }, (r) => {
-    if (r.type === 'pronto') useEcoGradStore.getState().concluirCarregamento(r.docs, { programas: [...programas], cursosTcc: [...cursosTcc] }, r.baseVersion, objetivo);
+    if (r.type !== 'pronto') return;
+    useEcoGradStore.getState().concluirCarregamento(r.docs, { programas: [...programas], cursosTcc: [...cursosTcc] }, r.baseVersion, objetivo);
+    aoConcluir?.();
   });
 }
 

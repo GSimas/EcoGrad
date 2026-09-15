@@ -1,7 +1,7 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useId, useRef, useState, type ReactNode } from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
-import { ChevronDown, Info } from 'lucide-react';
+import { ChevronDown, Info, ChevronRight } from 'lucide-react';
 import { cn, formatarNumero } from '@/lib/utils';
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
@@ -17,18 +17,32 @@ export function Secao({ children, icone }: { children: ReactNode; icone?: ReactN
   );
 }
 
+/** Nome de entidade com invólucro de botão, que abre o dossiê — o mesmo das tabelas de orientandos. */
+export function BotaoEntidade({ nome, onClick, icone }: { nome: string; onClick: () => void; icone?: ReactNode }) {
+  return (
+    <button type="button" className="eco-entity-link group flex min-h-11 w-full min-w-48 items-center gap-2 rounded-lg border border-eco-border bg-eco-bg/40 px-3 py-2 text-left" onClick={onClick}>
+      {icone}
+      <span className="min-w-0 flex-1 break-words text-sm font-medium text-slate-100">{nome}</span>
+      <ChevronRight size={16} className="shrink-0 text-slate-500" aria-hidden="true" />
+    </button>
+  );
+}
+
 export function Kpi({
   rotulo,
   valor,
   detalhe,
   ajuda,
   className,
+  children,
 }: {
   rotulo: string;
   valor: number | string;
   detalhe?: string;
   ajuda?: string;
   className?: string;
+  /** Conteúdo abaixo do valor, como uma lista que detalha o número. */
+  children?: ReactNode;
 }) {
   const ajudaId = useId();
   return (
@@ -44,6 +58,7 @@ export function Kpi({
       </span>
       <span className="kpi-valor">{typeof valor === 'number' ? formatarNumero(valor) : valor}</span>
       {detalhe && <span className="text-xs text-slate-400">{detalhe}</span>}
+      {children}
     </div>
   );
 }

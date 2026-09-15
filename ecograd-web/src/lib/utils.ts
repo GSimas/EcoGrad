@@ -46,3 +46,58 @@ export function baixarArquivo(conteudo: string, nome: string, mime = 'text/csv;c
 export function chaveBusca(texto: string): string {
   return texto.normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase();
 }
+
+/** Termos da consulta, sem acento e caixa; espaço, vírgula e ponto e vírgula separam. */
+export function termosBusca(consulta: string): string[] {
+  return chaveBusca(consulta).split(/[\s,;]+/).filter(Boolean);
+}
+
+/**
+ * Todos os termos aparecem no texto, em qualquer ordem: "Richard Demo", "Demo Richard",
+ * "Demo" e "Richard" encontram "Souza, Richard Demo". Consulta vazia corresponde a tudo.
+ */
+export function correspondeBusca(texto: string, consulta: string | readonly string[]): boolean {
+  const termos = typeof consulta === 'string' ? termosBusca(consulta) : consulta;
+  if (!termos.length) return true;
+  const chave = chaveBusca(texto);
+  return termos.every((t) => chave.includes(t));
+}
+
+const SEPARADOR_PALAVRA = /[\s,.;:()/-]/;
+
+function ocorreComoPalavra(chave: string, termo: string, inteira: boolean): boolean {
+  for (let p = chave.indexOf(termo); p >= 0; p = chave.indexOf(termo, p + 1)) {
+    const inicio = p === 0 || SEPARADOR_PALAVRA.test(chave[p - 1]);
+    const fim = !inteira || p + termo.length === chave.length || SEPARADOR_PALAVRA.test(chave[p + termo.length]);
+    if (inicio && fim) return true;
+  }
+  return false;
+}
+
+/**
+ * Relevância de `chave` (já passada por `chaveBusca`), ou -1 se falta algum termo.
+ * 0 frase igual ao texto; 1 todos os termos como palavras inteiras ("demo" em
+ * "souza, richard demo", não em "democracia"); 2 texto começa com a frase;
+ * 3 todos os termos em início de palavra; 4 termos em qualquer trecho.
+ */
+export function nivelBusca(chave: string, termos: readonly string[]): number {
+  if (!termos.length || !termos.every((t) => chave.includes(t))) return -1;
+  const frase = termos.join(' ');
+  const compacta = chave.replace(/[\s,;]+/g, ' ').trim();
+  if (compacta === frase) return 0;
+  if (termos.every((t) => ocorreComoPalavra(chave, t, true))) return 1;
+  if (compacta.startsWith(frase)) return 2;
+  return termos.every((t) => ocorreComoPalavra(chave, t, false)) ? 3 : 4;
+}
+
+/** Opções que correspondem à consulta, das mais relevantes às menos; empates mantêm a ordem original. */
+export function filtrarPorRelevancia(opcoes: readonly string[], consulta: string, limite = Infinity): string[] {
+  const termos = termosBusca(consulta);
+  if (!termos.length) return opcoes.slice(0, limite);
+  const achados: Array<[nivel: number, i: number]> = [];
+  opcoes.forEach((o, i) => {
+    const nivel = nivelBusca(chaveBusca(o), termos);
+    if (nivel >= 0) achados.push([nivel, i]);
+  });
+  return achados.sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, limite).map(([, i]) => opcoes[i]);
+}

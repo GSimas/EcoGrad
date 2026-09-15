@@ -1,5 +1,6 @@
 import { ArrowRight, BookOpen, Github } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
+import { BuscaGlobal } from './BuscaGlobal';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useSessionField } from '@/hooks/useSessionField';
 import { OBJETIVOS } from '@/lib/objetivos';
@@ -15,8 +16,9 @@ export function Apresentacao() {
         <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="intro-logo h-20 w-20 rounded-2xl object-contain" />
         <h1 className="mt-6 text-4xl font-bold tracking-tight lg:text-5xl">EcoGrad</h1>
         <p className="mt-2 text-lg text-slate-300">Ecologia do Conhecimento · UFSC</p>
-        <p className="mt-5 max-w-2xl leading-relaxed text-slate-300">Encontre trabalhos para ler, explore pesquisadores e investigue temas na produção acadêmica da UFSC. Comece pela pergunta que você quer responder.</p>
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+        <p className="mt-5 max-w-2xl leading-relaxed text-slate-300">Encontre trabalhos para ler, explore pesquisadores e investigue temas na produção acadêmica da UFSC. Pesquise qualquer item do acervo ou escolha as coleções que quer analisar.</p>
+        <BuscaGlobal />
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <button type="button" className="btn btn-primary px-6 py-3" onClick={() => navigatePage(carregada ? rota : 'selecao')}>{carregada ? 'Continuar análise atual' : 'Escolher coleções'} <ArrowRight size={16} /></button>
           <TutorialModal><button type="button" className="btn px-6 py-3"><BookOpen size={16} /> Ver tutorial</button></TutorialModal>
         </div>

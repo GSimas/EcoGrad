@@ -7,7 +7,7 @@ import { SelectBusca } from '@/components/ui/MultiSelect';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { construirRedeRadial, PAPEL_COORIENTADOR, type ModoRadial } from '@/lib/rede-radial';
-import { chaveBusca } from '@/lib/utils';
+import { correspondeBusca, termosBusca } from '@/lib/utils';
 import type { Documento, TipoBusca } from '@/types';
 
 const OPCOES = ['Orientação conjunta', 'Palavras-chave (coocorrência)'] as const;
@@ -60,8 +60,8 @@ export function RedeRadial({ docs }: Props) {
   };
 
   const encontrados = useMemo(() => {
-    const termo = chaveBusca(busca.trim());
-    return termo ? rede.nos.filter((n) => chaveBusca(n.id).includes(termo)).map((n) => n.id) : [];
+    const termos = termosBusca(busca);
+    return termos.length ? rede.nos.filter((n) => correspondeBusca(n.id, termos)).map((n) => n.id) : [];
   }, [rede, busca]);
 
   const focais = useMemo(

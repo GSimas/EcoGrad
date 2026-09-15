@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { nomeParaComparar, urlColecao, vinculoDocumentado, type ColecaoCobertura } from '@/lib/colecoes';
-import { chaveBusca } from '@/lib/utils';
+import { correspondeBusca } from '@/lib/utils';
 const numero = (n: number) => n.toLocaleString('pt-BR');
 export function EvidenciaColecao({ nome, specs, tipo }: { nome: string; specs: string[]; tipo: string }) {
   const vinculo = vinculoDocumentado(nome, specs, tipo);
@@ -33,7 +33,7 @@ export function ColecoesPicker({ rotulo, tipo, opcoes, selecionados, onChange, c
   const [busca, setBusca] = useSessionField('selecao.busca.' + tipo, '');
   const [limite, setLimite] = useState(20);
   const [somenteSelecionadas, setSomenteSelecionadas] = useSessionField('selecao.marcadas.' + tipo, false);
-  const encontradas = opcoes.filter((o) => (!somenteSelecionadas || selecionados.includes(o.nome)) && chaveBusca(o.nome + ' ' + o.specs.join(' ')).includes(chaveBusca(busca.trim())));
+  const encontradas = opcoes.filter((o) => (!somenteSelecionadas || selecionados.includes(o.nome)) && correspondeBusca(o.nome + ' ' + o.specs.join(' '), busca));
   return <div className="min-w-0 space-y-3">
     <label htmlFor={id} className="block font-semibold">{rotulo}</label>
     <input id={id} className="input" type="search" placeholder="Buscar por nome ou identificador" value={busca} onChange={(e) => { setBusca(e.target.value); setLimite(20); }} />

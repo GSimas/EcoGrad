@@ -1,7 +1,7 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react';
 import { Check, Search, X } from 'lucide-react';
-import { cn, chaveBusca } from '@/lib/utils';
+import { cn, filtrarPorRelevancia } from '@/lib/utils';
 
 /**
  * Seleção múltipla com busca — equivalente ao `st.multiselect`.
@@ -29,8 +29,7 @@ export function MultiSelect({
   const [busca, setBusca] = useSessionField('multiselect.' + rotulo, '');
 
   const filtradas = useMemo(() => {
-    const alvo = chaveBusca(busca.trim());
-    const base = alvo ? opcoes.filter((o) => chaveBusca(o).includes(alvo)) : opcoes;
+    const base = filtrarPorRelevancia(opcoes, busca);
     return base.slice(0, maxVisiveis);
   }, [busca, opcoes, maxVisiveis]);
 
@@ -153,15 +152,16 @@ export function SelectBusca({
   const listaId = useId();
 
   const sugestoes = useMemo(() => {
-    const alvo = chaveBusca(texto.trim());
-    if (!alvo) return opcoes.slice(0, maxSugestoes);
-    return opcoes.filter((o) => chaveBusca(o).includes(alvo)).slice(0, maxSugestoes);
+    return filtrarPorRelevancia(opcoes, texto, maxSugestoes);
   }, [texto, opcoes, maxSugestoes]);
 
   // Mantém o input sincronizado quando a navegação por botões muda o termo ativo
-  const [ultimoValor, setUltimoValor] = useState(valor);
+  // `undefined` até a primeira sincronia: o texto salvo na sessão pode ser de outro item
+  // (ex.: voltar à apresentação e abrir outro), então um termo ativo sempre o substitui.
+  // Sem termo ativo, o texto digitado e salvo é preservado.
+  const [ultimoValor, setUltimoValor] = useState<string | null | undefined>(undefined);
   useEffect(() => {
-    if (valor !== ultimoValor) {
+    if (valor !== ultimoValor && (ultimoValor !== undefined || valor !== null)) {
       setUltimoValor(valor);
       setTexto(valor ?? '');
     }
