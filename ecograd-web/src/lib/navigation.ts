@@ -59,7 +59,7 @@ export function readHistory(raw: string | null): Visit[] {
       return typeof v?.id === 'string' && [...PAGES, 'nao-encontrada'].includes(v.page)
         && typeof v.analysisId === 'string' && typeof v.baseVersion === 'string'
         && Number.isFinite(v.position?.top) && v.position.top >= 0
-        && c && ['Documento', 'Autor', 'Orientador', 'Co-orientador', 'Palavra-chave', 'Macrotema'].includes(c.buscaTipo)
+        && c && ['Documento', 'Pessoa', 'Autor', 'Orientador', 'Co-orientador', 'Palavra-chave', 'Macrotema'].includes(c.buscaTipo)
         && (c.buscaTermo === null || typeof c.buscaTermo === 'string')
         && ['Palavra-chave', 'Macrotema', 'Artefatos (Ontologia IA)'].includes(c.tipoForesight)
         && ['Percentil fixo', 'K-Means adaptativo (4 clusters)'].includes(c.metodoCorte)

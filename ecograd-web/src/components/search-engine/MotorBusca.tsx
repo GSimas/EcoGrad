@@ -5,23 +5,11 @@ import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { SelectBusca } from '@/components/ui/MultiSelect';
 import { Dossie } from './Dossie';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
-import { docsDoTermo, opcoesPorTipo } from '@/lib/entities';
+import { docsDoTermo } from '@/lib/entities';
 import { resolverDocumento } from '@/lib/resultados';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useSessionField } from '@/hooks/useSessionField';
-import type { TipoBusca } from '@/types';
-
-const TIPOS: TipoBusca[] = [
-  'Documento',
-  'Autor',
-  'Orientador',
-  'Co-orientador',
-  'Palavra-chave',
-  'Macrotema',
-];
-
-const TODOS = 'Todos';
-const ordemNome = new Intl.Collator('pt-BR').compare;
+import { CATEGORIAS, ORIGENS, PAPEIS, TODOS, categoriaDe, categoriaPorId, categoriaTem, etiqueta, idPorRotulo, montarCatalogo, type Categoria } from '@/lib/busca-categorias';
 
 /** Motor de Busca e Dossiê (Principal.py:601-1190). */
 export function MotorBusca() {
@@ -35,19 +23,19 @@ export function MotorBusca() {
   const navegarDocumento = useEcoGradStore((s) => s.navegarDocumento);
   const candidatos = useMemo(() => buscaTipo === 'Documento' && buscaTermo !== null ? docs.map((doc, indice) => ({ doc, indice })).filter(({ doc }) => doc.titulo === buscaTermo) : [], [docs, buscaTipo, buscaTermo]);
 
-  const opcoes = useMemo(() => opcoesPorTipo(indices, buscaTipo), [indices, buscaTipo]);
+  const [categoriaEscolhida, setCategoria] = useSessionField<Categoria>('busca.categoria', 'tudo');
+  const [papel, setPapel] = useSessionField<string>('busca.papel', TODOS);
+  const [origem, setOrigem] = useSessionField<string>('busca.origem', TODOS);
 
-  // "Todos" é um modo da tela, não um tipo: ao escolher um item, o dossiê abre
-  // com o tipo real dele, e histórico e sessão seguem validando só tipos reais.
-  const [todos, setTodos] = useSessionField('busca.todos', false);
-  const catalogoTodos = useMemo(() => {
-    if (!todos) return new Map<string, { tipo: TipoBusca; nome: string }>();
-    // ponytail: filtro linear sobre todos os tipos a cada tecla; indexar por prefixo se ficar lento
-    const itens = TIPOS.flatMap((tipo) => opcoesPorTipo(indices, tipo).map((nome) => ({ rotulo: `${nome} (${tipo})`, tipo, nome })));
-    itens.sort((a, b) => ordemNome(a.nome, b.nome) || ordemNome(a.tipo, b.tipo));
-    return new Map(itens.map((i) => [i.rotulo, { tipo: i.tipo, nome: i.nome }]));
-  }, [todos, indices]);
-  const opcoesTodos = useMemo(() => [...catalogoTodos.keys()], [catalogoTodos]);
+  // Chegar num dossiê fora da categoria aberta — por um atalho de papel ou um
+  // link antigo — reposiciona a barra em vez de deixá-la mentindo.
+  const categoria = buscaTermo !== null && !categoriaTem(categoriaEscolhida, buscaTipo)
+    ? categoriaDe(buscaTipo)
+    : categoriaEscolhida;
+
+  const catalogo = useMemo(() => montarCatalogo(indices, categoria, papel, origem), [indices, categoria, papel, origem]);
+  const opcoes = useMemo(() => [...catalogo.keys()], [catalogo]);
+
   const docsAlvo = useMemo(
     () => {
       if (buscaTermo === null) return [];
@@ -57,6 +45,7 @@ export function MotorBusca() {
     [docs, indices, buscaTipo, buscaTermo, referencia],
   );
 
+  const chave = `${categoria}:${papel}:${origem}`;
   return (
     <div className="space-y-6">
       <header className="space-y-1">
@@ -64,47 +53,43 @@ export function MotorBusca() {
           <Search size={22} /> Motor de Busca e Dossiê
         </h1>
         <p className="text-sm text-slate-400">
-          Busca unificada por Documento, Autor, Orientador, Co-orientador, Palavra-chave e Macrotema.
+          Busca unificada por documentos, pessoas e temas. A etiqueta ao lado de cada item mostra de onde ele vem.
         </p>
       </header>
 
       <Card className="space-y-4">
         <GrupoOpcoes
-          rotulo="Procurar por entidade"
-          opcoes={[TODOS, ...TIPOS]}
-          valor={todos ? TODOS : buscaTipo}
-          onChange={(t) => {
-            setTodos(t === TODOS);
-            navegarPara(t === TODOS ? buscaTipo : t as TipoBusca, null);
-          }}
+          rotulo="Procurar por"
+          opcoes={CATEGORIAS.map((c) => c.rotulo)}
+          valor={categoriaPorId(categoria).rotulo}
+          onChange={(r) => { setCategoria(idPorRotulo(r)); navegarPara(buscaTipo, null); }}
         />
-        {todos ? (
-          <SelectBusca
-            key={TODOS}
-            sessionKey={TODOS}
-            rotulo="Selecione qualquer item (documento, pessoa, palavra-chave ou macrotema)"
-            opcoes={opcoesTodos}
-            valor={buscaTermo !== null ? `${buscaTermo} (${buscaTipo})` : null}
-            onChange={(v) => {
-              const item = v ? catalogoTodos.get(v) : undefined;
-              navegarPara(item?.tipo ?? buscaTipo, item?.nome ?? null);
-            }}
-          />
-        ) : (
-          <SelectBusca
-            key={buscaTipo}
-            sessionKey={buscaTipo}
-            rotulo={`Selecione ${buscaTipo.toLowerCase()}`}
-            opcoes={opcoes}
-            valor={buscaTermo}
-            onChange={(v) => navegarPara(buscaTipo, v)}
+        {(categoria === 'pessoas' || categoria === 'temas') && (
+          <GrupoOpcoes
+            rotulo={categoria === 'pessoas' ? 'Papel no recorte' : 'Origem do tema'}
+            opcoes={[...(categoria === 'pessoas' ? PAPEIS : ORIGENS)]}
+            valor={categoria === 'pessoas' ? papel : origem}
+            onChange={(v) => { (categoria === 'pessoas' ? setPapel : setOrigem)(v); navegarPara(buscaTipo, null); }}
           />
         )}
+        <SelectBusca
+          key={chave}
+          sessionKey={chave}
+          rotulo={categoria === 'documentos' ? 'Selecione um documento'
+            : categoria === 'pessoas' ? 'Selecione uma pessoa'
+              : categoria === 'temas' ? 'Selecione um tema' : 'Selecione qualquer item'}
+          opcoes={opcoes}
+          valor={buscaTermo !== null ? `${buscaTermo} (${etiqueta(buscaTipo, buscaTermo, indices)})` : null}
+          onChange={(v) => {
+            const item = v ? catalogo.get(v) : undefined;
+            navegarPara(item?.tipo ?? buscaTipo, item?.nome ?? null);
+          }}
+        />
       </Card>
 
       {buscaTermo === null && (
         <Aviso>
-          Escolha um tipo, digite parte do nome ou título e confirme uma opção do catálogo. Em Todos, a lista reúne itens de qualquer tipo. O dossiê reúne trabalhos, resumos e fontes; gráficos e análises ficam logo acima dos trabalhos associados.
+          Escolha uma categoria, digite parte do nome ou título e confirme uma opção do catálogo. Pessoas reúnem autoria, orientação e coorientação num dossiê só. Em Temas, palavras-chave vêm do autor e macrotemas são classificação da base: rótulos iguais podem representar conjuntos diferentes de trabalhos.
         </Aviso>
       )}
 

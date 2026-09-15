@@ -44,14 +44,22 @@ export type TipoNo =
   | 'Conceito'
   | 'Desconhecido';
 
-/** Entidades pesquisáveis no Motor de Busca. */
+/**
+ * Entidades pesquisáveis no Motor de Busca. `Pessoa` atravessa os papéis:
+ * reúne num só item quem aparece como autor, orientador ou coorientador.
+ */
 export type TipoBusca =
   | 'Documento'
+  | 'Pessoa'
   | 'Autor'
   | 'Orientador'
   | 'Co-orientador'
   | 'Palavra-chave'
   | 'Macrotema';
+
+/** Papéis de pessoa, na ordem em que o dossiê os apresenta. */
+export const PAPEIS_PESSOA = ['Autor', 'Orientador', 'Co-orientador'] as const;
+export type PapelPessoa = typeof PAPEIS_PESSOA[number];
 
 /** Dimensão de análise do Radar de Foresight. */
 export type TipoForesight = 'Palavra-chave' | 'Macrotema' | 'Artefatos (Ontologia IA)';
@@ -258,6 +266,10 @@ export interface IndicesInvertidos {
   por_coorientador: Map<string, Documento[]>;
   por_palavra_chave: Map<string, Documento[]>;
   por_macrotema: Map<string, Documento[]>;
+  /** União dos papéis: todo documento em que a pessoa aparece, em qualquer função. */
+  por_pessoa: Map<string, Documento[]>;
+  /** Papéis que cada pessoa exerce no recorte, para o dossiê seccionar. */
+  papeis_pessoa: Map<string, Set<PapelPessoa>>;
 }
 
 /** Mensagens do worker de SNA. */

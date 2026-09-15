@@ -2,6 +2,7 @@ import { iaVazia, type EstadoIA } from '../lib/ia-state';
 import { aplicarPorIdentidade } from '../lib/ontologia-importacao';
 import { referenciaDocumento } from '../lib/resultados';
 import { objetivoPorId } from '../lib/objetivos';
+import { aplicarUnificacao, type MapaGrafias } from '../lib/unificacao';
 import type { SelecaoColecoes } from '../lib/selecao';
 import { create } from 'zustand';
 import type {
@@ -51,7 +52,12 @@ export interface EcoGradState {
   cursosTccSelecionados: string[];
 
   // --- Base ativa (checkpoint limitado no IndexedDB) ---
+  /** Base como veio das coleções, sem as fusões de pessoa aplicadas. */
+  docsOriginais: Documento[];
+  /** Base ativa: `docsOriginais` com os nomes canônicos das pessoas unificadas. */
   docs: Documento[];
+  /** Grafia → nome canônico das pessoas fundidas, publicado por `services/pessoas`. */
+  fusoesPessoa: MapaGrafias;
   dadosCarregados: boolean;
   carregando: boolean;
   mensagemCarregamento: string;
@@ -91,6 +97,8 @@ export interface EcoGradState {
   iniciarCarregamento: () => void;
   setMensagemCarregamento: (v: string) => void;
   concluirCarregamento: (docs: Documento[], selecao?: SelecaoColecoes, baseVersion?: string, objetivo?: string) => void;
+  /** Troca as fusões de pessoa e rederiva a base ativa a partir da original. */
+  definirFusoes: (mapa: MapaGrafias) => void;
   falharCarregamento: (msg: string) => void;
   novaConsulta: () => void;
 
@@ -111,6 +119,14 @@ export interface EcoGradState {
   /** Injeta ontologias (lote da IA ou upload de CSV) sem recriar a base inteira. */
   aplicarOntologia: (porId: Map<string, OntologiaIA>, substituir?: boolean, antesDeAplicar?: () => void) => Promise<number>;
 }
+
+/**
+ * A base sem as fusões de pessoa. `docsOriginais` é a fonte, mas uma base
+ * publicada direto em `docs` — como fazem os testes e qualquer código que não
+ * passe por `concluirCarregamento` — é ela mesma a original.
+ */
+export const baseOriginal = (s: Pick<EcoGradState, 'docsOriginais' | 'docs'>) =>
+  (s.docsOriginais.length ? s.docsOriginais : s.docs);
 
 /** Rótulo da badge "Análise Ativa" na Sidebar. */
 export function rotuloAnaliseAtiva(state: Pick<EcoGradState, 'programasSelecionados' | 'cursosTccSelecionados'>): string {
@@ -135,7 +151,9 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
       programasSelecionados: [],
       cursosTccSelecionados: [],
 
+      docsOriginais: [],
       docs: [],
+      fusoesPessoa: new Map(),
       dadosCarregados: false,
       carregando: false,
       mensagemCarregamento: '',
@@ -164,6 +182,10 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
       voltarParaApresentacao: () => set({ apresentacaoVista: false }),
       setRota: (r) => set({ rota: r }),
       alternarSidebar: () => set((e) => ({ sidebarRecolhida: !e.sidebarRecolhida })),
+      // A base ativa é sempre derivada aqui: nenhum consumidor externo precisa
+      // lembrar de reaplicar as fusões depois de mexer na base.
+      definirFusoes: (mapa) => set((s) => ({ fusoesPessoa: mapa, docs: aplicarUnificacao(baseOriginal(s), mapa) })),
+
       setProgramas: (v) => set({ programasSelecionados: v }),
       setCursosTcc: (v) => set({ cursosTccSelecionados: v }),
 
@@ -186,7 +208,8 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
           ...(selecao && docs.length ? { programasSelecionados: selecao.programas, cursosTccSelecionados: selecao.cursosTcc } : {}),
           rota: objetivoPorId(objetivo).rota,
           ...(objetivoPorId(objetivo).buscaTipo ? { buscaTipo: objetivoPorId(objetivo).buscaTipo } : {}),
-          docs,
+          docsOriginais: docs,
+          docs: aplicarUnificacao(docs, get().fusoesPessoa),
           dadosCarregados: docs.length > 0,
           carregando: false,
           mensagemCarregamento: '',
@@ -210,6 +233,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
           baseVersion: '',
           ui: {},
           chat: conversaVazia(),
+          docsOriginais: [],
           docs: [],
           dadosCarregados: false,
           carregando: false,
@@ -247,11 +271,15 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
       },
 
       aplicarOntologia: async (porId, substituir = false, antesDeAplicar) => {
-        const { docs, analysisId } = get();
-        const {proximos,atualizados}=await aplicarPorIdentidade(docs,porId,substituir);
+        // Opera sobre a base original: reaplicar a unificação depois de mudar as
+        // fusões partiria de `docsOriginais`, e a ontologia se perderia se ela
+        // só existisse na versão unificada.
+        const analysisId = get().analysisId;
+        const base = baseOriginal(get());
+        const {proximos,atualizados}=await aplicarPorIdentidade(base,porId,substituir);
         antesDeAplicar?.();
-        if(get().analysisId!==analysisId || get().docs!==docs) throw new Error('A análise mudou. Revise novamente antes de aplicar.');
-        if(atualizados>0)set({docs:proximos,bootstrap:null});
+        if(get().analysisId!==analysisId || baseOriginal(get())!==base) throw new Error('A análise mudou. Revise novamente antes de aplicar.');
+        if(atualizados>0)set({docsOriginais:proximos,docs:aplicarUnificacao(proximos,get().fusoesPessoa),bootstrap:null});
         return atualizados;
       },
 }));

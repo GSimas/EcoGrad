@@ -9,9 +9,10 @@ import { carregarIndiceBusca, itemDoAcervo } from '@/lib/busca-global';
 import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { ChevronRight, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';
-import type { Documento, TipoBusca } from '@/types';
+import { PAPEIS_PESSOA, type Documento, type PapelPessoa, type TipoBusca } from '@/types';
 const JUSTIFICATIVA: Record<TipoBusca, string> = {
   Documento: 'Metadados do registro selecionado no recorte local.',
+  Pessoa: 'Todos os trabalhos em que este nome aparece, em qualquer papel. Nomes iguais podem representar pessoas diferentes; confira as fontes.',
   Autor: 'Trabalhos em que este nome aparece na autoria. Nomes iguais podem representar pessoas diferentes; confira as fontes.',
   Orientador: 'Trabalhos em que este nome aparece como orientador. A relação não comprova vínculo institucional atual nem disponibilidade para orientação.',
   'Co-orientador': 'Trabalhos em que este nome aparece como coorientador. A relação não comprova vínculo institucional atual nem disponibilidade para orientação.',
@@ -21,6 +22,19 @@ const JUSTIFICATIVA: Record<TipoBusca, string> = {
 export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca; docs: readonly Documento[]; termo: string; analises?: ReactNode }) {
   const tcc = useEcoGradStore((s) => s.cursosTccSelecionados);
   const navegar = useEcoGradStore((s) => s.navegarPara);
+  const base = useEcoGradStore((s) => s.docs);
+  // Papéis que este nome exerce na base inteira — e não só nos `docs` do recorte
+  // atual, que num dossiê de papel trariam apenas aquele papel de volta.
+  const papeis = useMemo(() => {
+    const conta = new Map<PapelPessoa, number>();
+    const soma = (p: PapelPessoa) => conta.set(p, (conta.get(p) ?? 0) + 1);
+    for (const d of base) {
+      if (d.autores.includes(termo)) soma('Autor');
+      if (d.orientador === termo) soma('Orientador');
+      if (d.co_orientadores.includes(termo)) soma('Co-orientador');
+    }
+    return PAPEIS_PESSOA.flatMap((p) => (conta.get(p) ? [[p, conta.get(p)!] as const] : []));
+  }, [base, termo]);
   const colecoes = [...new Set(docs.map((d) => d.programa_origem).filter(Boolean))];
   const registrosPorColecao = [...docs.reduce((m, d) => (d.programa_origem ? m.set(d.programa_origem, (m.get(d.programa_origem) ?? 0) + 1) : m), new Map<string, number>())]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'));
@@ -67,8 +81,21 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
       </Card>
     </section>{analises}</>;
   }
+  const ehPapel = (PAPEIS_PESSOA as readonly string[]).includes(tipo);
   return <section className="space-y-5" aria-label={`Trabalhos e relações de ${termo}`}>
     <p className="text-sm leading-relaxed text-slate-300">{JUSTIFICATIVA[tipo]}</p>
+
+    {tipo === 'Pessoa' && papeis.length > 0 && <section className="card space-y-3" aria-label="Papéis no recorte">
+      <div><h3 className="text-base font-semibold">Papéis no recorte</h3><p className="mt-1 text-xs leading-relaxed text-slate-400">Os trabalhos abaixo reúnem todos os papéis. Abra um papel para ver só a parte dele. Um mesmo trabalho pode contar em mais de um papel.</p></div>
+      <ul className="flex flex-wrap gap-2">{papeis.map(([papel, n]) => <li key={papel}>
+        <button type="button" className="btn-chip min-h-10" onClick={() => navegar(papel, termo)}>{papel} · {n} {n === 1 ? 'registro' : 'registros'}</button>
+      </li>)}</ul>
+    </section>}
+
+    {ehPapel && papeis.length > 1 && <p className="info">
+      Este nome também aparece como {papeis.filter(([p]) => p !== tipo).map(([p]) => p.toLowerCase()).join(' e ')} no recorte.
+      <button type="button" className="btn ml-2 text-xs" onClick={() => navegar('Pessoa', termo)}>Ver todos os trabalhos da pessoa</button>
+    </p>}
     <div className="grid gap-3 sm:grid-cols-2"><Kpi rotulo="Registros associados" valor={docs.length} /><Kpi rotulo="Coleções representadas" valor={colecoes.length} detalhe={`${colecoes.filter((n) => tcc.includes(n)).length} do catálogo de TCCs`}>
       <ul className="mt-2 max-h-48 space-y-1.5 overflow-auto border-t border-eco-border pr-1 pt-2 text-xs" aria-label="Coleções representadas e registros em cada uma">
         {registrosPorColecao.map(([nome, n]) => <li key={nome} className="flex items-start justify-between gap-3">
@@ -80,10 +107,10 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
     <CoberturaAnalise docs={docs} />
     {analises}
     <Trabalhos docs={docs} sessionKey="dossie.trabalhos" titulo="Trabalhos associados" />
-    {(tipo === 'Autor' || tipo === 'Orientador' || tipo === 'Co-orientador') && <Orientandos key={termo} termo={termo} />}
+    {(ehPapel || tipo === 'Pessoa') && <Orientandos key={termo} termo={termo} />}
     <div className={`grid gap-4 ${tipo !== 'Orientador' && tipo !== 'Co-orientador' ? 'lg:grid-cols-2' : ''}`}>
       {tipo !== 'Orientador' && tipo !== 'Co-orientador' && <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores dos trabalhos associados" />}
-      <Relacoes docs={docs} tipo={tipo === 'Autor' ? 'Co-orientador' : 'Palavra-chave'} titulo={tipo === 'Autor' ? 'Coorientadores dos trabalhos associados' : 'Palavras-chave dos trabalhos associados'} />
+      <Relacoes docs={docs} tipo={tipo === 'Autor' || tipo === 'Pessoa' ? 'Co-orientador' : 'Palavra-chave'} titulo={tipo === 'Autor' || tipo === 'Pessoa' ? 'Coorientadores dos trabalhos associados' : 'Palavras-chave dos trabalhos associados'} />
     </div>
   </section>;
 }

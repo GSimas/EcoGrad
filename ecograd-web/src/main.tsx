@@ -1,4 +1,5 @@
 import './services/aparencia';
+import './services/pessoas';
 import { initializeNavigation } from './services/navigation';
 import { initializeSession } from './services/session';
 import React from 'react';

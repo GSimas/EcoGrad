@@ -9,6 +9,8 @@ import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useNavigation } from '@/services/navigation';
 import { Progresso } from '@/components/ui/primitives';
 import { DetalhesCobertura, resumoCobertura } from './ColecoesPicker';
+import { UnificarPessoas, ehPessoa, type Candidato } from './UnificarPessoas';
+import { grupoDe, usePessoas } from '@/services/pessoas';
 
 const plural = (n: number, um: string, varios: string) => `${n.toLocaleString('pt-BR')} ${n === 1 ? um : varios}`;
 const ACERVO = { ppg: 'Pós-Graduação', tcc: 'Graduação' } as const;
@@ -96,6 +98,18 @@ export function BuscaGlobal() {
   }), [escolhidos]);
   const previa = useMemo(() => colecoesDaEscolha(escolha), [escolha]);
   const totalColecoes = previa.programas.length + previa.cursosTcc.length;
+  // Só pessoas entram na fusão; coleções e temas ficam de fora.
+  const candidatos = useMemo<Candidato[]>(
+    () => escolhidos.flatMap((e) => e.kind === 'item' && ehPessoa(e.item.tipo) ? [{ nome: e.item.nome, tipo: e.item.tipo, registros: e.item.registros }] : []),
+    [escolhidos],
+  );
+  const grupos = usePessoas((s) => s.grupos);
+  /** O nome canônico para o qual esta grafia já aponta, quando houver fusão salva. */
+  const fundidoEm = (e: Opcao) => {
+    if (e.kind !== 'item' || !ehPessoa(e.item.tipo)) return null;
+    const g = grupoDe(grupos, e.item.nome);
+    return g && g.canonico !== e.item.nome ? g.canonico : null;
+  };
 
   const carregar = () => {
     setAberta(false);
@@ -229,12 +243,13 @@ export function BuscaGlobal() {
                 <p className="mt-1 text-sm text-slate-200">{ACERVO[e.colecao.tipo]} · {resumoCobertura(e.colecao)}</p>
                 {e.colecao.total === 0 && <p className="mt-1 text-xs text-amber-200">Sem registros neste recorte local. Isso não significa ausência de produção no repositório.</p>}
                 <details><summary className="min-h-11 cursor-pointer py-3 text-sm text-eco-accent">Conferir metadados de {e.nome}</summary><DetalhesCobertura c={e.colecao} /></details>
-              </> : (
+              </> : (<>
                 <p className="mt-1 text-sm text-slate-200">
                   {plural(e.item.registros, 'registro', 'registros')} · aparece em {plural(e.item.colecoes.length, 'coleção', 'coleções')}
                   {e.item.colecoes.length === 1 && `: ${e.item.colecoes[0].nome}`}
                 </p>
-              )}
+                {fundidoEm(e) && <p className="mt-1 text-xs text-eco-accent">Unificado em “{fundidoEm(e)}”: os trabalhos das duas grafias entram juntos.</p>}
+              </>)}
             </div>
           ))}
         </div>
@@ -243,9 +258,12 @@ export function BuscaGlobal() {
         {cobertura.data && <p className="mt-2 text-xs text-slate-400">Download aproximado: {(cobertura.data.colecoes.filter((c) => (c.tipo === 'ppg' ? previa.programas : previa.cursosTcc).includes(c.nome)).reduce((total, c) => total + c.downloadBytes, 0) / 1024 / 1024).toFixed(2)} MiB comprimidos. Coleções podem conter registros sobrepostos; somar volumes não produz um total de trabalhos únicos.</p>}
 
         {!carregando && (
-          <button type="button" className="btn btn-primary mt-3 w-full py-3" onClick={carregar} disabled={totalColecoes === 0}>
-            <Rocket size={16} className="shrink-0" /> Carregar {plural(totalColecoes, 'coleção', 'coleções')}
-          </button>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <button type="button" className="btn btn-primary flex-1 py-3" onClick={carregar} disabled={totalColecoes === 0}>
+              <Rocket size={16} className="shrink-0" /> Carregar {plural(totalColecoes, 'coleção', 'coleções')}
+            </button>
+            <UnificarPessoas candidatos={candidatos} classe="btn py-3 sm:w-auto" />
+          </div>
         )}
       </>}
     </div>

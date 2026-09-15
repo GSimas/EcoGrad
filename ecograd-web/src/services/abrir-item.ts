@@ -1,5 +1,8 @@
 import { colecoesDoItem, type ResultadoBusca } from '@/lib/busca-global';
+import type { TipoBusca } from '@/types';
 import { mesmaSelecao } from '@/lib/selecao';
+import { canonizar, usePessoas } from './pessoas';
+import { PAPEIS_PESSOA } from '@/types';
 import { carregarDados } from './calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 
@@ -28,14 +31,25 @@ export function colecoesDaEscolha({ itens, colecoes }: EscolhaAcervo) {
 }
 
 /**
- * Um item escolhido sozinho abre o próprio dossiê, já no modo "Todos" do Motor
- * de Busca. Com vários itens, ou com qualquer coleção junto, nenhum dossiê
- * único representaria a escolha — aí a análise abre no Dashboard.
+ * O dossiê que representa a escolha, quando existe um.
+ *
+ * Um item sozinho abre o próprio dossiê. Vários itens de pessoa que apontam
+ * para o mesmo nome canônico — porque têm papéis diferentes, ou porque as
+ * grafias foram unificadas — abrem o dossiê de `Pessoa`, que reúne os papéis.
+ * Com coleções na escolha, ou com itens que não convergem, nenhum dossiê a
+ * representaria: a análise abre no Dashboard.
  */
-const itemUnico = ({ itens, colecoes }: EscolhaAcervo) => (itens.length === 1 && colecoes.length === 0 ? itens[0] : null);
+function alvoUnico({ itens, colecoes }: EscolhaAcervo): { tipo: TipoBusca; nome: string } | null {
+  if (colecoes.length > 0 || itens.length === 0) return null;
+  if (itens.length === 1) return { tipo: itens[0].tipo, nome: itens[0].nome };
+  if (!itens.every((i) => (PAPEIS_PESSOA as readonly string[]).includes(i.tipo))) return null;
+  const mapa = usePessoas.getState().mapa;
+  const nomes = new Set(itens.map((i) => canonizar(mapa, i.nome)));
+  return nomes.size === 1 ? { tipo: 'Pessoa', nome: [...nomes][0] } : null;
+}
 
 function abrir(escolha: EscolhaAcervo) {
-  const unico = itemUnico(escolha);
+  const unico = alvoUnico(escolha);
   useEcoGradStore.setState((s) => ({
     apresentacaoVista: true,
     ...(unico
@@ -43,7 +57,7 @@ function abrir(escolha: EscolhaAcervo) {
         rota: 'busca' as const,
         buscaTipo: unico.tipo,
         buscaTermo: unico.nome,
-        ui: { ...s.ui, 'dossie.documento': undefined, 'busca.todos': true },
+        ui: { ...s.ui, 'dossie.documento': undefined, 'busca.categoria': 'tudo' },
       }
       : { rota: 'dashboard' as const }),
   }));
@@ -62,7 +76,7 @@ export function abrirEscolhaDoAcervo(escolha: EscolhaAcervo): { carregando: bool
     abrir(escolha);
     return { carregando: false, colecoes, omitidas };
   }
-  carregarDados(programas, cursosTcc, itemUnico(escolha) ? 'trabalhos' : 'panorama', () => {
+  carregarDados(programas, cursosTcc, alvoUnico(escolha) ? 'trabalhos' : 'panorama', () => {
     if (useEcoGradStore.getState().dadosCarregados) abrir(escolha);
   });
   return { carregando: true, colecoes, omitidas };

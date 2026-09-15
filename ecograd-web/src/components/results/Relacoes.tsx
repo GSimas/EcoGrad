@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import { relacionados } from '@/lib/resultados';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { ChevronRight, FileText, GraduationCap, Handshake, Layers3, Tag, UserRound } from 'lucide-react';
+import { ChevronRight, FileText, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';
 import type { Documento, TipoBusca } from '@/types';
 export function Relacoes({ docs, tipo, titulo }: { docs: readonly Documento[]; tipo: TipoBusca; titulo: string }) {
   const itens = useMemo(() => relacionados(docs, tipo), [docs, tipo]);
   const navegar = useEcoGradStore((s) => s.navegarPara);
   const Icone = {
     Documento: FileText,
+    Pessoa: UsersRound,
     Autor: UserRound,
     Orientador: GraduationCap,
     'Co-orientador': Handshake,

@@ -4,7 +4,7 @@
  * `_extrair_entidades_por_tipo` (backend.py:1760) e
  * `construir_indices_invertidos` (Principal.py:247).
  */
-import type { Documento, IndicesInvertidos, NivelCanonico, TipoBusca } from '@/types';
+import type { Documento, IndicesInvertidos, NivelCanonico, PapelPessoa, TipoBusca } from '@/types';
 
 /** Transcrição de `_normalizar_nivel` (backend.py:1743). */
 export function normalizarNivel(nivel: unknown): NivelCanonico {
@@ -41,6 +41,8 @@ export function construirIndicesInvertidos(docs: readonly Documento[]): IndicesI
     por_coorientador: new Map(),
     por_palavra_chave: new Map(),
     por_macrotema: new Map(),
+    por_pessoa: new Map(),
+    papeis_pessoa: new Map(),
   };
 
   const push = (m: Map<string, Documento[]>, chave: string, d: Documento) => {
@@ -49,11 +51,21 @@ export function construirIndicesInvertidos(docs: readonly Documento[]): IndicesI
     else m.set(chave, [d]);
   };
 
+  // Uma pessoa entra uma única vez por documento, ainda que acumule papéis nele
+  // (autora e orientadora do mesmo trabalho), senão a contagem dobraria.
+  const pessoa = (nome: string, papel: PapelPessoa, d: Documento) => {
+    const papeis = idx.papeis_pessoa.get(nome);
+    if (papeis) papeis.add(papel); else idx.papeis_pessoa.set(nome, new Set([papel]));
+    const lista = idx.por_pessoa.get(nome);
+    if (!lista) idx.por_pessoa.set(nome, [d]);
+    else if (lista[lista.length - 1] !== d) lista.push(d);
+  };
+
   for (const d of docs) {
     if (d.titulo) idx.por_titulo.set(d.titulo, d);
-    for (const a of d.autores) if (a) push(idx.por_autor, a, d);
-    if (d.orientador) push(idx.por_orientador, d.orientador, d);
-    for (const co of d.co_orientadores) if (co) push(idx.por_coorientador, co, d);
+    for (const a of d.autores) if (a) { push(idx.por_autor, a, d); pessoa(a, 'Autor', d); }
+    if (d.orientador) { push(idx.por_orientador, d.orientador, d); pessoa(d.orientador, 'Orientador', d); }
+    for (const co of d.co_orientadores) if (co) { push(idx.por_coorientador, co, d); pessoa(co, 'Co-orientador', d); }
     for (const pk of d.palavras_chave) if (pk) push(idx.por_palavra_chave, pk, d);
     if (d.macrotema) push(idx.por_macrotema, d.macrotema, d);
   }
@@ -68,6 +80,8 @@ export function docsDoTermo(indices: IndicesInvertidos, tipo: TipoBusca, termo: 
       const d = indices.por_titulo.get(termo);
       return d ? [d] : [];
     }
+    case 'Pessoa':
+      return indices.por_pessoa.get(termo) ?? [];
     case 'Autor':
       return indices.por_autor.get(termo) ?? [];
     case 'Orientador':
@@ -87,6 +101,7 @@ export function docsDoTermo(indices: IndicesInvertidos, tipo: TipoBusca, termo: 
 export function opcoesPorTipo(indices: IndicesInvertidos, tipo: TipoBusca): string[] {
   const mapa: Record<TipoBusca, Iterable<string>> = {
     Documento: indices.por_titulo.keys(),
+    Pessoa: indices.por_pessoa.keys(),
     Autor: indices.por_autor.keys(),
     Orientador: indices.por_orientador.keys(),
     'Co-orientador': indices.por_coorientador.keys(),
