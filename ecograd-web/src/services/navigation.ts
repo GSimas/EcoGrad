@@ -68,8 +68,8 @@ export function initializeNavigation(port?: NavigationPort) {
     const s = useEcoGradStore.getState();
     if (analysisPage(page) && !s.dadosCarregados) {
       pending = page;
-      page = 'selecao';
-      notice ||= 'Carregue as coleções para abrir a página solicitada. O link não contém a seleção nem os dados da análise.';
+      page = 'inicio';
+      notice ||= 'Busque e carregue as coleções para abrir a página solicitada. O link não contém a seleção nem os dados da análise.';
     } else pending = null;
     applying = true;
     try {

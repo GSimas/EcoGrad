@@ -33,9 +33,12 @@ export async function carregarManifestoColecoes(signal?: AbortSignal): Promise<C
 }
 
 /** Sequential downloads bound mobile memory; never silently fall back to the full base. */
+/** Relata o andamento: o texto para leitura e a fração já concluída (0 a 1) destas coleções. */
+export type ProgressoColecoes = (text: string, fracao: number) => void;
+
 export async function carregarColecoes(
   tipo: 'ppg' | 'tcc', nomes: readonly string[], manifest: CollectionManifest,
-  signal?: AbortSignal, progress?: (text: string) => void,
+  signal?: AbortSignal, progress?: ProgressoColecoes,
 ): Promise<unknown[]> {
   validarManifestoColecoes(manifest);
   const selected = [...new Set(nomes)].map(nome => {
@@ -47,7 +50,7 @@ export async function carregarColecoes(
   const positions = new Set<number>();
   for (const [i, entry] of selected.entries()) {
     signal?.throwIfAborted();
-    progress?.(`Baixando coleção ${i + 1} de ${selected.length}: ${entry.nome}`);
+    progress?.(`Baixando coleção ${i + 1} de ${selected.length}: ${entry.nome}`, i / selected.length);
     // Revalidate cached responses so a corrected corrupt cache can recover on retry.
     const r = await fetch(entry.path, { signal, cache: 'no-cache' });
     if (!r.ok) throw new Error(`Não foi possível baixar “${entry.nome}” (HTTP ${r.status}). Tente novamente; a análise anterior foi preservada.`);

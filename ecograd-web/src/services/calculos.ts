@@ -44,6 +44,7 @@ const desligarAtividades = atividades.subscribe(() => {
     statusSNA: !rede ? 'ocioso' : rede.status === 'concluida' ? 'pronto' : rede.status === 'cancelada' ? 'cancelado' : rede.status === 'erro' ? 'erro' : 'calculando',
     carregando: dados?.status === 'executando' || dados?.status === 'fila',
     mensagemCarregamento: dados?.texto ?? '',
+    progressoCarregamento: dados?.progresso ?? null,
     erroCarregamento: dados?.erro ?? null,
   });
 });

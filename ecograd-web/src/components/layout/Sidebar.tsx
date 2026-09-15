@@ -3,11 +3,11 @@ import { PAGE_LABELS } from '@/lib/navigation';
 import { navigatePage, useNavigation } from '@/services/navigation';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { BookOpen, Dna, Github, Landmark, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Pencil, Plus, Radar, Search, X } from 'lucide-react';
+import { BookOpen, Dna, Github, Landmark, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Radar, Search, X } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
+import { FundoDinamico } from './FundoDinamico';
 import { Janela } from './Janela';
 import { PanoramaCapes } from '@/components/dashboard/PanoramaCapes';
-import { SelecaoInicial } from './SelecaoInicial';
 import { cn } from '@/lib/utils';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { Rota } from '@/types';
@@ -32,24 +32,22 @@ export function AcessosAjuda({ compacto = false }: { compacto?: boolean }) {
 function Navegacao({ compacto, aoNavegar }: { compacto: boolean; aoNavegar?: () => void }) {
   const state = useEcoGradStore();
   const page = useNavigation((s) => s.page);
-  const revision = useNavigation((n) => n.revision);
-  const [editar, setEditar] = useState(false);
-  const [nova, setNova] = useState(false);
-  useEffect(() => { setEditar(false); setNova(false); }, [revision]);
-  const docsAnteriores = useRef(state.docs);
-  useEffect(() => {
-    if (state.docs !== docsAnteriores.current) {
-      if (editar) { setEditar(false); aoNavegar?.(); }
-      docsAnteriores.current = state.docs;
-    }
-  }, [state.docs]);
+  // A badge lista todas as coleções; o limite de altura evita empurrar a navegação para fora da tela.
+  const colecoesAtivas = [...state.programasSelecionados, ...state.cursosTccSelecionados];
   const botao = cn('btn min-h-11', compacto ? 'w-11 px-0' : 'w-full justify-start');
   return <>
     {state.dadosCarregados && <>
       {!compacto && <div className="eco-analise-ativa rounded-lg border border-eco-accent/40 bg-eco-accent/10 p-3 text-sm">
         <p className="text-xs text-slate-300">Análise ativa</p>
-        <p className="mt-1 break-words text-eco-accent">{rotuloAnaliseAtiva(state)}</p>
-        <p className="mt-1 text-xs text-slate-400">{state.docs.length.toLocaleString('pt-BR')} documentos</p>
+        {colecoesAtivas.length === 0
+          ? <p className="mt-1 break-words text-eco-accent">{rotuloAnaliseAtiva(state)}</p>
+          : <ul className="mt-1 max-h-48 space-y-1 overflow-y-auto overscroll-contain pr-1">
+            {colecoesAtivas.map((nome) => <li key={nome} className="break-words text-eco-accent">{nome}</li>)}
+          </ul>}
+        <p className="mt-2 text-xs text-slate-400">
+          {colecoesAtivas.length > 0 && <>{colecoesAtivas.length.toLocaleString('pt-BR')} {colecoesAtivas.length === 1 ? 'coleção' : 'coleções'} · </>}
+          {state.docs.length.toLocaleString('pt-BR')} documentos
+        </p>
       </div>}
       <nav aria-label="Análise" className="space-y-1">
         {ITENS.map(({ rota, rotulo, icone: Icone }) => <button key={rota} type="button"
@@ -59,19 +57,6 @@ function Navegacao({ compacto, aoNavegar }: { compacto: boolean; aoNavegar?: () 
           <Icone size={18} className="shrink-0" />{!compacto && rotulo}
         </button>)}
       </nav>
-      <div className="space-y-2 border-t border-eco-border pt-3">
-        <Janela titulo="Editar seleção" descricao="A análise atual permanece disponível até o novo carregamento terminar." aberta={editar} onOpenChange={setEditar} larga
-          trigger={<button type="button" className={botao} aria-label="Editar seleção" title="Editar seleção"><Pencil size={18} />{!compacto && 'Editar seleção'}</button>}>
-          <SelecaoInicial edicao onVoltar={() => { setEditar(false); aoNavegar?.(); }} />
-        </Janela>
-        <Janela titulo="Iniciar nova análise" descricao="Esta ação encerra as atividades em andamento e descarta os resultados, rascunhos e a conversa da análise atual. Você voltará à seleção com as coleções desmarcadas." aberta={nova} onOpenChange={setNova}
-          trigger={<button type="button" className={botao} aria-label="Nova análise" title="Nova análise"><Plus size={18} />{!compacto && 'Nova análise'}</button>}>
-          <div className="flex flex-wrap gap-3">
-            <button className="btn" type="button" onClick={() => setNova(false)}>Manter análise atual</button>
-            <button className="btn btn-primary" type="button" onClick={() => { setNova(false); state.novaConsulta(); aoNavegar?.(); }}>Encerrar análise e selecionar coleções</button>
-          </div>
-        </Janela>
-      </div>
     </>}
     {!state.dadosCarregados && !compacto && <p className="text-sm leading-relaxed text-slate-400">Escolha coleções para explorar trabalhos, pesquisadores e temas. O panorama institucional e a ajuda estão disponíveis a qualquer momento.</p>}
     <div className="flex flex-col gap-2 border-t border-eco-border pt-3"><AcessosAjuda compacto={compacto} /><Aparencia compacto={compacto} /></div>
@@ -97,14 +82,18 @@ export function Sidebar() {
     return () => desktop.removeEventListener('change', ajustar);
   }, []);
   return <>
-    <aside aria-label="Navegação principal" className={cn('eco-sidebar hidden h-full shrink-0 flex-col gap-3 overflow-y-auto border-r border-eco-border bg-eco-panel/40 lg:flex', recolhida ? 'w-16 p-2' : 'w-72 p-4')}>
+    <aside aria-label="Navegação principal" className={cn('eco-sidebar relative hidden h-full shrink-0 flex-col border-r border-eco-border bg-eco-panel/40 lg:flex', recolhida ? 'w-16' : 'w-72')}>
+      {/* O canvas fica fora do container que rola; senão a decoração subiria com o conteúdo. */}
+      <FundoDinamico className="absolute inset-0" />
+      <div className={cn('relative z-10 flex h-full min-h-0 flex-col gap-3 overflow-y-auto', recolhida ? 'p-2' : 'p-4')}>
       <button type="button" onClick={() => navigatePage('inicio')} className={cn('eco-brand-home flex min-h-12 items-center gap-3 rounded-lg text-left', recolhida ? 'w-12 justify-center' : 'w-full px-2')} aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
         <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <strong className="text-eco-accent">EcoGrad · UFSC</strong>}
       </button>
       <button type="button" className="btn min-h-11" onClick={alternar} aria-expanded={!recolhida} aria-label={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'} title={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'}>
         {recolhida ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}
       </button>
-      <Navegacao compacto={recolhida} />
+        <Navegacao compacto={recolhida} />
+      </div>
     </aside>
     <header className="flex shrink-0 items-center gap-2 border-b border-eco-border bg-eco-panel px-2 py-2 lg:hidden">
       <Dialog.Root open={menu} onOpenChange={setMenu}>

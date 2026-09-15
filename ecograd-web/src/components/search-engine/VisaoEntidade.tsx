@@ -6,7 +6,7 @@ import { Relacoes } from '@/components/results/Relacoes';
 import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
 import { carregarIndiceOrientacoes, orientacoesDe, orientacoesLocais, temOrientacoes } from '@/lib/orientacoes';
 import { carregarIndiceBusca, itemDoAcervo } from '@/lib/busca-global';
-import { abrirItemDoAcervo } from '@/services/abrir-item';
+import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { ChevronRight, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';
 import type { Documento, TipoBusca } from '@/types';
@@ -136,7 +136,7 @@ function Orientandos({ termo }: { termo: string }) {
       const catalogo = await queryClient.fetchQuery({ queryKey: ['indice-busca'], queryFn: ({ signal }) => carregarIndiceBusca(signal), staleTime: Infinity });
       const item = itemDoAcervo(catalogo, 'Autor', nome);
       if (!item) throw new Error('o nome não aparece como autor no catálogo do acervo.');
-      abrirItemDoAcervo(item);
+      abrirEscolhaDoAcervo({ itens: [item], colecoes: [] });
     } catch (e) {
       setAbrindo({ nome, erro: e instanceof Error ? e.message : String(e) });
     }

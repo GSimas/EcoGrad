@@ -9,7 +9,7 @@
  */
 import { inflate } from 'pako';
 import type { CatalogoProgramas, ColecaoTCC, Documento } from '@/types';
-import { carregarColecoes, carregarManifestoColecoes, type CollectionManifest } from './collection-loader';
+import { carregarColecoes, carregarManifestoColecoes, type CollectionManifest, type ProgressoColecoes } from './collection-loader';
 
 export const CAMINHO_BASE_PPG = '/data/base_consolidada_ufsc.json.gz';
 export const CAMINHO_BASE_TCC = '/data/base_tcc_ufsc.json.gz';
@@ -116,7 +116,7 @@ export async function carregarBasePPG(
   programasSelecionados: readonly string[],
   signal?: AbortSignal,
   manifest?: CollectionManifest,
-  progress?: (text: string) => void,
+  progress?: ProgressoColecoes,
 ): Promise<Documento[]> {
   if (programasSelecionados.length === 0) return [];
   return normalizarDocumentos(await carregarColecoes('ppg', programasSelecionados, manifest ?? await carregarManifestoColecoes(signal), signal, progress));
@@ -127,7 +127,7 @@ export async function carregarBaseTCC(
   cursosSelecionados: readonly string[],
   signal?: AbortSignal,
   manifest?: CollectionManifest,
-  progress?: (text: string) => void,
+  progress?: ProgressoColecoes,
 ): Promise<Documento[]> {
   if (cursosSelecionados.length === 0) return [];
   return normalizarDocumentos(await carregarColecoes('tcc', cursosSelecionados, manifest ?? await carregarManifestoColecoes(signal), signal, progress));

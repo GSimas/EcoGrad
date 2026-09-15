@@ -1,17 +1,32 @@
 import { useDeferredValue, useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Check, Rocket, Search, X } from 'lucide-react';
+import { cn, correspondeBusca } from '@/lib/utils';
 import { buscarNoAcervo, carregarIndiceBusca, prepararBusca, type ResultadoBusca } from '@/lib/busca-global';
-import { abrirItemDoAcervo } from '@/services/abrir-item';
+import { carregarCobertura, type ColecaoCobertura } from '@/lib/colecoes';
+import { abrirEscolhaDoAcervo, colecoesDaEscolha } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { useNavigation } from '@/services/navigation';
+import { Progresso } from '@/components/ui/primitives';
+import { DetalhesCobertura, resumoCobertura } from './ColecoesPicker';
 
 const plural = (n: number, um: string, varios: string) => `${n.toLocaleString('pt-BR')} ${n === 1 ? um : varios}`;
+const ACERVO = { ppg: 'Pós-Graduação', tcc: 'Graduação' } as const;
+/** Coleções são poucas e grossas: um punhado no topo basta para não abafar os itens. */
+const MAX_COLECOES = 8;
+
+type Opcao =
+  | { kind: 'item'; chave: string; nome: string; item: ResultadoBusca }
+  | { kind: 'colecao'; chave: string; nome: string; colecao: ColecaoCobertura };
+
+const chaveItem = (i: ResultadoBusca) => `item:${i.tipo}:${i.nome}`;
+const chaveColecao = (c: { tipo: string; nome: string }) => `colecao:${c.tipo}:${c.nome}`;
 
 /**
- * Busca da apresentação: acha qualquer item do acervo sem escolher coleções e
- * carrega só as coleções do item escolhido. O catálogo (~5 MB) só é baixado
- * quando o campo recebe foco.
+ * Busca da apresentação: acha itens soltos (documento, pessoa, palavra-chave) e
+ * coleções inteiras sem carregar nada. A escolha é múltipla; carregar traz a
+ * união das coleções de tudo que estiver selecionado. O catálogo (~5 MB) só é
+ * baixado quando o campo recebe foco.
  */
 export function BuscaGlobal() {
   const [ativada, setAtivada] = useState(false);
@@ -19,7 +34,8 @@ export function BuscaGlobal() {
   const consulta = useDeferredValue(texto);
   const [aberta, setAberta] = useState(false);
   const [ativo, setAtivo] = useState(-1);
-  const [escolhido, setEscolhido] = useState<{ item: ResultadoBusca; colecoes: number; omitidas: number } | null>(null);
+  const [escolhidos, setEscolhidos] = useState<Opcao[]>([]);
+  const [envio, setEnvio] = useState<{ colecoes: number; omitidas: number } | null>(null);
   const campoId = useId();
   const listaId = useId();
   const statusId = useId();
@@ -27,7 +43,11 @@ export function BuscaGlobal() {
   const carregada = useEcoGradStore((s) => s.dadosCarregados);
   const carregando = useEcoGradStore((s) => s.carregando);
   const mensagem = useEcoGradStore((s) => s.mensagemCarregamento);
+  const progresso = useEcoGradStore((s) => s.progressoCarregamento);
   const erro = useEcoGradStore((s) => s.erroCarregamento);
+  // A apresentação não tem o painel de histórico; o aviso de link direto
+  // ("carregue as coleções para abrir a página pedida") apareceria em lugar nenhum.
+  const aviso = useNavigation((n) => n.notice);
 
   const catalogo = useQuery({
     queryKey: ['indice-busca'],
@@ -37,19 +57,50 @@ export function BuscaGlobal() {
     gcTime: Infinity,
     retry: 1,
   });
+  const cobertura = useQuery({
+    queryKey: ['colecoes-cobertura', 2],
+    queryFn: ({ signal }) => carregarCobertura(signal),
+    enabled: ativada,
+    staleTime: Infinity,
+    retry: 1,
+  });
   const preparada = useMemo(() => (catalogo.data ? prepararBusca(catalogo.data) : null), [catalogo.data]);
-  const resultados = useMemo(() => (preparada ? buscarNoAcervo(preparada, consulta) : []), [preparada, consulta]);
+
+  const resultados = useMemo<Opcao[]>(() => {
+    if (consulta.trim().length < 2) return [];
+    // Coleções primeiro: são o recorte mais amplo e a lista de itens é longa.
+    const colecoes = (cobertura.data?.colecoes ?? [])
+      .filter((c) => correspondeBusca(`${c.nome} ${ACERVO[c.tipo]}`, consulta))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, MAX_COLECOES)
+      .map((colecao): Opcao => ({ kind: 'colecao', chave: chaveColecao(colecao), nome: colecao.nome, colecao }));
+    const itens = preparada
+      ? buscarNoAcervo(preparada, consulta).map((item): Opcao => ({ kind: 'item', chave: chaveItem(item), nome: item.nome, item }))
+      : [];
+    return [...colecoes, ...itens];
+  }, [preparada, cobertura.data, consulta]);
 
   useEffect(() => {
     if (ativo >= 0) document.getElementById(`${listaId}-${ativo}`)?.scrollIntoView({ block: 'nearest' });
   }, [ativo, listaId]);
 
-  const escolher = (item: ResultadoBusca) => {
+  const marcados = useMemo(() => new Set(escolhidos.map((e) => e.chave)), [escolhidos]);
+  const alternar = (o: Opcao) => {
+    setEnvio(null);
+    setEscolhidos((atual) => atual.some((e) => e.chave === o.chave) ? atual.filter((e) => e.chave !== o.chave) : [...atual, o]);
+  };
+
+  const escolha = useMemo(() => ({
+    itens: escolhidos.flatMap((e) => e.kind === 'item' ? [e.item] : []),
+    colecoes: escolhidos.flatMap((e) => e.kind === 'colecao' ? [{ nome: e.colecao.nome, catalogo: e.colecao.tipo }] : []),
+  }), [escolhidos]);
+  const previa = useMemo(() => colecoesDaEscolha(escolha), [escolha]);
+  const totalColecoes = previa.programas.length + previa.cursosTcc.length;
+
+  const carregar = () => {
     setAberta(false);
-    setAtivo(-1);
-    setTexto(item.nome);
-    const abertura = abrirItemDoAcervo(item);
-    setEscolhido(abertura.carregando ? { item, colecoes: abertura.colecoes, omitidas: abertura.omitidas } : null);
+    const resultado = abrirEscolhaDoAcervo(escolha);
+    setEnvio(resultado.carregando ? { colecoes: resultado.colecoes, omitidas: resultado.omitidas } : null);
   };
 
   const teclar = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -61,27 +112,30 @@ export function BuscaGlobal() {
       setAtivo((i) => (!n ? -1 : i < 0 ? (passo > 0 ? 0 : n - 1) : (i + passo + n) % n));
     } else if (e.key === 'Enter' && aberta && n > 0) {
       e.preventDefault();
-      escolher(resultados[ativo >= 0 ? ativo : 0]);
+      alternar(resultados[ativo >= 0 ? ativo : 0]);
     } else if (e.key === 'Escape' && aberta) {
       e.preventDefault();
       setAberta(false);
     }
   };
 
-  const visivel = aberta && resultados.length > 0;
-  const status = escolhido && carregando
-    ? `Carregando ${plural(escolhido.colecoes, 'coleção', 'coleções')} de “${escolhido.item.nome}”. ${mensagem}`
-    : escolhido && erro
-      ? `Não foi possível abrir “${escolhido.item.nome}”: ${erro}`
+  const visivel = aberta && resultados.length > 0 && !carregando;
+  const preparando = ativada && (!catalogo.data || !cobertura.data) && !catalogo.isError && !cobertura.isError;
+  const status = carregando
+    ? `Carregando ${plural(envio?.colecoes ?? totalColecoes, 'coleção', 'coleções')}. Aguarde o fim do carregamento para continuar.`
+    : erro && envio !== null
+      ? `Não foi possível carregar a seleção: ${erro}`
       : catalogo.isError
-        ? 'Não foi possível preparar a busca em todo o acervo. Tente novamente ou escolha as coleções.'
-        : ativada && !catalogo.data
-          ? 'Preparando a busca em todo o acervo…'
+        ? 'Não foi possível preparar a busca em todo o acervo. Recarregue a página para tentar de novo.'
+        : preparando
+          ? 'Preparando a busca em todo o acervo...'
           : catalogo.data && texto.trim().length >= 2 && consulta === texto && resultados.length === 0
-            ? 'Nenhum item encontrado em todo o acervo.'
-            : carregada
-              ? 'Escolher um item substitui a análise atual pelas coleções em que ele aparece.'
-              : 'Sem escolher coleções: ao selecionar um item, carregamos só as coleções em que ele aparece.';
+            ? 'Nenhum item ou coleção encontrado em todo o acervo.'
+            : escolhidos.length > 0
+              ? `${plural(escolhidos.length, 'seleção', 'seleções')} · ${plural(totalColecoes, 'coleção será carregada', 'coleções serão carregadas')}.`
+              : carregada
+                ? 'Busque itens ou coleções. Carregar substitui a análise atual pelas coleções da nova seleção.'
+                : 'Busque um documento, uma pessoa, um tema ou uma coleção inteira. Selecione quantos quiser e carregue de uma vez.';
 
   return (
     <div className="mt-7 w-full max-w-2xl text-left">
@@ -99,45 +153,101 @@ export function BuscaGlobal() {
           autoComplete="off"
           spellCheck={false}
           value={texto}
-          placeholder="Título, autor, orientador, palavra-chave ou macrotema"
+          placeholder="Título, autor, orientador, palavra-chave, macrotema ou coleção"
           onFocus={() => { setAtivada(true); setAberta(true); }}
           onClick={() => setAberta(true)}
           onChange={(e) => { setTexto(e.target.value); setAtivada(true); setAberta(true); setAtivo(-1); }}
           onBlur={() => setAberta(false)}
           onKeyDown={teclar}
-          className="input pl-10"
+          disabled={carregando}
+          className="input pl-10 disabled:cursor-not-allowed disabled:opacity-60"
         />
         {visivel && (
-          <ul id={listaId} role="listbox" aria-label="Resultados em todo o acervo" className="absolute left-0 right-0 top-full z-30 mt-1 max-h-96 overflow-auto rounded-lg border border-eco-border bg-eco-panel p-1 shadow-xl">
-            {resultados.map((r, i) => (
-              <li
-                key={`${r.tipo}:${r.nome}`}
-                id={`${listaId}-${i}`}
-                role="option"
-                aria-selected={i === ativo}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => escolher(r)}
-                onMouseEnter={() => setAtivo(i)}
-                className={cn('flex min-h-11 cursor-pointer flex-col gap-0.5 rounded-md px-3 py-2 text-sm', i === ativo && 'bg-eco-accent/10')}
-              >
-                <span className="flex items-start justify-between gap-3">
-                  <span className="min-w-0 break-words text-slate-100">{r.nome}</span>
-                  <span className="shrink-0 rounded-full border border-eco-border px-2 py-0.5 text-[.7rem] text-eco-accent">{r.tipo}</span>
-                </span>
-                <span className="text-xs text-slate-400">
-                  {plural(r.registros, 'registro', 'registros')} · {r.colecoes.length === 1 ? r.colecoes[0].nome : plural(r.colecoes.length, 'coleção', 'coleções')}
-                </span>
-              </li>
-            ))}
+          <ul id={listaId} role="listbox" aria-multiselectable="true" aria-label="Resultados em todo o acervo" className="eco-vidro absolute left-0 right-0 top-full z-30 mt-1 max-h-96 overflow-auto rounded-lg border border-eco-border p-1 shadow-xl">
+            {resultados.map((o, i) => {
+              const marcado = marcados.has(o.chave);
+              return (
+                <li
+                  key={o.chave}
+                  id={`${listaId}-${i}`}
+                  role="option"
+                  aria-selected={marcado}
+                  // `onMouseDown` prevenido: sem isso o blur fecharia a lista antes do
+                  // clique, e cada escolha exigiria reabrir o campo.
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => alternar(o)}
+                  onMouseEnter={() => setAtivo(i)}
+                  className={cn('flex min-h-11 cursor-pointer gap-2 rounded-md px-3 py-2 text-sm', i === ativo && 'bg-eco-accent/10')}
+                >
+                  <span className={cn('mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border', marcado ? 'border-eco-accent bg-eco-action text-black' : 'border-eco-border')}>
+                    {marcado && <Check size={11} />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-start justify-between gap-3">
+                      <span className="min-w-0 break-words text-slate-100">{o.nome}</span>
+                      <span className="shrink-0 rounded-full border border-eco-border px-2 py-0.5 text-[.7rem] text-eco-accent">{o.kind === 'colecao' ? 'Coleção' : o.item.tipo}</span>
+                    </span>
+                    <span className="block text-xs text-slate-400">
+                      {o.kind === 'colecao'
+                        ? `${ACERVO[o.colecao.tipo]} · ${resumoCobertura(o.colecao)}`
+                        : `${plural(o.item.registros, 'registro', 'registros')} · ${o.item.colecoes.length === 1 ? o.item.colecoes[0].nome : plural(o.item.colecoes.length, 'coleção', 'coleções')}`}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
-      <p id={statusId} role="status" className="mt-2 min-h-5 text-xs text-slate-400">{status}</p>
-      {escolhido && escolhido.omitidas > 0 && (
-        <p className="text-xs text-slate-400">
-          “{escolhido.item.nome}” também aparece em mais {plural(escolhido.omitidas, 'coleção', 'coleções')}; carregamos as {escolhido.colecoes} com mais registros. Adicione as outras em “Editar seleção”.
-        </p>
-      )}
+
+      {aviso && <p role="status" className="mt-2 text-xs text-amber-200">{aviso}</p>}
+      <p id={statusId} role="status" className="mt-2 min-h-5 text-xs text-slate-300">{status}</p>
+      {carregando && <div className="mt-2"><Progresso valor={progresso} texto={mensagem || 'Preparando o carregamento...'} /></div>}
+
+      {escolhidos.length > 0 && <>
+        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Seleção atual">
+          {escolhidos.map((e) => (
+            <li key={e.chave}>
+              <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-eco-accent/40 bg-eco-accent/10 py-1 pl-2.5 pr-1 text-xs text-eco-accent">
+                <span className="min-w-0 break-words">{e.nome}</span>
+                <span className="shrink-0 text-[.65rem] text-slate-400">{e.kind === 'colecao' ? 'Coleção' : e.item.tipo}</span>
+                <button type="button" disabled={carregando} onClick={() => alternar(e)} aria-label={`Remover ${e.nome}`}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-60"><X size={12} /></button>
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-3 space-y-2">
+          {escolhidos.map((e) => (
+            <div key={e.chave} className="rounded-lg border border-eco-border bg-eco-panel p-3">
+              <p className="flex items-start justify-between gap-3">
+                <span className="min-w-0 break-words text-sm font-semibold">{e.nome}</span>
+                <span className="shrink-0 rounded-full border border-eco-border px-2 py-0.5 text-[.7rem] text-eco-accent">{e.kind === 'colecao' ? 'Coleção' : e.item.tipo}</span>
+              </p>
+              {e.kind === 'colecao' ? <>
+                <p className="mt-1 text-sm text-slate-200">{ACERVO[e.colecao.tipo]} · {resumoCobertura(e.colecao)}</p>
+                {e.colecao.total === 0 && <p className="mt-1 text-xs text-amber-200">Sem registros neste recorte local. Isso não significa ausência de produção no repositório.</p>}
+                <details><summary className="min-h-11 cursor-pointer py-3 text-sm text-eco-accent">Conferir metadados de {e.nome}</summary><DetalhesCobertura c={e.colecao} /></details>
+              </> : (
+                <p className="mt-1 text-sm text-slate-200">
+                  {plural(e.item.registros, 'registro', 'registros')} · aparece em {plural(e.item.colecoes.length, 'coleção', 'coleções')}
+                  {e.item.colecoes.length === 1 && `: ${e.item.colecoes[0].nome}`}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {previa.omitidas > 0 && <p className="mt-2 text-xs text-slate-400">Itens presentes em muitas coleções carregam apenas as maiores; {plural(previa.omitidas, 'coleção ficou', 'coleções ficaram')} de fora. Selecione-as pelo nome se precisar delas.</p>}
+        {cobertura.data && <p className="mt-2 text-xs text-slate-400">Download aproximado: {(cobertura.data.colecoes.filter((c) => (c.tipo === 'ppg' ? previa.programas : previa.cursosTcc).includes(c.nome)).reduce((total, c) => total + c.downloadBytes, 0) / 1024 / 1024).toFixed(2)} MiB comprimidos. Coleções podem conter registros sobrepostos; somar volumes não produz um total de trabalhos únicos.</p>}
+
+        {!carregando && (
+          <button type="button" className="btn btn-primary mt-3 w-full py-3" onClick={carregar} disabled={totalColecoes === 0}>
+            <Rocket size={16} className="shrink-0" /> Carregar {plural(totalColecoes, 'coleção', 'coleções')}
+          </button>
+        )}
+      </>}
     </div>
   );
 }

@@ -105,7 +105,8 @@ test('direct links require a base and continue to the requested page after loadi
   const b = browser('#/foresight');
   const stop = initializeNavigation(b.port);
   try {
-    assert.equal(useNavigation.getState().page, 'selecao');
+    // Sem base, o link direto cai na apresentação: é lá que as coleções são buscadas.
+    assert.equal(useNavigation.getState().page, 'inicio');
     store.getState().concluirCarregamento([{ titulo: 'Documento' }] as never, { programas: ['Coleção'], cursosTcc: [] }, 'v1');
     assert.equal(useNavigation.getState().page, 'foresight');
     assert.equal(store.getState().programasSelecionados[0], 'Coleção');

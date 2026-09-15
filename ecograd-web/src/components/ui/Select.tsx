@@ -25,7 +25,7 @@ export function Select({ valor, onChange, opcoes, id, className, disabled, 'aria
       <SelectPrimitive.Icon asChild><ChevronDown size={16} className="select-chevron shrink-0 text-slate-400" /></SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Content position="popper" sideOffset={4} className="select-content z-[60] max-h-[min(var(--radix-select-content-available-height),20rem)] min-w-[var(--radix-select-trigger-width)] max-w-[min(36rem,calc(100vw-1rem))] overflow-hidden rounded-lg border border-eco-border bg-eco-panel shadow-xl">
+      <SelectPrimitive.Content position="popper" sideOffset={4} className="select-content eco-vidro z-[60] max-h-[min(var(--radix-select-content-available-height),20rem)] min-w-[var(--radix-select-trigger-width)] max-w-[min(36rem,calc(100vw-1rem))] overflow-hidden rounded-lg border border-eco-border shadow-xl">
         <SelectPrimitive.Viewport className="p-1">
           {opcoes.map((o) => <SelectPrimitive.Item key={o.valor} value={interno(o.valor)} disabled={o.desabilitada}
             className="select-item relative flex min-h-11 cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-3 text-sm text-slate-200 outline-none data-[disabled]:cursor-not-allowed data-[disabled]:text-slate-500 data-[state=checked]:text-eco-accent data-[highlighted]:bg-eco-accent/10 data-[highlighted]:text-eco-accent">

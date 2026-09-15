@@ -27,7 +27,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        sans: ['Inter Variable', 'Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
       },
     },
   },

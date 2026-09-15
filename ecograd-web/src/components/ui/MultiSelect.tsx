@@ -220,7 +220,7 @@ export function SelectBusca({
             className="input min-w-0"
           />
           {visivel && (
-            <ul id={listaId} role="listbox" aria-label={rotulo} className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-eco-border bg-eco-panel p-1 shadow-xl">
+            <ul id={listaId} role="listbox" aria-label={rotulo} className="eco-vidro absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-eco-border p-1 shadow-xl">
               {sugestoes.map((o, i) => (
                 <li
                   key={o}

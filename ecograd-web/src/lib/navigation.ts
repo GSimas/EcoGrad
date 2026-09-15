@@ -15,7 +15,8 @@ export function parsePage(hash: string): Page | null {
   const value = hash.replace(/^#\//, '').replace(/\/$/, '');
   return (PAGES as readonly string[]).includes(value) && hash.startsWith('#/') ? value as Page : 'nao-encontrada';
 }
-export function statePage(s: EcoGradState): Page { return !s.apresentacaoVista ? 'inicio' : !s.dadosCarregados ? 'selecao' : s.rota; }
+/** Sem base carregada o lugar é a apresentação: é lá que as coleções são escolhidas. */
+export function statePage(s: EcoGradState): Page { return !s.apresentacaoVista || !s.dadosCarregados ? 'inicio' : s.rota; }
 export const contextualKey = (key: string) => /^(tabela\.|grafico\.|rede\.|tabs\.|expander\.|dossie\.|orbita\.|capes\.|memes\.|dashboard\.|busca\.texto\.)/.test(key);
 export type ViewContext = Pick<EcoGradState, 'buscaTipo' | 'buscaTermo' | 'tipoForesight' | 'janelaRecente' | 'metodoCorte' | 'percentilCorte' | 'usarBootstrap' | 'fonteMemes' | 'minCoocorrencia'> & { ui: Record<string, unknown> };
 export function captureContext(s: EcoGradState): ViewContext {

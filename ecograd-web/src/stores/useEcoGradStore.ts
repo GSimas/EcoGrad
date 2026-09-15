@@ -55,6 +55,8 @@ export interface EcoGradState {
   dadosCarregados: boolean;
   carregando: boolean;
   mensagemCarregamento: string;
+  /** Percentual do carregamento em curso, ou null quando ainda é indeterminado. */
+  progressoCarregamento: number | null;
   erroCarregamento: string | null;
 
   // --- Resultados associados à versão da base ---
@@ -137,6 +139,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
       dadosCarregados: false,
       carregando: false,
       mensagemCarregamento: '',
+      progressoCarregamento: null,
       erroCarregamento: null,
 
       snaGlobal: null,
@@ -169,6 +172,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
           carregando: true,
           erroCarregamento: null,
           mensagemCarregamento: 'Lendo as bases de dados e filtrando a seleção...',
+          progressoCarregamento: null,
         }),
 
       setMensagemCarregamento: (v) => set({ mensagemCarregamento: v }),
@@ -186,6 +190,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
           dadosCarregados: docs.length > 0,
           carregando: false,
           mensagemCarregamento: '',
+          progressoCarregamento: null,
           erroCarregamento: docs.length === 0 ? 'Nenhum documento encontrado para a seleção atual.' : null,
           // A rede precisa ser recalculada para a nova base
           snaGlobal: null,
@@ -196,7 +201,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
         }),
 
       falharCarregamento: (msg) =>
-        set({ carregando: false, erroCarregamento: msg, mensagemCarregamento: '' }),
+        set({ carregando: false, erroCarregamento: msg, mensagemCarregamento: '', progressoCarregamento: null }),
 
       novaConsulta: () =>
         set({
@@ -208,6 +213,8 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
           docs: [],
           dadosCarregados: false,
           carregando: false,
+          mensagemCarregamento: '',
+          progressoCarregamento: null,
           erroCarregamento: null,
           snaGlobal: null,
           statusSNA: 'ocioso',

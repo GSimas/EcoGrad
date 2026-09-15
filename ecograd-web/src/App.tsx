@@ -1,12 +1,11 @@
-import { Aparencia } from '@/components/layout/Aparencia';
 import { NavigationHistory, UnknownPage } from '@/components/layout/NavigationHistory';
-import { useNavigation, navigatePage } from '@/services/navigation';
+import { useNavigation } from '@/services/navigation';
 import { useNavigationPosition } from '@/hooks/useNavigationPosition';
 import { SessionStatus } from '@/components/layout/SessionStatus';
 import { useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Apresentacao } from '@/components/layout/Apresentacao';
-import { SelecaoInicial } from '@/components/layout/SelecaoInicial';
+import { FundoDinamico } from '@/components/layout/FundoDinamico';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { MotorBusca } from '@/components/search-engine/MotorBusca';
 import { RadarForesight } from '@/components/foresight/RadarForesight';
@@ -28,13 +27,19 @@ export default function App() {
   }, [docs, statusSNA]);
   const conteudoRef = useNavigationPosition();
 
-  // A apresentação ocupa a tela inteira: a sidebar só entra a partir da seleção
-  if (page === 'inicio') {
+  // A apresentação ocupa a tela inteira e é onde as coleções são escolhidas: sem
+  // base carregada não há o que a sidebar mostre. `selecao` é uma rota aposentada
+  // que sobrevive só para não quebrar links antigos.
+  if (page === 'inicio' || page === 'selecao' || (!dadosCarregados && page !== 'nao-encontrada')) {
     return (
-      <main ref={conteudoRef} tabIndex={-1} aria-label="Conteúdo principal" className="relative h-screen overflow-y-auto">
+      // Coluna flex: a apresentação cresce para ocupar a altura livre, o que
+      // mantém os atalhos ancorados no rodapé sem criar rolagem artificial.
+      <main ref={conteudoRef} tabIndex={-1} aria-label="Conteúdo principal" className="relative flex h-screen flex-col overflow-y-auto">
+        {/* `fixed`: a apresentação rola dentro do próprio main, e um fundo absoluto
+            rolaria junto, descolando do enquadramento. */}
+        <FundoDinamico className="fixed inset-0" />
         <PainelAtividades />
         <AtividadesIA />
-        <div className="mx-auto flex max-w-6xl justify-end px-4 pt-2"><Aparencia /></div>
         <Apresentacao />
       </main>
     );
@@ -50,9 +55,7 @@ export default function App() {
         <PainelAtividades />
         <AtividadesIA />
         <NavigationHistory />
-        {page === 'nao-encontrada' ? <UnknownPage /> : !dadosCarregados || page === 'selecao' ? (
-          <div key={`selecao-${page}`} className="eco-page-enter px-3 py-4 sm:px-6"><SelecaoInicial edicao={dadosCarregados} onVoltar={() => navigatePage('dashboard')} /></div>
-        ) : (
+        {page === 'nao-encontrada' ? <UnknownPage /> : (
           // `min-h-full` (e não `h-full`): com altura fixa em 100%, o conteúdo
           // que transborda escapa da caixa e o `padding-bottom` fica desenhado
           // uma tela acima do fim real — o respiro simplesmente não aparece.
