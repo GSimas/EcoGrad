@@ -339,7 +339,9 @@
 }
 
 /* Shared data tables keep full labels readable inside their own scroll area. */
-.tabela-exploravel th, .tabela-exploravel td { min-width: 7rem; max-width: 28rem; }
+.tabela-exploravel td { min-width: 7rem; max-width: 28rem; }
+/* O cabeçalho divide a largura com o funil de filtro: cabe mais texto sem quebrar. */
+.tabela-exploravel th { min-width: 9.5rem; max-width: 28rem; }
 .tabela-exploravel th { white-space: normal; }
 .tabela-exploravel td:first-child { min-width: 14rem; }
 
@@ -567,6 +569,7 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
   --vidro-opacidade: .86;
 }
 
+/* Barras de faixa dos filtros de tabela: finas, com o polegar na cor de ação. */
 /* Fundo animado: decoração atrás do conteúdo, nunca capturando ponteiro.
    O posicionamento vem da classe utilitária (`fixed` ou `absolute`) de quem
    monta o componente — declarar `position` aqui sobrescreveria as duas. */

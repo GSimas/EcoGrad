@@ -2,7 +2,8 @@ import { useId, useMemo, type ReactNode } from 'react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { baixarArquivo, cn } from '@/lib/utils';
-import { valorNumericoTabela, consultaInicial, consultarLinhas, contextoPublicavel, csvComContexto, pacoteExportacao, type ConsultaTabela } from '@/lib/visualizacao';
+import { FiltroCabecalho } from './FiltroCabecalho';
+import { valorExibido, consultaInicial, consultarLinhas, contextoPublicavel, csvComContexto, filtroAtivo, pacoteExportacao, type ConsultaTabela, type FiltroColuna, type RotulosColuna } from '@/lib/visualizacao';
 
 export interface ColunaTabela<T> {
   chave: string;
@@ -26,9 +27,21 @@ export function Tabela<T extends Record<string, unknown>>({
   const id = useId();
   const [consulta, setConsulta] = useSessionField<ConsultaTabela>('tabela.' + titulo, consultaInicial);
   const chaves = colunas.map((c) => c.chave);
-  const filtradas = useMemo(() => consultarLinhas(linhas, chaves, consulta), [linhas, colunas, consulta]);
+  // Colunas que desenham a própria célula ditam o texto do filtro por seleção
+  // quando esse desenho é texto puro (um ano sem separador de milhar, por exemplo).
+  const rotulos = useMemo<RotulosColuna>(() => Object.fromEntries(colunas.filter((c) => c.render).map((c) =>
+    [c.chave, (l: Record<string, unknown>) => { const r = c.render?.(l as T); return typeof r === 'string' ? r : valorExibido(l[c.chave]); }])), [colunas]);
+  const filtradas = useMemo(() => consultarLinhas(linhas, chaves, consulta, rotulos), [linhas, colunas, consulta, rotulos]);
   const pagina = Math.max(0, Math.min(consulta.pagina, Math.ceil(filtradas.length / 25) - 1));
   const alterar = (v: Partial<ConsultaTabela>) => setConsulta({ ...consulta, pagina: 0, ...v });
+  const filtros = consulta.filtros ?? {};
+  const definirFiltro = (chave: string, f: FiltroColuna | null) => {
+    const proximos = { ...filtros };
+    if (f) proximos[chave] = f; else delete proximos[chave];
+    alterar({ filtros: proximos });
+  };
+  const ativos = colunas.filter((c) => filtroAtivo(filtros[c.chave])).length;
+  const ordenar = (chave: string, direcao: 'asc' | 'desc') => alterar({ coluna: chave, direcao });
   const exportar = (formato: 'csv' | 'json') => {
     const s = useEcoGradStore.getState();
     const meta = { ...contextoPublicavel(s), ...contexto, titulo, descricao: descricao ?? '', exportadoEm: new Date().toISOString(), consulta, linhasDisponiveis: linhas.length, linhasExportadas: filtradas.length, escopo: 'Todas as linhas filtradas e ordenadas, não apenas a página visível' };
@@ -42,22 +55,31 @@ export function Tabela<T extends Record<string, unknown>>({
       <label htmlFor={id} className="min-w-0 flex-1 basis-56 text-sm"><span>Buscar em {titulo}</span><input className="input mt-1" id={id} type="search" value={consulta.busca} onChange={(e) => alterar({ busca: e.target.value })} /></label>
       <button type="button" className="btn" onClick={() => setConsulta(consultaInicial)}>Restaurar tabela</button>
     </div>
-    <p className="text-xs text-slate-400" role="status">{filtradas.length} de {linhas.length} linhas · {consulta.coluna ? `${colunas.find((c) => c.chave === consulta.coluna)?.rotulo ?? consulta.coluna}: ${consulta.direcao === 'asc' ? 'crescente' : 'decrescente'}` : 'ordem original'}. Busca e ordenação afetam somente esta tabela.</p>
+
+    <p className="text-xs text-slate-400" role="status">{filtradas.length} de {linhas.length} linhas · {consulta.coluna ? `${colunas.find((c) => c.chave === consulta.coluna)?.rotulo ?? consulta.coluna}: ${consulta.direcao === 'asc' ? 'crescente' : 'decrescente'}` : 'ordem original'} · {ativos ? `${ativos} ${ativos === 1 ? 'coluna filtrada' : 'colunas filtradas'}` : 'nenhuma coluna filtrada'}. O funil no cabeçalho filtra a coluna; busca, filtros e ordenação afetam somente esta tabela.</p>
     <div className={cn('overflow-auto rounded-lg border border-eco-border', altura)} role="region" aria-label={`Tabela ${titulo}; role para ler todas as colunas`} tabIndex={0}>
       <table className="tabela tabela-exploravel">
         <caption className="p-3 text-left text-sm font-medium">{titulo}</caption>
         <thead><tr>{colunas.map((c) => <th key={c.chave} scope="col" aria-sort={consulta.coluna === c.chave ? consulta.direcao === 'asc' ? 'ascending' : 'descending' : 'none'}>
-          <button type="button" className="min-h-11 text-left" aria-label={`Ordenar ${titulo} por ${c.rotulo}`} onClick={() => alterar({ coluna: c.chave, direcao: consulta.coluna === c.chave && consulta.direcao === 'asc' ? 'desc' : 'asc' })}>{c.rotulo} {consulta.coluna === c.chave ? consulta.direcao === 'asc' ? '↑' : '↓' : '↕'}</button>
+          {/* Ordem no clique do título; o funil abre o menu da própria coluna. */}
+          <div className="flex items-center gap-1">
+            <button type="button" className="min-h-11 flex-1 text-left" aria-label={`Ordenar ${titulo} por ${c.rotulo}`} onClick={() => alterar({ coluna: c.chave, direcao: consulta.coluna === c.chave && consulta.direcao === 'asc' ? 'desc' : 'asc' })}>{c.rotulo} {consulta.coluna === c.chave ? consulta.direcao === 'asc' ? '↑' : '↓' : '↕'}</button>
+            <FiltroCabecalho rotulo={c.rotulo} chave={c.chave} linhas={linhas} rotulos={rotulos} filtro={filtros[c.chave]}
+              aoFiltrar={(f) => definirFiltro(c.chave, f)}
+              ordem={consulta.coluna === c.chave ? consulta.direcao : null}
+              aoOrdenar={(d) => ordenar(c.chave, d)} />
+          </div>
         </th>)}{onAbrir && <th scope="col">Explorar</th>}</tr></thead>
         <tbody>{filtradas.slice(pagina * 25, (pagina + 1) * 25).map((linha, i) => <tr key={i}>{colunas.map((c) => {
           const bruto = linha[c.chave];
-          const numero = typeof bruto === 'number' && Number.isFinite(bruto) ? valorNumericoTabela(bruto) : typeof bruto === 'boolean' ? bruto ? 'Sim' : 'Não' : String(bruto ?? 'Não informado');
+          // Mesmo texto que o filtro por seleção lista: a opção marcada é o que se lê aqui.
+          const numero = valorExibido(bruto);
           return <td key={c.chave} className={cn(c.className, '!whitespace-normal !overflow-visible !text-clip break-words')}>
             {c.render ? c.render(linha) : c.barra ? <div className="flex items-center gap-2"><span aria-hidden="true" className="h-1.5 w-12 shrink-0 overflow-hidden rounded bg-eco-border"><span className="block h-full bg-eco-accent" style={{ width: `${Math.max(0, Math.min(100, c.barra.max > 0 ? Number(bruto) / c.barra.max * 100 : 0))}%` }} /></span><span>{numero}</span></div> : numero}
           </td>;
         })}{onAbrir && <td><button type="button" className="btn" aria-label={`Explorar ${rotuloAbrir ? rotuloAbrir(linha) : String(linha[colunas[0]?.chave] ?? 'registro')}`} onClick={() => onAbrir(linha)}>Explorar</button></td>}</tr>)}</tbody>
       </table>
-      {!filtradas.length && <p className="p-4 text-sm">{linhas.length ? 'Nenhuma linha corresponde à busca. Restaure a tabela para voltar.' : vazio}</p>}
+      {!filtradas.length && <p className="p-4 text-sm">{linhas.length ? 'Nenhuma linha corresponde à busca e aos filtros de coluna. Restaure a tabela para voltar.' : vazio}</p>}
     </div>
     {filtradas.length > 25 && <nav aria-label={`Paginação de ${titulo}`} className="flex flex-wrap items-center gap-2"><button className="btn" disabled={pagina === 0} onClick={() => alterar({ pagina: pagina - 1 })}>Anterior</button><span className="text-sm">Página {pagina + 1} de {Math.ceil(filtradas.length / 25)}</span><button className="btn" disabled={(pagina + 1) * 25 >= filtradas.length} onClick={() => alterar({ pagina: pagina + 1 })}>Próxima</button></nav>}
     <div className="flex flex-wrap gap-2"><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('csv')} aria-label={`Exportar ${titulo} em CSV com contexto`}>CSV com contexto</button><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('json')} aria-label={`Exportar ${titulo} em JSON com contexto`}>JSON com contexto</button></div>
