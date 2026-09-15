@@ -1,8 +1,8 @@
-import { useDeferredValue, useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react';
+import { useCallback, useDeferredValue, useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Check, Info, Rocket, Search, X } from 'lucide-react';
 import { cn, correspondeBusca } from '@/lib/utils';
-import { buscarNoAcervo, carregarIndiceBusca, prepararBusca, type ResultadoBusca } from '@/lib/busca-global';
+import { buscarNoAcervo, carregarIndiceBusca, MAX_COLECOES_POR_ITEM, prepararBusca, type ResultadoBusca } from '@/lib/busca-global';
 import { carregarCobertura, type ColecaoCobertura } from '@/lib/colecoes';
 import { abrirEscolhaDoAcervo, colecoesDaEscolha } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -108,12 +108,18 @@ export function BuscaGlobal() {
   }), [escolhidos]);
   const previa = useMemo(() => colecoesDaEscolha(escolha), [escolha]);
   const totalColecoes = previa.programas.length + previa.cursosTcc.length;
+  // A alternativa sem limite, oferecida quando algum item passa dele.
+  const previaTodas = useMemo(() => colecoesDaEscolha(escolha, Infinity), [escolha]);
+  const totalTodas = previaTodas.programas.length + previaTodas.cursosTcc.length;
+  const [perguntandoLimite, setPerguntandoLimite] = useState(false);
   const totalItens = escolha.itens.length;
-  /** Volume comprimido das coleções que a seleção vai baixar. */
-  const downloadMiB = useMemo(() => cobertura.data
-    ? cobertura.data.colecoes.filter((c) => (c.tipo === 'ppg' ? previa.programas : previa.cursosTcc).includes(c.nome))
+  /** Volume comprimido que um conjunto de coleções vai baixar. */
+  const mibDe = useCallback((p: { programas: string[]; cursosTcc: string[] }) => cobertura.data
+    ? cobertura.data.colecoes.filter((c) => (c.tipo === 'ppg' ? p.programas : p.cursosTcc).includes(c.nome))
       .reduce((total, c) => total + c.downloadBytes, 0) / 1024 / 1024
-    : null, [cobertura.data, previa]);
+    : null, [cobertura.data]);
+  const downloadMiB = useMemo(() => mibDe(previa), [mibDe, previa]);
+  const downloadTodasMiB = useMemo(() => mibDe(previaTodas), [mibDe, previaTodas]);
   // Só pessoas entram na fusão; coleções e temas ficam de fora.
   const candidatos = useMemo<Candidato[]>(
     () => escolhidos.flatMap((e) => e.kind === 'item' && ehPessoa(e.item.tipo) ? [{ nome: e.item.nome, tipo: e.item.tipo, registros: e.item.registros }] : []),
@@ -127,10 +133,24 @@ export function BuscaGlobal() {
     return g && g.canonico !== e.item.nome ? g.canonico : null;
   };
 
-  const carregar = () => {
+  const carregar = (limite = MAX_COLECOES_POR_ITEM) => {
     setAberta(false);
-    const resultado = abrirEscolhaDoAcervo(escolha);
+    setPerguntandoLimite(false);
+    const resultado = abrirEscolhaDoAcervo(escolha, limite);
     setEnvio(resultado.carregando ? { colecoes: resultado.colecoes, omitidas: resultado.omitidas } : null);
+  };
+  /**
+   * Item espalhado em mais coleções que o limite: só as maiores deixam a análise
+   * com números menores que os da busca, e todas pesam no download. Quem escolhe
+   * entre rapidez e números completos é o usuário, antes de baixar.
+   */
+  const pedirCarregar = () => {
+    if (previa.omitidas > 0) {
+      setAberta(false);
+      setPerguntandoLimite(true);
+      return;
+    }
+    carregar();
   };
 
   const teclar = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -211,7 +231,7 @@ export function BuscaGlobal() {
                       </>)}
                     </div>
                   ))}
-                  {previa.omitidas > 0 && <p className="text-xs text-slate-400">Itens presentes em muitas coleções carregam apenas as maiores; {plural(previa.omitidas, 'coleção ficou', 'coleções ficaram')} de fora. Selecione-as pelo nome se precisar delas.</p>}
+                  {previa.omitidas > 0 && <p className="text-xs text-slate-400">Há itens em mais de {MAX_COLECOES_POR_ITEM} coleções. Ao carregar, você escolhe entre só as maiores ({plural(totalColecoes, 'coleção', 'coleções')}) e todas ({plural(totalTodas, 'coleção', 'coleções')}).</p>}
                   {downloadMiB !== null && <p className="text-xs text-slate-400">Download aproximado: {downloadMiB.toFixed(2)} MiB comprimidos. Coleções podem conter registros sobrepostos; somar volumes não produz um total de trabalhos únicos.</p>}
                 </div>
               </Janela>
@@ -263,7 +283,7 @@ export function BuscaGlobal() {
             {pulso > 0 && <span key={pulso} aria-hidden="true" className="eco-selecao-pulso pointer-events-none absolute inset-0 rounded-lg border-2 border-eco-accent" />}
           </div>
 
-          <button type="button" className="btn btn-primary min-h-11 shrink-0 px-3 sm:px-4" onClick={carregar}
+          <button type="button" className="btn btn-primary min-h-11 shrink-0 px-3 sm:px-4" onClick={pedirCarregar}
             disabled={totalColecoes === 0 || carregando}
             aria-label={`Carregar ${plural(totalColecoes, 'coleção', 'coleções')}`}
             title={totalColecoes === 0 ? 'Selecione um item ou uma coleção para carregar' : `Carregar ${plural(totalColecoes, 'coleção', 'coleções')}`}>
@@ -311,6 +331,24 @@ export function BuscaGlobal() {
         )}
       </div>
 
+      <Janela aberta={perguntandoLimite} onOpenChange={setPerguntandoLimite} titulo="Quantas coleções carregar?"
+        descricao={`${escolha.itens.filter((i) => i.colecoes.length > MAX_COLECOES_POR_ITEM).length === 1 ? 'Um item escolhido aparece' : 'Itens escolhidos aparecem'} em mais de ${MAX_COLECOES_POR_ITEM} coleções. A análise só conta o que for carregado.`}>
+        <div className="space-y-3 text-sm">
+          <ul className="space-y-1 text-slate-300">
+            {escolha.itens.filter((i) => i.colecoes.length > MAX_COLECOES_POR_ITEM).map((i) => (
+              <li key={`${i.tipo}:${i.nome}`}><strong className="text-slate-100">{i.nome}</strong> · {i.tipo}: {plural(i.registros, 'registro', 'registros')} em {plural(i.colecoes.length, 'coleção', 'coleções')}</li>
+            ))}
+          </ul>
+          <button type="button" className="btn w-full flex-col items-start gap-1 py-3 text-left" onClick={() => carregar(MAX_COLECOES_POR_ITEM)}>
+            <span className="font-semibold">Só as maiores: {plural(totalColecoes, 'coleção', 'coleções')}{downloadMiB !== null && ` · ~${downloadMiB.toFixed(1)} MiB`}</span>
+            <span className="text-xs text-slate-400">Carrega mais rápido, mas {plural(previa.omitidas, 'coleção fica', 'coleções ficam')} de fora: os números da análise serão menores que os mostrados na busca.</span>
+          </button>
+          <button type="button" className="btn w-full flex-col items-start gap-1 py-3 text-left" onClick={() => carregar(Infinity)}>
+            <span className="font-semibold">Todas: {plural(totalTodas, 'coleção', 'coleções')}{downloadTodasMiB !== null && ` · ~${downloadTodasMiB.toFixed(1)} MiB`}</span>
+            <span className="text-xs text-slate-400">Os números da análise batem com os da busca. O download é maior e a análise pode ficar lenta em celulares.</span>
+          </button>
+        </div>
+      </Janela>
       {aviso && <p role="status" className="mt-2 text-xs text-amber-200">{aviso}</p>}
       <p id={statusId} role="status" className="mt-2 min-h-5 text-xs text-slate-300">{status}</p>
       {carregando && <div className="mt-2"><Progresso valor={progresso} texto={mensagem || 'Preparando o carregamento...'} /></div>}
