@@ -35,3 +35,56 @@ export const PADROES = {
 
 export const casaTema = (d, padroes) => padroes.some((p) => p.test(textoDoDoc(d)));
 export const casaTemaPorRotulo = (d, padroes) => padroes.some((p) => p.test(rotulosDoDoc(d)));
+
+/**
+ * Identidade de obra: a mesma regra das ferramentas do chat (sem acento, sem
+ * caixa, espaços colapsados). Registros da mesma obra em coleções diferentes
+ * contam uma vez.
+ */
+export const identidadeObra = (titulo) => chave(titulo).replace(/\s+/g, ' ').trim();
+
+/**
+ * Id curto e estável da obra, que liga as decisões da triagem aos registros.
+ * FNV-1a de 32 bits: colisão é irrelevante nas centenas de obras de uma triagem.
+ */
+export const idObra = (titulo) => {
+  let h = 0x811c9dc5;
+  for (const c of identidadeObra(titulo)) {
+    h ^= c.codePointAt(0);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return `o-${h.toString(16).padStart(8, '0')}`;
+};
+
+/** Dois vocabulários a até 80 caracteres, sem atravessar a fronteira entre campos. */
+const perto = (a, b) => new RegExp(`${a}[^${SENTINELA}]{0,80}${b}`);
+/** Palavra inteira: nenhuma letra imediatamente antes nem depois. */
+const palavra = (p) => new RegExp(`(?<![a-z])${p}(?![a-z])`);
+
+/**
+ * Vocabulário vizinho que `PADROES` não cobre. Só traz candidatos para a
+ * triagem humana — quem decide se pertencem é quem tria —, por isso não entra
+ * em `casaTema` nem nos gabaritos.
+ */
+export const EXPANSAO = {
+  empreendedorismoFeminino: [
+    palavra('empreendedoras?'),
+    palavra('empresarias?'),
+    perto('(mulher\\w*|feminin\\w*|genero)', '(negocio\\w*|microempre\\w*|pequenas? empresas?|autonomia economica|geracao de renda)'),
+    perto('(negocio\\w*|microempre\\w*|geracao de renda)', '(mulher\\w*|feminin\\w*)'),
+  ],
+  psicologiaPositiva: [
+    /bem-estar (no trabalho|psicologico|laboral)/,
+    /satisfacao com a vida/,
+    /afetos? positivos?/,
+    /capital psicologico/,
+    /florescimento/,
+    /gratidao/,
+    /otimismo/,
+    /autoeficacia/,
+    /engajamento no trabalho/,
+    palavra('panas'),
+    /mindfulness/,
+    /forcas pessoais/,
+  ],
+};

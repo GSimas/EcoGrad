@@ -143,6 +143,6 @@ Antes de qualquer infraestrutura, a varredura produziu três fatos que sustentam
 
 ## O que falta para fechar a Etapa 0
 
-- **Triagem humana dos conjuntos candidatos** de Q10 a Q13: revisar os 31 e os 26 registros um a um, marcando pertence/não pertence com justificativa, e acrescentar trabalho que a varredura léxica não alcançou. Sem isso, as metas de revocação e precisão não têm denominador.
+- **Triagem humana dos conjuntos candidatos** de Q10 a Q13: revisar os 31 e os 26 registros um a um, marcando pertence/não pertence com justificativa, e acrescentar trabalho que a varredura léxica não alcançou. Sem isso, as metas de revocação e precisão não têm denominador. A planilha sai de `npm run afericao:triagem`, em [`evidencias/afericao/triagem-*.md`](evidencias/afericao/), com candidatos da varredura, candidatos de vocabulário vizinho e resumo completo; as decisões ficam em `evidencias/afericao/triagem-decisoes.json`, com sugestões de modelo separadas da decisão humana, e `npm run afericao` passa a medir revocação e precisão quando a triagem estiver completa e assinada.
 - **Definir quem assina a triagem**, já que a operação declarada é ninguém. Gabarito temático sem responsável não é gabarito.
 - Rodar o script novamente na véspera de cada aferição e guardar o JSON junto do resultado da rodada.

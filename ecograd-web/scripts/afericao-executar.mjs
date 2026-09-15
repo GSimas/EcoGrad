@@ -21,7 +21,7 @@ import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PADROES, casaTema } from './afericao-padroes.mjs';
+import { PADROES, casaTema, idObra } from './afericao-padroes.mjs';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const raizApp = resolve(aqui, '..');
@@ -157,6 +157,35 @@ for (const [id, consulta, chaveGab, chavePadrao] of [
   informar(id, 'lacuna medida no gabarito', `${g.somenteNoResumo} de ${g.registros} só existem no texto do resumo`);
 }
 
+// Q10 a Q13 — contra a triagem humana, quando existir, estiver completa e assinada
+{
+  const caminho = join(raizRepo, 'docs', 'evidencias', 'afericao', 'triagem-decisoes.json');
+  const T = existsSync(caminho) ? JSON.parse(readFileSync(caminho, 'utf8')) : {};
+  const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : 'sem denominador');
+  const medir = (id, consulta, bloco, frase) => {
+    const obras = Object.entries(bloco?.obras ?? {});
+    const decididas = obras.filter(([, o]) => o.decisao).length;
+    if (!bloco?.responsavel || !obras.length || decididas < obras.length) {
+      informar(id, 'triagem', `pendente: ${decididas} de ${obras.length} obras decididas${bloco?.responsavel ? '' : ', sem responsável'} (npm run afericao:triagem)`);
+      return null;
+    }
+    const curadas = new Set(obras.filter(([, o]) => o.decisao === 'pertence').map(([k]) => k));
+    const recusadas = new Set(obras.filter(([, o]) => o.decisao === 'nao_pertence').map(([k]) => k));
+    const achadas = new Set(ferramentas.buscarNoTexto(docsTodos, consulta, Infinity, frase).itens.map((i) => idObra(i.titulo)));
+    const acertos = [...achadas].filter((k) => curadas.has(k)).length;
+    const julgadas = [...achadas].filter((k) => curadas.has(k) || recusadas.has(k)).length;
+    informar(id, `consulta literal "${consulta}" contra a triagem de ${bloco.responsavel}`,
+      `revocação ${pct(acertos, curadas.size)} (${acertos} de ${curadas.size} obras); precisão ${pct(acertos, julgadas)} entre as ${julgadas} obras recuperadas que foram triadas`);
+    return achadas;
+  };
+  const q10 = medir('Q10', 'empreendedorismo feminino', T.Q10, true);
+  const q11 = medir('Q11', 'mulheres empreendedoras', T.Q10, false);
+  if (q10 && q11) informar('Q11', 'sobreposição da paráfrase com Q10', pct([...q11].filter((k) => q10.has(k)).length, q10.size));
+  if (medir('Q12', 'psicologia positiva', T.Q12, true)) {
+    informar('Q13', 'obras de bem-estar subjetivo no trabalho na triagem', Object.values(T.Q12.obras).filter((o) => o.decisao === 'pertence' && o.q13 === true).length);
+  }
+}
+
 // Q14 — tema inexistente
 {
   const r = ferramentas.buscarNoTexto(docsTodos, 'blockchain quântico', 5, true);
@@ -193,6 +222,6 @@ for (const [id, consulta, chaveGab, chavePadrao] of [
 }
 
 console.log(`\n${medidas - falhas} de ${medidas} conferências passaram.`);
-console.log('Q07, Q11, Q13, Q15 e Q18 a Q22 dependem de triagem humana ou da camada de síntese; Q16 e Q17 estão bloqueadas até a extração ontológica.');
+console.log('Q07, Q15 e Q18 a Q22 dependem da camada de síntese; Q10 a Q13 fecham com a triagem assinada; Q16 e Q17 estão bloqueadas até a extração ontológica.');
 console.log(`Gabarito de ${G.geradoEm}, base ${G.bases.base_consolidada_ufsc.sha256.slice(0, 8)}.`);
 if (falhas) process.exit(1);

@@ -1,0 +1,2064 @@
+{
+  "instrucoes": "Preencha decisao (\"pertence\", \"nao_pertence\" ou \"duvida\") e justificativa de cada obra; ao terminar, assine em responsavel e assinadoEm. \"sugestao\" vem de modelo de linguagem e não conta como decisão. Depois rode npm run afericao:triagem e npm run afericao.",
+  "bases": {
+    "base_consolidada_ufsc": "7b1cbeb9dea18b2d60abd671958b8371cdf13e1efe17af2dd4e5764bc500edcc",
+    "base_tcc_ufsc": "e36c0d0ae50c2b510c9160c9555abd423b0ab0f09d3d759c08e1b97703dd9282"
+  },
+  "Q10": {
+    "responsavel": null,
+    "assinadoEm": null,
+    "obras": {
+      "o-ba951fc7": {
+        "titulo": "A Influência do Planejamento Estratégico Pessoal de Empreendedoras nos Conflitos entre Trabalho e Família",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Aplica escala de conflito trabalho-familia em 57 mulheres empreendedoras de grupos de apoio ao empreendedorismo feminino da Grande Florianopolis."
+        }
+      },
+      "o-3affc6f5": {
+        "titulo": "Empreendedorismo feminino: análise dos fatores motivacionais e desafios enfrentados por mulheres amapaenses à frente de pequenas empresas",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Titulo e resumo: fatores motivacionais e desafios de 21 mulheres amapaenses a frente de pequenas empresas; empreendedorismo feminino e o objeto."
+        }
+      },
+      "o-881cc0f7": {
+        "titulo": "A inovação da gestão da qualidade na saúde da mulher: uma análise das possibilidades da salutogênese no empreendedorismo da clínica alfa de medicina da mulher",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Empreender clinica de medicina da mulher: as mulheres sao as pacientes/publico-alvo do negocio, nao ha recorte sobre mulheres que empreendem."
+        }
+      },
+      "o-42c37378": {
+        "titulo": "Fatto a Femme: uma história de empreendedorismo feminino em SC",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Reportagens sobre a feira Fatto a Femme, iniciativa de empreendedorismo feminino que promove geracao de renda para mulheres em Florianopolis."
+        }
+      },
+      "o-b38ff885": {
+        "titulo": "Empreendedorismo Feminino à luz da Economia Feminista: Escolha ou Falta de Opção?",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Analisa o empreendedorismo feminino no Brasil sob a Economia Feminista, avaliando perfil socioeconomico das mulheres empreendedoras e seus empreendimentos."
+        }
+      },
+      "o-6ba21471": {
+        "titulo": "Gestão feminina: a experiência de mulheres que se destacam na polícia civil",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Estuda competencias empreendedoras de mulheres gestoras na policia civil; ha genero e comportamento empreendedor, mas nenhum negocio proprio envolvido."
+        }
+      },
+      "o-cdf2e369": {
+        "titulo": "Pesquisa sobre objetivos e estratégias de marketing digital de microempreendedores do varejo de moda da cidade de Londrina/PR",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Marketing digital de microempreendedores do varejo de moda; as sete respondentes serem mulheres e dado incidental, sem recorte de genero."
+        }
+      },
+      "o-cf8ea908": {
+        "titulo": "Empreendedorismo feminino em empresas de tecnologia",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Analisa o empreendedorismo feminino sob a otica de 19 fundadoras de startups de tecnologia, seus drivers e dificuldades de genero."
+        }
+      },
+      "o-25c6b819": {
+        "titulo": "Empreendedorismo Feminino: um estudo de caso com mulheres empreendedoras na grande florianópolis, sob a ótica da economia feminista",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Estudo de caso com mulheres empreendedoras da Grande Florianopolis sob a otica da economia feminista; empreendedorismo feminino e o tema central."
+        }
+      },
+      "o-34670b4a": {
+        "titulo": "Empreendedorismo feminino: um mecanismo em busca da igualdade de gênero e autonomia econômica da mulher",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Analisa o empreendedorismo feminino como mecanismo de busca por igualdade de genero e autonomia economica da mulher."
+        }
+      },
+      "o-2497b0fc": {
+        "titulo": "Mulheres empreendedoras em tempos de pandemia da covid-19 no município de Montes Claros, MG",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Tese analisa efeitos da pandemia sobre o empreendedorismo feminino em Montes Claros, investigando redes das empreendedoras do municipio."
+        }
+      },
+      "o-3eb984cc": {
+        "titulo": "Novembro entre Elas: Em busca do fomento ao empreendedorismo feminino",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Projeto de fomento ao empreendedorismo feminino com palestras e pesquisa sobre o perfil das empreendedoras participantes."
+        }
+      },
+      "o-fa54c963": {
+        "titulo": "Processo de criação de personas para programa de empreendedorismo feminino",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Cria personas para atender as empreendedoras do programa Sebrae DELAS, programa explicitamente de empreendedorismo feminino."
+        }
+      },
+      "o-2c1bc4f2": {
+        "titulo": "\"A schort tretys and a comfortabyl for synful wrecchys\": as traduções do inglês médio para o inglês moderno da autobiografia The book of Margery Kempe",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Cotejo de traducoes de The book of Margery Kempe; a palavra empreendedora aparece so ao descrever a autora medieval, mencao incidental."
+        }
+      },
+      "o-d934bbb2": {
+        "titulo": "Desafios de gestão enfrentados por empreendedoras da região da Grande Florianópolis",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Identifica deficiencias de competencias de gestao em 149 mulheres empreendedoras da Grande Florianopolis; empreendedorismo feminino e o foco."
+        }
+      },
+      "o-7557ead8": {
+        "titulo": "O empreendedorismo inovador sob uma perspectiva de gênero",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Compreende desafios do empreendedorismo inovador sob perspectiva de genero com o grupo Mulheres Acate, 40 mulheres empreendedoras em tecnologia."
+        }
+      },
+      "o-1bc897af": {
+        "titulo": "Startups Catarinenses Lideradas por Mulheres: Um Estudo Preliminar",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Mapeia startups catarinenses com CEOs mulheres, identificando 43 empresas lideradas por mulheres e os locais onde elas mais empreendem."
+        }
+      },
+      "o-89f87818": {
+        "titulo": "Empoderamento da mulher empreendedora: uma abordagem visando o enfrentamento de barreiras",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Compreende o empoderamento da mulher frente as barreiras de genero ao empreender, com entrevistas a vinte empreendedoras catarinenses."
+        }
+      },
+      "o-afabe9be": {
+        "titulo": "Iniciativas de ação social de cooperativas à luz da inovação social",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Inovacao social em cooperativas agropecuarias; cita empoderamento de mulheres e jovens nas cooperativas, sem tratar de negocio proprio feminino."
+        }
+      },
+      "o-0ecbd3a0": {
+        "titulo": "Processos de aprendizagem da empreendedora em empresas de tecnologia",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Analisa processos de aprendizagem de cinco empreendedoras proprietarias de empresas incubadas no CELTA, evidenciando divergencias de genero no setor."
+        }
+      },
+      "o-63bcaa4d": {
+        "titulo": "Vestuário de moda sustentável: elementos que agregam valor ao produto",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Elementos de valor no vestuario sustentavel sob a otica de designers; a predominancia feminina entre entrevistados e apenas dado do perfil."
+        }
+      },
+      "o-08291991": {
+        "titulo": "Mulheres colaboradoras em empresas de tecnologia e os processos de aprendizagem do empreendedorismo: um estudo de caso na ACATE",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Analisa processos de aprendizagem, motivacoes e dificuldades das mulheres ao empreender em tecnologia, discutindo o machismo e o baixo indice de empreendedoras."
+        }
+      },
+      "o-c026b280": {
+        "titulo": "O Brasil em cena: negociando gênero, raça e sentidos de brasilidades em atividades culturais em Los Angeles (2015-2016)",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Tese traz capitulo sobre empreendedorismo etnico e outro sobre genero em atividades culturais, sem articular explicitamente mulheres empreendedoras."
+        }
+      },
+      "o-da9fd2fd": {
+        "titulo": "Programa Mulheres Mil: uma análise no campo das políticas de inclusão de IFSC",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Programa Mulheres Mil liga inclusao a geracao de renda e ao empreendedorismo, mas o objeto e a critica a politica de inclusao, nao o negocio proprio."
+        }
+      },
+      "o-5fa36b76": {
+        "titulo": "Entre buscar oportunidades e obter reconhecimento: comportamento empreendedor de psicólogos em sua trajetória profissional",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Comportamento empreendedor de psicologos; cinco dos seis participantes serem mulheres e dado da amostra, sem recorte de genero na analise."
+        }
+      },
+      "o-7054dada": {
+        "titulo": "Caracterização do perfil intraempreendedor dos dirigentes da Universidade Federal de Santa Catarina",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Perfil intraempreendedor de dirigentes da UFSC; o sexo aparece apenas como variavel descritiva do perfil, sem foco em empreender negocio."
+        }
+      },
+      "o-a009343a": {
+        "titulo": "A estrutura psíquica da mulher intraempreendedora: um estudo de caso através de um recorte psicanalítico",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Foco central e a mulher intraempreendedora sob recorte psicanalitico, mas trata de intraempreendedorismo em organizacao, nao de negocio proprio."
+        }
+      },
+      "o-e5c89aaf": {
+        "titulo": "O impacto do microcrédito na trajetória sócio-ocupacional das mulheres empreendedoras: a experiência da Blusol",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Analisa o impacto do microcredito da Blusol na trajetoria e no empoderamento das mulheres empreendedoras, articulando genero e negocio proprio."
+        }
+      },
+      "o-42bff3d9": {
+        "titulo": "Identidade empreendedora de mulheres no Paraná",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Compreende a criacao e o desenvolvimento de empresas por mulheres no Parana a partir do autoconceito empreendedor; dez casos de empreendedoras."
+        }
+      },
+      "o-23b75bab": {
+        "titulo": "A trajetória da mulher moçambicana na obra Niketche: Mulheres sulistas e nortistas",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Analise literaria da personagem Rami em Niketche; o emprestimo para outras mulheres nos negocios e detalhe do enredo, nao objeto do trabalho."
+        }
+      },
+      "o-620d909e": {
+        "titulo": "Estudos culturais e gênero: mulheres na ficção de Urda Alice Klueger",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Analisa a construcao literaria de personagens femininas teuto-blumenauenses; o sucesso nos negocios de Cristina e Emma e traco ficcional, nao empreendedorismo."
+        }
+      },
+      "o-d6b022a1": {
+        "titulo": "Análise da transferência de tecnologia em universidades públicas",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Transferencia de tecnologia em universidades publicas; universidade empreendedora nada tem a ver com mulheres ou genero."
+        }
+      },
+      "o-ec432e37": {
+        "titulo": "Comportamento empreendedor e a capacidade dinâmica e sua relação com o desempenho financeiro",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Comportamento empreendedor de cabeleireiros e desempenho financeiro; sexo aparece apenas como antecedente estatistico da renda."
+        }
+      },
+      "o-31e47f60": {
+        "titulo": "Educação, inovação e empreendedorismo: implicações pedagógicas da orientação empreendedora educacional",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Modelo de gestao educacional com base em orientacao empreendedora educacional; sem qualquer recorte de mulheres ou genero."
+        }
+      },
+      "o-4a00697f": {
+        "titulo": "Inclusão social como processo de dominação: transformando rendeiras em empreendedoras",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Rendeiras (mulheres) sao alvo de formacao em empreendedorismo, mas o resumo analisa governamentalidade e dominacao, sem tratar genero analiticamente."
+        }
+      },
+      "o-f2c6d3f5": {
+        "titulo": "Ferramentas de responsabilidade social: uma análise comparativa",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Comparacao de ferramentas de responsabilidade social corporativa; o termo empresarias e erro grafico de empresariais, sem relacao com mulheres."
+        }
+      },
+      "o-2b464ead": {
+        "titulo": "Desenvolvimento da competência planejar: um estudo com os participantes do Empretec em Santa Catarina",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Desenvolvimento da competencia planejar entre participantes do Empretec; competencias empreendedoras sem recorte de genero."
+        }
+      },
+      "o-1fae48a7": {
+        "titulo": "Tráfico de mulheres, negócios de homens: leituras feministas e anti-coloniais sobre os homens, as masculinidades e/ou o masculino",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Leituras feministas sobre masculinidades e trafico de mulheres; negocios de homens e metafora do titulo, sem relacao com empreender."
+        }
+      },
+      "o-716f308a": {
+        "titulo": "Educação para o empreendedorismo: implicações epistemológicas, políticas e práticas",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Implicacoes epistemologicas e politicas da educacao para o empreendedorismo; nenhum recorte de mulheres ou genero."
+        }
+      },
+      "o-f82fd20b": {
+        "titulo": "Modelo de qualidade de vida dentro dos domínios bio-psico-social para aposentados",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Modelo de qualidade de vida para aposentados; usa teste de tendencia empreendedora, sem qualquer recorte de genero."
+        }
+      },
+      "o-2ced1a65": {
+        "titulo": "O empreendedorismo no processo de criação de empresa de base tecnológica em incubadora: o caso do Centro de Incubação e Desenvolvimento Empresarial de Manaus",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Caracteristicas empreendedoras de criadores de empresas de base tecnologica em incubadora de Manaus; sem recorte de mulheres."
+        }
+      },
+      "o-7d4f46c6": {
+        "titulo": "Competências e práticas pedagógicas digitais no contexto da educação básica com foco no perfil do aluno",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias digitais de alunos da educacao basica; o termo empreendedoras vem do macrotema automatico, nao do conteudo."
+        }
+      },
+      "o-d5455f1f": {
+        "titulo": "SmartB: an artificial intelligence artifact for business diagnosis prediction",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Artefato de inteligencia artificial para diagnostico empresarial; sem recorte de mulheres ou genero no objeto."
+        }
+      },
+      "o-518c92c2": {
+        "titulo": "SUSTENTABILIDADE CORPORATIVA EM EMPRESAS JUNIORES: DIAGNÓSTICO DE PRÁTICAS E DESAFIOS DE REPORTE NA UFSC.",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Reporte de sustentabilidade GRI em empresas juniores da UFSC; universidade empreendedora sem relacao com mulheres."
+        }
+      },
+      "o-933d3cd5": {
+        "titulo": "A dinâmica da tríplice hélice de inovação no desenvolvimento do polo tecnológico: estudo de caso de florianópolis",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Triplice helice no polo tecnologico de Florianopolis; universidades empreendedoras, sem recorte de genero."
+        }
+      },
+      "o-55fb2688": {
+        "titulo": "A influência das estratégias híbridas na performance de pequenas e médias empresas de Santa Catarina: um estudo de caso",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Estrategias hibridas e desempenho de pequena empresa de base tecnologica; orientacao empreendedora sem recorte de mulheres."
+        }
+      },
+      "o-aa5e3a5c": {
+        "titulo": "A relação entre educação empreendedora, competências empreendedoras e intenção de empreender: um estudo nas Universidades Federais de Santa Catarina",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Relacao entre educacao empreendedora, competencias e intencao de empreender entre estudantes; sem recorte de genero."
+        }
+      },
+      "o-30d7308c": {
+        "titulo": "A transição da Associação de Futebol para a Sociedade Anônima de Futebol e suas implicações jurídicas no caso de falência do clube: Análise dos impactos legais e econômicos para os clubes que se transformam em SAF e enfrentam a falência na nova estrutura empresaria",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Implicacoes juridicas da falencia de clubes transformados em SAF; sociedade empresaria e termo juridico, sem relacao com mulheres."
+        }
+      },
+      "o-41ba50e4": {
+        "titulo": "As contribuições do design sobre o artesanato: diretrizes sobre o equilíbrio entre o tradicional e o contemporâneo",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Contribuicoes do design ao artesanato amazonense; mentalidade empreendedora citada de passagem, sem recorte de genero."
+        }
+      },
+      "o-896189b2": {
+        "titulo": "Autoavaliação da maturidade de competências do neoprofessor: uma ferramenta para a transformação da educação superior à luz da neoaprendizagem",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Ferramenta de autoavaliacao de maturidade de competencias docentes (neoprofessor); sem relacao com mulheres ou negocio proprio."
+        }
+      },
+      "o-47b5fa5e": {
+        "titulo": "Conceito material de culpabilidade das pessoas jurídicas: autorregulação, dever de vigilância e reprovação da sociedade empresária",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Culpabilidade penal das pessoas juridicas e compliance; sociedade empresaria e termo juridico, sem relacao com mulheres."
+        }
+      },
+      "o-d3c38d09": {
+        "titulo": "Desafios e oportunidades para empreender no mercado de confecção de roupas: uma análise de viabilidade para um e-commerce",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Plano de negocios para e-commerce de streetwear; feminino refere-se ao publico consumidor, nao a quem empreende."
+        }
+      },
+      "o-5762962f": {
+        "titulo": "Desenvolvimento do portal Empreenderepolitica para a popularização do empreendedorismo na enfermagem",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Portal educacional sobre empreendedorismo na enfermagem; competencias empreendedoras sem recorte de mulheres ou genero."
+        }
+      },
+      "o-7bd4ca8e": {
+        "titulo": "Diretrizes estratégicas para aquisição de competências digitais do designer de moda no planejamento e desenvolvimento de produto",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Diretrizes de competencias digitais para designers de moda; sem recorte de mulheres ou de negocio proprio feminino."
+        }
+      },
+      "o-ddba3ad9": {
+        "titulo": "Empreend@ - aprendendo empreendedorismo jogando: a experiência do desenvolvimento de um jogo educacional para universitários através do Design Thinking",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Jogo educacional para ensino de empreendedorismo a universitarios de TIC; sem recorte de genero."
+        }
+      },
+      "o-6bf9a3ad": {
+        "titulo": "Empreendedorismo na enfermagem: elaboração de um plano de negócios para consultório de práticas integrativas e complementares",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Plano de negocios para consultorio de praticas integrativas; enfermagem empreendedora sem recorte de mulheres ou genero."
+        }
+      },
+      "o-bf8afabd": {
+        "titulo": "Enfermagem estética: mercado de trabalho na perspectiva do empreendedorismo",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Amostra de 187 enfermeiras estetas (97% mulheres) com perfil empreendedor, mas o estudo nao trata genero como dimensao analitica."
+        }
+      },
+      "o-cced2ce1": {
+        "titulo": "Estratégias universitárias empreendedoras para o desenvolvimento sustentável regional catarinense",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Estrategias universitarias empreendedoras para desenvolvimento sustentavel regional; sem recorte de mulheres."
+        }
+      },
+      "o-712c4d5b": {
+        "titulo": "Framework 3ET - Educação Empreendedora Experiencial Transformadora: proposta para os Institutos Federais de Educação, Ciência e Tecnologia",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Framework de educacao empreendedora experiencial para Institutos Federais; sem recorte de genero."
+        }
+      },
+      "o-033c8bb6": {
+        "titulo": "Modelo de competências do agente integrador de universidade corporativa em rede: estudo de caso de um programa de aprendizagem em rede",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Modelo de competencias do agente integrador de universidade corporativa em rede; sem relacao com mulheres ou empreender."
+        }
+      },
+      "o-ccd3ea38": {
+        "titulo": "O papel da universidade na promoção do desenvolvimento econômico por meio da cultura empreendedora nos Municípios da Grande Florianópolis",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Papel da universidade na cultura empreendedora e desenvolvimento economico da Grande Florianopolis; sem recorte de genero."
+        }
+      },
+      "o-dfd2e318": {
+        "titulo": "Transformação empreendedora em engenharia: aplicada no ctc/ufsc",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Acao educacional empreendedora para estudantes de engenharia no CTC/UFSC; sem recorte de mulheres."
+        }
+      },
+      "o-496941ea": {
+        "titulo": "“Mercado Negro” e racismo em Florianópolis:  um estudo com afroempreendedores sobre o ato de aquilombar-se",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Afroempreendedorismo e aquilombamento em Florianopolis; o recorte analitico e raca, nao genero ou mulheres empreendedoras."
+        }
+      },
+      "o-21f8e41d": {
+        "titulo": "\"Recife é brega, meu amor!\": música periférica, movimento brega e modos de subjetivação em contexto pandêmico e neoliberal",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Etnografia do Movimento Brega no Recife; empresarias aparece apenas na lista de ocupacoes da cadeia produtiva."
+        }
+      },
+      "o-b741d9ef": {
+        "titulo": "A atuação do bibliotecário em consultoria especializada",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Atuacao do bibliotecario em consultoria; postura empreendedora citada como habilidade, sem recorte de mulheres."
+        }
+      },
+      "o-00b634f3": {
+        "titulo": "Assistentes sociais proprietários de si mesmos? Tensionamentos no projeto ético-político do serviço social em face do uso de mídias digitais  para fins profissionais",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Uso de midias digitais por assistentes sociais e praticas empreendedoras neoliberais; sem recorte de genero na analise."
+        }
+      },
+      "o-bdc31b66": {
+        "titulo": "Competência digital e docência: implicações e possibilidades da cultura digital no Novo Ensino Médio em uma escola da rede pública do Estado de Santa Catarina",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias digitais de docentes do Novo Ensino Medio; o termo empreendedoras vem do macrotema automatico."
+        }
+      },
+      "o-58482a3b": {
+        "titulo": "Competências institucionais para a inovação no ensino à luz da neoaprendizagem em IES pública",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias institucionais para inovacao no ensino superior; sem relacao com mulheres ou empreendedorismo proprio."
+        }
+      },
+      "o-b1051ed5": {
+        "titulo": "Desenvolvimento de competências digitais docentes aderentes à educação financeira: um estudo de caso em uma escola pública de ensino médio",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias digitais docentes aderentes a educacao financeira; sem recorte de mulheres ou negocio proprio."
+        }
+      },
+      "o-9283ad80": {
+        "titulo": "Desenvolvimento de um plano de negócios para casas de vegetação no cultivo de mudas de orquídeas phalaenopsis",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Plano de negocio para casas de vegetacao de orquideas; generos no resumo refere-se a taxonomia botanica, nao a genero social."
+        }
+      },
+      "o-5d77c96f": {
+        "titulo": "Educação empreendedora e geração de renda na periferia: um estudo de caso do programa Chamada de Impacto Monte Serrat",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Programa de educacao empreendedora na periferia que declara analisar recortes de raca e genero, mas nao tem mulheres empreendedoras como objeto."
+        }
+      },
+      "o-ca57af20": {
+        "titulo": "Educação Permanente em Saúde: Percepção dos Enfermeiros sobre as experiências vivenciadas em uma maternidade pública e suas contribuições para realizar uma aprendizagem empreendedora.",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Educacao permanente em saude e aprendizagem empreendedora de enfermeiros em maternidade; sem recorte de genero ou negocio."
+        }
+      },
+      "o-136c2e3c": {
+        "titulo": "Políticas de atração de talentos no século XXI: Um estudo do caso espanhol",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Politicas espanholas de atracao de talentos; Espanha Nacao Empreendedora e nome de estrategia, sem relacao com mulheres."
+        }
+      },
+      "o-3b454d05": {
+        "titulo": "Políticas públicas de incentivo ao empreendedorismo: Um estudo da distribuição de recursos de subvenção no estado de Santa Catarina",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Distribuicao de recursos de subvencao ao empreendedorismo em Santa Catarina; sem recorte de mulheres ou genero."
+        }
+      },
+      "o-5a919c0b": {
+        "titulo": "Práticas de Incubadoras de Base Tecnológica Premiadas Internacionalmente: Os Casos Nexus e MIDITEC em Ecossistemas Empreendedores",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Praticas de gestao das incubadoras Nexus e MIDITEC; ecossistema empreendedor sem recorte de genero."
+        }
+      },
+      "o-c0b75a33": {
+        "titulo": "Programa de gestão e desempenho: desafios e perspectivas",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Programa de Gestao e Desempenho em universidades federais; universidade mais empreendedora, sem relacao com mulheres."
+        }
+      },
+      "o-a03bd0fd": {
+        "titulo": "Visualização de Dados Aplicada a Análise de Dados Contábeis",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Dashboards de visualizacao de dados contabeis; a contadora e empresaria entrevistada e validacao pontual, mencao incidental."
+        }
+      },
+      "o-35c0de0b": {
+        "titulo": "A complexidade como suporte à modelagem de competências docentes, com base nas melhores práticas do Prêmio Mérito Educacional da Rede Municipal de Ensino de Itajaí-SC",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Modelagem de competencias docentes com base em premio educacional; sem relacao com mulheres ou empreender."
+        }
+      },
+      "o-4f39ba69": {
+        "titulo": "A Formação do Empreendedor Social no Brasil: Análise das Publicações a Partir de 2015",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Revisao sobre a formacao do empreendedor social no Brasil; sem recorte de mulheres ou genero."
+        }
+      },
+      "o-baaf39fb": {
+        "titulo": "A subjetivação de características empreendedoras neoliberais por meio da educação jurídica: uma análise das Resoluções CNE/CES N. 9/2004 e N. 5/2018",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Subjetivacao de caracteristicas empreendedoras neoliberais na educacao juridica; sem recorte de mulheres."
+        }
+      },
+      "o-22f59fb3": {
+        "titulo": "Competências comunicacionais: um olhar sobre os professores de um centro universitário de Orleans/SC",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias comunicacionais de professores de centro universitario; o termo empreendedoras vem do macrotema automatico."
+        }
+      },
+      "o-d887c0f3": {
+        "titulo": "Competências digitais docentes para as áreas Steam (ciência, tecnologia, engenharia, artes e matemática)",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias digitais docentes para areas STEAM; sem relacao com mulheres ou empreendedorismo."
+        }
+      },
+      "o-573d397c": {
+        "titulo": "Competências digitais dos professores da educação básica: análise por meio de uma comunidade de prática",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias digitais de professores da educacao basica em comunidade de pratica; sem relacao com mulheres ou empreender."
+        }
+      },
+      "o-c285ca3b": {
+        "titulo": "Competências empreendedoras emergentes: o caso de profissionais da saúde estética",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencias empreendedoras emergentes de profissionais da saude estetica; o resumo nao faz recorte de mulheres ou genero."
+        }
+      },
+      "o-7e63e73e": {
+        "titulo": "Educação empreendedora: análise da experiência da Empresa Júnior de Engenharia de Energia",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Educacao empreendedora na Empresa Junior de Engenharia de Energia; sem recorte de genero."
+        }
+      },
+      "o-89793425": {
+        "titulo": "Empreendedorismo Sênior: experiências vividas e sentidas de pessoas que empreendem depois dos 50 anos de idade",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Empreendedorismo senior: barreiras e facilitadores de quem empreende apos os 50 anos; o recorte e idade, nao genero."
+        }
+      },
+      "o-c2120d08": {
+        "titulo": "Empreendedorismo: um estudo com egressos da engenharia de energia da ufsc",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Experiencias empreendedoras de egressos de Engenharia de Energia da UFSC; sem recorte de mulheres."
+        }
+      },
+      "o-d3d13742": {
+        "titulo": "Formação continuada docente na cultura digital: uma proposta estruturada a partir da identificação dos níveis de adoção das tecnologias nas escolas e das competências digitais de professores",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Proposta de formacao continuada docente na cultura digital; sem relacao com mulheres ou empreender."
+        }
+      },
+      "o-5714033b": {
+        "titulo": "Framework para desenvolvimento de competências digitais de enfermeiros da saúde indígena: Mukaturusá",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Framework de competencias digitais para enfermeiros da saude indigena; sem relacao com mulheres empreendedoras."
+        }
+      }
+    }
+  },
+  "Q12": {
+    "responsavel": null,
+    "assinadoEm": null,
+    "obras": {
+      "o-77578cab": {
+        "titulo": "Inclusão digital para pessoas idosas: um estudo de caso sobre o papel do smartphone na promoção da autonomia e do bem-estar a partir da percepção dos usuários",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Titulo e conclusao colocam a promocao do bem-estar subjetivo de idosos como objetivo do estudo, ao lado de autonomia e inclusao digital.",
+          "q13": false
+        }
+      },
+      "o-a0391a3d": {
+        "titulo": "Bem-estar subjetivo como medida de progresso: implicações para formulação de políticas públicas no Brasil",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Bem-estar subjetivo e satisfacao com a vida sao o construto central, no campo da Economia da Felicidade; populacao geral, nao trabalhadores.",
+          "q13": false
+        }
+      },
+      "o-ad27d2ae": {
+        "titulo": "Impactos da reforma da Previdência Social de 2019 sobre o planejamento da aposentadoria, bem-estar no trabalho e bem-estar subjetivo de trabalhadores da Prefeitura Municipal de Três Barras/SC",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Aplica Escala de Bem-Estar Subjetivo e Inventario de Bem-Estar no Trabalho com servidores municipais; bem-estar no trabalho e desfecho explicito.",
+          "q13": true
+        }
+      },
+      "o-b2078b5d": {
+        "titulo": "O Impacto da Resiliência Financeira no Bem-Estar Humano",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Mede florescimento pelo PERMA-Profiler (emocoes positivas, engajamento, significado); amostra de moradores, nao contexto laboral.",
+          "q13": false
+        }
+      },
+      "o-5f88a20d": {
+        "titulo": "Positive emotions, working memory focus of attention, and english as a foreign language reading through singing: reflections and proposals",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Ancorada em Psicologia Positiva e na Broaden-and-Build de Fredrickson; emocoes positivas na leitura em lingua estrangeira.",
+          "q13": false
+        }
+      },
+      "o-7b7c0edd": {
+        "titulo": "Trabalho decente como pressuposto de felicidade no trabalho: um estudo misto com estatutários e terceirizados de uma Organização Pública Federal",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Felicidade no Trabalho como conceito-chave da Psicologia Positiva, medida pelo IFT em 387 trabalhadores de orgao publico.",
+          "q13": true
+        }
+      },
+      "o-f8e10711": {
+        "titulo": "Bem-estar subjetivo dos indivíduos e sofisticação da estrutura produtiva",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Bem-estar subjetivo e felicidade dos individuos sao o desfecho, associados a complexidade economica dos paises; nao e contexto laboral.",
+          "q13": false
+        }
+      },
+      "o-f23c87f3": {
+        "titulo": "Felicidade no trabalho: as perspectivas de diferentes gerações",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Compreende a felicidade no trabalho entre geracoes; palavras-chave psicologia positiva e satisfacao no trabalho, com trabalhadores de empresa.",
+          "q13": true
+        }
+      },
+      "o-4bcf9c4a": {
+        "titulo": "Intervenções em psicologia positiva para o desenvolvimento de qualidades psicológicas em servidores públicos federais",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Intervencoes em psicologia positiva com servidores: capital psicologico, otimismo, gratidao, engajamento e felicidade no contexto laboral.",
+          "q13": true
+        }
+      },
+      "o-916a5d62": {
+        "titulo": "Modelo conceitual para o desenvolvimento de organizações saudáveis",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Modelo de organizacoes saudaveis abrigado na Psicologia Positiva, centrado no bem-estar das pessoas nas organizacoes.",
+          "q13": true
+        }
+      },
+      "o-dd50aa74": {
+        "titulo": "Felicidade no trabalho: um estudo em empresas de tecnologia de Santa Catarina",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Mede percepcao de felicidade no trabalho de trabalhadores de empresas de tecnologia, definindo felicidade pela Psicologia Positiva.",
+          "q13": true
+        }
+      },
+      "o-d28d7043": {
+        "titulo": "Feliz, verbo",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Resumo curto de videorreportagem jornalistica sobre felicidade; psicologia positiva e so um dos quatro topicos, sem estudo psicologico.",
+          "q13": null
+        }
+      },
+      "o-e8e89c40": {
+        "titulo": "Resiliência e criatividade no trabalho de designers em indústrias criativas",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Resiliencia como adaptacao positiva e criatividade no trabalho de designers; palavra-chave psicologia positiva. Nao trata de bem-estar ou satisfacao.",
+          "q13": false
+        }
+      },
+      "o-4f4538e2": {
+        "titulo": "Sentido e significado de felicidade no trabalho para professores de uma instituição de ensino privada e sem fins lucrativos",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Construcao da felicidade no trabalho docente com base nos preceitos epistemologicos da Psicologia Positiva, em professores de instituicao de ensino.",
+          "q13": true
+        }
+      },
+      "o-14ffae23": {
+        "titulo": "Avaliação da autoconfiança esportiva em atletas",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Autoconfianca e autoeficacia esportivas relacionadas a qualidade de vida, bem-estar subjetivo e afetos positivos de atletas.",
+          "q13": false
+        }
+      },
+      "o-5fd24b28": {
+        "titulo": "Dois eus na tomada de decisão: uma abordagem de economia comportamental",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Economia comportamental e dois sistemas cognitivos; bem-estar subjetivo aparece so na frase final, como recomendacao a gestores.",
+          "q13": false
+        }
+      },
+      "o-16ac37a4": {
+        "titulo": "Políticas e práticas de gestão de pessoas e felicidade no trabalho: estudo de caso de uma organização de tecnologia",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Relaciona politicas de gestao de pessoas a percepcao de felicidade no trabalho dos trabalhadores; palavra-chave psicologia positiva.",
+          "q13": true
+        }
+      },
+      "o-a1323a86": {
+        "titulo": "Construção e busca de evidências de validade de uma medida de atenção plena para adultos",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Constroi medida de atencao plena e a correlaciona com PANAS e satisfacao com a vida, citando a lacuna de construtos da Psicologia Positiva.",
+          "q13": false
+        }
+      },
+      "o-7e2cb64b": {
+        "titulo": "Gestão de pessoas, prevenção e combate ao assédio moral em uma organização com indícios de ser saudável",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Ancora-se nos pressupostos da psicologia positiva e nas organizacoes saudaveis; foco e prevencao do assedio moral, nao bem-estar medido.",
+          "q13": false
+        }
+      },
+      "o-d775b740": {
+        "titulo": "Saúde mental e lazer: vivências a partir da percepção dos usuários de um CAPS",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Lazer como recurso terapeutico na saude mental de usuarios de CAPS; bem-estar subjetivo aparece como mencao pontual, sem enquadramento positivo.",
+          "q13": false
+        }
+      },
+      "o-d29c5467": {
+        "titulo": "Criação de um índice de satisfação com a vida por meio da teoria da resposta ao item e fatores associados em trabalhadores brasileiros",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Cria indice de satisfacao com a vida, reflexo do bem-estar subjetivo, em 47 mil trabalhadores da industria, incluindo percepcao de vida no trabalho.",
+          "q13": true
+        }
+      },
+      "o-6d836f4d": {
+        "titulo": "Além da aparência, em busca da essência: o que nos faz viver mais?",
+        "origem": "candidato",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Entende o bem-estar subjetivo, compreendido como felicidade, como expressao da Promocao da Saude e determinante da longevidade.",
+          "q13": false
+        }
+      },
+      "o-2708a8d9": {
+        "titulo": "Proatividade e capital psicológico: interfaces e sinergias em contextos organizacionais",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Capital psicologico (autoeficacia, esperanca, resiliencia, otimismo) como virtude psicologica positiva; desfecho e proatividade e desempenho, nao bem-estar.",
+          "q13": false
+        }
+      },
+      "o-534ac5df": {
+        "titulo": "Construção e estudos iniciais de validação de uma medida de resiliência",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Escala de traco resiliente cujos fatores sao autoestima, autoeficacia, otimismo e autorregulacao, validada contra esperanca e resiliencia.",
+          "q13": false
+        }
+      },
+      "o-7d871a25": {
+        "titulo": "Effect and mediating variables of a randomized-controlled trial to promote physical activity and reduce sedentary behavior on the health-related quality of life of schoolchildren in Florianopolis, Brazil",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Ensaio sobre atividade fisica e qualidade de vida relacionada a saude; bem-estar psicologico e apenas uma dimensao do instrumento de QVRS.",
+          "q13": false
+        }
+      },
+      "o-3c0a9096": {
+        "titulo": "Efeito de uma sessão de meditação silenciosa e da quantidade prévia de prática de meditação na variabilidade da frequência cardíaca, no nível de mindfulness disposicional e no nível de afeto positivo e negativo de praticantes de meditação",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Avalia mindfulness disposicional e afeto positivo de meditadores, alem da variabilidade cardiaca; amostra nao laboral.",
+          "q13": false
+        }
+      },
+      "o-99d409e3": {
+        "titulo": "O comportamento de autocuidado e a prevenção em saúde mental",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Revisao sobre autocuidado e sofrimento mental; bem-estar psicologico e otimismo aparecem como desfechos secundarios de saude mental.",
+          "q13": false
+        }
+      },
+      "o-b0ee07c5": {
+        "titulo": "Otimismo, autoeficácia e percepção de empregabilidade em universitários na transição para o mercado de trabalho",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Caracteriza otimismo (LOT-R) e autoeficacia como recursos pessoais de universitarios na transicao para o trabalho; nao mede bem-estar de trabalhadores.",
+          "q13": false
+        }
+      },
+      "o-4a95ea2a": {
+        "titulo": "Investigando a influência do domínio afetivo em atividades didáticas de resolução de problemas de física no ensino médio",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Dominio afetivo na resolucao de problemas de fisica; afetos positivos e autoeficacia tratados como variaveis cognitivo-motivacionais escolares.",
+          "q13": false
+        }
+      },
+      "o-37218e88": {
+        "titulo": "Associação dos fatores psicossociais com o deslocamento ativo para a escola em adolescentes",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Correlatos psicossociais do deslocamento ativo para a escola; autoeficacia e so um preditor de comportamento de atividade fisica.",
+          "q13": false
+        }
+      },
+      "o-6f53fa6a": {
+        "titulo": "Programa Movimente: efetividade, mediadores e moderadores de uma intervenção de base escolar para a promoção da atividade física em adolescentes",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Intervencao escolar de promocao de atividade fisica; autoeficacia figura como potencial mediador, sem qualquer construto de bem-estar.",
+          "q13": false
+        }
+      },
+      "o-aa24ec39": {
+        "titulo": "Tempo em atividade física ao longo do dia escolar e fatores psicossociais associados: uma abordagem multinível",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Mede tempo em atividade fisica por acelerometro e fatores psicossociais; autoeficacia e apenas correlato comportamental.",
+          "q13": false
+        }
+      },
+      "o-7d1e7293": {
+        "titulo": "Avaliação da fidelidade de implementação de um programa preventivo em saúde mental infantil baseado na escola",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Avalia fidelidade de implementacao do Programa Elos; autoeficacia docente entra so como inventario auxiliar.",
+          "q13": false
+        }
+      },
+      "o-30ae1695": {
+        "titulo": "Escala de apego à moradia em áreas de risco: evidências de validade e precisão",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Escala de apego a moradia em area de risco; satisfacao com a vida aparece apenas como variavel externa preditora do vinculo com o lugar.",
+          "q13": false
+        }
+      },
+      "o-42bb1009": {
+        "titulo": "Relação entre vulnerabilidade psicológica, vivências acadêmicas e autoeficácia em estudantes universitários",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Foco em vulnerabilidade psicologica, ansiedade, stress e depressao de universitarios; autoeficacia academica sem enquadramento positivo.",
+          "q13": false
+        }
+      },
+      "o-872b2394": {
+        "titulo": "Desempenho agronômico e estudo fitoquímico de plantas de cobertura em sistema de plantio direto agroecológico de cebola",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Agronomia: florescimento refere-se ao estadio fenologico de plantas de cobertura e cebola.",
+          "q13": false
+        }
+      },
+      "o-54f657c7": {
+        "titulo": "Estresse e restauração: aspectos físicos e psicológicos de um hospital de custódia",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Psicologia ambiental: bem-estar e bem-estar psicologico de profissionais sao categorias de analise do ambiente restaurador, sem ancoragem explicita em psicologia positiva.",
+          "q13": null
+        }
+      },
+      "o-6987ede5": {
+        "titulo": "Mindfulness e sua influência nas práticas de líderes no trabalho",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Mindfulness, por praticas meditativas, como construto central na percepcao de lideres sobre suas praticas de trabalho; nao mede bem-estar.",
+          "q13": false
+        }
+      },
+      "o-7349bf79": {
+        "titulo": "Estágio em empresa júnior e carreiras de estudantes de Psicologia : das práticas do psicólogo às expectativas para o futuro profissional",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Estagio em empresa junior e projetos de carreira; crencas de autoeficacia profissional sao mencao incidental nos resultados.",
+          "q13": false
+        }
+      },
+      "o-eee6e2ee": {
+        "titulo": "Relação entre autoeficácia acadêmica, comportamento exploratório, suporte parental para o desenvolvimento de carreira e desempenho acadêmico em alunos do ensino médio técnico de SC",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Autoeficacia academica como preditor de desempenho escolar e exploracao de carreira, sem enquadramento como recurso positivo.",
+          "q13": false
+        }
+      },
+      "o-ebbc8b69": {
+        "titulo": "Envolvimento e interações paternas com filhos de 4 a 6 anos: relações com os sistemas parental e conjungal",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Envolvimento paterno e relacionamento conjugal; afeto positivo aparece so como uma das dimensoes de interacao observadas.",
+          "q13": false
+        }
+      },
+      "o-1b7d3d11": {
+        "titulo": "Construção e validação de uma escala de flow para atletas e praticantes de exercício físico",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Constroi escala de flow, estado de envolvimento e prazer, correlacionando-o a afetos, satisfacao de vida e autoeficacia em atletas.",
+          "q13": false
+        }
+      },
+      "o-92528b02": {
+        "titulo": "Efeito da respiração controlada e da meditação mindfulness sobre a variabilidade da frequência cardíaca",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Efeito de respiracao controlada e mindfulness sobre variabilidade cardiaca; desfechos psicologicos sao estresse percebido e humor.",
+          "q13": false
+        }
+      },
+      "o-7320e77c": {
+        "titulo": "Evidências de validade e precisão de um instrumento de avaliação de afeto em atletas lesionados",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Instrumento de afeto em atletas lesionados; PANAS e usada como criterio convergente e os achados tratam de afeto desagradavel.",
+          "q13": false
+        }
+      },
+      "o-dc199805": {
+        "titulo": "Avaliação da eficácia de treinamento na percepção de treinadores de modalidades esportivas",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Escala de eficacia de treinamento baseada na teoria da autoeficacia de Bandura, voltada ao desempenho de treinadores.",
+          "q13": false
+        }
+      },
+      "o-236cd4c2": {
+        "titulo": "Desenvolvimento de competência virtual individual : um estudo com formandos do curso de administração/EAD da Universidade Federal de Santa Catarina",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Competencia virtual individual em curso de administracao EaD; autoeficacia virtual e apenas uma categoria de habilidade.",
+          "q13": false
+        }
+      },
+      "o-76c94fd8": {
+        "titulo": "Efeito da meditação mindfulness sobre a variabilidade da frequência cardíaca",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Estudo psicofisiologico do efeito da meditacao mindfulness sobre a variabilidade da frequencia cardiaca, sem desfecho de bem-estar.",
+          "q13": false
+        }
+      },
+      "o-e0d17837": {
+        "titulo": "Formação estética em Rousseau e o cultivo da natureza",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Filosofia da educacao em Rousseau; otimismo designa a confianca na razao do seculo XVIII, outro sentido do termo.",
+          "q13": false
+        }
+      },
+      "o-c709946c": {
+        "titulo": "Mudar para manter: a auto-ajuda como a nova pedagogia do capital",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Critica a auto-ajuda como pedagogia do capital; florescimento e usado como metafora para a retomada do genero editorial.",
+          "q13": false
+        }
+      },
+      "o-2ced1a65": {
+        "titulo": "O empreendedorismo no processo de criação de empresa de base tecnológica em incubadora: o caso do Centro de Incubação e Desenvolvimento Empresarial de Manaus",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Caracteristicas empreendedoras em incubadora; otimismo aparece apenas listado entre tracos dos criadores de empresa.",
+          "q13": false
+        }
+      },
+      "o-1778d453": {
+        "titulo": "Avaliação da autoeficácia percebida dos militares ingressantes em competências em primeiros socorros: um estudo quase-experimental",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Autoeficacia percebida de policiais em primeiros socorros, tratada como prontidao operacional e desempenho tecnico.",
+          "q13": false
+        }
+      },
+      "o-0661d529": {
+        "titulo": "Evidências de validade e precisão da bateria de escalas de autoeficácia para esportes coletivos segundo os princípios da testagem universal",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Validacao de escalas de autoeficacia esportiva no sentido de Bandura; bem-estar so e citado na justificativa social.",
+          "q13": false
+        }
+      },
+      "o-3fe64e5d": {
+        "titulo": "Influência dos comportamentos dos líderes na segurança psicológica de equipes de trabalho híbrido em empresas de base tecnológica: uma perspectiva dos liderados",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Construto central e seguranca psicologica em equipes hibridas; bem-estar no trabalho aparece como consequencia citada de passagem.",
+          "q13": false
+        }
+      },
+      "o-d5455f1f": {
+        "titulo": "SmartB: an artificial intelligence artifact for business diagnosis prediction",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Artefato de IA para diagnostico empresarial; vies de otimismo e usado no sentido de erro de julgamento de empreendedores.",
+          "q13": false
+        }
+      },
+      "o-5cfb9cb7": {
+        "titulo": "\"O sofrimento além das fronteiras\": impactos das violências no processo migratório na saúde mental de imigrantes haitianos",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Impactos da violencia na saude mental de imigrantes haitianos; foco em sofrimento psiquico, com bem-estar psicologico so como horizonte.",
+          "q13": false
+        }
+      },
+      "o-aa67f047": {
+        "titulo": "Acupuntura e Disfunção Temporomandibular: Uma revisão de literatura.",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Revisao sobre acupuntura na disfuncao temporomandibular; bem-estar psicologico e mencionado como um dos desfechos clinicos.",
+          "q13": false
+        }
+      },
+      "o-68753b0a": {
+        "titulo": "Antecedentes e consequentes de autoeficácia no desempenho das tarefas no e-working remoto",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Autoeficacia como preditor de desempenho de tarefas no teletrabalho; desfechos sao desempenho e resiliencia, nao bem-estar.",
+          "q13": false
+        }
+      },
+      "o-4cae3ab9": {
+        "titulo": "Atitudes Percebidas em Relação à Riqueza Repentina entre Estudantes de Contabilidade da UFSC",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Reacoes emocionais a riqueza repentina entre estudantes; gratidao surge como um item de sentimento medido, sem enquadramento positivo.",
+          "q13": false
+        }
+      },
+      "o-50e1e765": {
+        "titulo": "Avaliação do secretoma de células estromais mesenquimais humanas (MSCs) como um potencial produto de terapia celular avançada livre de células para o reparo cutâneo e promoção do crescimento capilar",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Biotecnologia do secretoma de celulas estromais; bem-estar psicologico e citacao incidental sobre pacientes com lesoes.",
+          "q13": false
+        }
+      },
+      "o-bfc2834b": {
+        "titulo": "Caracterização da biologia floral de cultivares de alho roxo cultivadas no Planalto Catarinense",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Biologia floral de cultivares de alho; florescimento no sentido botanico.",
+          "q13": false
+        }
+      },
+      "o-ecb801a8": {
+        "titulo": "Cartilha educativa para o autocuidado em saúde mental para profissionais do sistema prisional",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Cartilha de autocuidado em saude mental no sistema prisional; mindfulness figura em lista de praticas, com foco em burnout e sofrimento.",
+          "q13": false
+        }
+      },
+      "o-5603a8bc": {
+        "titulo": "Fatores de risco e de proteção à saúde mental em trabalhadores do serviço público federal",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "duvida",
+          "justificativa": "Bem-estar no trabalho e medido como fator protetor, mas o objeto do estudo sao risco e adoecimento mental de servidores; enquadramento ambiguo.",
+          "q13": null
+        }
+      },
+      "o-09a27911": {
+        "titulo": "Intervenções de suporte psicossocial para cuidadores de adultos sob cuidados paliativos: uma revisão integrativa",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Revisao de intervencoes psicossociais para cuidadores em cuidados paliativos; mindfulness e apenas uma das estrategias catalogadas.",
+          "q13": false
+        }
+      },
+      "o-7c9248aa": {
+        "titulo": "Mulheres e finanças: uma análise exploratória sobre conhecimento financeiro e barreiras de gênero",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Conhecimento financeiro e barreiras de genero; autoeficacia aparece so na recomendacao final de um curso de educacao financeira.",
+          "q13": false
+        }
+      },
+      "o-2c105f09": {
+        "titulo": "O papel da educação física escolar na saúde mental de adolescentes",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Associa educacao fisica escolar a sintomas de sofrimento mental de adolescentes; bem-estar psicologico e mencao introdutoria.",
+          "q13": false
+        }
+      },
+      "o-6d46e3e8": {
+        "titulo": "Satisfação com a vida e a percepção da prática de atividade física na vizinhança: um estudo transversal",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Satisfacao com a vida, definida como percepcao subjetiva de contentamento, e o desfecho central em adultos mais velhos.",
+          "q13": false
+        }
+      },
+      "o-706253a7": {
+        "titulo": "Seleção de genótipos de batata-doce com dupla aptidão",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Selecao de genotipos de batata-doce; florescimento e caracteristica ornamental da planta.",
+          "q13": false
+        }
+      },
+      "o-5aa342e6": {
+        "titulo": "Vieses cognitivos e arrependimento no consumo por assinaturas digitais:  evidências entre estudantes da Universidade Federal de Santa Catarina",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Vieses cognitivos no consumo por assinatura; vies do otimismo e usado como desvio de julgamento economico.",
+          "q13": false
+        }
+      },
+      "o-2e1921eb": {
+        "titulo": "Associação das habilidades culinárias e preparo de refeições com a classificação do índice de massa corporal de estudantes universitários: um estudo transversal",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Habilidades culinarias e IMC de universitarios; autoeficacia refere-se a escalas de confianca culinaria e consumo de vegetais.",
+          "q13": false
+        }
+      },
+      "o-ee61bc94": {
+        "titulo": "Autoeficácia parental e transtorno do espectro autista: efeitos de uma intervenção baseada em jogos",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Autoeficacia parental em intervencao com criancas com TEA, tratada como senso de competencia parental, sem enquadramento positivo.",
+          "q13": false
+        }
+      },
+      "o-9467ba60": {
+        "titulo": "Avaliação do impacto sustentado de uma disciplina de intervenção culinária com estudantes universitários de uma universidade pública brasileira",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Intervencao culinaria com universitarios; autoeficacia refere-se a confianca em tecnicas culinarias e uso de frutas e verduras.",
+          "q13": false
+        }
+      },
+      "o-5aa2e436": {
+        "titulo": "Capacitismo: atitudes dos educadores em relação aos estudantes com deficiência e/ou transtorno do espectro autista",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Atitudes capacitistas de educadores; otimismo aparece so na constatacao de falta de otimismo quanto a aprendizagem dos estudantes.",
+          "q13": false
+        }
+      },
+      "o-a8385bb4": {
+        "titulo": "Crenças de autoeficácia sobre integração tecnológica de professores universitários",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Crencas de autoeficacia docente para integracao tecnologica, no modelo TPACK e em Bandura, sem construto de bem-estar.",
+          "q13": false
+        }
+      },
+      "o-323a3ffa": {
+        "titulo": "Crenças de professores formadores no contexto de reforma curricular: o caso do novo ensino médio",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Crencas curriculares e de autoeficacia de formadores diante do Novo Ensino Medio; foco em curriculo e formacao docente.",
+          "q13": false
+        }
+      },
+      "o-4e4b80de": {
+        "titulo": "Desempenho vitivinícola dos genótipos de videira PIWI Cabernet Cantor e GF04 nas condições edafoclimáticas de Curitibanos - SC",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Viticultura: pleno florescimento e estadio fenologico da videira.",
+          "q13": false
+        }
+      },
+      "o-2a750fa4": {
+        "titulo": "Efeitos da coinoculação de Trichoderma harzianum e Rhizobium tropici no desempenho do Feijão Comum.",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Coinoculacao microbiana no feijoeiro; florescimento e parametro agronomico da planta.",
+          "q13": false
+        }
+      },
+      "o-27ff8f56": {
+        "titulo": "Efeitos da intervenção neuropsicomotora com dançaterapia no manejo do estresse e sua relação com os níveis de cortisol e do fator neurotrófico derivado do cérebro em adultos: um estudo clínico piloto randomizado",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Dancaterapia no manejo de estresse, cortisol e BDNF; bem-estar psicologico e mencao de contexto, com desfechos de estresse e depressao.",
+          "q13": false
+        }
+      },
+      "o-08bf7c8a": {
+        "titulo": "Niveis de ansiedade e burnout e sua relação com o engajamento",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Mede engajamento no trabalho pela UWES em colaboradores de empresa, analisando seu impacto sobre o bem-estar, junto a ansiedade e burnout.",
+          "q13": true
+        }
+      },
+      "o-a90b8e2c": {
+        "titulo": "O IMPACTO DOS VIESES COGNITIVOS NA PROPENSÃO DE INDIVÍDUOS A CAÍREM EM GOLPES FINANCEIROS: UMA ABORDAGEM NA ECONOMIA COMPORTAMENTAL",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Vieses cognitivos e golpes financeiros; vies de otimismo no sentido de excesso de confianca economica.",
+          "q13": false
+        }
+      },
+      "o-ce63ffb1": {
+        "titulo": "Perspectivas de mães sobre os sentimentos e o sofrimento mental no período de amamentação",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "nao_pertence",
+          "justificativa": "Sentimentos e sofrimento mental na amamentacao; gratidao surge como um sentimento relatado, sem enquadramento positivo.",
+          "q13": false
+        }
+      },
+      "o-d02d6d86": {
+        "titulo": "Pilares da Felicidade Interna Bruta: estratégias adotadas em empresas de tecnologia de pequeno porte",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Compara praticas de gestao de pessoas as dimensoes da Felicidade Interna Bruta, entre elas bem-estar psicologico, em empresas de tecnologia.",
+          "q13": true
+        }
+      },
+      "o-bbf22e81": {
+        "titulo": "Satisfação com a vida e a percepção da prática de atividade física na vizinhança em adultos mais velhos: um estudo transversal",
+        "origem": "expansao",
+        "decisao": null,
+        "justificativa": "",
+        "q13": null,
+        "sugestao": {
+          "autor": "Claude Opus 5 (pré-triagem automática)",
+          "decisao": "pertence",
+          "justificativa": "Satisfacao com a vida como percepcao subjetiva de contentamento e desfecho principal em adultos mais velhos.",
+          "q13": false
+        }
+      }
+    }
+  }
+}
