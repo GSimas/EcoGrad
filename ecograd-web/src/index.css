@@ -439,6 +439,35 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes eco-selecao-in {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes eco-chip-in {
+  from { opacity: 0; transform: translateY(5px) scale(.88); }
+  62% { transform: translateY(0) scale(1.05); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes eco-check-pop {
+  from { transform: scale(.35); }
+  62% { transform: scale(1.2); }
+  to { transform: scale(1); }
+}
+@keyframes eco-ring-pulse {
+  from { opacity: .7; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.04); }
+}
+
+/* Busca da apresentação: cada item escolhido confirma a si mesmo com movimento —
+   o painel da seleção fica fora do fluxo, então nada disso desloca o campo. */
+.eco-selecao-painel { transform-origin: bottom center; animation: eco-selecao-in 260ms var(--ease-emphasized) both; }
+.eco-selecao-chip { animation: eco-chip-in 260ms var(--ease-emphasized) both; }
+.eco-selecao-item { animation: eco-rise-in 280ms var(--ease-emphasized) both; }
+.eco-selecao-marca { animation: eco-check-pop 240ms var(--ease-emphasized); }
+.eco-selecao-pulso { animation: eco-ring-pulse 520ms var(--ease-standard) both; }
+.eco-selecao-opcao { transition: background-color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-emphasized); }
+.eco-selecao-opcao[aria-selected="true"] { transform: translateX(3px); }
+
 .eco-page-enter { animation: eco-page-in var(--motion-slow) var(--ease-emphasized) both; }
 .eco-page-enter :is(.card, .kpi) { animation: eco-rise-in 320ms var(--ease-emphasized) both; }
 .eco-page-enter :is(.card, .kpi):nth-child(2) { animation-delay: 35ms; }

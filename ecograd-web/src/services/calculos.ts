@@ -3,6 +3,7 @@ import { useEcoGradStore } from '../stores/useEcoGradStore';
 import type { SnaWorkerRequest, SnaWorkerResponse, Documento, TipoForesight } from '../types';
 import type { DataWorkerRequest, DataWorkerResponse } from '../workers/data.worker';
 import type { FonteMemes } from '../lib/memetics';
+import type { ItemRecorte } from '../lib/recorte';
 
 export type Pedido = SnaWorkerRequest | DataWorkerRequest;
 export type Resultado = Exclude<SnaWorkerResponse | DataWorkerResponse, { type: 'progress' | 'error' }>;
@@ -27,11 +28,15 @@ export const calcularEcologiaMemes = (docs: Documento[], minCoocorrencia: number
   atividades.start('ecologia-memes', `Rede memética — ${fonte}, mínimo ${minCoocorrencia}`, { type: 'ecologia-memes', docs, minCoocorrencia, fonte });
 export const calcularMetricasComplexas = (docs: Documento[]) =>
   atividades.start('metricas-complexas', 'Métricas complexas', { type: 'metricas-complexas', docs });
-/** `aoConcluir` roda depois de a análise ser aplicada (não sobrevive a recarregar a página). */
-export function carregarDados(programas: string[], cursosTcc: string[], objetivo?: string, aoConcluir?: () => void) {
-  atividades.start('dados', 'Carregamento das coleções', { type: 'carregar', objetivo, programas: [...programas], cursosTcc: [...cursosTcc] }, (r) => {
+/**
+ * `aoConcluir` roda depois de a análise ser aplicada (não sobrevive a recarregar
+ * a página). `recorte` delimita a análise dentro das coleções: o worker devolve
+ * apenas os documentos dos itens escolhidos.
+ */
+export function carregarDados(programas: string[], cursosTcc: string[], objetivo?: string, aoConcluir?: () => void, recorte: ItemRecorte[] = []) {
+  atividades.start('dados', 'Carregamento das coleções', { type: 'carregar', objetivo, programas: [...programas], cursosTcc: [...cursosTcc], recorte }, (r) => {
     if (r.type !== 'pronto') return;
-    useEcoGradStore.getState().concluirCarregamento(r.docs, { programas: [...programas], cursosTcc: [...cursosTcc] }, r.baseVersion, objetivo);
+    useEcoGradStore.getState().concluirCarregamento(r.docs, { programas: [...programas], cursosTcc: [...cursosTcc] }, r.baseVersion, objetivo, recorte);
     aoConcluir?.();
   });
 }
@@ -67,7 +72,7 @@ if (import.meta.hot) import.meta.hot.dispose(() => {
 export function restaurarAtividades(tasks: import('../lib/worker-tasks').Task<Pedido, Resultado>[]) {
   atividades.restore(tasks, (task) => (r) => {
     const s = useEcoGradStore.getState();
-    if (r.type === 'pronto' && task.pedido.type === 'carregar') s.concluirCarregamento(r.docs, task.pedido, r.baseVersion, task.pedido.objetivo);
+    if (r.type === 'pronto' && task.pedido.type === 'carregar') s.concluirCarregamento(r.docs, task.pedido, r.baseVersion, task.pedido.objetivo, task.pedido.recorte);
     if (r.type === 'maturidade') s.setMaturidade(r.result);
     if (r.type === 'sna-global') {
       s.setSnaGlobal(r.result);
