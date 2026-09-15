@@ -21,6 +21,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PADROES, casaTema, casaTemaPorRotulo, chave as chaveTema, rotulosDoDoc, textoDoDoc } from './afericao-padroes.mjs';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const raizApp = resolve(aqui, '..');
@@ -40,32 +41,26 @@ const tccBase = ler('base_tcc_ufsc.json.gz');
 const pos = posBase.docs;
 const todos = [...pos, ...tccBase.docs];
 
-const chave = (s) => String(s ?? '').normalize('NFD').replace(/\p{Mn}/gu, '').toLowerCase();
-/** SENTINELA separa os campos para que um padrão não case atravessando a fronteira entre eles. */
-const SENTINELA = '\u0001';
-const texto = (d) => chave([d.titulo, d.resumo, (d.palavras_chave || []).join(' '), d.macrotema].join(SENTINELA));
-const rotulos = (d) => chave([d.titulo, (d.palavras_chave || []).join(' '), d.macrotema].join(SENTINELA));
+const chave = chaveTema;
+const texto = textoDoDoc;
+const rotulos = rotulosDoDoc;
 const utilizavel = (d) => String(d.resumo || '').trim().length >= 200;
 const ano = (d) => Number(d.ano);
-const distintos = (arr) => new Set(arr.map((d) => chave(d.titulo))).size;
+/**
+ * Mesma regra de identidade das ferramentas do chat (`normalizar` em
+ * src/lib/chat-ferramentas.ts): sem acento, sem caixa e com espaços colapsados.
+ * Contar por igualdade exata de texto trataria "MESMA OBRA" e "Mesma obra" como
+ * trabalhos diferentes, e os dois lados do projeto passariam a discordar sobre o
+ * que e um mesmo trabalho — que e o risco da decisao D3 do ADR.
+ */
+const identidadeTitulo = (t) => chave(t).replace(/\s+/g, ' ').trim();
+const distintos = (arr) => new Set(arr.map((d) => identidadeTitulo(d.titulo))).size;
 const contar = (arr, campo) => Object.entries(arr.reduce((a, d) => { const v = campo(d); if (v) a[v] = (a[v] || 0) + 1; return a; }, {})).sort((a, b) => b[1] - a[1]);
 const serieAnual = (arr) => contar(arr, (d) => (Number.isFinite(ano(d)) ? String(ano(d)) : null)).sort((a, b) => Number(a[0]) - Number(b[0]));
 
-/** Padrões por tema. Documentados aqui para que o conjunto candidato seja reproduzível. */
-export const PADROES = {
-  empreendedorismoFeminino: [
-    /empreendedor\w*\s+(feminin\w*|de mulher\w*|por mulher\w*)/,
-    /(mulher\w*|feminin\w*)[^\u0001]{0,60}empreendedor/,
-    /empreendedor[^\u0001]{0,60}(mulher\w*|feminin\w*|genero)/,
-    /empreendedorismo\s+de\s+genero/,
-  ],
-  psicologiaPositiva: [/psicologia positiva/, /bem-estar subjetivo/, /florescimento humano/, /forcas de carater/, /\bperma\b/],
-  blockchainQuantico: [/blockchain quantic\w*/, /criptografia post-quantica em blockchain/],
-};
-
 function tema(padroes) {
-  const achados = todos.filter((d) => padroes.some((p) => p.test(texto(d))));
-  const porRotulo = achados.filter((d) => padroes.some((p) => p.test(rotulos(d))));
+  const achados = todos.filter((d) => casaTema(d, padroes));
+  const porRotulo = achados.filter((d) => casaTemaPorRotulo(d, padroes));
   return {
     registros: achados.length,
     trabalhosDistintos: distintos(achados),
@@ -106,7 +101,7 @@ const gabaritos = {
   Q14_temaInexistente: tema(PADROES.blockchainQuantico),
   Q23_anoParcial: { serieRecente: serieAnual(todos).slice(-4), sustentabilidadeEm2026: todos.filter((d) => ano(d) === 2026 && texto(d).includes('sustentabilidade')).length },
   Q24_grafiasDeOrientador: { grafiasDistintas: grafiasOrientador.size, grafiasDistintasPos: new Set(pos.map((d) => String(d.orientador || '').trim()).filter(Boolean)).size, colidemAoNormalizar: [...colisoes.values()].filter((n) => n > 1).length },
-  Q25_tituloRepetido: { titulo: tituloRepetido, registros: todos.filter((d) => d.titulo === tituloRepetido).length, colecoes: todos.filter((d) => d.titulo === tituloRepetido).map((d) => d.programa_origem), titulosRepetidosNoAcervo: [...todos.reduce((a, d) => a.set(d.titulo, (a.get(d.titulo) || 0) + 1), new Map()).values()].filter((n) => n > 1).length },
+  Q25_tituloRepetido: { titulo: tituloRepetido, registros: todos.filter((d) => d.titulo === tituloRepetido).length, colecoes: todos.filter((d) => d.titulo === tituloRepetido).map((d) => d.programa_origem), titulosRepetidosNoAcervo: [...todos.reduce((a, d) => a.set(identidadeTitulo(d.titulo), (a.get(identidadeTitulo(d.titulo)) || 0) + 1), new Map()).values()].filter((n) => n > 1).length },
 };
 
 if (process.argv.includes('--escrever')) {

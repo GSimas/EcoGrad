@@ -131,7 +131,7 @@ Esta pergunta é a evidência empírica de que a extração ontológica (decisã
 → 9.527 grafias distintas de orientador no acervo (3.258 só na pós-graduação), das quais 56 colidem apenas por acento e caixa. *Aprova dizendo que conta **grafias**, não pessoas, e que o número depende da unificação canônica. Apresentar 9.527 como número de pessoas reprova.*
 
 **Q25.** "O trabalho 'Doenças: construção e realidade na formção dos médicos' aparece quantas vezes?"
-→ Três registros do mesmo trabalho de 2002, catalogados em Educação, Educação `(ID: 75514)` e — provavelmente por erro de metadado — Direito. O acervo tem 6.478 títulos repetidos. *Aprova apontando um trabalho e três registros, e sabendo mostrar os três.*
+→ Três registros do mesmo trabalho de 2002, catalogados em Educação, Educação `(ID: 75514)` e — provavelmente por erro de metadado — Direito. O acervo tem 6.740 títulos repetidos, contados pela mesma regra de identidade das ferramentas — sem acento, sem caixa e com espaços colapsados. *Aprova apontando um trabalho e três registros, e sabendo mostrar os três.*
 
 ## O que esta etapa já demonstrou
 
@@ -139,7 +139,7 @@ Antes de qualquer infraestrutura, a varredura produziu três fatos que sustentam
 
 1. **A lacuna é real e mensurável.** Em empreendedorismo feminino, 10 dos 31 registros só são encontráveis pelo texto do resumo; em psicologia positiva, 10 dos 26. A busca atual perde entre um terço e 38% do tema.
 2. **A pergunta sobre ferramentas não se resolve por recuperação.** As palavras mais frequentes nos resumos são "questionário" e "escala", genéricas. Nomear PANAS, EBES ou BFP exige campo extraído e validado — a Etapa 3 não é opcional para essa classe de pergunta.
-3. **Duplicação e grafia são o maior risco de erro numérico.** 6.478 títulos repetidos e 9.527 grafias de orientador garantem que qualquer contagem ingênua sairá errada. As decisões D3 e D11 do ADR nascem disso.
+3. **Duplicação e grafia são o maior risco de erro numérico.** 6.740 títulos repetidos e 9.527 grafias de orientador garantem que qualquer contagem ingênua sairá errada. As decisões D3 e D11 do ADR nascem disso.
 
 ## O que falta para fechar a Etapa 0
 

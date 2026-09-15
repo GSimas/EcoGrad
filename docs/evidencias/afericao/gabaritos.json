@@ -1,5 +1,5 @@
 {
-  "geradoEm": "2026-09-15T17:52:13.736Z",
+  "geradoEm": "2026-09-15T18:24:40.175Z",
   "bases": {
     "base_consolidada_ufsc": {
       "sha256": "7b1cbeb9dea18b2d60abd671958b8371cdf13e1efe17af2dd4e5764bc500edcc",
@@ -541,6 +541,6 @@
       "Programa de Pós-Graduação em Direito",
       "Programa de Pós-Graduação em Educação"
     ],
-    "titulosRepetidosNoAcervo": 6478
+    "titulosRepetidosNoAcervo": 6740
   }
 }
