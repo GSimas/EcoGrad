@@ -385,6 +385,7 @@ create table rede_metrica (
   agrupamento double precision,
   comunidade int,
   ranking int,
+  ranking_entre_pessoas int,
   nos_na_rede int not null,
   check ((escopo = 'acervo') = (colecao is null))
 );
@@ -398,6 +399,17 @@ comment on column rede_metrica.proximidade is 'Closeness centrality; aproximada 
 comment on column rede_metrica.agrupamento is 'Coeficiente de clustering local.';
 comment on column rede_metrica.comunidade is 'Comunidade de Louvain dentro do escopo; o número só compara nós do mesmo escopo.';
 comment on column rede_metrica.ranking is 'Posição por intermediação decrescente entre TODOS os nós do escopo, inclusive documentos, palavras-chave e macrotemas (1 = maior ponte). Para comparar só pessoas, ordene por intermediacao filtrando tipo.';
+
+-- Mesma regra de `tokensDeNome` em `unificacao.ts`, para a pergunta casar com o
+-- nome em qualquer ordem.
+create or replace function tokens_de_nome(nome text) returns text[]
+language sql immutable parallel safe
+set search_path = public
+as $$
+  select coalesce(array_agg(distinct t order by t), '{}')
+  from regexp_split_to_table(regexp_replace(sem_acento(coalesce(nome, '')), '[^a-z0-9]+', ' ', 'g'), ' ') t
+  where length(t) > 1 and t not in ('de', 'da', 'do', 'das', 'dos', 'e', 'del', 'la', 'y')
+$$;
 
 create table pessoa_perfil (
   pessoa_id bigint primary key references pessoa(id) on delete cascade,
@@ -425,8 +437,12 @@ create table pessoa_perfil (
   macrotemas_como_autor text[] not null,
   macrotemas_como_orientador text[] not null,
   intermediacao_acervo double precision,
-  ranking_acervo int
+  ranking_acervo int,
+  -- Tokens do nome sem acento, caixa, pontuação e partículas, em ordem alfabética:
+  -- é o que deixa achar "patricia de sa freire" em "Freire, Patricia De Sa".
+  nome_tokens text[] not null default '{}'
 );
+create index pessoa_perfil_tokens_idx on pessoa_perfil using gin (nome_tokens);
 create index pessoa_perfil_nome_idx on pessoa_perfil using gin (sem_acento(nome) gin_trgm_ops);
 comment on table pessoa_perfil is 'Uma linha por pessoa unificada, com contagens por papel. obras_* conta trabalhos distintos; registros_* conta catalogações. Orientação histórica não informa vínculo atual nem disponibilidade.';
 comment on column pessoa_perfil.grafias is 'Quantas grafias do acervo foram unificadas nesta pessoa (1 = nenhuma fusão).';
@@ -624,6 +640,15 @@ begin
   join (select pessoa_id, count(*)::int as grafias from pessoa_grafia group by pessoa_id) g on g.pessoa_id = p.id
   group by p.id, p.nome_canonico, g.grafias;
 
+  update pessoa_perfil set nome_tokens = tokens_de_nome(nome);
+
+  update rede_metrica m set ranking_entre_pessoas = x.posicao
+  from (
+    select ctid, rank() over (partition by escopo, colecao order by intermediacao desc nulls last) as posicao
+    from rede_metrica where tipo in ('Autor', 'Orientador')
+  ) x
+  where m.ctid = x.ctid;
+
   insert into colecao_ano
   select colecao, ano, count(*), count(distinct documento_id) from registro where ano is not null group by 1, 2;
 
@@ -663,3 +688,241 @@ $$;
 
 revoke execute on function atualizar_perfis() from public, anon, authenticated;
 grant execute on function atualizar_perfis() to service_role;
+
+comment on column rede_metrica.ranking_entre_pessoas is 'Posição por intermediação decrescente só entre pessoas (autores e orientadores) do mesmo escopo e coleção (1 = pessoa que mais faz ponte).';
+comment on column pessoa_perfil.nome_tokens is 'Tokens do nome sem acento e sem partículas, em ordem alfabética. Para achar alguém em qualquer ordem: nome_tokens @> tokens_de_nome(''patricia de sa freire'').';
+
+-- ============================================================================
+-- Camada de consulta para NL2SQL (ADR 004, fase A0).
+--
+-- O modelo nunca lê as tabelas: lê as views do schema `consulta`, cada coluna
+-- com a unidade no nome e descrição em `consulta.dicionario`. E nunca executa
+-- SQL com o privilégio do app: `consultar()` repassa para `consulta.executar`,
+-- que roda como `consulta_leitor`, um papel com SELECT só nessas views. A função
+-- é STABLE, e o Postgres recusa escrita e DDL dentro dela — a trava de escrita
+-- não depende de a validação de texto estar certa.
+-- ============================================================================
+
+create schema if not exists consulta;
+comment on schema consulta is 'Views para consulta em linguagem natural (NL2SQL). Somente leitura. obras_* conta trabalhos distintos; registros_* conta catalogações.';
+
+create or replace view consulta.acervo as
+  select m.base_version, m.gerado_em,
+    (select count(*) from registro) as registros,
+    (select count(*) from documento) as obras,
+    (select count(*) from registro where resumo_utilizavel) as registros_com_resumo,
+    (select count(*) from registro where not resumo_utilizavel) as registros_sem_resumo,
+    (select count(distinct colecao) from registro) as colecoes,
+    (select count(*) from pessoa) as pessoas,
+    (select max(ano) from registro) as ano_em_coleta
+  from indice_meta m;
+
+create or replace view consulta.pessoas as select * from pessoa_perfil;
+create or replace view consulta.pessoa_grafias as
+  select g.grafia, g.pessoa_id, p.nome_canonico as nome, f.metodo as metodo_fusao, f.decisao as decisao_curadoria
+  from pessoa_grafia g join pessoa p on p.id = g.pessoa_id left join pessoa_fusao f on f.grafia = g.grafia;
+create or replace view consulta.pessoa_palavras_chave as
+  select t.pessoa_id, p.nome_canonico as nome, t.papel, t.termo, t.obras from pessoa_termo t join pessoa p on p.id = t.pessoa_id;
+create or replace view consulta.pessoa_macrotemas as
+  select m.pessoa_id, p.nome_canonico as nome, m.papel, m.macrotema, m.obras from pessoa_macrotema m join pessoa p on p.id = m.pessoa_id;
+create or replace view consulta.pessoa_colecoes as
+  select c.pessoa_id, p.nome_canonico as nome, c.colecao, c.papel, c.obras, c.registros, c.primeiro_ano, c.ultimo_ano
+  from pessoa_colecao c join pessoa p on p.id = c.pessoa_id;
+create or replace view consulta.orientacoes as
+  select o.orientador_id, po.nome_canonico as orientador, o.orientando_id, pa.nome_canonico as orientando,
+         o.papel, o.obras, o.primeiro_ano, o.ultimo_ano, o.niveis, o.colecoes
+  from orientacao o join pessoa po on po.id = o.orientador_id join pessoa pa on pa.id = o.orientando_id;
+create or replace view consulta.colecoes as select * from colecao_perfil;
+create or replace view consulta.colecoes_por_ano as select * from colecao_ano;
+create or replace view consulta.palavras_chave as select * from termo_perfil;
+create or replace view consulta.macrotemas as
+  select macrotema, count(*) as registros, count(distinct documento_id) as obras, count(distinct colecao) as colecoes,
+         min(ano) as ano_min, max(ano) as ano_max
+  from registro where macrotema is not null group by macrotema;
+create or replace view consulta.rede as
+  select escopo, colecao, tipo, rotulo, pessoa_id, grau_absoluto, grau, intermediacao, proximidade, agrupamento,
+         comunidade, ranking, ranking_entre_pessoas, nos_na_rede
+  from rede_metrica;
+create or replace view consulta.obras as
+  select id as documento_id, titulo, resumo_utilizavel from documento;
+create or replace view consulta.registros as
+  select r.id as registro_id, r.documento_id, d.titulo, r.colecao, r.catalogo, r.ano, r.nivel_academico, r.macrotema, r.url, r.resumo_utilizavel
+  from registro r join documento d on d.id = r.documento_id;
+create or replace view consulta.registro_pessoas as
+  select rp.registro_id, r.documento_id, rp.pessoa_id, p.nome_canonico as nome, rp.papel, r.colecao, r.ano, r.nivel_academico
+  from registro_pessoa rp join registro r on r.id = rp.registro_id join pessoa p on p.id = rp.pessoa_id;
+create or replace view consulta.registro_palavras_chave as
+  select pc.registro_id, r.documento_id, pc.termo, r.colecao, r.ano
+  from registro_palavra_chave pc join registro r on r.id = pc.registro_id;
+
+comment on view consulta.acervo is 'Uma linha: tamanho do acervo e versão do índice. ano_em_coleta é o último ano, que ainda não é produção fechada.';
+comment on view consulta.pessoas is 'Uma linha por pessoa unificada (unificação automática conservadora, sem curadoria humana). Para achar pelo nome em qualquer ordem: where nome_tokens @> tokens_de_nome(''nome buscado'').';
+comment on view consulta.pessoa_grafias is 'Cada grafia do acervo e a pessoa em que foi unificada. metodo_fusao nulo: é a grafia canônica ou não foi fundida.';
+comment on view consulta.pessoa_palavras_chave is 'Palavras-chave das obras de cada pessoa por papel (Autor, Orientador, Co-orientador); obras = trabalhos distintos com o termo.';
+comment on view consulta.pessoa_macrotemas is 'Macrotemas das obras de cada pessoa por papel. Macrotema é classificação automática (NMF) da base, não categoria oficial.';
+comment on view consulta.pessoa_colecoes is 'Atuação de cada pessoa em cada coleção, por papel.';
+comment on view consulta.orientacoes is 'Quem orientou (papel Orientador) ou coorientou (Co-orientador) quem, com obras, anos, níveis e coleções.';
+comment on view consulta.colecoes is 'Uma linha por coleção: programa de pós-graduação (catalogo=ppg) ou curso de TCC (catalogo=tcc).';
+comment on view consulta.colecoes_por_ano is 'Série anual por coleção.';
+comment on view consulta.palavras_chave is 'Uma linha por palavra-chave (termo, minúsculo e sem acento), com obras, registros, anos, coleções e pessoas.';
+comment on view consulta.macrotemas is 'Uma linha por macrotema (classificação automática NMF da base, não categoria oficial do programa).';
+comment on view consulta.rede is 'Métricas da rede documento–pessoa–palavra-chave–macrotema, por escopo (acervo ou colecao). tipo: Autor, Orientador, Palavra-chave, Macrotema. Compare só dentro do mesmo escopo e coleção.';
+comment on view consulta.obras is 'Uma linha por obra deduplicada (trabalho distinto). Sem o texto do resumo.';
+comment on view consulta.registros is 'Uma linha por catalogação: a mesma obra pode ter vários registros em coleções diferentes. nivel_academico: TCC (Graduação), Dissertação (Mestrado), Tese (Doutorado), TCC (Especialização), Outros.';
+comment on view consulta.registro_pessoas is 'Vínculo registro–pessoa com papel (Autor, Orientador, Co-orientador), coleção, ano e nível. Contar obras: count(distinct documento_id).';
+comment on view consulta.registro_palavras_chave is 'Palavras-chave de cada registro, com coleção e ano.';
+
+-- Os comentários das colunas vêm das tabelas de origem, casados por nome.
+do $$
+declare v record; c record; descricao text;
+begin
+  for v in select * from (values
+    ('pessoas', 'pessoa_perfil'), ('colecoes', 'colecao_perfil'), ('colecoes_por_ano', 'colecao_ano'),
+    ('palavras_chave', 'termo_perfil'), ('rede', 'rede_metrica'), ('orientacoes', 'orientacao'),
+    ('pessoa_colecoes', 'pessoa_colecao'), ('pessoa_palavras_chave', 'pessoa_termo'), ('pessoa_macrotemas', 'pessoa_macrotema')
+  ) as t(visao, tabela) loop
+    for c in select a.attname from pg_attribute a
+             where a.attrelid = ('consulta.' || v.visao)::regclass and a.attnum > 0 and not a.attisdropped loop
+      descricao := col_description(('public.' || v.tabela)::regclass,
+        (select attnum from pg_attribute where attrelid = ('public.' || v.tabela)::regclass and attname = c.attname));
+      if descricao is not null then
+        execute format('comment on column consulta.%I.%I is %L', v.visao, c.attname, descricao);
+      end if;
+    end loop;
+  end loop;
+end $$;
+
+-- Glossário por nome de coluna, para o que a origem não descreve. Um nome, um
+-- significado, em todas as views: é o que impede `obras` de querer dizer
+-- registros numa view e trabalhos distintos em outra.
+do $$
+declare g record; c record;
+begin
+  for g in select * from (values
+    ('pessoa_id', 'Identificador da pessoa unificada; junta com pessoas.pessoa_id.'),
+    ('nome', 'Nome canônico da pessoa no formato "Sobrenome, Prenomes". Para buscar em qualquer ordem use pessoas.nome_tokens @> tokens_de_nome(''...'').'),
+    ('orientador', 'Nome canônico de quem orientou ou coorientou ("Sobrenome, Prenomes").'),
+    ('orientando', 'Nome canônico do autor orientado ("Sobrenome, Prenomes").'),
+    ('orientador_id', 'pessoa_id de quem orientou ou coorientou.'),
+    ('orientando_id', 'pessoa_id do autor orientado.'),
+    ('papel', 'Autor, Orientador ou Co-orientador.'),
+    ('obras', 'Trabalhos distintos (obra deduplicada). Não confundir com registros.'),
+    ('registros', 'Catalogações: a mesma obra em duas coleções conta 2.'),
+    ('obras_como_autor', 'Trabalhos distintos em que a pessoa é autora.'),
+    ('obras_orientadas', 'Trabalhos distintos que a pessoa orientou, em qualquer nível.'),
+    ('obras_coorientadas', 'Trabalhos distintos que a pessoa coorientou.'),
+    ('registros_como_autor', 'Catalogações em que a pessoa é autora.'),
+    ('registros_orientados', 'Catalogações que a pessoa orientou.'),
+    ('registros_coorientados', 'Catalogações que a pessoa coorientou.'),
+    ('orientadas_doutorado', 'Teses de doutorado orientadas (obras distintas).'),
+    ('orientadas_mestrado', 'Dissertações de mestrado orientadas (obras distintas).'),
+    ('orientadas_tcc_especializacao', 'TCCs de especialização orientados (obras distintas).'),
+    ('ultimo_ano', 'Último ano com qualquer papel no recorte da linha.'),
+    ('primeiro_ano', 'Primeiro ano no recorte da linha.'),
+    ('ultimo_ano_orientando', 'Último ano como orientador ou coorientador.'),
+    ('macrotemas_como_orientador', 'Até 5 macrotemas das obras orientadas ou coorientadas; classificação automática, não oficial.'),
+    ('colecoes', 'Quantidade de coleções distintas (ou, em orientacoes, a lista delas).'),
+    ('colecao', 'Nome da coleção: programa de pós-graduação ou curso de TCC.'),
+    ('catalogo', 'ppg (pós-graduação) ou tcc (trabalho de conclusão de curso).'),
+    ('niveis', 'Níveis acadêmicos presentes: TCC (Graduação), Dissertação (Mestrado), Tese (Doutorado), TCC (Especialização), Outros.'),
+    ('nivel_academico', 'TCC (Graduação), Dissertação (Mestrado), Tese (Doutorado), TCC (Especialização) ou Outros.'),
+    ('ano', 'Ano do registro. O último ano do acervo está em coleta.'),
+    ('ano_min', 'Primeiro ano.'),
+    ('ano_max', 'Último ano; o último ano do acervo está em coleta.'),
+    ('registros_com_resumo', 'Catalogações com resumo utilizável (200 caracteres ou mais).'),
+    ('registros_sem_resumo', 'Catalogações sem resumo utilizável.'),
+    ('resumo_utilizavel', 'Verdadeiro quando há resumo com 200 caracteres ou mais.'),
+    ('autores_distintos', 'Pessoas distintas com papel de autor na coleção.'),
+    ('orientadores_distintos', 'Pessoas distintas com papel de orientador na coleção.'),
+    ('principais_palavras_chave', 'Até 10 palavras-chave mais frequentes (por obras distintas).'),
+    ('principais_macrotemas', 'Até 10 macrotemas mais frequentes; classificação automática, não oficial.'),
+    ('termo', 'Palavra-chave, em minúsculas e sem acento, como catalogada.'),
+    ('pessoas', 'Pessoas distintas (em qualquer papel) ligadas ao termo; em acervo, total de pessoas unificadas.'),
+    ('macrotema', 'Macrotema: classificação automática (NMF) da base, não categoria oficial do programa.'),
+    ('documento_id', 'Identificador da obra deduplicada; count(distinct documento_id) conta trabalhos.'),
+    ('registro_id', 'Identificador da catalogação.'),
+    ('titulo', 'Título da obra.'),
+    ('url', 'Endereço da obra no repositório institucional da UFSC.'),
+    ('grafia', 'Como o nome aparece escrito no acervo.'),
+    ('metodo_fusao', 'normalizacao ou abreviacao, quando a grafia foi fundida automaticamente; nulo quando não foi.'),
+    ('decisao_curadoria', 'confirmada ou desfeita pela curadoria humana; nulo enquanto não revisada.'),
+    ('escopo', 'acervo (rede do acervo inteiro) ou colecao (rede de uma coleção sozinha).'),
+    ('tipo', 'Tipo do nó: Autor, Orientador, Palavra-chave, Macrotema ou Artefato (Ontologia IA).'),
+    ('rotulo', 'Nome do nó na rede: pessoa (canônica), palavra-chave ou macrotema.'),
+    ('grau_absoluto', 'Número de conexões diretas do nó (obras ligadas).'),
+    ('nos_na_rede', 'Total de nós da rede do escopo, inclusive documentos.'),
+    ('base_version', 'Versão das bases que geraram o índice.'),
+    ('gerado_em', 'Quando o índice foi gerado.'),
+    ('ano_em_coleta', 'Último ano do acervo, ainda em coleta: não tratar como ano fechado.')
+  ) as t(coluna, descricao) loop
+    for c in select cl.relname from pg_attribute a join pg_class cl on cl.oid = a.attrelid join pg_namespace n on n.oid = cl.relnamespace
+             where n.nspname = 'consulta' and cl.relkind = 'v' and a.attname = g.coluna and a.attnum > 0
+               and col_description(cl.oid, a.attnum) is null loop
+      execute format('comment on column consulta.%I.%I is %L', c.relname, g.coluna, g.descricao);
+    end loop;
+  end loop;
+end $$;
+
+create or replace view consulta.dicionario as
+  select c.relname as visao, obj_description(c.oid, 'pg_class') as descricao_visao,
+         a.attname as coluna, format_type(a.atttypid, a.atttypmod) as tipo, col_description(c.oid, a.attnum) as descricao
+  from pg_class c join pg_namespace n on n.oid = c.relnamespace
+  join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped
+  where n.nspname = 'consulta' and c.relkind = 'v' and c.relname <> 'dicionario'
+  order by c.relname, a.attnum;
+comment on view consulta.dicionario is 'O esquema consultável: views, colunas, tipos e descrições. É o que o modelo lê antes de escrever SQL.';
+
+do $$ begin
+  if not exists (select 1 from pg_roles where rolname = 'consulta_leitor') then create role consulta_leitor nologin; end if;
+end $$;
+grant usage on schema consulta to consulta_leitor;
+grant select on all tables in schema consulta to consulta_leitor;
+grant execute on function tokens_de_nome(text), sem_acento(text) to consulta_leitor;
+
+-- Executa uma consulta do modelo: um único SELECT (ou WITH … SELECT), no máximo
+-- `limite` linhas em JSON, na ordem das colunas, dizendo se truncou.
+create or replace function consulta.executar(consulta_sql text, limite int)
+returns json
+language plpgsql stable security definer
+set search_path = consulta, public, pg_catalog
+set statement_timeout = '3s'
+as $$
+declare
+  texto text := regexp_replace(btrim(coalesce(consulta_sql, '')), ';\s*$', '');
+  teto int := least(greatest(coalesce(limite, 200), 1), 1000);
+  linhas json;
+  total int;
+begin
+  if length(texto) > 4000 then raise exception 'consulta longa demais (máximo de 4.000 caracteres)'; end if;
+  if texto !~* '^\s*(select|with)\s' then raise exception 'só é aceito SELECT'; end if;
+  if position(';' in texto) > 0 then raise exception 'uma consulta por vez, sem ";"'; end if;
+  execute format('select json_agg(q) from (select * from (%s) as consulta_modelo limit %s) q', texto, teto + 1) into linhas;
+  total := coalesce(json_array_length(linhas), 0);
+  if total > teto then
+    select json_agg(e order by i) into linhas from json_array_elements(linhas) with ordinality as x(e, i) where i <= teto;
+  end if;
+  return json_build_object('linhas', coalesce(linhas, '[]'::json), 'truncado', total > teto, 'limite', teto);
+end;
+$$;
+
+-- Dono `consulta_leitor`: a execução roda com o privilégio dele, não do app.
+-- O CREATE no schema só existe durante a troca de dono.
+-- No Postgres 17, criar o papel não basta para passar objetos a ele: é preciso
+-- poder assumi-lo (SET), e o contrário não vale — `consulta_leitor` não assume
+-- `postgres`.
+grant consulta_leitor to current_user with set true;
+grant create on schema consulta to consulta_leitor;
+alter function consulta.executar(text, int) owner to consulta_leitor;
+revoke create on schema consulta from consulta_leitor;
+revoke execute on function consulta.executar(text, int) from public;
+
+-- Porta de entrada pela API: o PostgREST expõe só `public`.
+create or replace function consultar(consulta_sql text, limite int default 200)
+returns json
+language sql stable
+set search_path = public
+as $$ select consulta.executar(consulta_sql, limite) $$;
+
+grant usage on schema consulta to anon, authenticated;
+grant execute on function consulta.executar(text, int) to anon, authenticated;
+grant execute on function consultar(text, int) to anon, authenticated;
