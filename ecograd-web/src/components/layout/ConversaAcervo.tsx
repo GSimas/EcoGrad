@@ -18,6 +18,10 @@ import {
 } from '@/lib/chat-sintese';
 import { markdownParaHtml } from '@/lib/markdown';
 import { lerConfigIA, provedorPorId, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
+import {
+  buscarNoIndice, colecaoNoIndice, estadoDoIndice, indiceConfigurado, macrotemasDoIndice,
+  panoramaDoIndice, pessoaNoIndice, registrosDoTituloNoIndice, serieDoIndice,
+} from '@/lib/indice-remoto';
 import { escreverSintese } from '@/services/sintese-acervo';
 import type { Documento, IndicesInvertidos } from '@/types';
 
@@ -44,10 +48,33 @@ interface Resposta { plano: Plano; dados: unknown; pergunta: string; id: number 
  * catálogo alcança, declara o que não alcança e oferece carregar o recorte para
  * continuar aqui mesmo, com profundidade total.
  */
+/** A ressalva que a resposta acrescenta quando o índice está atrás da base. */
+const DECLARACOES_IDADE = 'O índice foi gerado de uma versão anterior das bases e pode estar atrás do que a busca mostra.';
+
+/**
+ * Cada função do índice tem assinatura própria; o roteador só sabe o nome e os
+ * argumentos. Este mapa é a fronteira entre os dois, e é onde um nome de função
+ * que o índice não tem vira erro claro em vez de `undefined is not a function`.
+ */
+async function executarNoIndice(ferramenta: string, a: Record<string, unknown>): Promise<unknown> {
+  switch (ferramenta) {
+    case 'buscar_texto': return buscarNoIndice(String(a.consulta ?? ''), Number(a.limite ?? 25));
+    case 'contar_acervo': return panoramaDoIndice();
+    case 'recorte_da_colecao': return colecaoNoIndice(String(a.nome ?? ''));
+    case 'serie_anual': return serieDoIndice((a.colecao_filtro as string) || undefined);
+    case 'registros_do_titulo': return registrosDoTituloNoIndice(String(a.titulo_busca ?? ''));
+    case 'top_macrotemas': return macrotemasDoIndice(Number(a.limite ?? 10));
+    case 'pessoa_no_indice': return pessoaNoIndice(String(a.nome ?? ''));
+    default: throw new Error(`O índice não tem a ferramenta ${ferramenta}.`);
+  }
+}
+
 export function ConversaAcervo() {
   const [pergunta, setPergunta] = useState('');
   const [resposta, setResposta] = useState<Resposta | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  // A consulta ao índice sai pela rede: a espera precisa aparecer.
+  const [consultando, setConsultando] = useState(false);
   const [refazer, setRefazer] = useState(false);
 
   const docs = useEcoGradStore((s) => s.docs);
@@ -68,24 +95,45 @@ export function ConversaAcervo() {
   const preparada = useMemo(() => (catalogo.data ? prepararBusca(catalogo.data) : null), [catalogo.data]);
   const indices = useMemo(() => construirIndicesInvertidos(docs), [docs]);
 
-  const responder = (texto: string) => {
+  /**
+   * Estado do índice da Etapa 2: se respondeu, e se foi gerado das mesmas bases
+   * que estão publicadas. `retry: 0` porque a falha aqui não é excepcional — é
+   * um dos modos de operação previstos pela decisão D1, e a conversa segue pelo
+   * catálogo declarando o limite.
+   */
+  const indice = useQuery({
+    queryKey: ['indice-estado'],
+    queryFn: estadoDoIndice,
+    enabled: indiceConfigurado(),
+    staleTime: 5 * 60 * 1000,
+    retry: 0,
+  });
+
+  const responder = async (texto: string) => {
     const limpa = texto.trim();
     if (!limpa) return;
     setErro(null);
-    const plano = planejar(limpa, { baseCarregada });
+    const plano = planejar(limpa, { baseCarregada, indiceDisponivel: indice.data?.disponivel === true });
     if (plano.escopo === 'nenhum' || !plano.ferramenta) { setResposta({ plano, dados: null, pergunta: limpa, id: Date.now() }); return; }
+    // Índice velho ainda responde: a resposta declara a idade em vez de sumir.
+    if (plano.escopo === 'indice' && indice.data?.atualizado === false) plano.declarar.push(DECLARACOES_IDADE);
     try {
-      const dados = plano.escopo === 'catalogo'
-        ? preparada ? executarFerramentaCatalogo(plano.ferramenta as NomeFerramentaCatalogo, preparada, plano.argumentos) : null
-        : executarFerramenta(plano.ferramenta as NomeFerramenta, { docs, indices }, plano.argumentos);
+      setConsultando(plano.escopo === 'indice');
+      const dados = plano.escopo === 'indice'
+        ? await executarNoIndice(plano.ferramenta, plano.argumentos)
+        : plano.escopo === 'catalogo'
+          ? preparada ? executarFerramentaCatalogo(plano.ferramenta as NomeFerramentaCatalogo, preparada, plano.argumentos) : null
+          : executarFerramenta(plano.ferramenta as NomeFerramenta, { docs, indices }, plano.argumentos);
       setResposta({ plano, dados, pergunta: limpa, id: Date.now() });
     } catch (e) {
       setResposta(null);
       setErro(e instanceof Error ? e.message : 'Não consegui apurar essa pergunta.');
+    } finally {
+      setConsultando(false);
     }
   };
 
-  const enviar = (e: FormEvent) => { e.preventDefault(); responder(pergunta); };
+  const enviar = (e: FormEvent) => { e.preventDefault(); void responder(pergunta); };
 
   /**
    * Carrega o recorte sem sair daqui: a conversa continua com os resumos em mãos.
@@ -107,12 +155,12 @@ export function ConversaAcervo() {
     <form onSubmit={enviar} className="flex flex-col gap-2 sm:flex-row">
       <label className="min-w-0 flex-1">
         <span className="sr-only">Pergunte sobre o acervo</span>
-        <input type="text" className="input" value={pergunta} disabled={carregando}
+        <input type="text" className="input" value={pergunta} disabled={carregando || consultando}
           placeholder="Pergunte sobre o acervo: temas, pessoas, coleções, contagens..."
           onChange={(e) => setPergunta(e.target.value)} />
       </label>
-      <button type="submit" className="btn btn-primary shrink-0" disabled={carregando || !pergunta.trim() || (!baseCarregada && !catalogo.data)}>
-        <MessageSquare size={16} className="shrink-0" /> Perguntar
+      <button type="submit" className="btn btn-primary shrink-0" disabled={carregando || consultando || !pergunta.trim() || (!baseCarregada && !catalogo.data && !indice.data?.disponivel)}>
+        <MessageSquare size={16} className="shrink-0" /> {consultando ? 'Consultando o índice...' : 'Perguntar'}
       </button>
     </form>
 
@@ -153,7 +201,9 @@ function RespostaChat({ resposta, docs, indices, baseCarregada, carregando, aoCa
 
     {dados !== null && <div className="card space-y-3">
       <p className="text-xs uppercase tracking-wide text-slate-400">
-        {plano.escopo === 'catalogo' ? 'Catálogo do acervo · rótulos' : 'Recorte carregado · texto completo'}
+        {plano.escopo === 'indice' ? 'Índice do acervo · título e resumo'
+          : plano.escopo === 'catalogo' ? 'Catálogo do acervo · rótulos'
+          : 'Recorte carregado · texto completo'}
         {plano.alvo && <> · <span className="normal-case text-slate-300">{plano.alvo}</span></>}
       </p>
       <CorpoResposta dados={dados} docs={docs} />
@@ -176,6 +226,69 @@ function RespostaChat({ resposta, docs, indices, baseCarregada, carregando, aoCa
     </div>}
 
     {plano.intencao === 'acao_abrir' && <AbrirDossie dados={dados} carregando={carregando} />}
+  </div>;
+}
+
+/**
+ * O recorte temático vindo do índice: os trabalhos que o acervo tem sobre o
+ * tema, do mais aderente ao menos. É a lista que a síntese vai citar, e por isso
+ * a ordem importa — ela é a mesma do `ts_rank`, e os 25 primeiros foram onde a
+ * medição encontrou 79% de revocação com 76% de precisão.
+ */
+function AchadosIndice({ itens }: { itens: Array<{ documento_id: string; titulo: string; aderencia: number }> }) {
+  return <div className="space-y-2">
+    <Numeros itens={[['trabalhos no recorte', itens.length]]} />
+    <ol className="space-y-1 text-sm">
+      {itens.map((i, n) => <li key={i.documento_id} className="flex gap-2">
+        <span className="shrink-0 text-xs text-slate-400 tabular-nums">{n + 1}.</span>
+        <span>{i.titulo}</span>
+      </li>)}
+    </ol>
+  </div>;
+}
+
+function SerieIndice({ serie }: { serie: Array<{ ano: number; registros: number; em_coleta: boolean }> }) {
+  const coleta = serie.find((a) => a.em_coleta);
+  return <div className="space-y-2">
+    <Chips titulo="Registros por ano" itens={serie.slice(-12).map((a) => [String(a.ano), a.registros])} />
+    {coleta && <p className="text-xs text-amber-200">{coleta.ano} ainda em coleta: não representa o ano fechado.</p>}
+  </div>;
+}
+
+function PanoramaIndiceView({ p }: { p: Record<string, unknown> }) {
+  return <div className="space-y-2">
+    <Numeros itens={[
+      ['registros', Number(p.registros)],
+      ['trabalhos distintos', Number(p.trabalhos_distintos)],
+      ['com resumo', Number(p.com_resumo)],
+      ['sem resumo', Number(p.sem_resumo)],
+      ['coleções', Number(p.colecoes)],
+    ]} />
+    <p className="text-xs text-slate-400">{String(p.unidade ?? '')}</p>
+  </div>;
+}
+
+/** A coleção apurada no índice: já traz contagem, cobertura e intervalo. */
+function ColecoesIndice({ itens }: { itens: Array<Record<string, unknown>> }) {
+  return <div className="space-y-3">
+    {itens.slice(0, 5).map((c) => <div key={String(c.colecao)} className="space-y-1">
+      <p className="text-sm font-medium">{String(c.colecao)}</p>
+      <Numeros itens={[
+        ['registros', Number(c.registros)],
+        ['trabalhos distintos', Number(c.trabalhos_distintos)],
+        ['sem resumo', Number(c.sem_resumo)],
+      ]} />
+      <p className="text-xs text-slate-400">
+        De {String(c.ano_min)} a {String(c.ano_max)} · {String(c.niveis ?? '')}
+      </p>
+    </div>)}
+  </div>;
+}
+
+function PessoaIndice({ itens }: { itens: Array<Record<string, unknown>> }) {
+  return <div className="space-y-2">
+    <Chips titulo="Registros por papel" itens={itens.map((i) => [String(i.papel), Number(i.registros)])} />
+    <p className="text-xs text-slate-400">{String(itens[0]?.unidade ?? '')}</p>
   </div>;
 }
 
@@ -211,6 +324,21 @@ function ColecaoView({ c }: { c: ColecaoNoCatalogo }) {
 function CorpoResposta({ dados, docs }: { dados: unknown; docs: readonly Documento[] }) {
   const d = dados as Record<string, unknown>;
 
+  // Consulta que não achou nada é resposta legítima, não defeito: mostrar `[]`
+  // cru faria o usuário achar que algo quebrou.
+  if (Array.isArray(dados) && dados.length === 0)
+    return <p className="text-sm text-slate-300">Não encontrei nada no acervo para essa pergunta.</p>;
+
+  if (Array.isArray(dados) && dados.length > 0 && typeof (dados[0] as Record<string, unknown>).aderencia === 'number')
+    return <AchadosIndice itens={dados as Array<{ documento_id: string; titulo: string; aderencia: number }>} />;
+  if (Array.isArray(dados) && dados.length > 0 && 'em_coleta' in (dados[0] as object))
+    return <SerieIndice serie={dados as Array<{ ano: number; registros: number; em_coleta: boolean }>} />;
+  if (Array.isArray(dados) && dados.length === 1 && 'trabalhos_distintos' in (dados[0] as object) && 'com_resumo' in (dados[0] as object))
+    return <PanoramaIndiceView p={dados[0] as Record<string, unknown>} />;
+  if (Array.isArray(dados) && dados.length > 0 && 'ano_min' in (dados[0] as object))
+    return <ColecoesIndice itens={dados as Array<Record<string, unknown>>} />;
+  if (Array.isArray(dados) && dados.length > 0 && 'papel' in (dados[0] as object) && 'grafia' in (dados[0] as object))
+    return <PessoaIndice itens={dados as Array<Record<string, unknown>>} />;
   if (ehRecorte(dados)) return <RecorteView r={dados} docs={docs} />;
   if (Array.isArray(d.colecoes) && typeof d.totalNoCatalogo === 'number') return <ColecaoView c={dados as ColecaoNoCatalogo} />;
   if ('porPapel' in d) return <PessoaView p={dados as PessoaNoCatalogo} />;

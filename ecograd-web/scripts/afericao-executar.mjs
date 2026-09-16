@@ -292,6 +292,45 @@ const PLANOS = [
   conferir('E1', 'pergunta que exige resumo avisa o limite do catálogo', semAviso, []);
 }
 
+// ------------------------------------------------ Etapa 2: plano com índice
+//
+// Com o índice no ar, a tela inicial deixa de responder por rótulo: as mesmas
+// perguntas passam a ser apuradas sobre o acervo inteiro, lendo o resumo. O que
+// se confere aqui é que o roteamento escolhe o índice e leva o argumento certo
+// -- "trabalhos de 2026" e "produção do EGC ano a ano" caem na mesma ferramenta
+// com alvos de natureza diferente, e confundir os dois devolvia lista vazia.
+{
+  const perguntasPath = join(raizRepo, 'docs', 'evidencias', 'afericao', 'perguntas.json');
+  const PERGUNTAS = new Map(JSON.parse(readFileSync(perguntasPath, 'utf8')).perguntas.map((q) => [q.id, q.pergunta]));
+  const COM_INDICE = [
+    { id: 'Q01', ferramenta: 'recorte_da_colecao' },
+    { id: 'Q02', ferramenta: 'serie_anual' },
+    { id: 'Q04', ferramenta: 'contar_acervo' },
+    { id: 'Q10', ferramenta: 'buscar_texto' },
+    { id: 'Q12', ferramenta: 'buscar_texto' },
+    { id: 'Q14', ferramenta: 'buscar_texto' },
+    { id: 'Q23', ferramenta: 'serie_anual', argumentos: { colecao_filtro: null } },
+    { id: 'Q25', ferramenta: 'registros_do_titulo' },
+  ];
+  for (const alvo of COM_INDICE) {
+    const plano = planejar(PERGUNTAS.get(alvo.id), { baseCarregada: false, indiceDisponivel: true });
+    conferir(alvo.id, 'plano usa o índice',
+      {
+        escopo: plano.escopo,
+        ferramenta: plano.ferramenta,
+        // Índice já leu o resumo: não há o que carregar para responder melhor.
+        exigeResumo: plano.exigeResumo,
+        ...(alvo.argumentos ? { argumentos: plano.argumentos } : {}),
+      },
+      { escopo: 'indice', ferramenta: alvo.ferramenta, exigeResumo: false, ...(alvo.argumentos ? { argumentos: alvo.argumentos } : {}) });
+  }
+
+  // Sem índice, nada muda: o catálogo continua sendo a rede de segurança.
+  const semIndice = planejar(PERGUNTAS.get('Q10'), { baseCarregada: false, indiceDisponivel: false });
+  conferir('E2', 'sem índice a conversa volta ao catálogo', semIndice.escopo, 'catalogo');
+}
+
+
 
 console.log(`\n${medidas - falhas} de ${medidas} conferências passaram.`);
 console.log('O plano de resposta e deterministico e esta aferido acima; falta medir a redacao do modelo (citacao e ressalva) em rodada BYOK.');

@@ -222,7 +222,27 @@ for (const [tabela, arquivo, colunas, tipos] of TABELAS) {
   console.log(`\r  ${tabela.padEnd(24)} ${String(total).padStart(7)} linhas  ${segundos(t)}`);
 }
 
-console.log(simular ? `
-Simulação concluída em ${segundos(inicio)}: nada foi enviado.` : `
-Carga concluída em ${segundos(inicio)}.`);
-console.log(`Confira as contagens: ${base}/rest/v1/registro?select=count`);
+
+// A frequência de lexema é derivada de `documento` e envelhece junto com ela.
+// Recalcular faz parte da carga, não é manutenção à parte: um índice novo com
+// a frequência antiga produz lift errado e expansão errada, sem nenhum sinal
+// de que algo está errado.
+if (!simular) {
+  const t = Date.now();
+  const r = await fetch(`${base}/rest/v1/rpc/atualizar_lexema_frequencia`, {
+    method: 'POST',
+    headers: { apikey: chave, authorization: `Bearer ${chave}`, 'content-type': 'application/json' },
+    body: '{}',
+  });
+  if (!r.ok) {
+    console.error(`  frequência de lexemas NÃO atualizada: HTTP ${r.status}`);
+    console.error('  o tesauro vai usar a frequência anterior; rode de novo antes de confiar na expansão.');
+    process.exitCode = 1;
+  } else {
+    console.log(`  lexemas distintos        ${await r.json()}  ${segundos(t)}`);
+  }
+}
+
+console.log(simular
+  ? `\nSimulação concluída em ${segundos(inicio)}: nada foi enviado.`
+  : `\nCarga concluída em ${segundos(inicio)}.`);

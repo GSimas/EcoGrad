@@ -13,6 +13,15 @@
 create extension if not exists pg_trgm;
 create extension if not exists unaccent;
 
+-- `unaccent(text)` é volátil porque depende do dicionário carregado, e por isso
+-- não pode entrar em índice. Fixar o dicionário na chamada torna a função
+-- imutável e indexável — é a forma canônica de resolver isso no Postgres, e sem
+-- ela a semente do tesauro varre o acervo inteiro a cada pergunta.
+create or replace function sem_acento(texto text) returns text
+language sql immutable parallel safe strict as $$
+  select public.unaccent('public.unaccent'::regdictionary, lower(texto))
+$$;
+
 -- ---------------------------------------------------------------- tabelas
 --
 -- D3: a unidade é a obra deduplicada. `documento` é a obra; `registro` é cada
@@ -101,6 +110,22 @@ create index registro_cobertura_idx on registro (resumo_utilizavel);
 create index registro_pessoa_pessoa_idx on registro_pessoa (pessoa_id, papel);
 create index registro_palavra_chave_termo_idx on registro_palavra_chave (termo);
 
+-- Sem estes três, a semente do tesauro é uma varredura sequencial de 85 mil
+-- documentos contra um hash de 356 mil linhas: quatro segundos por pergunta,
+-- acima do teto do papel anônimo. Com eles, 81 milissegundos.
+create index documento_titulo_norm_idx on documento using gin (sem_acento(titulo) gin_trgm_ops);
+create index palavra_chave_norm_idx on registro_palavra_chave using gin (sem_acento(termo) gin_trgm_ops);
+create index registro_macrotema_norm_idx on registro using gin (sem_acento(macrotema) gin_trgm_ops);
+
+-- Quantos documentos contêm cada lexema é propriedade do índice, não da
+-- pergunta. Calcular a cada consulta custava segundos — lexema comum como
+-- "trabalh" casa 45 mil documentos. Aqui é uma vez por carga, e o tesauro vira
+-- uma junção.
+create table lexema_frequencia (
+  lexema text primary key,
+  documentos int not null
+);
+
 -- ------------------------------------------------------------------- RLS
 --
 -- A chave anônima é pública num app estático: leitura para todos, escrita para
@@ -113,6 +138,7 @@ alter table pessoa enable row level security;
 alter table pessoa_grafia enable row level security;
 alter table registro_pessoa enable row level security;
 alter table registro_palavra_chave enable row level security;
+alter table lexema_frequencia enable row level security;
 
 create policy leitura_publica on indice_meta for select to anon, authenticated using (true);
 create policy leitura_publica on documento for select to anon, authenticated using (true);
@@ -121,6 +147,7 @@ create policy leitura_publica on pessoa for select to anon, authenticated using 
 create policy leitura_publica on pessoa_grafia for select to anon, authenticated using (true);
 create policy leitura_publica on registro_pessoa for select to anon, authenticated using (true);
 create policy leitura_publica on registro_palavra_chave for select to anon, authenticated using (true);
+create policy leitura_publica on lexema_frequencia for select to anon, authenticated using (true);
 
 -- ------------------------------------------------- tesauro e busca por texto
 --
@@ -136,15 +163,24 @@ create policy leitura_publica on registro_palavra_chave for select to anon, auth
 
 create or replace function tesauro(consulta text, termos int default 8)
 returns table (lexema text, na_semente bigint, no_acervo bigint, lift numeric)
-language sql stable as $$
+language sql stable parallel safe as $$
+  -- Cada filtro roda na sua própria tabela, usando o próprio índice, e o
+  -- conjunto de ids — pequeno por definição — volta para `documento`. Montar a
+  -- semente ao contrário, varrendo os documentos e filtrando depois, custava
+  -- 50 vezes mais.
   with semente as (
-    select distinct d.id, d.tsv
-    from documento d
-    join registro r on r.documento_id = d.id
-    left join registro_palavra_chave pc on pc.registro_id = r.id
-    where unaccent(lower(d.titulo)) like '%' || unaccent(lower(consulta)) || '%'
-       or unaccent(lower(coalesce(pc.termo, ''))) like '%' || unaccent(lower(consulta)) || '%'
-       or unaccent(lower(coalesce(r.macrotema, ''))) like '%' || unaccent(lower(consulta)) || '%'
+    select d.id, d.tsv from documento d
+    where sem_acento(d.titulo) like '%' || sem_acento(consulta) || '%'
+    union
+    select d.id, d.tsv from documento d
+    where d.id in (
+      select r.documento_id from registro r
+      where sem_acento(r.macrotema) like '%' || sem_acento(consulta) || '%'
+      union
+      select r.documento_id from registro r
+      join registro_palavra_chave pc on pc.registro_id = r.id
+      where sem_acento(pc.termo) like '%' || sem_acento(consulta) || '%'
+    )
   ),
   total as (select count(*)::numeric as n from semente),
   candidatos as (
@@ -154,19 +190,34 @@ language sql stable as $$
     group by lex
     having count(distinct s.id) >= greatest(2, ceil((select n from total) / 3))
   )
-  select c.lexema, c.na_semente,
-    (select count(*) from documento d
-      -- 'simple' não lematiza: o lexema já veio lematizado do tsv, e passá-lo
-      -- pelo dicionário português de novo o transforma em outra palavra.
-      where d.tsv @@ to_tsquery('simple', quote_literal(c.lexema))) as no_acervo,
-    round(
-      (c.na_semente / (select n from total)) /
-      nullif((select count(*) from documento d where d.tsv @@ to_tsquery('simple', quote_literal(c.lexema)))::numeric / 85567, 0)
-    , 1) as lift
-  from candidatos c
-  order by lift desc nulls last
+  select c.lexema, c.na_semente, f.documentos::bigint,
+    round((c.na_semente / (select n from total)) / nullif(f.documentos::numeric / 85567, 0), 1)
+  from candidatos c join lexema_frequencia f on f.lexema = c.lexema
+  order by 4 desc nulls last
   limit termos;
 $$;
+
+-- `lexema_frequencia` envelhece junto com `documento`: recalcular é parte da
+-- carga, não manutenção à parte. `security definer` porque quem carrega chama
+-- pela API com a chave de serviço, e a função escreve numa tabela sob RLS.
+create or replace function atualizar_lexema_frequencia()
+returns bigint
+language plpgsql security definer
+set search_path = public
+as $$
+declare n bigint;
+begin
+  delete from lexema_frequencia;
+  insert into lexema_frequencia (lexema, documentos)
+  select word, ndoc from ts_stat('select tsv from documento') where ndoc >= 2;
+  get diagnostics n = row_count;
+  analyze lexema_frequencia;
+  return n;
+end;
+$$;
+
+revoke execute on function atualizar_lexema_frequencia() from public, anon, authenticated;
+grant execute on function atualizar_lexema_frequencia() to service_role;
 
 -- O lexema de maior `lift` é obrigatório: é o núcleo do tema, e sem ele o
 -- resultado vira outra coisa. Entram como alternativa os que aparecem em metade

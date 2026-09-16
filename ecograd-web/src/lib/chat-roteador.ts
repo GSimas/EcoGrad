@@ -23,8 +23,15 @@ export type Intencao =
   | 'macrotemas' | 'origem_termo' | 'serie' | 'ano' | 'tema' | 'existencia' | 'titulo'
   | 'ontologia' | 'acao_carregar' | 'acao_abrir' | 'qualidade' | 'dado_pessoal' | 'fora_do_acervo';
 
-/** Onde a resposta é apurada. `nenhum` é recusa: nada a consultar. */
-export type Escopo = 'recorte' | 'catalogo' | 'nenhum';
+/**
+ * Onde a resposta é apurada. `nenhum` é recusa: nada a consultar.
+ *
+ * `indice` é o Postgres da Etapa 2, que tem o acervo inteiro com o texto dos
+ * resumos. Quando ele está no ar, é a melhor apuração disponível sem carregar
+ * nada — 79% de revocação contra os 46% do catálogo por rótulo. Quando não
+ * está, a conversa cai no catálogo e a resposta declara o limite.
+ */
+export type Escopo = 'recorte' | 'catalogo' | 'indice' | 'nenhum';
 
 export interface Plano {
   intencao: Intencao;
@@ -43,8 +50,10 @@ export interface Plano {
 }
 
 export interface Contexto {
-  /** Há base carregada? Sem ela, só o catálogo global responde. */
+  /** Há base carregada? Sem ela, o índice responde; sem ele, o catálogo. */
   baseCarregada: boolean;
+  /** O índice da Etapa 2 respondeu e está na mesma versão da base publicada. */
+  indiceDisponivel?: boolean;
 }
 
 const DECLARACOES = {
@@ -55,6 +64,8 @@ const DECLARACOES = {
   duplicata: 'Registros e trabalhos distintos são contagens diferentes: o acervo cataloga a mesma obra em mais de uma coleção.',
   cobertura: 'Parte dos registros não tem resumo utilizável e fica fora de qualquer leitura de texto.',
   ontologia: 'A base publicada não traz teorias, ferramentas e métodos extraídos: o que existe são menções no texto dos resumos, sem campo validado.',
+  indice: 'Apurado no índice do acervo inteiro, que lê o texto dos resumos — não só os rótulos.',
+  indiceVelho: 'O índice foi gerado de uma versão anterior das bases e pode estar atrás do que a busca mostra.',
   semAnoNoCatalogo: 'O catálogo indexa rótulos — título, pessoa, palavra-chave, macrotema — e não guarda o ano do trabalho.',
   semContagemPorColecao: 'O catálogo identifica a coleção, mas não conta quantos registros ela tem: a contagem sai do recorte carregado.',
 };
@@ -296,6 +307,28 @@ export function planejar(pergunta: string, ctx: Contexto): Plano {
 
   let recusa = regra?.recusa;
 
+  // Sem base carregada, o índice responde primeiro: ele tem o acervo inteiro
+  // com o texto dos resumos, que é justamente o que o catálogo não tem. O
+  // catálogo continua sendo a rede de segurança quando o índice não está no ar.
+  if (escopo === 'recorte' && !ctx.baseCarregada && ctx.indiceDisponivel) {
+    const noIndice = NO_INDICE[ferramenta];
+    if (noIndice) {
+      escopo = 'indice';
+      declarar.push(DECLARACOES.indice);
+      ferramenta = noIndice.nome;
+      // "Trabalhos de 2026" e "produção do EGC ano a ano" caem na mesma
+      // ferramenta, mas o alvo de uma é um ano e o da outra é uma coleção.
+      // Passar o ano como filtro de coleção devolvia lista vazia.
+      argumentos = intencao === 'ano' ? { colecao_filtro: null } : noIndice.argumentos(alvo);
+      return {
+        intencao, alvo, escopo, ferramenta, argumentos, recusa,
+        declarar,
+        // O índice já leu o resumo: não há o que carregar para responder melhor.
+        exigeResumo: false,
+      };
+    }
+  }
+
   // Sem base carregada, o que dependia do recorte passa pelo catálogo.
   //
   // Nem tudo tem equivalente, e é aqui que a resposta pode mentir: o ano não é
@@ -336,6 +369,23 @@ export function planejar(pergunta: string, ctx: Contexto): Plano {
     exigeResumo: exigeResumo || (escopo === 'catalogo' && (intencao === 'colecao' || intencao === 'serie')),
   };
 }
+
+/**
+ * O que cada ferramenta do recorte tem no índice da Etapa 2.
+ *
+ * Diferente do mapa do catálogo, aqui não há degradação: as funções do índice
+ * respondem a mesma pergunta sobre o acervo inteiro. O que não está neste mapa
+ * simplesmente não foi construído ainda, e cai no catálogo com a ressalva de
+ * rótulo — nunca em uma resposta que finge ser outra.
+ */
+const NO_INDICE: Record<string, { nome: string; argumentos: (alvo: string) => Record<string, unknown> }> = {
+  buscar_no_texto: { nome: 'buscar_texto', argumentos: (alvo) => ({ consulta: alvo, limite: 25 }) },
+  contar_acervo: { nome: 'contar_acervo', argumentos: () => ({}) },
+  recorte_da_colecao: { nome: 'recorte_da_colecao', argumentos: (alvo) => ({ nome: alvo }) },
+  serie_anual: { nome: 'serie_anual', argumentos: (alvo) => ({ colecao_filtro: alvo || null }) },
+  registros_do_titulo: { nome: 'registros_do_titulo', argumentos: (alvo) => ({ titulo_busca: alvo }) },
+  top_macrotemas: { nome: 'top_macrotemas', argumentos: () => ({ limite: 10 }) },
+};
 
 /** O que cada ferramenta do recorte tem de mais próximo no catálogo. */
 const EQUIVALENTE_NO_CATALOGO: Record<string, { nome: string; argumentos: (alvo: string) => Record<string, unknown> }> = {
