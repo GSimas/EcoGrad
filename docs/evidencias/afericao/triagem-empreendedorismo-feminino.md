@@ -1,8 +1,8 @@
 # Triagem — Empreendedorismo feminino
 
-Perguntas: Q10, e Q11 com o mesmo conjunto. Gerado por `npm run afericao:triagem` em 2026-09-15, bases `7b1cbeb9…` e `e36c0d0a…`. **Não edite este arquivo**: ele é regenerado a partir de [`triagem-decisoes.json`](triagem-decisoes.json).
+Perguntas: Q10, e Q11 com o mesmo conjunto. Gerado por `npm run afericao:triagem` em 2026-09-16, bases `7b1cbeb9…` e `e36c0d0a…`. **Não edite este arquivo**: ele é regenerado a partir de [`triagem-decisoes.json`](triagem-decisoes.json).
 
-**Responsável:** _triagem não assinada_ · **Situação:** 0 de 89 obras decididas — 0 pertencem, 0 não pertencem, 0 em dúvida.
+**Responsável:** Gustavo Simas da Silva, em 2026-09-16 · **Situação:** 89 de 89 obras decididas — 24 pertencem, 65 não pertencem, 0 em dúvida.
 
 **Como triar.** Em `triagem-decisoes.json`, preencha para cada obra a `decisao` ("pertence", "nao_pertence" ou "duvida") e a `justificativa`. Obra que falte nas listas pode entrar em `obras` com o id de `idObra(titulo)`, de `scripts/afericao-padroes.mjs`. Ao terminar, assine em `responsavel` e `assinadoEm` e rode `npm run afericao`. A **sugestão** vem de um modelo de linguagem que leu os resumos: ajuda a começar, mas não conta como decisão.
 
@@ -17,7 +17,7 @@ Perguntas: Q10, e Q11 com o mesmo conjunto. Gerado por `npm run afericao:triagem
 
 `o-ba951fc7` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Aplica escala de conflito trabalho-familia em 57 mulheres empreendedoras de grupos de apoio ao empreendedorismo feminino da Grande Florianopolis.
 - Registros: TCC Administração (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/266169)
 - Palavras-chave: empreendedorismo feminino; planejamento estrategico pessoal; conflito trabalho-familia · Macrotema (classificação automática da base): Planejamento Estratégico Empresarial
@@ -32,7 +32,7 @@ Este estudo teve como objetivo analisar a relação entre o uso do planejamento 
 
 `o-3affc6f5` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Titulo e resumo: fatores motivacionais e desafios de 21 mulheres amapaenses a frente de pequenas empresas; empreendedorismo feminino e o objeto.
 - Registros: TCC Administração (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/266352)
 - Palavras-chave: female entrepreneurship; challenges; motivation; empreendedorismo feminino; desafios; public policies; politicas publicas; amapa; motivacao · Macrotema (classificação automática da base): Micro e Pequenas Empresas
@@ -47,7 +47,7 @@ This study analyzes the motivational factors and challenges faced by women entre
 
 `o-881cc0f7` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — as mulheres sao as pacientes/publico-alvo do negocio, nao ha recorte sobre mulheres que empreendem.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Empreender clinica de medicina da mulher: as mulheres sao as pacientes/publico-alvo do negocio, nao ha recorte sobre mulheres que empreendem.
 - Registros: TCC Administração (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/254521)
 - Palavras-chave: modelo de negocios; empreendedorismo; women's health; saude da mulher; medical clinic management; entrepreneurship; business model; salutogenesis; salutogenese; gestao de clinica medica · Macrotema (classificação automática da base): Gestão Conhecimento e Processos
@@ -62,7 +62,7 @@ O presente trabalho tem por objetivo geral: analisar as possibilidades de empree
 
 `o-42c37378` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Reportagens sobre a feira Fatto a Femme, iniciativa de empreendedorismo feminino que promove geracao de renda para mulheres em Florianopolis.
 - Registros: TCC Jornalismo (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/254933)
 - Palavras-chave: empreendedorismo feminino; economia de impacto social; geracao de renda para mulheres; reportagem; jornalimo para telas · Macrotema (classificação automática da base): Gênero e Mulheres Negras
@@ -77,7 +77,7 @@ A feira Fatto a Femme, uma iniciativa de empreendedorismo feminino que é realiz
 
 `o-b38ff885` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Analisa o empreendedorismo feminino no Brasil sob a Economia Feminista, avaliando perfil socioeconomico das mulheres empreendedoras e seus empreendimentos.
 - Registros: TCC Ciências Econômicas (2023, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/248136)
 - Palavras-chave: mercado de trabalho; mulher; desigualdade de genero · Macrotema (classificação automática da base): Gênero e Mercado Trabalho
@@ -92,7 +92,7 @@ Este trabalho aborda o empreendedorismo feminino sob a perspectiva da Economia  
 
 `o-6ba21471` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — Critério — inclui intraempreendedorismo feminino: comportamento empreendedor de mulheres, com ou sem negócio próprio.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): dúvida — Estuda competencias empreendedoras de mulheres gestoras na policia civil; ha genero e comportamento empreendedor, mas nenhum negocio proprio envolvido.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2023, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/251187)
 - Palavras-chave: empoderamento; engenharia e gestao do conhecimento; empreendedorismo na administracao publica; mulheres policiais · Macrotema (classificação automática da base): Práticas Gestão Conhecimento
@@ -107,7 +107,7 @@ A entrada da mulher no mercado de trabalho e a busca pela igualdade de gênero n
 
 `o-cdf2e369` · 1 registro · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Marketing digital de microempreendedores do varejo de moda; as sete respondentes serem mulheres e dado incidental, sem recorte de genero.
 - Registros: TCC Administração (2023, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/248260)
 - Palavras-chave: microempreendedor; varejo; redes sociais; marketing digital; digital marketing; social media; fashion; microentrepreneur; moda; retail · Macrotema (classificação automática da base): Marketing Digital Estratégico
@@ -122,7 +122,7 @@ O Brasil é um dos países entre as maiores redes de varejo de moda no mundo. En
 
 `o-cf8ea908` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Analisa o empreendedorismo feminino sob a otica de 19 fundadoras de startups de tecnologia, seus drivers e dificuldades de genero.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2022, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/244049)
 - Palavras-chave: empreendedorismo; mulheres na tecnologia; tecnologias da informacao e comunicacao; start up · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -137,7 +137,7 @@ O caminho para empreender envolve assumir riscos e desafios encontrados por home
 
 `o-25c6b819` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Estudo de caso com mulheres empreendedoras da Grande Florianopolis sob a otica da economia feminista; empreendedorismo feminino e o tema central.
 - Registros: TCC Ciências Econômicas (2022, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/242750)
 - Palavras-chave: economia feminista; empreendedoras em florianopolis; empreendedorismo feminino.; dupla jornada · Macrotema (classificação automática da base): Gênero e Mercado Trabalho
@@ -152,7 +152,7 @@ O presente estudo traz à luz questões referentes à antiga luta enfrentada pel
 
 `o-34670b4a` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Analisa o empreendedorismo feminino como mecanismo de busca por igualdade de genero e autonomia economica da mulher.
 - Registros: TCC Direito (2022, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/233262)
 - Palavras-chave: empreendedorismo feminino. igualdade de genero. autonomia economica. mulher. · Macrotema (classificação automática da base): Violência de Gênero
@@ -167,7 +167,7 @@ O estudo tem como tema o empreendedorismo feminino, que vem crescendo diante dos
 
 `o-2497b0fc` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Tese analisa efeitos da pandemia sobre o empreendedorismo feminino em Montes Claros, investigando redes das empreendedoras do municipio.
 - Registros: Programa de Pós-Graduação em Ciência da Informação (2022, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/237340)
 - Palavras-chave: empreendedorismo; covid-19; mulheres nos negocios; gestao da informacao; empreendedores; ciencia da informacao · Macrotema (classificação automática da base): Gestão Conhecimento Organizacional
@@ -182,7 +182,7 @@ Os estudos relativos ao empreendedorismo feminino discutem o advento do empreend
 
 `o-3eb984cc` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Projeto de fomento ao empreendedorismo feminino com palestras e pesquisa sobre o perfil das empreendedoras participantes.
 - Registros: TCC Administração (2022, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/232462)
 - Palavras-chave: educacao empreendedora; empreendedorismo feminino; palestras · Macrotema (classificação automática da base): Mulheres no Mercado Trabalho
@@ -197,7 +197,7 @@ This study has as an objetive to foment the female enterpreneurship. Towards thi
 
 `o-fa54c963` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Cria personas para atender as empreendedoras do programa Sebrae DELAS, programa explicitamente de empreendedorismo feminino.
 - Registros: TCC Design (2022, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/232597)
 - Palavras-chave: jornada de compra; marketing de conteudo; personas; funil de vendas · Macrotema (classificação automática da base): Design de Interfaces Digitais
@@ -212,7 +212,7 @@ Personas são uma ferramenta utilizada para representar grupos de consumidores o
 
 `o-2c1bc4f2` · 1 registro · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — a palavra empreendedora aparece so ao descrever a autora medieval, mencao incidental.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Cotejo de traducoes de The book of Margery Kempe; a palavra empreendedora aparece so ao descrever a autora medieval, mencao incidental.
 - Registros: Programa de Pós-Graduação em Estudos da Tradução (2021, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/229872)
 - Palavras-chave: literatura medieval; estudos feministas; autobiografia; traducao e interpretacao · Macrotema (classificação automática da base): Tradução Brasileira Comparada
@@ -227,7 +227,7 @@ The book of Margery Kempe, escrito por volta de 1434 é conhecido como a mais an
 
 `o-d934bbb2` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Identifica deficiencias de competencias de gestao em 149 mulheres empreendedoras da Grande Florianopolis; empreendedorismo feminino e o foco.
 - Registros: TCC Administração (2021, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/228222)
 - Palavras-chave: empreendedorismo feminino.; competencias de gestao.; empreendedorismo. · Macrotema (classificação automática da base): Mulheres no Mercado Trabalho
@@ -242,7 +242,7 @@ O empreendedorismo feminino vem ganhando destaque e cada vez mais cresce a quant
 
 `o-7557ead8` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Compreende desafios do empreendedorismo inovador sob perspectiva de genero com o grupo Mulheres Acate, 40 mulheres empreendedoras em tecnologia.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2020, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/216281)
 - Palavras-chave: empreendedorismo; engenharia e gestao do conhecimento; mulheres na tecnologia; inovacao; relacoes de genero · Macrotema (classificação automática da base): Liderança Relacional Equipes
@@ -257,7 +257,7 @@ Esta dissertação tem como objetivo compreender os desafios do empreendedorismo
 
 `o-1bc897af` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Mapeia startups catarinenses com CEOs mulheres, identificando 43 empresas lideradas por mulheres e os locais onde elas mais empreendem.
 - Registros: TCC Ciências Contábeis (2020, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/235152)
 - Palavras-chave: santa catarina; startups; empreendedorismo; mulheres · Macrotema (classificação automática da base): Tributação Estadual Catarina
@@ -272,7 +272,7 @@ A presença feminina no mercado de trabalho é uma realidade cada vez maior e o 
 
 `o-89f87818` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Compreende o empoderamento da mulher frente as barreiras de genero ao empreender, com entrevistas a vinte empreendedoras catarinenses.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2019, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/215233)
 - Palavras-chave: empoderamento; engenharia e gestao do conhecimento; mulheres nos negocios; empreendedorismo · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -287,7 +287,7 @@ A literatura evidencia que as conquistas obtidas pelas mulheres não são capaze
 
 `o-afabe9be` · 1 registro · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — cita empoderamento de mulheres e jovens nas cooperativas, sem tratar de negocio proprio feminino.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Inovacao social em cooperativas agropecuarias; cita empoderamento de mulheres e jovens nas cooperativas, sem tratar de negocio proprio feminino.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2019, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/215226)
 - Palavras-chave: engenharia e gestao do conhecimento; inovacao; cooperativas; gestao do conhecimento; desenvolvimento social · Macrotema (classificação automática da base): Inovação Social Redes
@@ -302,7 +302,7 @@ As inovações sociais tornaram-se importantes na resolução de problemas socia
 
 `o-0ecbd3a0` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Analisa processos de aprendizagem de cinco empreendedoras proprietarias de empresas incubadas no CELTA, evidenciando divergencias de genero no setor.
 - Registros: Programa de Pós-Graduação em Administração (2019, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/214573)
 - Palavras-chave: administracao; aprendizagem; empreendedorismo; mulheres nos negocios · Macrotema (classificação automática da base): Pequenas Empresas Inovação
@@ -317,7 +317,7 @@ Na busca por novas oportunidades de negócios, o empreendedor realiza ações qu
 
 `o-63bcaa4d` · 1 registro · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Elementos de valor no vestuario sustentavel sob a otica de designers; a predominancia feminina entre entrevistados e apenas dado do perfil.
 - Registros: Programa de Pós-Graduação em Engenharia de Produção (2018, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/190895)
 - Palavras-chave: vestuario; designers; engenharia de producao; moda; sustentabilidade · Macrotema (classificação automática da base): Gestão Educação Ambiental
@@ -332,7 +332,7 @@ Na relação de atender os desejos do consumidor, obter o sucesso do produto e a
 
 `o-08291991` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Analisa processos de aprendizagem, motivacoes e dificuldades das mulheres ao empreender em tecnologia, discutindo o machismo e o baixo indice de empreendedoras.
 - Registros: TCC Administração (2017, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/181664)
 - Palavras-chave: empreendedorismo; empreendedorismo feminino; tecnologia; mulher · Macrotema (classificação automática da base): Mulheres no Mercado Trabalho
@@ -347,7 +347,7 @@ O objetivo deste trabalho é analisar quais são os processos de aprendizagem, m
 
 `o-c026b280` · 1 registro · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Não envolve capacidades empreendedoras femininas diretamente
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): dúvida — Tese traz capitulo sobre empreendedorismo etnico e outro sobre genero em atividades culturais, sem articular explicitamente mulheres empreendedoras.
 - Registros: Programa de Pós-Graduação em Sociologia Política (2017, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/186515)
 - Palavras-chave: sociologia politica; relacoes de genero · Macrotema (classificação automática da base): Gênero e Trabalho Rural
@@ -362,7 +362,7 @@ Esta tese de doutorado tem como objetivo realizar uma análise das diversas iden
 
 `o-da9fd2fd` · 2 registros · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **pertence** — Critério — política pública de formação para empreender entra: forma mulheres empreendedoras.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): dúvida — Programa Mulheres Mil liga inclusao a geracao de renda e ao empreendedorismo, mas o objeto e a critica a politica de inclusao, nao o negocio proprio.
 - Registros: Programa de Pós-Graduação em Educação (ID: 75514) (2015, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/158913); Programa de Pós-Graduação em Educação (2015, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/158913)
 - Palavras-chave: mulheres -; pobreza; aspectos sociais; ensino profissional; santa catarina; integracao social; educacao · Macrotema (classificação automática da base): Gênero e Trabalho Social; Relações de Trabalho e Capital
@@ -377,7 +377,7 @@ Nesta pesquisa, teve-se por objetivo compreender o Programa Mulheres Mil (PMM) c
 
 `o-5fa36b76` · 2 registros · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Comportamento empreendedor de psicologos; cinco dos seis participantes serem mulheres e dado da amostra, sem recorte de genero na analise.
 - Registros: Programa de Pós-Graduação em Psicologia (ID: 77448) (2014, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/129293); Programa de Pós-Graduação em Psicologia (2014, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/129293)
 - Palavras-chave: psicologia; empreendedorismo; psicologos · Macrotema (classificação automática da base): Gênero e Trabalho Social; Carreira no Ensino Superior
@@ -392,7 +392,7 @@ O empreender toma forma atualmente como opção importante de carreira para dive
 
 `o-7054dada` · 1 registro · casou por só no resumo
 
-- Decisão: **pendente**
+- Decisão: **pertence** — Critério — inclui intraempreendedorismo feminino: comportamento empreendedor de mulheres, com ou sem negócio próprio.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Perfil intraempreendedor de dirigentes da UFSC; o sexo aparece apenas como variavel descritiva do perfil, sem foco em empreender negocio.
 - Registros: Programa de Pós-Graduação em Engenharia de Produção (2013, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/107123)
 - Palavras-chave: empreendedorismo; administracao; gerentes; santa catarina; universidades e faculdades; engenharia de producao · Macrotema (classificação automática da base): Geografia Santa Catarina
@@ -407,7 +407,7 @@ O empreendedor é aquele que realiza ações ou idealiza novos métodos a fim de
 
 `o-a009343a` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — Critério — inclui intraempreendedorismo feminino: comportamento empreendedor de mulheres, com ou sem negócio próprio.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): dúvida — Foco central e a mulher intraempreendedora sob recorte psicanalitico, mas trata de intraempreendedorismo em organizacao, nao de negocio proprio.
 - Registros: Programa de Pós-Graduação em Engenharia de Produção (2004, Tese (Doutorado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/87631)
 - Palavras-chave: psicanalise; empreendedorismo; engenharia de producao; mulheres · Macrotema (classificação automática da base): Cultura Mudança Organizacional
@@ -422,7 +422,7 @@ Nesta tese, a partir da teoria psicanalítica, tem-se como objetivo identificar 
 
 `o-e5c89aaf` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Analisa o impacto do microcredito da Blusol na trajetoria e no empoderamento das mulheres empreendedoras, articulando genero e negocio proprio.
 - Registros: Programa de Pós-Graduação em Sociologia Política (2004, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/86790)
 - Palavras-chave: blumenau (sc); trabalho feminino; sociologia politica; microfinancas; inclusao social; politicas publicas; sociologia · Macrotema (classificação automática da base): Gênero e Trabalho Rural
@@ -437,7 +437,7 @@ O microcrédito tem-se tornado, nos últimos anos, no mundo todo, um aliado impo
 
 `o-42bff3d9` · 1 registro · casou por rótulo (título, palavra-chave ou macrotema)
 
-- Decisão: **pendente**
+- Decisão: **pertence** — trata mulheres que empreendem como objeto declarado
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): pertence — Compreende a criacao e o desenvolvimento de empresas por mulheres no Parana a partir do autoconceito empreendedor; dez casos de empreendedoras.
 - Registros: Programa de Pós-Graduação em Engenharia de Produção (2002, Tese (Doutorado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/84447)
 - Palavras-chave: empreendedorismo; mulheres nos negocios; engenharia de producao; identidade; parana · Macrotema (classificação automática da base): Micro Pequenas Médias Empresas
@@ -456,7 +456,7 @@ Obras fora da varredura principal que usam vocabulário próximo. A maioria não
 
 `o-23b75bab` · 1 registro · casou por vocabulário vizinho ("mulheres a alcancarem o sucesso profissional nos negocios", "negocios faz com que ela seja uma referencia de superacao por ser mulher")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Analise literaria da personagem Rami em Niketche; o emprestimo para outras mulheres nos negocios e detalhe do enredo, nao objeto do trabalho.
 - Registros: TCC Letras Língua Portuguesa e Literaturas em Língua Portuguesa (2018, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/195017)
 - Palavras-chave: cultura; feminismo; mocambique; mulher; chiziane · Macrotema (classificação automática da base): Gênero e Personagem Feminina
@@ -471,7 +471,7 @@ O Romance Nicketche, de Paulina Chiziane, publicado no Brasil em 2004 pela edito
 
 `o-620d909e` · 1 registro · casou por vocabulário vizinho ("mulheres, caracterizadas pelo prestigio e sucesso que cristina e emma evidenciam nos negocios", "negocios. sao personagens mulheres")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Analisa a construcao literaria de personagens femininas teuto-blumenauenses; o sucesso nos negocios de Cristina e Emma e traco ficcional, nao empreendedorismo.
 - Registros: Programa de Pós-Graduação em Letras/Literatura Brasileira (2001, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/80189)
 - Palavras-chave: literatura; ficcao; mulheres na literatura · Macrotema (classificação automática da base): Gênero e Trabalho Social
@@ -486,7 +486,7 @@ O presente trabalho analisa a construção de 7 mulheres teuto-blumenauenses, pe
 
 `o-d6b022a1` · 2 registros · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Transferencia de tecnologia em universidades publicas; universidade empreendedora nada tem a ver com mulheres ou genero.
 - Registros: Programa de Pós-Graduação em Administração (2018, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/192776); Programa de Pós-Graduação em Administração (ID: 74711) (2018, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/192776)
 - Palavras-chave: universidades e faculdades publicas; administracao; inovacoes tecnologicas; transferencia de tecnologia · Macrotema (classificação automática da base): Governança Turística Florianópolis
@@ -501,7 +501,7 @@ A interação universidade-empresa (U-E) e a transferência de tecnologia (TT) s
 
 `o-ec432e37` · 2 registros · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Comportamento empreendedor de cabeleireiros e desempenho financeiro; sexo aparece apenas como antecedente estatistico da renda.
 - Registros: Programa de Pós-Graduação em Administração (2017, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/194224); Programa de Pós-Graduação em Administração (ID: 74711) (2017, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/194224)
 - Palavras-chave: administracao; cabeleireiros; empreendedorismo; administracao financeira · Macrotema (classificação automática da base): Comportamento do Consumidor
@@ -516,7 +516,7 @@ Esta tese analisou a relação entre o comportamento empreendedor dos cabeleirei
 
 `o-31e47f60` · 2 registros · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Modelo de gestao educacional com base em orientacao empreendedora educacional; sem qualquer recorte de mulheres ou genero.
 - Registros: Programa de Pós-Graduação em Educação (ID: 75514) (2016, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/176646); Programa de Pós-Graduação em Educação (2016, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/176646)
 - Palavras-chave: empreendedorismo; inovacao; educacao; orientacao educacional · Macrotema (classificação automática da base): Formação Docente Infantil; Política de Educação Especial
@@ -531,7 +531,7 @@ Os avanços tecnológicos impactam a vida na sociedade em todas as dimensões e 
 
 `o-4a00697f` · 2 registros · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **pertence** — Critério — política pública de formação para empreender entra: forma mulheres empreendedoras.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): dúvida — Rendeiras (mulheres) sao alvo de formacao em empreendedorismo, mas o resumo analisa governamentalidade e dominacao, sem tratar genero analiticamente.
 - Registros: Programa de Pós-Graduação em Administração (2016, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/175810); Programa de Pós-Graduação em Administração (ID: 74711) (2016, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/xmlui/handle/123456789/175810)
 - Palavras-chave: governamentalidade; administracao; integracao social; empreendedorismo · Macrotema (classificação automática da base): Public University Management
@@ -546,7 +546,7 @@ Abstract : In this dissertation, I sought to analyze and critically problematize
 
 `o-f2c6d3f5` · 2 registros · casou por vocabulário vizinho ("empresarias")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Comparacao de ferramentas de responsabilidade social corporativa; o termo empresarias e erro grafico de empresariais, sem relacao com mulheres.
 - Registros: Programa de Pós-Graduação em Administração (2013, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/107202); Programa de Pós-Graduação em Administração (ID: 74711) (2013, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/107202)
 - Palavras-chave: administracao; responsabilidade social da empresa · Macrotema (classificação automática da base): Gestão Responsabilidade Social
@@ -561,7 +561,7 @@ Ferramentas de responsabilidade social (RS) fornecem diretrizes, princípios, cr
 
 `o-2b464ead` · 2 registros · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Desenvolvimento da competencia planejar entre participantes do Empretec; competencias empreendedoras sem recorte de genero.
 - Registros: Programa de Pós-Graduação em Administração (2012, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/95790); Programa de Pós-Graduação em Administração (ID: 74711) (2012, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/95790)
 - Palavras-chave: administracao; empreendedorismo; planejamento; competencia; (autoridade legal) · Macrotema (classificação automática da base): Gestão Competências Gerenciais
@@ -576,7 +576,7 @@ Este trabalho apresenta um estudo realizado sobre o tema competências empreende
 
 `o-1fae48a7` · 2 registros · casou por vocabulário vizinho ("mulheres, negocios")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Leituras feministas sobre masculinidades e trafico de mulheres; negocios de homens e metafora do titulo, sem relacao com empreender.
 - Registros: Programa de Pós-Graduação em Psicologia (ID: 77448) (2012, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/92917); Programa de Pós-Graduação em Psicologia (2012, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/92917)
 - Palavras-chave: psicologia; mulheres; masculinidade; trafico sexual; feminismo; prostituicao · Macrotema (classificação automática da base): Linguística Inglesa; Gênero, Sexualidade e Violência
@@ -591,7 +591,7 @@ Os estudos sobre os homens, o masculino ou as masculinidades surgiram ao longo d
 
 `o-716f308a` · 2 registros · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Implicacoes epistemologicas e politicas da educacao para o empreendedorismo; nenhum recorte de mulheres ou genero.
 - Registros: Programa de Pós-Graduação em Educação (ID: 75514) (2011, Tese (Doutorado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/94847); Programa de Pós-Graduação em Educação (2011, Tese (Doutorado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/94847)
 - Palavras-chave: trabalho; empreendedorismo; trabalhadores; formacao; educacao · Macrotema (classificação automática da base): Formação Docente Infantil; Política de Educação Especial
@@ -606,7 +606,7 @@ A temática do empreendedorismo e sua vinculação ao campo educacional ganhou r
 
 `o-f82fd20b` · 2 registros · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Modelo de qualidade de vida para aposentados; usa teste de tendencia empreendedora, sem qualquer recorte de genero.
 - Registros: Programa de Pós-Graduação em Administração (2006, Tese (Doutorado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/88517); Programa de Pós-Graduação em Administração (ID: 74711) (2006, Tese (Doutorado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/88517)
 - Palavras-chave: qualidade de vida; modelos; aposentados; engenharia de producao · Macrotema (classificação automática da base): Qualidade Vida Trabalho
@@ -621,7 +621,7 @@ Este trabalho propõe-se a desenvolver um modelo de qualidade de vida dentro dos
 
 `o-2ced1a65` · 2 registros · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Caracteristicas empreendedoras de criadores de empresas de base tecnologica em incubadora de Manaus; sem recorte de mulheres.
 - Registros: Programa de Pós-Graduação em Administração (2002, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/82686); Programa de Pós-Graduação em Administração (ID: 74711) (2002, Dissertação (Mestrado)) — [fonte](http://repositorio.ufsc.br/xmlui/handle/123456789/82686)
 - Palavras-chave: incubadoras de empresas; administracao; empreendedorismo · Macrotema (classificação automática da base): Pequenas Empresas Inovação
@@ -636,7 +636,7 @@ Este trabalho teve por objetivo verificar características empreendedoras do cri
 
 `o-7d4f46c6` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias digitais de alunos da educacao basica; o termo empreendedoras vem do macrotema automatico, nao do conteudo.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2026, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/272754)
 - Palavras-chave: competencia no uso de computadores; educacao basica; tecnologia da informacao e da comunicacao · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -651,7 +651,7 @@ Com as mudanças tecnológicas evidencia-se a necessidade de atualização e des
 
 `o-d5455f1f` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Artefato de inteligencia artificial para diagnostico empresarial; sem recorte de mulheres ou genero no objeto.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2026, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/272760)
 - Palavras-chave: gestao do conhecimento; engenharia e gestao do conhecimento; pequenas e medias empresas; inteligencia artificial · Macrotema (classificação automática da base): Frameworks Conceituais Design
@@ -666,7 +666,7 @@ A criação de novas empresas desempenha um papel importante no desenvolvimento 
 
 `o-518c92c2` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Reporte de sustentabilidade GRI em empresas juniores da UFSC; universidade empreendedora sem relacao com mulheres.
 - Registros: TCC Engenharia de Materiais (2026, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/272983)
 - Palavras-chave: empresas juniores, global reporting initiative, relatorios de sustentabilidade, universidade empreendedora, educacao para a sustentabilidade. · Macrotema (classificação automática da base): Gestão Conhecimento Empresarial
@@ -681,7 +681,7 @@ A presente pesquisa analisa a integração de princípios de reporte de sustenta
 
 `o-933d3cd5` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Triplice helice no polo tecnologico de Florianopolis; universidades empreendedoras, sem recorte de genero.
 - Registros: TCC Relações Internacionais (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/270951)
 - Palavras-chave: polo tecnologico; innovation; innovation ecosystem; triple helix; triplice helice; florianopolis; inovacao; ecossistema de inovacao; technology hub · Macrotema (classificação automática da base): Internacionalização e Empresas
@@ -696,7 +696,7 @@ Esta pesquisa analisa a dinâmica do modelo da Tríplice Hélice no desenvolvime
 
 `o-55fb2688` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Estrategias hibridas e desempenho de pequena empresa de base tecnologica; orientacao empreendedora sem recorte de mulheres.
 - Registros: TCC Ciências Econômicas (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/266300)
 - Palavras-chave: desempenho organizacional; pme; estrategias hibridas; inovacao; capacidades dinamicas · Macrotema (classificação automática da base): Estudos Regionais Catarinenses
@@ -711,7 +711,7 @@ O presente trabalho tem como objetivo analisar a influência da adoção de estr
 
 `o-aa5e3a5c` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Relacao entre educacao empreendedora, competencias e intencao de empreender entre estudantes; sem recorte de genero.
 - Registros: Programa de Pós-Graduação em Administração Universitária (Mestrado Profissional) (2025, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/265117)
 - Palavras-chave: ensino superior; empreendedorismo; universidades e faculdades · Macrotema (classificação automática da base): Public University Management
@@ -726,7 +726,7 @@ Abstract: The research analyzed the relationship between entrepreneurial educati
 
 `o-30d7308c` · 1 registro · casou por vocabulário vizinho ("empresaria")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Implicacoes juridicas da falencia de clubes transformados em SAF; sociedade empresaria e termo juridico, sem relacao com mulheres.
 - Registros: TCC Direito (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/267106)
 - Palavras-chave: sociedade anonima do futebol, falencia, direito empresarial, direito desportivo · Macrotema (classificação automática da base): Sistema Jurídico Brasileiro
@@ -741,7 +741,7 @@ This study critically analyzes the restructuring mechanisms provided by the SAF 
 
 `o-41ba50e4` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Contribuicoes do design ao artesanato amazonense; mentalidade empreendedora citada de passagem, sem recorte de genero.
 - Registros: Programa de Pós-Graduação em Design (2025, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/265533)
 - Palavras-chave: identidade; artesanato; design · Macrotema (classificação automática da base): Identidade Cultural e Design
@@ -756,7 +756,7 @@ Durante algum tempo houve limitação na implementação do design na melhoria d
 
 `o-896189b2` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Ferramenta de autoavaliacao de maturidade de competencias docentes (neoprofessor); sem relacao com mulheres ou negocio proprio.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2025, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/266052)
 - Palavras-chave: gestao do conhecimento; professores; engenharia e gestao do conhecimento · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -771,7 +771,7 @@ Nos últimos anos, os sistemas educacionais de todo o mundo têm passado por uma
 
 `o-47b5fa5e` · 1 registro · casou por vocabulário vizinho ("empresaria")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Culpabilidade penal das pessoas juridicas e compliance; sociedade empresaria e termo juridico, sem relacao com mulheres.
 - Registros: Programa de Pós-Graduação em Direito (2025, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/265512)
 - Palavras-chave: responsabilidade penal das pessoas juridicas; direito; culpabilidade; programas de compliance; criminalidade · Macrotema (classificação automática da base): Direito Penal e Criminologia
@@ -786,7 +786,7 @@ O objetivo desta dissertação consiste em investigar a relevância dos programa
 
 `o-d3c38d09` · 1 registro · casou por vocabulário vizinho ("feminino. para isso, foi elaborado um plano de negocios")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Plano de negocios para e-commerce de streetwear; feminino refere-se ao publico consumidor, nao a quem empreende.
 - Registros: TCC Administração (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/266232)
 - Palavras-chave: empreendedorismo digital; moda streetwear; streetwear fashion; economic feasibility; plano de negocios; viabilidade economica; digital entrepreneurship; business plan; e-commerce · Macrotema (classificação automática da base): Elaboração Plano Negócios
@@ -801,7 +801,7 @@ Este trabalho tem como objetivo analisar a viabilidade da criação de um comér
 
 `o-5762962f` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Portal educacional sobre empreendedorismo na enfermagem; competencias empreendedoras sem recorte de mulheres ou genero.
 - Registros: Programa de Pós-Graduação em Gestão do Cuidado em Enfermagem (2025, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/264910)
 - Palavras-chave: enfermagem; empreendedorismo; sistemas de informacao em saude; lideranca · Macrotema (classificação automática da base): Validação Instrumentos Enfermagem
@@ -816,7 +816,7 @@ Introdução: Considerando a lacuna existente na formação dos enfermeiros e a 
 
 `o-7bd4ca8e` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Diretrizes de competencias digitais para designers de moda; sem recorte de mulheres ou de negocio proprio feminino.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2025, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/270302)
 - Palavras-chave: engenharia e gestao do conhecimento; inteligencia artificial; gestao do conhecimento; competencia no uso de computadores; moda · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -831,7 +831,7 @@ Em um momento marcado pela transformação digital, especialmente impulsionada p
 
 `o-ddba3ad9` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Jogo educacional para ensino de empreendedorismo a universitarios de TIC; sem recorte de genero.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2025, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/267251)
 - Palavras-chave: empreendedorismo; jogos educativos; tecnologia da informacao e da comunicacao · Macrotema (classificação automática da base): Jogos Digitais Ensino
@@ -846,7 +846,7 @@ Este estudo teve como objetivo criar um jogo educativo, de forma colaborativa, f
 
 `o-6bf9a3ad` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Plano de negocios para consultorio de praticas integrativas; enfermagem empreendedora sem recorte de mulheres ou genero.
 - Registros: TCC Enfermagem (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/263573)
 - Palavras-chave: empreendedorismo; plano de negocios; terapias complementares; empreendedorismo na enfermagem; enfermagem · Macrotema (classificação automática da base): Revisão Integrativa Literatura
@@ -861,7 +861,7 @@ Introdução: As Práticas Integrativas  e Complementares  (PICs)  têm  ganhado
 
 `o-bf8afabd` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): dúvida — Amostra de 187 enfermeiras estetas (97% mulheres) com perfil empreendedor, mas o estudo nao trata genero como dimensao analitica.
 - Registros: Programa de Pós-Graduação em Enfermagem (2025, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/265173)
 - Palavras-chave: enfermagem; empreendedorismo; mercado de trabalho · Macrotema (classificação automática da base): Cargas Trabalho Enfermagem
@@ -876,7 +876,7 @@ A enfermagem estética no Brasil é uma nova forma de cuidado, considerando rece
 
 `o-cced2ce1` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Estrategias universitarias empreendedoras para desenvolvimento sustentavel regional; sem recorte de mulheres.
 - Registros: Programa de Pós-Graduação em Administração (2025, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/267744)
 - Palavras-chave: administracao; empreendedorismo; desenvolvimento sustentavel · Macrotema (classificação automática da base): Governança Turística Florianópolis
@@ -891,7 +891,7 @@ A presente tese aborda as estratégias universitárias que norteiam os projetos 
 
 `o-712c4d5b` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Framework de educacao empreendedora experiencial para Institutos Federais; sem recorte de genero.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2025, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/269252)
 - Palavras-chave: gestao do conhecimento; engenharia e gestao do conhecimento; empreendedorismo; aprendizagem organizacional · Macrotema (classificação automática da base): Frameworks Conceituais Design
@@ -906,7 +906,7 @@ Neste milênio, a educação empreendedora tem se afirmado enquanto força propu
 
 `o-033c8bb6` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Modelo de competencias do agente integrador de universidade corporativa em rede; sem relacao com mulheres ou empreender.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2025, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/265283)
 - Palavras-chave: engenharia e gestao do conhecimento; universidade corporativa; aprendizagem organizacional; gestao do conhecimento; governanca · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -921,7 +921,7 @@ A complexidade do novo cenário mundial impõe desafios complexos que os modelos
 
 `o-ccd3ea38` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Papel da universidade na cultura empreendedora e desenvolvimento economico da Grande Florianopolis; sem recorte de genero.
 - Registros: Programa de Pós-Graduação em Administração (2025, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/265520)
 - Palavras-chave: administracao; empreendedorismo; desenvolvimento economico; universidades e faculdades; inovacao · Macrotema (classificação automática da base): Governança Turística Florianópolis
@@ -936,7 +936,7 @@ Ao longo do tempo o empreendedorismo, enquanto área de estudo, tem sido foco de
 
 `o-dfd2e318` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Acao educacional empreendedora para estudantes de engenharia no CTC/UFSC; sem recorte de mulheres.
 - Registros: TCC Engenharia de Materiais (2025, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/263804)
 - Palavras-chave: engenharia; metodologias ativas; educacao empreendedora; competencias empreendedoras; acao educacional · Macrotema (classificação automática da base): Gestão Conhecimento Empresarial
@@ -951,7 +951,7 @@ Esta pesquisa desenvolve uma ação educacional empreendedora para estudantes de
 
 `o-496941ea` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Afroempreendedorismo e aquilombamento em Florianopolis; o recorte analitico e raca, nao genero ou mulheres empreendedoras.
 - Registros: TCC Geografia (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/261310)
 - Palavras-chave: afroempreendedorismo; racismo; aquilombamento; lugar de resistencia; mapeamento · Macrotema (classificação automática da base): Racismo e Cultura Negra
@@ -966,7 +966,7 @@ A presente pesquisa pretende analisar o percurso histórico e a influência da p
 
 `o-21f8e41d` · 1 registro · casou por vocabulário vizinho ("empresarias")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Etnografia do Movimento Brega no Recife; empresarias aparece apenas na lista de ocupacoes da cadeia produtiva.
 - Registros: Programa de Pós-Graduação em Antropologia Social (2024, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/259739)
 - Palavras-chave: empreendedorismo; antropologia; covid-19; brega (musica); politica cultural; politicas publicas · Macrotema (classificação automática da base): Etnomusicologia Xingu
@@ -981,7 +981,7 @@ Esta pesquisa descreve e analisa antropologicamente os processos subjetivos e ma
 
 `o-b741d9ef` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Atuacao do bibliotecario em consultoria; postura empreendedora citada como habilidade, sem recorte de mulheres.
 - Registros: TCC Biblioteconomia (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/260822)
 - Palavras-chave: biblioteconomia; empreendedorismo; consultoria em biblioteconomia · Macrotema (classificação automática da base): Atuação Profissional Bibliotecária
@@ -996,7 +996,7 @@ O estudo explora a atuação de bibliotecários no contexto de consultoria espec
 
 `o-00b634f3` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Uso de midias digitais por assistentes sociais e praticas empreendedoras neoliberais; sem recorte de genero na analise.
 - Registros: TCC Serviço Social (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/258830)
 - Palavras-chave: servico social e tecnologias da informacao e comunicacao (tic);  plataformizacao do trabalho e servico social; midias digitais e projeto etico-politico do servico  social. · Macrotema (classificação automática da base): Serviço Social Profissional
@@ -1011,7 +1011,7 @@ Na presente monografia busca-se discutir a relação entre as novas Tecnologias 
 
 `o-bdc31b66` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias digitais de docentes do Novo Ensino Medio; o termo empreendedoras vem do macrotema automatico.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2024, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/263285)
 - Palavras-chave: cultura digital; competencia no uso de computadores; ensino medio; tecnologias da informacao e comunicacao · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1026,7 +1026,7 @@ As tecnologias digitais incorporadas à educação trazem possibilidades e desaf
 
 `o-58482a3b` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias institucionais para inovacao no ensino superior; sem relacao com mulheres ou empreendedorismo proprio.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2024, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/264674)
 - Palavras-chave: universidades e faculdades publicas; ensino superior; engenharia e gestao do conhecimento; aprendizagem; inovacao; gestao do conhecimento; competencia organizacional · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1041,7 +1041,7 @@ O avanço tecnológico e as mudanças no perfil dos alunos do ensino superior t�
 
 `o-b1051ed5` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias digitais docentes aderentes a educacao financeira; sem recorte de mulheres ou negocio proprio.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2024, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/264153)
 - Palavras-chave: professores; ensino medio; tecnologia da informacao e da comunicacao; competencia no uso de computadores; educacao financeira · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1056,7 +1056,7 @@ As mudanças ocorridas no Ensino Médio no Brasil, principalmente a partir da Le
 
 `o-9283ad80` · 1 registro · casou por vocabulário vizinho ("generos. o objetivo do estudo e de desenvolver um plano de negocio")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Plano de negocio para casas de vegetacao de orquideas; generos no resumo refere-se a taxonomia botanica, nao a genero social.
 - Registros: TCC Tecnologias da Informação e Comunicação (Araranguá) (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/256028)
 - Palavras-chave: estufa; plano de negocio; casas de vegetacao; mudas de orquideas · Macrotema (classificação automática da base): Marketing Digital Empresarial
@@ -1071,7 +1071,7 @@ O mercado de flores tem crescido em ritmo acelerado no país, aumentando a deman
 
 `o-5d77c96f` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **pertence** — Critério — política pública de formação para empreender entra: forma mulheres empreendedoras.
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): dúvida — Programa de educacao empreendedora na periferia que declara analisar recortes de raca e genero, mas nao tem mulheres empreendedoras como objeto.
 - Registros: TCC Ciências Sociais (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/257046)
 - Palavras-chave: empreendedorismo; educacao empreendedora; periferia; geracao de renda; trabalho informal · Macrotema (classificação automática da base): Impactos Socioambientais Usinas
@@ -1086,7 +1086,7 @@ O presente trabalho tem como tema a experiência de trabalhadores informais no p
 
 `o-ca57af20` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Educacao permanente em saude e aprendizagem empreendedora de enfermeiros em maternidade; sem recorte de genero ou negocio.
 - Registros: TCC Enfermagem (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/255448)
 - Palavras-chave: enfermagem; educacao permanente em saude; empreendedorismo social; enfermagem materno-infantil · Macrotema (classificação automática da base): Educação Saúde Autocuidado
@@ -1101,7 +1101,7 @@ A Educação Permanente em Saúde favorece o processo de trabalho e melhora a qu
 
 `o-136c2e3c` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Politicas espanholas de atracao de talentos; Espanha Nacao Empreendedora e nome de estrategia, sem relacao com mulheres.
 - Registros: TCC Relações Internacionais (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/266454)
 - Palavras-chave: politicas de imigracao seletiva; guerra global por talentos; spain; selective migration policy; espanha; global war for talent · Macrotema (classificação automática da base): Internacionais e Relações
@@ -1116,7 +1116,7 @@ O conhecimento está se tornando um recurso cada vez mais central na economia gl
 
 `o-3b454d05` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Distribuicao de recursos de subvencao ao empreendedorismo em Santa Catarina; sem recorte de mulheres ou genero.
 - Registros: TCC Administração (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/255668)
 - Palavras-chave: subvencao economica; empreendedorismo; politicas publicas · Macrotema (classificação automática da base): Micro e Pequenas Empresas
@@ -1131,7 +1131,7 @@ Na década de 1990, as micro e pequenas empresas ganharam destaque global como a
 
 `o-5a919c0b` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Praticas de gestao das incubadoras Nexus e MIDITEC; ecossistema empreendedor sem recorte de genero.
 - Registros: TCC Ciências Econômicas (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/261466)
 - Palavras-chave: nexus; miditec; ecossistema empreendedor; incubadoras de base tecnologica · Macrotema (classificação automática da base): Ciência, Tecnologia e Inovação
@@ -1146,7 +1146,7 @@ O presente estudo tem como objetivo analisar as práticas de gestão em incubado
 
 `o-c0b75a33` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Programa de Gestao e Desempenho em universidades federais; universidade mais empreendedora, sem relacao com mulheres.
 - Registros: Programa de Pós-Graduação em Administração Universitária (Mestrado Profissional) (2024, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/254941)
 - Palavras-chave: universidades e faculdades publicas; ensino superior; universidades e faculdades; empreendedorismo na administracao publica; administracao universitaria · Macrotema (classificação automática da base): Gestão Institucional UFSC
@@ -1161,7 +1161,7 @@ A presente pesquisa tem como objetivo compreender como o Programa de Gestão e D
 
 `o-a03bd0fd` · 1 registro · casou por vocabulário vizinho ("empresaria")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Dashboards de visualizacao de dados contabeis; a contadora e empresaria entrevistada e validacao pontual, mencao incidental.
 - Registros: TCC Tecnologias da Informação e Comunicação (Araranguá) (2024, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/255863)
 - Palavras-chave: dashboards; tomada de decisao; pequenas empresas; visualizacao de dados; contabilidade · Macrotema (classificação automática da base): Visualização de Dados
@@ -1176,7 +1176,7 @@ A crescente importância de temas como o grande volume de dados gerados tem atra
 
 `o-35c0de0b` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Modelagem de competencias docentes com base em premio educacional; sem relacao com mulheres ou empreender.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2023, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/251367)
 - Palavras-chave: engenharia e gestao do conhecimento; pratica de ensino; competencias essenciais · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1191,7 +1191,7 @@ A implementação das novas metodologias de ensino traz impactos significativos 
 
 `o-4f39ba69` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Revisao sobre a formacao do empreendedor social no Brasil; sem recorte de mulheres ou genero.
 - Registros: TCC Administração (2023, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/252780)
 - Palavras-chave: educacao empreendedora; empreendedorismo no brasil; empreendedorismo social · Macrotema (classificação automática da base): Responsabilidade Social Corporativa
@@ -1206,7 +1206,7 @@ Este artigo tem como objetivo geral expor o que está sendo discutido na comunid
 
 `o-baaf39fb` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Subjetivacao de caracteristicas empreendedoras neoliberais na educacao juridica; sem recorte de mulheres.
 - Registros: Programa de Pós-Graduação em Direito (2023, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/249905)
 - Palavras-chave: empreendedorismo; neoliberalismo; direito · Macrotema (classificação automática da base): Pesquisa Jurídica Teórica
@@ -1221,7 +1221,7 @@ A presente dissertação de mestrado objetiva demonstrar que, em comparação a 
 
 `o-22f59fb3` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias comunicacionais de professores de centro universitario; o termo empreendedoras vem do macrotema automatico.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2023, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/253541)
 - Palavras-chave: professores; ensino superior; competencia; educacao; tecnologias da informacao e comunicacao; comunicacao; instituicoes de ensino · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1236,7 +1236,7 @@ Identificar as competências comunicacionais possíveis para professores atuarem
 
 `o-d887c0f3` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias digitais docentes para areas STEAM; sem relacao com mulheres ou empreendedorismo.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2023, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/254511)
 - Palavras-chave: docentes; atitudes; conhecimento; tecnologias da informacao e comunicacao; competencia no uso de computadores; educacao; letramento informacional · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1251,7 +1251,7 @@ Este trabalho visou identificar as competências digitais docentes para as área
 
 `o-573d397c` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias digitais de professores da educacao basica em comunidade de pratica; sem relacao com mulheres ou empreender.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2023, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/251523)
 - Palavras-chave: professores; comunidade de pratica; ambiente virtual de aprendizagem; tecnologias da informacao e comunicacao; competencia no uso de computadores; educacao · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1266,7 +1266,7 @@ O Parlamento Europeu e da Comissão Europeia de Cultura e Educação (2006) dest
 
 `o-c285ca3b` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Competencias empreendedoras emergentes de profissionais da saude estetica; o resumo nao faz recorte de mulheres ou genero.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2023, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/251886)
 - Palavras-chave: cuidados com a beleza; engenharia e gestao do conhecimento; estetica; gestao por competencias · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1281,7 +1281,7 @@ Empreender se torna cada vez mais desafiador, em tempos em que constantes avanç
 
 `o-7e63e73e` · 1 registro · casou por vocabulário vizinho ("empreendedora")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Educacao empreendedora na Empresa Junior de Engenharia de Energia; sem recorte de genero.
 - Registros: TCC Engenharia de Energia (Araranguá) (2023, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/247014)
 - Palavras-chave: educacao empreendedora; engenharia de energia; empresa junior · Macrotema (classificação automática da base): Empreendedorismo Engenharia Energia
@@ -1296,7 +1296,7 @@ A educação empreendedora tem se mostrado cada vez mais relevante na formação
 
 `o-89793425` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Empreendedorismo senior: barreiras e facilitadores de quem empreende apos os 50 anos; o recorte e idade, nao genero.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2023, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/248795)
 - Palavras-chave: empreendedorismo senior; competencias empreendedoras; ageismo · Macrotema (classificação automática da base): Acessibilidade Inclusão Deficiência
@@ -1311,7 +1311,7 @@ As mudanças nos perfis demográficos globais seguem a tendência do aumento de 
 
 `o-c2120d08` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Experiencias empreendedoras de egressos de Engenharia de Energia da UFSC; sem recorte de mulheres.
 - Registros: TCC Engenharia de Energia (Araranguá) (2023, TCC (Graduação)) — [fonte](https://repositorio.ufsc.br/handle/123456789/252840)
 - Palavras-chave: ensino superior; empreendedorismo; engenharia de energia · Macrotema (classificação automática da base): Empreendedorismo Engenharia Energia
@@ -1326,7 +1326,7 @@ O empreendedorismo tem ganhado destaque cada vez maior no Brasil, sendo uma prá
 
 `o-d3d13742` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Proposta de formacao continuada docente na cultura digital; sem relacao com mulheres ou empreender.
 - Registros: Programa de Pós-Graduação em Tecnologias da Informação e Comunicação (2023, Dissertação (Mestrado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/254085)
 - Palavras-chave: professores; aprendizagem; tecnologias da informacao e comunicacao; formacao continuada do professor; ensino fundamental; competencia no uso de computadores · Macrotema (classificação automática da base): Competências Digitais Empreendedoras
@@ -1341,7 +1341,7 @@ A presente pesquisa já identificou qual proposta de formação continuada docen
 
 `o-5714033b` · 1 registro · casou por vocabulário vizinho ("empreendedoras")
 
-- Decisão: **pendente**
+- Decisão: **não pertence** — Casaram por uma palavra próxima — "empreendedora", "mulheres no mercado" — sem o tema como objeto
 - Sugestão de Claude Opus 5 (pré-triagem automática) (não é decisão): não pertence — Framework de competencias digitais para enfermeiros da saude indigena; sem relacao com mulheres empreendedoras.
 - Registros: Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento (2023, Tese (Doutorado)) — [fonte](https://repositorio.ufsc.br/handle/123456789/251829)
 - Palavras-chave: enfermeiros; saude de populacoes indigenas; engenharia e gestao do conhecimento; telemedicina; competencia no uso de computadores · Macrotema (classificação automática da base): Competências Digitais Empreendedoras

@@ -1,6 +1,6 @@
 # Triagem — Psicologia positiva
 
-Perguntas: Q12, e Q13 como subconjunto. Gerado por `npm run afericao:triagem` em 2026-09-15, bases `7b1cbeb9…` e `e36c0d0a…`. **Não edite este arquivo**: ele é regenerado a partir de [`triagem-decisoes.json`](triagem-decisoes.json).
+Perguntas: Q12, e Q13 como subconjunto. Gerado por `npm run afericao:triagem` em 2026-09-16, bases `7b1cbeb9…` e `e36c0d0a…`. **Não edite este arquivo**: ele é regenerado a partir de [`triagem-decisoes.json`](triagem-decisoes.json).
 
 **Responsável:** _triagem não assinada_ · **Situação:** 0 de 82 obras decididas — 0 pertencem, 0 não pertencem, 0 em dúvida.
 

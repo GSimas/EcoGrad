@@ -141,8 +141,28 @@ Antes de qualquer infraestrutura, a varredura produziu três fatos que sustentam
 2. **A pergunta sobre ferramentas não se resolve por recuperação.** As palavras mais frequentes nos resumos são "questionário" e "escala", genéricas. Nomear PANAS, EBES ou BFP exige campo extraído e validado — a Etapa 3 não é opcional para essa classe de pergunta.
 3. **Duplicação e grafia são o maior risco de erro numérico.** 6.740 títulos repetidos e 9.527 grafias de orientador garantem que qualquer contagem ingênua sairá errada. As decisões D3 e D11 do ADR nascem disso.
 
+## A linha de base de Q10 e Q11, medida
+
+A triagem de empreendedorismo feminino está **assinada por Gustavo Simas da Silva em 16/09/2026**, cobrindo as 89 obras da planilha — 29 candidatas da varredura e 60 de vocabulário vizinho. Resultado: **24 obras pertencem ao tema**, 65 não. Duas das que pertencem vieram da expansão e nenhuma varredura de rótulo as alcança.
+
+Com denominador humano, a busca de hoje fica **abaixo das duas metas da etapa**:
+
+| Medida | Q10 "empreendedorismo feminino" | Q11 "mulheres empreendedoras" | Meta |
+| --- | --- | --- | --- |
+| Revocação | **50%** (12 de 24) | **67%** (16 de 24) | ≥ 80% |
+| Precisão | 100% (12 de 12) | 94% (16 de 17) | ≥ 70% |
+| Sobreposição entre as duas | — | **67%** | ≥ 80% |
+
+Três leituras, e nenhuma é boa para a busca atual:
+
+1. **Metade do tema é invisível.** A consulta literal não erra o que acha — precisão de 100% —, ela não acha. É o perfil exato que a recuperação semântica existe para corrigir, e agora é um número, não uma impressão.
+2. **A paráfrase muda o conjunto.** Duas formas de perguntar a mesma coisa devolvem recortes que só coincidem em 67%. Quem pergunta "mulheres empreendedoras" recebe mais trabalhos do que quem pergunta "empreendedorismo feminino" — a resposta depende do vocabulário de quem pergunta, que é precisamente o defeito descrito no ADR.
+3. **A definição do tema move o denominador.** Dez das 24 decisões saíram de três critérios, não de leitura caso a caso: intraempreendedorismo feminino conta (entra), amostra predominantemente feminina sem gênero como dimensão analítica não conta (sai), política pública de formação para empreender conta (entra). Qualquer releitura desses critérios muda as metas, e por isso eles estão registrados na justificativa de cada obra.
+
+Essas três linhas são a porta da Etapa 4: pgvector só permanece se superá-las.
+
 ## O que falta para fechar a Etapa 0
 
-- **Triagem humana dos conjuntos candidatos** de Q10 a Q13: revisar os 31 e os 26 registros um a um, marcando pertence/não pertence com justificativa, e acrescentar trabalho que a varredura léxica não alcançou. Sem isso, as metas de revocação e precisão não têm denominador. A planilha sai de `npm run afericao:triagem`, em [`evidencias/afericao/triagem-*.md`](evidencias/afericao/), com candidatos da varredura, candidatos de vocabulário vizinho e resumo completo; as decisões ficam em `evidencias/afericao/triagem-decisoes.json`, com sugestões de modelo separadas da decisão humana, e `npm run afericao` passa a medir revocação e precisão quando a triagem estiver completa e assinada.
-- **Definir quem assina a triagem**, já que a operação declarada é ninguém. Gabarito temático sem responsável não é gabarito.
+- **Triagem de Q12 e Q13** (psicologia positiva): 82 obras pendentes, sem responsável. Adiada por decisão de 16/09/2026 para seguir com Q10 e Q11 primeiro. Enquanto não for feita, psicologia positiva não tem gabarito pontuável e **Q15 fica sem denominador** — o que também adia a evidência empírica que sustenta a necessidade da Etapa 3.
+- A planilha sai de `npm run afericao:triagem`, em [`evidencias/afericao/triagem-*.md`](evidencias/afericao/), com candidatos da varredura, candidatos de vocabulário vizinho e resumo completo; as decisões ficam em `evidencias/afericao/triagem-decisoes.json`, com sugestões de modelo separadas da decisão humana.
 - Rodar o script novamente na véspera de cada aferição e guardar o JSON junto do resultado da rodada.

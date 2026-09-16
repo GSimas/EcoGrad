@@ -5,14 +5,14 @@
     "base_tcc_ufsc": "e36c0d0ae50c2b510c9160c9555abd423b0ab0f09d3d759c08e1b97703dd9282"
   },
   "Q10": {
-    "responsavel": null,
-    "assinadoEm": null,
+    "responsavel": "Gustavo Simas da Silva",
+    "assinadoEm": "2026-09-16",
     "obras": {
       "o-ba951fc7": {
         "titulo": "A Influência do Planejamento Estratégico Pessoal de Empreendedoras nos Conflitos entre Trabalho e Família",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -22,8 +22,8 @@
       "o-3affc6f5": {
         "titulo": "Empreendedorismo feminino: análise dos fatores motivacionais e desafios enfrentados por mulheres amapaenses à frente de pequenas empresas",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -33,8 +33,8 @@
       "o-881cc0f7": {
         "titulo": "A inovação da gestão da qualidade na saúde da mulher: uma análise das possibilidades da salutogênese no empreendedorismo da clínica alfa de medicina da mulher",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "as mulheres sao as pacientes/publico-alvo do negocio, nao ha recorte sobre mulheres que empreendem.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -44,8 +44,8 @@
       "o-42c37378": {
         "titulo": "Fatto a Femme: uma história de empreendedorismo feminino em SC",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -55,8 +55,8 @@
       "o-b38ff885": {
         "titulo": "Empreendedorismo Feminino à luz da Economia Feminista: Escolha ou Falta de Opção?",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -66,8 +66,8 @@
       "o-6ba21471": {
         "titulo": "Gestão feminina: a experiência de mulheres que se destacam na polícia civil",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "Critério — inclui intraempreendedorismo feminino: comportamento empreendedor de mulheres, com ou sem negócio próprio.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "duvida",
@@ -77,8 +77,8 @@
       "o-cdf2e369": {
         "titulo": "Pesquisa sobre objetivos e estratégias de marketing digital de microempreendedores do varejo de moda da cidade de Londrina/PR",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -88,8 +88,8 @@
       "o-cf8ea908": {
         "titulo": "Empreendedorismo feminino em empresas de tecnologia",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -99,8 +99,8 @@
       "o-25c6b819": {
         "titulo": "Empreendedorismo Feminino: um estudo de caso com mulheres empreendedoras na grande florianópolis, sob a ótica da economia feminista",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -110,8 +110,8 @@
       "o-34670b4a": {
         "titulo": "Empreendedorismo feminino: um mecanismo em busca da igualdade de gênero e autonomia econômica da mulher",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -121,8 +121,8 @@
       "o-2497b0fc": {
         "titulo": "Mulheres empreendedoras em tempos de pandemia da covid-19 no município de Montes Claros, MG",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -132,8 +132,8 @@
       "o-3eb984cc": {
         "titulo": "Novembro entre Elas: Em busca do fomento ao empreendedorismo feminino",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -143,8 +143,8 @@
       "o-fa54c963": {
         "titulo": "Processo de criação de personas para programa de empreendedorismo feminino",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -154,8 +154,8 @@
       "o-2c1bc4f2": {
         "titulo": "\"A schort tretys and a comfortabyl for synful wrecchys\": as traduções do inglês médio para o inglês moderno da autobiografia The book of Margery Kempe",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "a palavra empreendedora aparece so ao descrever a autora medieval, mencao incidental.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -165,8 +165,8 @@
       "o-d934bbb2": {
         "titulo": "Desafios de gestão enfrentados por empreendedoras da região da Grande Florianópolis",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -176,8 +176,8 @@
       "o-7557ead8": {
         "titulo": "O empreendedorismo inovador sob uma perspectiva de gênero",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -187,8 +187,8 @@
       "o-1bc897af": {
         "titulo": "Startups Catarinenses Lideradas por Mulheres: Um Estudo Preliminar",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -198,8 +198,8 @@
       "o-89f87818": {
         "titulo": "Empoderamento da mulher empreendedora: uma abordagem visando o enfrentamento de barreiras",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -209,8 +209,8 @@
       "o-afabe9be": {
         "titulo": "Iniciativas de ação social de cooperativas à luz da inovação social",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "cita empoderamento de mulheres e jovens nas cooperativas, sem tratar de negocio proprio feminino.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -220,8 +220,8 @@
       "o-0ecbd3a0": {
         "titulo": "Processos de aprendizagem da empreendedora em empresas de tecnologia",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -231,8 +231,8 @@
       "o-63bcaa4d": {
         "titulo": "Vestuário de moda sustentável: elementos que agregam valor ao produto",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -242,8 +242,8 @@
       "o-08291991": {
         "titulo": "Mulheres colaboradoras em empresas de tecnologia e os processos de aprendizagem do empreendedorismo: um estudo de caso na ACATE",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -253,8 +253,8 @@
       "o-c026b280": {
         "titulo": "O Brasil em cena: negociando gênero, raça e sentidos de brasilidades em atividades culturais em Los Angeles (2015-2016)",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Não envolve capacidades empreendedoras femininas diretamente",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "duvida",
@@ -264,8 +264,8 @@
       "o-da9fd2fd": {
         "titulo": "Programa Mulheres Mil: uma análise no campo das políticas de inclusão de IFSC",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "Critério — política pública de formação para empreender entra: forma mulheres empreendedoras.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "duvida",
@@ -275,8 +275,8 @@
       "o-5fa36b76": {
         "titulo": "Entre buscar oportunidades e obter reconhecimento: comportamento empreendedor de psicólogos em sua trajetória profissional",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -286,8 +286,8 @@
       "o-7054dada": {
         "titulo": "Caracterização do perfil intraempreendedor dos dirigentes da Universidade Federal de Santa Catarina",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "Critério — inclui intraempreendedorismo feminino: comportamento empreendedor de mulheres, com ou sem negócio próprio.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -297,8 +297,8 @@
       "o-a009343a": {
         "titulo": "A estrutura psíquica da mulher intraempreendedora: um estudo de caso através de um recorte psicanalítico",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "Critério — inclui intraempreendedorismo feminino: comportamento empreendedor de mulheres, com ou sem negócio próprio.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "duvida",
@@ -308,8 +308,8 @@
       "o-e5c89aaf": {
         "titulo": "O impacto do microcrédito na trajetória sócio-ocupacional das mulheres empreendedoras: a experiência da Blusol",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -319,8 +319,8 @@
       "o-42bff3d9": {
         "titulo": "Identidade empreendedora de mulheres no Paraná",
         "origem": "candidato",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "trata mulheres que empreendem como objeto declarado",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "pertence",
@@ -330,8 +330,8 @@
       "o-23b75bab": {
         "titulo": "A trajetória da mulher moçambicana na obra Niketche: Mulheres sulistas e nortistas",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -341,8 +341,8 @@
       "o-620d909e": {
         "titulo": "Estudos culturais e gênero: mulheres na ficção de Urda Alice Klueger",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -352,8 +352,8 @@
       "o-d6b022a1": {
         "titulo": "Análise da transferência de tecnologia em universidades públicas",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -363,8 +363,8 @@
       "o-ec432e37": {
         "titulo": "Comportamento empreendedor e a capacidade dinâmica e sua relação com o desempenho financeiro",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -374,8 +374,8 @@
       "o-31e47f60": {
         "titulo": "Educação, inovação e empreendedorismo: implicações pedagógicas da orientação empreendedora educacional",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -385,8 +385,8 @@
       "o-4a00697f": {
         "titulo": "Inclusão social como processo de dominação: transformando rendeiras em empreendedoras",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "Critério — política pública de formação para empreender entra: forma mulheres empreendedoras.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "duvida",
@@ -396,8 +396,8 @@
       "o-f2c6d3f5": {
         "titulo": "Ferramentas de responsabilidade social: uma análise comparativa",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -407,8 +407,8 @@
       "o-2b464ead": {
         "titulo": "Desenvolvimento da competência planejar: um estudo com os participantes do Empretec em Santa Catarina",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -418,8 +418,8 @@
       "o-1fae48a7": {
         "titulo": "Tráfico de mulheres, negócios de homens: leituras feministas e anti-coloniais sobre os homens, as masculinidades e/ou o masculino",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -429,8 +429,8 @@
       "o-716f308a": {
         "titulo": "Educação para o empreendedorismo: implicações epistemológicas, políticas e práticas",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -440,8 +440,8 @@
       "o-f82fd20b": {
         "titulo": "Modelo de qualidade de vida dentro dos domínios bio-psico-social para aposentados",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -451,8 +451,8 @@
       "o-2ced1a65": {
         "titulo": "O empreendedorismo no processo de criação de empresa de base tecnológica em incubadora: o caso do Centro de Incubação e Desenvolvimento Empresarial de Manaus",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -462,8 +462,8 @@
       "o-7d4f46c6": {
         "titulo": "Competências e práticas pedagógicas digitais no contexto da educação básica com foco no perfil do aluno",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -473,8 +473,8 @@
       "o-d5455f1f": {
         "titulo": "SmartB: an artificial intelligence artifact for business diagnosis prediction",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -484,8 +484,8 @@
       "o-518c92c2": {
         "titulo": "SUSTENTABILIDADE CORPORATIVA EM EMPRESAS JUNIORES: DIAGNÓSTICO DE PRÁTICAS E DESAFIOS DE REPORTE NA UFSC.",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -495,8 +495,8 @@
       "o-933d3cd5": {
         "titulo": "A dinâmica da tríplice hélice de inovação no desenvolvimento do polo tecnológico: estudo de caso de florianópolis",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -506,8 +506,8 @@
       "o-55fb2688": {
         "titulo": "A influência das estratégias híbridas na performance de pequenas e médias empresas de Santa Catarina: um estudo de caso",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -517,8 +517,8 @@
       "o-aa5e3a5c": {
         "titulo": "A relação entre educação empreendedora, competências empreendedoras e intenção de empreender: um estudo nas Universidades Federais de Santa Catarina",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -528,8 +528,8 @@
       "o-30d7308c": {
         "titulo": "A transição da Associação de Futebol para a Sociedade Anônima de Futebol e suas implicações jurídicas no caso de falência do clube: Análise dos impactos legais e econômicos para os clubes que se transformam em SAF e enfrentam a falência na nova estrutura empresaria",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -539,8 +539,8 @@
       "o-41ba50e4": {
         "titulo": "As contribuições do design sobre o artesanato: diretrizes sobre o equilíbrio entre o tradicional e o contemporâneo",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -550,8 +550,8 @@
       "o-896189b2": {
         "titulo": "Autoavaliação da maturidade de competências do neoprofessor: uma ferramenta para a transformação da educação superior à luz da neoaprendizagem",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -561,8 +561,8 @@
       "o-47b5fa5e": {
         "titulo": "Conceito material de culpabilidade das pessoas jurídicas: autorregulação, dever de vigilância e reprovação da sociedade empresária",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -572,8 +572,8 @@
       "o-d3c38d09": {
         "titulo": "Desafios e oportunidades para empreender no mercado de confecção de roupas: uma análise de viabilidade para um e-commerce",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -583,8 +583,8 @@
       "o-5762962f": {
         "titulo": "Desenvolvimento do portal Empreenderepolitica para a popularização do empreendedorismo na enfermagem",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -594,8 +594,8 @@
       "o-7bd4ca8e": {
         "titulo": "Diretrizes estratégicas para aquisição de competências digitais do designer de moda no planejamento e desenvolvimento de produto",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -605,8 +605,8 @@
       "o-ddba3ad9": {
         "titulo": "Empreend@ - aprendendo empreendedorismo jogando: a experiência do desenvolvimento de um jogo educacional para universitários através do Design Thinking",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -616,8 +616,8 @@
       "o-6bf9a3ad": {
         "titulo": "Empreendedorismo na enfermagem: elaboração de um plano de negócios para consultório de práticas integrativas e complementares",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -627,8 +627,8 @@
       "o-bf8afabd": {
         "titulo": "Enfermagem estética: mercado de trabalho na perspectiva do empreendedorismo",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Critério — amostra feminina sem recorte analítico de gênero não basta: o gênero precisa ser dimensão da análise.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "duvida",
@@ -638,8 +638,8 @@
       "o-cced2ce1": {
         "titulo": "Estratégias universitárias empreendedoras para o desenvolvimento sustentável regional catarinense",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -649,8 +649,8 @@
       "o-712c4d5b": {
         "titulo": "Framework 3ET - Educação Empreendedora Experiencial Transformadora: proposta para os Institutos Federais de Educação, Ciência e Tecnologia",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -660,8 +660,8 @@
       "o-033c8bb6": {
         "titulo": "Modelo de competências do agente integrador de universidade corporativa em rede: estudo de caso de um programa de aprendizagem em rede",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -671,8 +671,8 @@
       "o-ccd3ea38": {
         "titulo": "O papel da universidade na promoção do desenvolvimento econômico por meio da cultura empreendedora nos Municípios da Grande Florianópolis",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -682,8 +682,8 @@
       "o-dfd2e318": {
         "titulo": "Transformação empreendedora em engenharia: aplicada no ctc/ufsc",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -693,8 +693,8 @@
       "o-496941ea": {
         "titulo": "“Mercado Negro” e racismo em Florianópolis:  um estudo com afroempreendedores sobre o ato de aquilombar-se",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -704,8 +704,8 @@
       "o-21f8e41d": {
         "titulo": "\"Recife é brega, meu amor!\": música periférica, movimento brega e modos de subjetivação em contexto pandêmico e neoliberal",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -715,8 +715,8 @@
       "o-b741d9ef": {
         "titulo": "A atuação do bibliotecário em consultoria especializada",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -726,8 +726,8 @@
       "o-00b634f3": {
         "titulo": "Assistentes sociais proprietários de si mesmos? Tensionamentos no projeto ético-político do serviço social em face do uso de mídias digitais  para fins profissionais",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -737,8 +737,8 @@
       "o-bdc31b66": {
         "titulo": "Competência digital e docência: implicações e possibilidades da cultura digital no Novo Ensino Médio em uma escola da rede pública do Estado de Santa Catarina",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -748,8 +748,8 @@
       "o-58482a3b": {
         "titulo": "Competências institucionais para a inovação no ensino à luz da neoaprendizagem em IES pública",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -759,8 +759,8 @@
       "o-b1051ed5": {
         "titulo": "Desenvolvimento de competências digitais docentes aderentes à educação financeira: um estudo de caso em uma escola pública de ensino médio",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -770,8 +770,8 @@
       "o-9283ad80": {
         "titulo": "Desenvolvimento de um plano de negócios para casas de vegetação no cultivo de mudas de orquídeas phalaenopsis",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -781,8 +781,8 @@
       "o-5d77c96f": {
         "titulo": "Educação empreendedora e geração de renda na periferia: um estudo de caso do programa Chamada de Impacto Monte Serrat",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "pertence",
+        "justificativa": "Critério — política pública de formação para empreender entra: forma mulheres empreendedoras.",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "duvida",
@@ -792,8 +792,8 @@
       "o-ca57af20": {
         "titulo": "Educação Permanente em Saúde: Percepção dos Enfermeiros sobre as experiências vivenciadas em uma maternidade pública e suas contribuições para realizar uma aprendizagem empreendedora.",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -803,8 +803,8 @@
       "o-136c2e3c": {
         "titulo": "Políticas de atração de talentos no século XXI: Um estudo do caso espanhol",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -814,8 +814,8 @@
       "o-3b454d05": {
         "titulo": "Políticas públicas de incentivo ao empreendedorismo: Um estudo da distribuição de recursos de subvenção no estado de Santa Catarina",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -825,8 +825,8 @@
       "o-5a919c0b": {
         "titulo": "Práticas de Incubadoras de Base Tecnológica Premiadas Internacionalmente: Os Casos Nexus e MIDITEC em Ecossistemas Empreendedores",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -836,8 +836,8 @@
       "o-c0b75a33": {
         "titulo": "Programa de gestão e desempenho: desafios e perspectivas",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -847,8 +847,8 @@
       "o-a03bd0fd": {
         "titulo": "Visualização de Dados Aplicada a Análise de Dados Contábeis",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -858,8 +858,8 @@
       "o-35c0de0b": {
         "titulo": "A complexidade como suporte à modelagem de competências docentes, com base nas melhores práticas do Prêmio Mérito Educacional da Rede Municipal de Ensino de Itajaí-SC",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -869,8 +869,8 @@
       "o-4f39ba69": {
         "titulo": "A Formação do Empreendedor Social no Brasil: Análise das Publicações a Partir de 2015",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -880,8 +880,8 @@
       "o-baaf39fb": {
         "titulo": "A subjetivação de características empreendedoras neoliberais por meio da educação jurídica: uma análise das Resoluções CNE/CES N. 9/2004 e N. 5/2018",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -891,8 +891,8 @@
       "o-22f59fb3": {
         "titulo": "Competências comunicacionais: um olhar sobre os professores de um centro universitário de Orleans/SC",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -902,8 +902,8 @@
       "o-d887c0f3": {
         "titulo": "Competências digitais docentes para as áreas Steam (ciência, tecnologia, engenharia, artes e matemática)",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -913,8 +913,8 @@
       "o-573d397c": {
         "titulo": "Competências digitais dos professores da educação básica: análise por meio de uma comunidade de prática",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -924,8 +924,8 @@
       "o-c285ca3b": {
         "titulo": "Competências empreendedoras emergentes: o caso de profissionais da saúde estética",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -935,8 +935,8 @@
       "o-7e63e73e": {
         "titulo": "Educação empreendedora: análise da experiência da Empresa Júnior de Engenharia de Energia",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -946,8 +946,8 @@
       "o-89793425": {
         "titulo": "Empreendedorismo Sênior: experiências vividas e sentidas de pessoas que empreendem depois dos 50 anos de idade",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -957,8 +957,8 @@
       "o-c2120d08": {
         "titulo": "Empreendedorismo: um estudo com egressos da engenharia de energia da ufsc",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -968,8 +968,8 @@
       "o-d3d13742": {
         "titulo": "Formação continuada docente na cultura digital: uma proposta estruturada a partir da identificação dos níveis de adoção das tecnologias nas escolas e das competências digitais de professores",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
@@ -979,8 +979,8 @@
       "o-5714033b": {
         "titulo": "Framework para desenvolvimento de competências digitais de enfermeiros da saúde indígena: Mukaturusá",
         "origem": "expansao",
-        "decisao": null,
-        "justificativa": "",
+        "decisao": "nao_pertence",
+        "justificativa": "Casaram por uma palavra próxima — \"empreendedora\", \"mulheres no mercado\" — sem o tema como objeto",
         "sugestao": {
           "autor": "Claude Opus 5 (pré-triagem automática)",
           "decisao": "nao_pertence",
