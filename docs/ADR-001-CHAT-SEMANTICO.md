@@ -2,7 +2,7 @@
 
 **Status:** aceito, com as Etapas 0, 1 e 2 executadas. A infraestrutura da Etapa 2 existe: o projeto `ecograd-indice` no Supabase guarda o índice derivado, e o acervo — que é público e vem do repositório institucional — está lá. As Etapas 3 a 5 seguem não autorizadas.
 
-**Revisado por** [ADR 003](ADR-003-O-QUE-A-MEDICAO-MUDOU.md), que corrige o que a medição das Etapas 1 e 2 desmentiu deste documento. Onde os dois divergirem, vale o ADR 003.
+**Revisado por** [ADR 003](ADR-003-O-QUE-A-MEDICAO-MUDOU.md), que corrige o que a medição das Etapas 1 e 2 desmentiu deste documento, e pelo [ADR 004](ADR-004-UFSCAO-SOBRE-O-ACERVO.md), que redefine o objetivo e a ordem das etapas. Onde divergirem, vale o mais recente.
 
 **Data:** 15/09/2026 · **Decisor:** Gustavo Simas (produto e operação) · Primeiro registro da série ADR do EcoGrad.
 

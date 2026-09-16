@@ -81,6 +81,10 @@ const TABELAS = [
   ['registro', 'registro.csv', ['id', 'documento_id', 'colecao', 'catalogo', 'ano', 'nivel_academico', 'macrotema', 'url', 'resumo_utilizavel'], { id: 'int', ano: 'int', resumo_utilizavel: 'bool' }],
   ['registro_pessoa', 'registro_pessoa.csv', ['registro_id', 'pessoa_id', 'papel'], { registro_id: 'int', pessoa_id: 'int' }],
   ['registro_palavra_chave', 'registro_palavra_chave.csv', ['registro_id', 'termo'], { registro_id: 'int' }],
+  // ADR 004: saem de `npm run indice:enriquecer`, que roda antes da derivação.
+  ['pessoa_fusao', 'pessoa_fusao.csv', ['grafia', 'canonico', 'metodo'], {}],
+  ['rede_metrica', 'rede_metrica.csv', ['escopo', 'colecao', 'tipo', 'rotulo', 'grau_absoluto', 'grau', 'intermediacao', 'proximidade', 'agrupamento', 'comunidade', 'ranking', 'nos_na_rede'],
+    { grau_absoluto: 'int', grau: 'num', intermediacao: 'num', proximidade: 'num', agrupamento: 'num', comunidade: 'int', ranking: 'int', nos_na_rede: 'int' }],
   // Por último, de propósito: é o carimbo de que a carga terminou inteira.
   ['indice_meta', 'indice_meta.csv', ['id', 'base_version', 'sha256_pos', 'sha256_tcc', 'gerado_em', 'registros', 'documentos'], { id: 'bool', registros: 'int', documentos: 'int' }],
 ];
@@ -137,7 +141,7 @@ function tentarLinha(texto) {
 function converter(tipo, valor) {
   if (valor === undefined || valor === '\N' || valor === '') return null;
   if (tipo === 'bool') return valor === 't';
-  if (tipo === 'int') {
+  if (tipo === 'int' || tipo === 'num') {
     const n = Number(valor);
     // Falhar aqui é melhor do que mandar NaN: o JSON o serializa como null, e o
     // banco recusa a linha com um erro que não aponta para a causa.
@@ -240,6 +244,23 @@ if (!simular) {
     process.exitCode = 1;
   } else {
     console.log(`  lexemas distintos        ${await r.json()}  ${segundos(t)}`);
+  }
+}
+
+// Perfis e agregados do ADR 004, refeitos das tabelas que acabaram de entrar.
+if (!simular) {
+  const t = Date.now();
+  const r = await fetch(`${base}/rest/v1/rpc/atualizar_perfis`, {
+    method: 'POST',
+    headers: { apikey: chave, authorization: `Bearer ${chave}`, 'content-type': 'application/json' },
+    body: '{}',
+  });
+  if (!r.ok) {
+    console.error(`  perfis NÃO atualizados: HTTP ${r.status}. Rode "select * from atualizar_perfis()" no SQL Editor do Supabase.`);
+    process.exitCode = 1;
+  } else {
+    for (const p of await r.json()) console.log(`  ${p.tabela.padEnd(24)} ${p.linhas} linhas`);
+    console.log(`  perfis em ${segundos(t)}`);
   }
 }
 

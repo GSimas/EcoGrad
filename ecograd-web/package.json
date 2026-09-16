@@ -23,13 +23,14 @@
     "test:ia": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/ia.test.js",
     "indice:derivar": "node --max-old-space-size=4096 scripts/indice-derivar.mjs",
     "indice:carregar:https": "node scripts/indice-carregar-https.mjs",
-    "indice:carregar": "node scripts/indice-carregar.mjs",
+    "indice:carregar": "node --env-file-if-exists=.env scripts/indice-carregar.mjs",
     "afericao:gabaritos": "node scripts/afericao-gabaritos.mjs --escrever",
     "afericao:triagem": "node scripts/afericao-triagem.mjs",
     "afericao": "tsc -p tests/tsconfig.json && node --max-old-space-size=4096 scripts/afericao-executar.mjs",
     "test:all": "npm run sync:data && tsc -p tests/tsconfig.json && node scripts/test-all.mjs",
     "report:build": "node scripts/report-build.mjs",
-    "afericao:amostra-cega": "node --max-old-space-size=4096 scripts/afericao-amostra-cega.mjs"
+    "afericao:amostra-cega": "node --max-old-space-size=4096 scripts/afericao-amostra-cega.mjs",
+    "indice:enriquecer": "esbuild scripts/indice-enriquecer.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/indice-enriquecer.mjs && node --max-old-space-size=8192 node_modules/.cache/indice-enriquecer.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

@@ -4,6 +4,9 @@
  *   export SUPABASE_DB_URL='postgresql://postgres:SENHA@db.<ref>.supabase.co:5432/postgres'
  *   npm run indice:carregar
  *
+ * Ou com a variável em `ecograd-web/.env`, que o git ignora: `npm run` passa
+ * `--env-file-if-exists=.env`.
+ *
  * A senha **nunca** entra no repositório nem em argumento de linha de comando:
  * vem da variável de ambiente, e este programa não a imprime em lugar nenhum,
  * nem em mensagem de erro.
@@ -42,8 +45,14 @@ const TABELAS = [
   ['registro', 'registro.csv', '(id, documento_id, colecao, catalogo, ano, nivel_academico, macrotema, url, resumo_utilizavel)'],
   ['registro_pessoa', 'registro_pessoa.csv', '(registro_id, pessoa_id, papel)'],
   ['registro_palavra_chave', 'registro_palavra_chave.csv', '(registro_id, termo)'],
+  // ADR 004: saem de `npm run indice:enriquecer`, que roda antes da derivação.
+  ['pessoa_fusao', 'pessoa_fusao.csv', '(grafia, canonico, metodo)'],
+  ['rede_metrica', 'rede_metrica.csv', '(escopo, colecao, tipo, rotulo, grau_absoluto, grau, intermediacao, proximidade, agrupamento, comunidade, ranking, nos_na_rede)'],
   ['indice_meta', 'indice_meta.csv', '(id, base_version, sha256_pos, sha256_tcc, gerado_em, registros, documentos)'],
 ];
+
+/** Derivados das tabelas carregadas; entram na mesma transação, antes do commit. */
+const AGREGADOS = ['truncate pessoa_perfil, pessoa_termo, pessoa_macrotema, pessoa_colecao, orientacao, colecao_perfil, colecao_ano, termo_perfil'];
 
 /** Caem antes do COPY e voltam depois, sobre a tabela já pronta. */
 const INDICES = [
@@ -104,6 +113,17 @@ try {
     console.log(`  ${sql.split(' ')[2].padEnd(24)} ${segundos(t).padStart(20)}`);
   }
 
+  // Frequência de lexema e perfis envelhecem junto com as tabelas: um índice
+  // novo com agregados antigos responde número errado sem sinal nenhum.
+  for (const sql of AGREGADOS) await cliente.query(sql);
+  let t = Date.now();
+  const { rows: [{ atualizar_lexema_frequencia: lexemas }] } = await cliente.query('select atualizar_lexema_frequencia()');
+  console.log(`\n  lexema_frequencia        ${lexemas} linhas  ${segundos(t)}`);
+  t = Date.now();
+  const { rows: perfis } = await cliente.query('select * from atualizar_perfis()');
+  for (const p of perfis) console.log(`  ${p.tabela.padEnd(24)} ${p.linhas} linhas`);
+  console.log(`  perfis em ${segundos(t)}`);
+
   await cliente.query('commit');
   await cliente.query('analyze');
 
@@ -112,7 +132,8 @@ try {
       (select count(*) from registro) as registros,
       (select count(*) from documento) as documentos,
       (select count(*) from registro where resumo_utilizavel) as registros_com_resumo,
-      (select count(*) from pessoa) as grafias,
+      (select count(*) from pessoa) as pessoas,
+      (select count(*) from pessoa_grafia) as grafias,
       (select count(*) from registro_pessoa) as vinculos,
       (select count(*) from registro_palavra_chave) as palavras_chave,
       (select base_version from indice_meta) as base_version

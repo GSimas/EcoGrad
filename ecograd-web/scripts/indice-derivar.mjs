@@ -86,14 +86,21 @@ await fDoc.fim();
 
 // ------------------------------------------------------------------- pessoas
 //
-// Etapa 2: uma pessoa é uma grafia. A unificação canônica é a Etapa 5, e vai
-// fundir linhas de `pessoa` sem precisar reescrever `registro_pessoa`.
-const pessoas = new Map();
+// ADR 004: a pessoa é o nome canônico da unificação conservadora, que
+// `indice-enriquecer.ts` grava em `unificacao.json`. Sem o arquivo, cada grafia
+// continua sendo uma pessoa, como na Etapa 2 — e a carga avisa.
+const caminhoUnificacao = join(destino, 'unificacao.json');
+const unificacao = existsSync(caminhoUnificacao) ? JSON.parse(readFileSync(caminhoUnificacao, 'utf8')) : {};
+if (!existsSync(caminhoUnificacao)) console.warn('Sem indice-out/unificacao.json: cada grafia vira uma pessoa. Rode antes npm run indice:enriquecer.');
+const pessoas = new Map();   // nome canônico → id
+const grafias = new Map();   // grafia → id
 const idDaPessoa = (nome) => {
   const g = String(nome ?? '').trim();
   if (!g) return null;
-  if (!pessoas.has(g)) pessoas.set(g, pessoas.size + 1);
-  return pessoas.get(g);
+  const canonico = unificacao[g] ?? g;
+  if (!pessoas.has(canonico)) pessoas.set(canonico, pessoas.size + 1);
+  grafias.set(g, pessoas.get(canonico));
+  return pessoas.get(canonico);
 };
 
 const fReg = escritor('registro.csv');
@@ -140,10 +147,8 @@ await Promise.all([fReg.fim(), fRegPessoa.fim(), fPalavra.fim()]);
 
 const fPessoa = escritor('pessoa.csv');
 const fGrafia = escritor('pessoa_grafia.csv');
-for (const [grafia, id] of pessoas) {
-  await fPessoa.escrever(id, grafia);
-  await fGrafia.escrever(grafia, id);
-}
+for (const [canonico, id] of pessoas) await fPessoa.escrever(id, canonico);
+for (const [grafia, id] of grafias) await fGrafia.escrever(grafia, id);
 await Promise.all([fPessoa.fim(), fGrafia.fim()]);
 
 // --------------------------------------------------------------------- meta
@@ -157,7 +162,7 @@ console.log(`registros            ${registroId}`);
 console.log(`documentos           ${documentos.size}`);
 console.log(`obras com resumo utilizável   ${[...documentos.values()].filter((o) => utilizavel(o.resumo)).length}`);
 console.log(`registros com resumo utilizável ${registrosComResumo}`);
-console.log(`grafias de pessoa    ${pessoas.size}`);
+console.log(`pessoas              ${pessoas.size} (de ${grafias.size} grafias)`);
 console.log(`vínculos pessoa      ${fRegPessoa.total}`);
 console.log(`palavras-chave       ${fPalavra.total}`);
 console.log(`\nCSV em ${destino}`);

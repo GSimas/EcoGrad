@@ -311,7 +311,7 @@ create or replace function pessoa_no_indice(nome text)
 returns table (grafia text, papel text, registros bigint, trabalhos_distintos bigint, colecoes bigint, unidade text)
 language sql stable as $$
   select p.nome_canonico, rp.papel, count(*), count(distinct r.documento_id), count(distinct r.colecao),
-         'conta grafias, não pessoas unificadas: a unificação canônica é a Etapa 5'
+         'pessoa unificada pela unificação automática conservadora (ADR 004), ainda sem curadoria humana; a grafia exibida é a canônica'
   from pessoa p
   join registro_pessoa rp on rp.pessoa_id = p.id
   join registro r on r.id = rp.registro_id
@@ -341,3 +341,319 @@ $$;
 grant execute on function contar_acervo, serie_anual(text), recorte_da_colecao(text),
   pessoa_no_indice(text), top_macrotemas(int), registros_do_titulo(text),
   buscar_texto(text, int), consulta_expandida(text), tesauro(text, int) to anon, authenticated;
+
+-- ============================================================================
+-- Fase A0 do ADR 004: o índice enriquecido com o que o EcoGrad calcula.
+--
+-- Duas origens, e a diferença importa:
+--
+-- - `pessoa_fusao` e `rede_metrica` vêm de `npm run indice:enriquecer`, que roda
+--   em Node o mesmo `unificacao.ts` e `sna-engine.ts` do app. Métrica de rede
+--   reescrita em SQL divergiria da tela em silêncio.
+-- - As tabelas `*_perfil`, `pessoa_termo`, `pessoa_macrotema`, `pessoa_colecao`,
+--   `orientacao` e `colecao_ano` são agregados do próprio índice, refeitos por
+--   `atualizar_perfis()` no fim de cada carga. Não são fonte: apagar e refazer
+--   dá o mesmo resultado.
+--
+-- Unidade em todo nome de coluna: `obras_*` conta trabalhos distintos (D3),
+-- `registros_*` conta catalogações. As duas diferem sempre que a mesma obra
+-- aparece em mais de uma coleção, e trocar uma pela outra é o erro que a
+-- aferição reprova.
+-- ============================================================================
+
+create table pessoa_fusao (
+  grafia text primary key,
+  canonico text not null,
+  metodo text not null check (metodo in ('normalizacao', 'abreviacao')),
+  -- A curadoria humana vem depois (ADR 004): até lá, toda fusão é automática.
+  revisado_em date,
+  revisado_por text,
+  decisao text check (decisao in ('confirmada', 'desfeita'))
+);
+comment on table pessoa_fusao is 'Grafias fundidas pela unificação automática conservadora. metodo=normalizacao: iguais sem acento, caixa, pontuação e partículas; metodo=abreviacao: forma curta com uma única forma longa compatível e coleção em comum.';
+
+create table rede_metrica (
+  escopo text not null check (escopo in ('acervo', 'colecao')),
+  colecao text,                              -- nulo quando escopo = acervo
+  tipo text not null,                        -- Autor, Orientador, Palavra-chave, Macrotema, Artefato (Ontologia IA)
+  rotulo text not null,
+  pessoa_id bigint references pessoa(id) on delete set null,
+  grau_absoluto int,
+  grau double precision,
+  intermediacao double precision,
+  proximidade double precision,
+  agrupamento double precision,
+  comunidade int,
+  ranking int,
+  nos_na_rede int not null,
+  check ((escopo = 'acervo') = (colecao is null))
+);
+create index rede_metrica_pessoa_idx on rede_metrica (pessoa_id, escopo);
+create index rede_metrica_rotulo_idx on rede_metrica (rotulo, escopo);
+create index rede_metrica_colecao_idx on rede_metrica (colecao, tipo);
+comment on table rede_metrica is 'Métricas da rede documento–pessoa–palavra-chave–macrotema do EcoGrad (sna-engine.ts), calculadas sobre o acervo inteiro (escopo=acervo) e sobre cada coleção sozinha (escopo=colecao). O valor depende do escopo: a intermediação de alguém no acervo não é a mesma que dentro da sua coleção. Coorientadores não são nós desta rede. Nomes de pessoa já unificados.';
+comment on column rede_metrica.grau is 'Degree centrality normalizada (0 a 1).';
+comment on column rede_metrica.intermediacao is 'Betweenness centrality; aproximada por amostragem de pivôs acima de 1.500 nós, com semente fixa.';
+comment on column rede_metrica.proximidade is 'Closeness centrality; aproximada por 256 pivôs acima de 4.000 nós.';
+comment on column rede_metrica.agrupamento is 'Coeficiente de clustering local.';
+comment on column rede_metrica.comunidade is 'Comunidade de Louvain dentro do escopo; o número só compara nós do mesmo escopo.';
+comment on column rede_metrica.ranking is 'Posição por intermediação decrescente dentro do escopo (1 = maior ponte).';
+
+create table pessoa_perfil (
+  pessoa_id bigint primary key references pessoa(id) on delete cascade,
+  nome text not null,
+  grafias int not null,
+  obras_como_autor int not null,
+  obras_orientadas int not null,
+  obras_coorientadas int not null,
+  registros_como_autor int not null,
+  registros_orientados int not null,
+  registros_coorientados int not null,
+  orientadas_doutorado int not null,
+  orientadas_mestrado int not null,
+  orientadas_tcc_graduacao int not null,
+  orientadas_tcc_especializacao int not null,
+  orientandos_distintos int not null,
+  primeiro_ano int,
+  ultimo_ano int,
+  primeiro_ano_orientando int,
+  ultimo_ano_orientando int,
+  colecoes int not null,
+  colecao_principal text,
+  palavras_chave_como_autor text[] not null,
+  palavras_chave_como_orientador text[] not null,
+  macrotemas_como_autor text[] not null,
+  macrotemas_como_orientador text[] not null,
+  intermediacao_acervo double precision,
+  ranking_acervo int
+);
+create index pessoa_perfil_nome_idx on pessoa_perfil using gin (sem_acento(nome) gin_trgm_ops);
+comment on table pessoa_perfil is 'Uma linha por pessoa unificada, com contagens por papel. obras_* conta trabalhos distintos; registros_* conta catalogações. Orientação histórica não informa vínculo atual nem disponibilidade.';
+comment on column pessoa_perfil.grafias is 'Quantas grafias do acervo foram unificadas nesta pessoa (1 = nenhuma fusão).';
+comment on column pessoa_perfil.orientadas_tcc_graduacao is 'Obras orientadas de nível TCC (Graduação).';
+comment on column pessoa_perfil.primeiro_ano is 'Primeiro ano com qualquer papel.';
+comment on column pessoa_perfil.primeiro_ano_orientando is 'Primeiro ano como orientador ou coorientador.';
+comment on column pessoa_perfil.colecao_principal is 'Coleção com mais registros da pessoa, em qualquer papel.';
+comment on column pessoa_perfil.palavras_chave_como_autor is 'Até 10 palavras-chave mais frequentes nas obras em que é autor, da mais para a menos frequente. Lista completa em pessoa_termo.';
+comment on column pessoa_perfil.palavras_chave_como_orientador is 'Até 10 palavras-chave mais frequentes nas obras que orientou ou coorientou. Lista completa em pessoa_termo.';
+comment on column pessoa_perfil.macrotemas_como_autor is 'Até 5 macrotemas; classificação automática da base (NMF), não categoria oficial do programa.';
+comment on column pessoa_perfil.intermediacao_acervo is 'Betweenness na rede do acervo inteiro (rede_metrica, escopo=acervo).';
+
+create table pessoa_termo (
+  pessoa_id bigint not null references pessoa(id) on delete cascade,
+  papel text not null check (papel in ('Autor', 'Orientador', 'Co-orientador')),
+  termo text not null,
+  obras int not null,
+  primary key (pessoa_id, papel, termo)
+);
+create index pessoa_termo_termo_idx on pessoa_termo using gin (sem_acento(termo) gin_trgm_ops);
+comment on table pessoa_termo is 'Palavras-chave das obras de cada pessoa, por papel, com quantas obras distintas usam o termo.';
+
+create table pessoa_macrotema (
+  pessoa_id bigint not null references pessoa(id) on delete cascade,
+  papel text not null check (papel in ('Autor', 'Orientador', 'Co-orientador')),
+  macrotema text not null,
+  obras int not null,
+  primary key (pessoa_id, papel, macrotema)
+);
+comment on table pessoa_macrotema is 'Macrotemas (classificação automática NMF da base) das obras de cada pessoa, por papel.';
+
+create table pessoa_colecao (
+  pessoa_id bigint not null references pessoa(id) on delete cascade,
+  colecao text not null,
+  papel text not null check (papel in ('Autor', 'Orientador', 'Co-orientador')),
+  obras int not null,
+  registros int not null,
+  primeiro_ano int,
+  ultimo_ano int,
+  primary key (pessoa_id, colecao, papel)
+);
+create index pessoa_colecao_colecao_idx on pessoa_colecao (colecao, papel);
+comment on table pessoa_colecao is 'Atuação de cada pessoa em cada coleção, por papel.';
+
+create table orientacao (
+  orientador_id bigint not null references pessoa(id) on delete cascade,
+  orientando_id bigint not null references pessoa(id) on delete cascade,
+  papel text not null check (papel in ('Orientador', 'Co-orientador')),
+  obras int not null,
+  primeiro_ano int,
+  ultimo_ano int,
+  niveis text[] not null,
+  colecoes text[] not null,
+  primary key (orientador_id, orientando_id, papel)
+);
+create index orientacao_orientando_idx on orientacao (orientando_id);
+comment on table orientacao is 'Pares orientador–autor: quem orientou (ou coorientou) quem, em quantas obras, anos, níveis e coleções.';
+
+create table colecao_perfil (
+  colecao text primary key,
+  catalogo text not null,
+  registros int not null,
+  obras int not null,
+  registros_com_resumo int not null,
+  registros_sem_resumo int not null,
+  ano_min int,
+  ano_max int,
+  autores_distintos int not null,
+  orientadores_distintos int not null,
+  niveis text[] not null,
+  principais_orientadores text[] not null,
+  principais_palavras_chave text[] not null,
+  principais_macrotemas text[] not null
+);
+comment on table colecao_perfil is 'Uma linha por coleção (programa de pós ou curso de TCC). catalogo: ppg ou tcc. principais_* em ordem de frequência, até 10.';
+comment on column colecao_perfil.principais_orientadores is 'Até 10 orientadores com mais obras orientadas na coleção.';
+
+create table colecao_ano (
+  colecao text not null,
+  ano int not null,
+  registros int not null,
+  obras int not null,
+  primary key (colecao, ano)
+);
+comment on table colecao_ano is 'Série anual por coleção. O último ano do acervo está em coleta e não é produção fechada.';
+
+create table termo_perfil (
+  termo text primary key,
+  obras int not null,
+  registros int not null,
+  ano_min int,
+  ano_max int,
+  colecoes int not null,
+  pessoas int not null
+);
+create index termo_perfil_termo_idx on termo_perfil using gin (sem_acento(termo) gin_trgm_ops);
+comment on table termo_perfil is 'Uma linha por palavra-chave do acervo: em quantas obras, coleções e pessoas aparece.';
+
+alter table pessoa_fusao enable row level security;
+alter table rede_metrica enable row level security;
+alter table pessoa_perfil enable row level security;
+alter table pessoa_termo enable row level security;
+alter table pessoa_macrotema enable row level security;
+alter table pessoa_colecao enable row level security;
+alter table orientacao enable row level security;
+alter table colecao_perfil enable row level security;
+alter table colecao_ano enable row level security;
+alter table termo_perfil enable row level security;
+create policy leitura_publica on pessoa_fusao for select to anon, authenticated using (true);
+create policy leitura_publica on rede_metrica for select to anon, authenticated using (true);
+create policy leitura_publica on pessoa_perfil for select to anon, authenticated using (true);
+create policy leitura_publica on pessoa_termo for select to anon, authenticated using (true);
+create policy leitura_publica on pessoa_macrotema for select to anon, authenticated using (true);
+create policy leitura_publica on pessoa_colecao for select to anon, authenticated using (true);
+create policy leitura_publica on orientacao for select to anon, authenticated using (true);
+create policy leitura_publica on colecao_perfil for select to anon, authenticated using (true);
+create policy leitura_publica on colecao_ano for select to anon, authenticated using (true);
+create policy leitura_publica on termo_perfil for select to anon, authenticated using (true);
+
+-- Refaz todos os agregados a partir das tabelas carregadas. Uma transação: ou
+-- os perfis inteiros trocam, ou nada muda. `security definer` pelo mesmo motivo
+-- de `atualizar_lexema_frequencia`: quem carrega chama pela API de serviço.
+create or replace function atualizar_perfis()
+returns table (tabela text, linhas bigint)
+language plpgsql security definer
+set search_path = public
+set statement_timeout = 0
+as $$
+begin
+  truncate pessoa_perfil, pessoa_termo, pessoa_macrotema, pessoa_colecao, orientacao, colecao_perfil, colecao_ano, termo_perfil;
+
+  update rede_metrica m set pessoa_id = p.id
+  from pessoa p
+  where m.tipo in ('Autor', 'Orientador') and p.nome_canonico = m.rotulo;
+
+  create temporary table vinculo on commit drop as
+    select rp.pessoa_id, rp.papel, r.id as registro_id, r.documento_id, r.colecao, r.ano, r.nivel_academico, r.macrotema
+    from registro_pessoa rp join registro r on r.id = rp.registro_id;
+  create index on vinculo (pessoa_id, papel);
+  create index on vinculo (registro_id);
+  analyze vinculo;
+
+  insert into pessoa_termo
+  select v.pessoa_id, v.papel, pc.termo, count(distinct v.documento_id)
+  from vinculo v join registro_palavra_chave pc on pc.registro_id = v.registro_id
+  group by 1, 2, 3;
+
+  insert into pessoa_macrotema
+  select pessoa_id, papel, macrotema, count(distinct documento_id)
+  from vinculo where macrotema is not null group by 1, 2, 3;
+
+  insert into pessoa_colecao
+  select pessoa_id, colecao, papel, count(distinct documento_id), count(*), min(ano), max(ano)
+  from vinculo group by 1, 2, 3;
+
+  insert into orientacao
+  select o.pessoa_id, a.pessoa_id, o.papel, count(distinct o.documento_id), min(o.ano), max(o.ano),
+         array_agg(distinct o.nivel_academico) filter (where o.nivel_academico is not null),
+         array_agg(distinct o.colecao)
+  from vinculo o join vinculo a on a.registro_id = o.registro_id and a.papel = 'Autor'
+  where o.papel in ('Orientador', 'Co-orientador') and o.pessoa_id <> a.pessoa_id
+  group by 1, 2, 3;
+
+  insert into pessoa_perfil
+  select p.id, p.nome_canonico,
+    g.grafias,
+    count(distinct v.documento_id) filter (where v.papel = 'Autor'),
+    count(distinct v.documento_id) filter (where v.papel = 'Orientador'),
+    count(distinct v.documento_id) filter (where v.papel = 'Co-orientador'),
+    count(*) filter (where v.papel = 'Autor'),
+    count(*) filter (where v.papel = 'Orientador'),
+    count(*) filter (where v.papel = 'Co-orientador'),
+    count(distinct v.documento_id) filter (where v.papel = 'Orientador' and v.nivel_academico = 'Tese (Doutorado)'),
+    count(distinct v.documento_id) filter (where v.papel = 'Orientador' and v.nivel_academico = 'Dissertação (Mestrado)'),
+    count(distinct v.documento_id) filter (where v.papel = 'Orientador' and v.nivel_academico = 'TCC (Graduação)'),
+    count(distinct v.documento_id) filter (where v.papel = 'Orientador' and v.nivel_academico = 'TCC (Especialização)'),
+    (select count(distinct o.orientando_id) from orientacao o where o.orientador_id = p.id),
+    min(v.ano), max(v.ano),
+    min(v.ano) filter (where v.papel <> 'Autor'), max(v.ano) filter (where v.papel <> 'Autor'),
+    count(distinct v.colecao),
+    (select pc.colecao from pessoa_colecao pc where pc.pessoa_id = p.id group by pc.colecao order by sum(pc.registros) desc, pc.colecao limit 1),
+    coalesce((select array_agg(t.termo order by t.obras desc, t.termo) from (select termo, obras from pessoa_termo t where t.pessoa_id = p.id and t.papel = 'Autor' order by obras desc, termo limit 10) t), '{}'),
+    coalesce((select array_agg(t.termo order by t.obras desc, t.termo) from (select termo, sum(obras) as obras from pessoa_termo t where t.pessoa_id = p.id and t.papel <> 'Autor' group by termo order by 2 desc, termo limit 10) t), '{}'),
+    coalesce((select array_agg(m.macrotema order by m.obras desc, m.macrotema) from (select macrotema, obras from pessoa_macrotema m where m.pessoa_id = p.id and m.papel = 'Autor' order by obras desc, macrotema limit 5) m), '{}'),
+    coalesce((select array_agg(m.macrotema order by m.obras desc, m.macrotema) from (select macrotema, sum(obras) as obras from pessoa_macrotema m where m.pessoa_id = p.id and m.papel <> 'Autor' group by macrotema order by 2 desc, macrotema limit 5) m), '{}'),
+    (select rm.intermediacao from rede_metrica rm where rm.pessoa_id = p.id and rm.escopo = 'acervo' limit 1),
+    (select rm.ranking from rede_metrica rm where rm.pessoa_id = p.id and rm.escopo = 'acervo' limit 1)
+  from pessoa p join vinculo v on v.pessoa_id = p.id
+  join (select pessoa_id, count(*)::int as grafias from pessoa_grafia group by pessoa_id) g on g.pessoa_id = p.id
+  group by p.id, p.nome_canonico, g.grafias;
+
+  insert into colecao_ano
+  select colecao, ano, count(*), count(distinct documento_id) from registro where ano is not null group by 1, 2;
+
+  insert into colecao_perfil
+  select r.colecao, min(r.catalogo), count(*), count(distinct r.documento_id),
+    count(*) filter (where r.resumo_utilizavel), count(*) filter (where not r.resumo_utilizavel),
+    min(r.ano), max(r.ano),
+    (select count(distinct pc.pessoa_id) from pessoa_colecao pc where pc.colecao = r.colecao and pc.papel = 'Autor'),
+    (select count(distinct pc.pessoa_id) from pessoa_colecao pc where pc.colecao = r.colecao and pc.papel = 'Orientador'),
+    array_agg(distinct r.nivel_academico) filter (where r.nivel_academico is not null),
+    coalesce((select array_agg(p.nome_canonico order by pc.obras desc, p.nome_canonico) from (select pessoa_id, obras from pessoa_colecao pc where pc.colecao = r.colecao and pc.papel = 'Orientador' order by obras desc limit 10) pc join pessoa p on p.id = pc.pessoa_id), '{}'),
+    coalesce((select array_agg(t.termo order by t.n desc, t.termo) from (select pc.termo, count(distinct r2.documento_id) as n from registro r2 join registro_palavra_chave pc on pc.registro_id = r2.id where r2.colecao = r.colecao group by pc.termo order by 2 desc, pc.termo limit 10) t), '{}'),
+    coalesce((select array_agg(t.macrotema order by t.n desc, t.macrotema) from (select r2.macrotema, count(distinct r2.documento_id) as n from registro r2 where r2.colecao = r.colecao and r2.macrotema is not null group by r2.macrotema order by 2 desc, r2.macrotema limit 10) t), '{}')
+  from registro r group by r.colecao;
+
+  insert into termo_perfil
+  select pc.termo, count(distinct r.documento_id), count(*), min(r.ano), max(r.ano), count(distinct r.colecao),
+         coalesce(max(t.pessoas), 0)
+  from registro_palavra_chave pc join registro r on r.id = pc.registro_id
+  left join (select termo, count(distinct pessoa_id)::int as pessoas from pessoa_termo group by termo) t on t.termo = pc.termo
+  group by pc.termo;
+
+  analyze pessoa_perfil, pessoa_termo, pessoa_macrotema, pessoa_colecao, orientacao, colecao_perfil, colecao_ano, termo_perfil, rede_metrica;
+
+  return query values
+    ('pessoa_perfil', (select count(*) from pessoa_perfil)),
+    ('pessoa_termo', (select count(*) from pessoa_termo)),
+    ('pessoa_macrotema', (select count(*) from pessoa_macrotema)),
+    ('pessoa_colecao', (select count(*) from pessoa_colecao)),
+    ('orientacao', (select count(*) from orientacao)),
+    ('colecao_perfil', (select count(*) from colecao_perfil)),
+    ('colecao_ano', (select count(*) from colecao_ano)),
+    ('termo_perfil', (select count(*) from termo_perfil)),
+    ('rede_metrica com pessoa', (select count(*) from rede_metrica where pessoa_id is not null));
+end;
+$$;
+
+revoke execute on function atualizar_perfis() from public, anon, authenticated;
+grant execute on function atualizar_perfis() to service_role;
