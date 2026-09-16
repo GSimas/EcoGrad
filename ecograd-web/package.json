@@ -21,6 +21,7 @@
     "test:visualizacao": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/visualizacao.test.js",
     "test:interpretacao": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/interpretacao.test.js",
     "test:ia": "tsc -p tests/tsconfig.json && node node_modules/.cache/capes-tests/tests/ia.test.js",
+    "indice:derivar": "node --max-old-space-size=4096 scripts/indice-derivar.mjs",
     "afericao:gabaritos": "node scripts/afericao-gabaritos.mjs --escrever",
     "afericao:triagem": "node scripts/afericao-triagem.mjs",
     "afericao": "tsc -p tests/tsconfig.json && node --max-old-space-size=4096 scripts/afericao-executar.mjs",
