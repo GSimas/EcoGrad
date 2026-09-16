@@ -226,6 +226,21 @@ A causa é estrutural, não de ajuste de parâmetro: **o tesauro é iniciado pel
 
 Isso reposiciona a Etapa 4 com uma pergunta mais precisa do que a do ADR. Não é mais "o vetor melhora a recuperação?", já que o FTS sozinho entrega 79/76. É: **o vetor alcança o tema quando não existe foothold léxico nenhum?** — que é exatamente a dependência que o tesauro não consegue remover. E a régua subiu: 79/76 em Q10, não os 50/100 da busca literal.
 
+## Amostra cega de temas sorteados (R6 do ADR 003)
+
+Todo número acima vale para um único tema, cuja primeira consulta foi escrita por quem já sabia a resposta. Antes de decidir a Etapa 4, a recuperação corrente precisa ser medida em temas que ninguém escolheu, **só em precisão** — que não exige denominador completo.
+
+`npm run afericao:amostra-cega` sorteia palavras-chave do próprio acervo com semente tirada do sha256 da base de pós (`7b1cbeb9`), em dois estratos — semente pequena (3 a 5 obras, o regime de Q11) e grande (20 ou mais, o de Q10) —, chama `buscar_texto` com k=25 e congela sorteio e respostas em [`evidencias/afericao/amostra-cega.json`](evidencias/afericao/amostra-cega.json). A planilha [`amostra-cega.md`](evidencias/afericao/amostra-cega.md) mostra as obras em ordem sorteada, sem aderência nem consulta expandida. Rodar de novo só recalcula a precisão com as decisões preenchidas.
+
+Sorteio de 16/09/2026: 8 temas, 199 obras, **triagem pendente e sem responsável**. O índice respondeu os 8, entre 222 e 1.012 ms.
+
+Dois fatos já saem do sorteio, antes de qualquer juízo sobre as obras, e nenhum deles é número de precisão:
+
+1. **Em semente pequena, o núcleo da consulta expandida não é o tema.** O lexema de maior *lift* é obrigatório em `consulta_expandida`, e nos quatro temas do estrato ele veio de fora da pergunta em três: "avaliacao educacional (ensino superior)" virou `'sair' & (…)`, "metodos quantitativos" virou `'previsã' & (…)` e "migracao de povos" virou `'exploitation' & (…)`, lexema de resumo em inglês. É a falha de Q11 reproduzida em temas que ninguém escolheu, e pior: em Q11 o núcleo continuava sendo o tema.
+2. **Tema amplo não chega a responder.** Fora da amostra, na sondagem que a precedeu, `consulta_expandida('educação')` estourou o tempo do papel anônimo (erro 57014, cerca de 3 s), e `buscar_texto('gestão do conhecimento')` — o tema do próprio EGC — oscilou entre 2,5 s e o mesmo estouro. A semente de milhares de obras torna o `unnest` do tesauro caro. Nenhum tema desse porte caiu no sorteio, porque o estrato grande começa em 20 obras e não distingue 20 de 900.
+
+A precisão só existe quando a triagem estiver assinada. Nenhuma correção do tesauro deve entrar antes dela: mudar a função agora trocaria o sistema medido no meio da medição.
+
 ## O que falta para fechar a Etapa 0
 
 - **Triagem de Q12 e Q13** (psicologia positiva): 82 obras pendentes, sem responsável. Adiada por decisão de 16/09/2026 para seguir com Q10 e Q11 primeiro. Enquanto não for feita, psicologia positiva não tem gabarito pontuável e **Q15 fica sem denominador** — o que também adia a evidência empírica que sustenta a necessidade da Etapa 3.
