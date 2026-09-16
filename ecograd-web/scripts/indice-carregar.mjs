@@ -1,0 +1,135 @@
+/**
+ * Carrega no Postgres os CSV que `indice-derivar.mjs` escreveu (Etapa 2, ADR 001).
+ *
+ *   export SUPABASE_DB_URL='postgresql://postgres:SENHA@db.<ref>.supabase.co:5432/postgres'
+ *   npm run indice:carregar
+ *
+ * A senha **nunca** entra no repositório nem em argumento de linha de comando:
+ * vem da variável de ambiente, e este programa não a imprime em lugar nenhum,
+ * nem em mensagem de erro.
+ *
+ * O carregamento é destrutivo por desenho. `TRUNCATE` antes de cada carga é o
+ * que faz D1 valer na prática: o banco é índice, e reconstruí-lo do zero
+ * precisa ser barato e previsível. Não há migração incremental aqui, e não
+ * deveria haver — divergência silenciosa entre a base e o índice é o modo de
+ * falha que o ADR quer evitar.
+ *
+ * Os índices GIN caem antes e voltam depois: construí-los durante o COPY custa
+ * várias vezes mais do que construí-los de uma vez sobre a tabela pronta.
+ */
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { pipeline } from 'node:stream/promises';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import pg from 'pg';
+import { from as copyFrom } from 'pg-copy-streams';
+
+const aqui = dirname(fileURLToPath(import.meta.url));
+const origem = join(resolve(aqui, '..'), 'indice-out');
+
+const url = process.env.SUPABASE_DB_URL;
+if (!url) {
+  console.error('Defina SUPABASE_DB_URL antes de rodar. A senha vem do ambiente e não do repositório.');
+  console.error("  export SUPABASE_DB_URL='postgresql://postgres:SENHA@db.<ref>.supabase.co:5432/postgres'");
+  process.exit(1);
+}
+
+/** Ordem de carga: quem é referenciado entra antes de quem referencia. */
+const TABELAS = [
+  ['documento', 'documento.csv', '(id, titulo, resumo, resumo_sha256, resumo_utilizavel, id_obra)'],
+  ['pessoa', 'pessoa.csv', '(id, nome_canonico)'],
+  ['pessoa_grafia', 'pessoa_grafia.csv', '(grafia, pessoa_id)'],
+  ['registro', 'registro.csv', '(id, documento_id, colecao, catalogo, ano, nivel_academico, macrotema, url, resumo_utilizavel)'],
+  ['registro_pessoa', 'registro_pessoa.csv', '(registro_id, pessoa_id, papel)'],
+  ['registro_palavra_chave', 'registro_palavra_chave.csv', '(registro_id, termo)'],
+  ['indice_meta', 'indice_meta.csv', '(id, base_version, sha256_pos, sha256_tcc, gerado_em, registros, documentos)'],
+];
+
+/** Caem antes do COPY e voltam depois, sobre a tabela já pronta. */
+const INDICES = [
+  ['documento_tsv_idx', 'create index documento_tsv_idx on documento using gin (tsv)'],
+  ['documento_titulo_trgm_idx', 'create index documento_titulo_trgm_idx on documento using gin (titulo gin_trgm_ops)'],
+  ['documento_resumo_trgm_idx', 'create index documento_resumo_trgm_idx on documento using gin (resumo gin_trgm_ops)'],
+  ['registro_palavra_chave_termo_idx', 'create index registro_palavra_chave_termo_idx on registro_palavra_chave (termo)'],
+];
+
+for (const [, arquivo] of TABELAS) {
+  if (!existsSync(join(origem, arquivo))) {
+    console.error(`Falta ${arquivo} em indice-out. Rode antes: npm run indice:derivar`);
+    process.exit(1);
+  }
+}
+
+const mb = (n) => `${(n / 1024 / 1024).toFixed(1)} MB`;
+const segundos = (t) => `${((Date.now() - t) / 1000).toFixed(1)}s`;
+
+const cliente = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
+await cliente.connect();
+
+try {
+  const inicio = Date.now();
+
+  // 210 MB de COPY mais a reconstrução dos GIN passam de longe do teto padrão.
+  // Sem isto, o Postgres derruba a transação no meio e o rollback desfaz o
+  // trabalho inteiro sem dizer com clareza por quê.
+  await cliente.query('set statement_timeout = 0');
+  await cliente.query('set idle_in_transaction_session_timeout = 0');
+  await cliente.query('set lock_timeout = 0');
+
+  // Uma transação só: ou o índice inteiro troca, ou nada muda. Um banco com
+  // metade das tabelas da versão nova responderia contagem errada com cara de
+  // resposta certa, que é o pior defeito possível neste projeto.
+  await cliente.query('begin');
+  await cliente.query(`truncate ${TABELAS.map(([t]) => t).join(', ')} restart identity cascade`);
+  for (const [nome] of INDICES) await cliente.query(`drop index if exists ${nome}`);
+
+  for (const [tabela, arquivo, colunas] of TABELAS) {
+    const t = Date.now();
+    const caminho = join(origem, arquivo);
+    const fluxo = cliente.query(copyFrom(
+      `copy ${tabela} ${colunas} from stdin with (format csv, null '\\N', quote '"')`,
+    ));
+    await pipeline(createReadStream(caminho), fluxo);
+    console.log(`  ${tabela.padEnd(24)} ${mb(statSync(caminho).size).padStart(9)}  ${segundos(t)}`);
+  }
+
+  // As sequências continuam de onde os ids da derivação pararam.
+  await cliente.query("select setval(pg_get_serial_sequence('registro', 'id'), coalesce((select max(id) from registro), 1))");
+  await cliente.query("select setval(pg_get_serial_sequence('pessoa', 'id'), coalesce((select max(id) from pessoa), 1))");
+
+  console.log('\n  reconstruindo índices GIN...');
+  for (const [, sql] of INDICES) {
+    const t = Date.now();
+    await cliente.query(sql);
+    console.log(`  ${sql.split(' ')[2].padEnd(24)} ${segundos(t).padStart(20)}`);
+  }
+
+  await cliente.query('commit');
+  await cliente.query('analyze');
+
+  const { rows: [conta] } = await cliente.query(`
+    select
+      (select count(*) from registro) as registros,
+      (select count(*) from documento) as documentos,
+      (select count(*) from registro where resumo_utilizavel) as registros_com_resumo,
+      (select count(*) from pessoa) as grafias,
+      (select count(*) from registro_pessoa) as vinculos,
+      (select count(*) from registro_palavra_chave) as palavras_chave,
+      (select base_version from indice_meta) as base_version
+  `);
+  console.log(`\n  base_version ${conta.base_version}, em ${segundos(inicio)}`);
+  for (const [k, v] of Object.entries(conta)) if (k !== 'base_version') console.log(`  ${k.padEnd(22)} ${v}`);
+} catch (erro) {
+  await cliente.query('rollback').catch(() => {});
+  // A mensagem do driver pode trazer a string de conexão: corta antes de exibir.
+  const limpo = (v) => String(v ?? '').replace(/postgresql:\/\/[^\s]+/g, 'postgresql://…');
+  console.error('\nCarga abortada, nada foi alterado:', limpo(erro?.message ?? erro));
+  // `code`, `detail` e `where` dizem a tabela e a linha; a mensagem sozinha
+  // costuma não bastar para achar o defeito.
+  for (const campo of ['code', 'detail', 'where', 'table', 'column', 'constraint']) {
+    if (erro?.[campo]) console.error(`  ${campo}: ${limpo(erro[campo])}`);
+  }
+  process.exitCode = 1;
+} finally {
+  await cliente.end();
+}
