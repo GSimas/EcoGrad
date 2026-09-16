@@ -161,6 +161,34 @@ Três leituras, e nenhuma é boa para a busca atual:
 
 Essas três linhas são a porta da Etapa 4: pgvector só permanece se superá-las.
 
+## A rodada da Etapa 1, conduzida em 16/09/2026
+
+A Etapa 1 do [ADR 001](ADR-001-CHAT-SEMANTICO.md) pede o chat com ferramentas sobre o recorte, e sua porta é dura: *se o formato não convencer aqui, nenhum banco resolve*. A rodada foi conduzida no app rodando, contra os critérios acima.
+
+**O formato convenceu.** O roteamento é determinístico — o modelo não escolhe ferramenta, escreve a síntese sobre dados já apurados —, então intenção, recusa, assunto lido e ressalva obrigatória são conferidos por `npm run afericao`, sem chave de provedor: 43 conferências. Passam sem nenhum modelo envolvido: Q07 (uma obra, dois registros), Q19 (os três papéis e a ação), Q20, Q21 e Q22 (as três recusas, com o texto que o gabarito pede). Q15 fica adiada do jeito certo: declara os três limites e oferece carregar.
+
+**O caminho de degradação mentia, e foi corrigido.** Cinco perguntas respondiam outra coisa na tela inicial porque toda ferramenta do recorte era mapeada para alguma ferramenta do catálogo, mesmo quando o catálogo não tinha como responder: Q23 devolvia trabalhos com 2026 no título, Q02 devolvia um acrônimo de cromatografia, Q01 devolvia zero, Q24 devolvia o ranking em vez da contagem, e Q18 — a única pergunta que pede para carregar — era a única sem o botão que carrega. Agora o catálogo declara o que não sabe.
+
+**A camada de síntese passa em tudo, menos em revocação.** Rodada BYOK de Q10 sobre um recorte de 7 trabalhos, com DeepSeek:
+
+| Regra | Resultado |
+| --- | --- |
+| Citação | passa — toda afirmação com `[n]` |
+| Fabricação | passa — 7 de 7 obras existem, com ano e coleção conferidos |
+| Fidelidade da citação | passa — as 7 afirmações conferidas contra o resumo citado, uma a uma |
+| Classificação automática e juízo de qualidade | passam |
+| Precisão | passa — 100%, meta 70% |
+| **Revocação** | **reprova — 42% no fluxo limpo (10 das 24 obras assinadas), meta 80%** |
+
+Duas leituras fecham a etapa:
+
+1. **O defeito não está na redação, está a montante.** O modelo citou todas as 7 obras que recebeu e não esticou uma única paráfrase. A revocação do recorte é o teto da resposta, e a síntese o preserva integralmente. As 17 obras que faltaram nunca chegaram ao modelo.
+2. **A perda é composta.** A busca por rótulo alcança metade do tema, e o carregamento é por coleção inteira: o que a busca não achou não tem como ser carregado. É a sustentação empírica da Etapa 4 — não mais hipótese do ADR, e sim medida de ponta a ponta contra gabarito humano assinado.
+
+### Pendência de produto, fora do gabarito
+
+A mesma pergunta responde diferente em duas superfícies. O UFSCão (consultor sobre o recorte) recebe título, autoria, orientação, macrotema e conceitos, **nunca o resumo** — por construção não pode responder Q15, e recusou com honestidade, sem apresentar "questionário" ou "escala" como ferramenta. Mas não apontou para a conversa sobre o acervo, que consegue responder. Numa aferição das citações dele, 17 de 17 obras existiam e nenhuma contagem excedia o teto do acervo; o único desvio foi corrigir em silêncio um erro de digitação do título catalogado.
+
 ## O que falta para fechar a Etapa 0
 
 - **Triagem de Q12 e Q13** (psicologia positiva): 82 obras pendentes, sem responsável. Adiada por decisão de 16/09/2026 para seguir com Q10 e Q11 primeiro. Enquanto não for feita, psicologia positiva não tem gabarito pontuável e **Q15 fica sem denominador** — o que também adia a evidência empírica que sustenta a necessidade da Etapa 3.
