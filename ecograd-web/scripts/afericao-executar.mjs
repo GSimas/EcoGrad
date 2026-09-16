@@ -35,6 +35,7 @@ function exigirCompilado(rel) {
   return require(caminho);
 }
 const ferramentas = exigirCompilado('src/lib/chat-ferramentas.js');
+const { planejar } = exigirCompilado('src/lib/chat-roteador.js');
 const { construirIndicesInvertidos } = exigirCompilado('src/lib/entities.js');
 const { normalizarDocumentos } = exigirCompilado('src/lib/data-loader.js');
 
@@ -221,7 +222,79 @@ for (const [id, consulta, chaveGab, chavePadrao] of [
   conferir('Q25', 'títulos repetidos no acervo', t.titulosRepetidos, g.titulosRepetidosNoAcervo);
 }
 
+// ------------------------------------------------- Etapa 1: plano da resposta
+//
+// O roteamento da Etapa 1 e deterministico: o modelo nao escolhe ferramenta,
+// ele escreve a sintese sobre dados ja apurados. Por isso a intencao, a recusa
+// e as ressalvas obrigatorias de cada pergunta podem ser conferidas aqui, sem
+// chave de provedor. O que continua dependendo do modelo e a redacao -- se a
+// resposta cita a fonte e respeita a ressalva que o plano mandou declarar.
+//
+// `declara` lista trechos que a ressalva precisa conter. `alvo` confere que a
+// pergunta foi lida no assunto certo: alvo errado abre o dossie de outra pessoa
+// ou busca um tema que ninguem pediu.
+const PLANOS = [
+  { id: 'Q01', intencao: 'colecao', declara: ['resumo utilizável'] },
+  { id: 'Q02', intencao: 'serie', alvo: 'egc', declara: ['em coleta'] },
+  { id: 'Q03', intencao: 'ranking_orientacao', declara: ['grafia'] },
+  { id: 'Q04', intencao: 'panorama', declara: ['resumo utilizável', 'Registros e trabalhos distintos'] },
+  { id: 'Q05', intencao: 'pessoa', alvo: 'patricia de sa freire', declara: ['grafia'] },
+  { id: 'Q06', intencao: 'tema', alvo: 'gestao do conhecimento' },
+  { id: 'Q07', intencao: 'existencia', declara: ['Registros e trabalhos distintos'] },
+  { id: 'Q08', intencao: 'origem_termo', alvo: 'educacao infantil', declara: ['classificação automática'] },
+  { id: 'Q09', intencao: 'macrotemas', declara: ['classificação automática'] },
+  { id: 'Q10', intencao: 'tema', alvo: 'empreendedorismo feminino' },
+  { id: 'Q11', intencao: 'tema', alvo: 'mulheres empreendedoras' },
+  { id: 'Q12', intencao: 'tema', alvo: 'psicologia positiva' },
+  { id: 'Q13', intencao: 'tema', alvo: 'bem-estar subjetivo no trabalho' },
+  { id: 'Q14', intencao: 'tema', alvo: 'blockchain quantico' },
+  { id: 'Q15', intencao: 'ontologia', alvo: 'psicologia positiva', declara: ['sem campo validado', 'resumo utilizável'] },
+  { id: 'Q16', intencao: 'ontologia', declara: ['sem campo validado'] },
+  { id: 'Q17', intencao: 'ontologia', alvo: 'empreendedorismo feminino', declara: ['sem campo validado'] },
+  { id: 'Q18', intencao: 'acao_carregar', alvo: 'empreendedorismo feminino' },
+  { id: 'Q19', intencao: 'acao_abrir', alvo: 'patricia de sa freire', declara: ['grafia'] },
+  { id: 'Q20', intencao: 'qualidade', escopo: 'nenhum', recusa: true },
+  { id: 'Q21', intencao: 'dado_pessoal', escopo: 'nenhum', recusa: true },
+  { id: 'Q22', intencao: 'fora_do_acervo', alvo: 'psicologia positiva', recusa: true },
+  { id: 'Q23', intencao: 'ano', alvo: '2026', declara: ['em coleta'] },
+  { id: 'Q24', intencao: 'contagem_pessoas', declara: ['grafia'] },
+  { id: 'Q25', intencao: 'titulo', declara: ['Registros e trabalhos distintos'] },
+];
+
+{
+  const perguntasPath = join(raizRepo, 'docs', 'evidencias', 'afericao', 'perguntas.json');
+  const PERGUNTAS = new Map(JSON.parse(readFileSync(perguntasPath, 'utf8')).perguntas.map((q) => [q.id, q.pergunta]));
+  const naTelaInicial = (pergunta) => planejar(pergunta, { baseCarregada: false });
+
+  for (const esperadoPlano of PLANOS) {
+    const pergunta = PERGUNTAS.get(esperadoPlano.id);
+    if (!pergunta) { console.log(`FALHA ${esperadoPlano.id} pergunta ausente em perguntas.json`); falhas += 1; medidas += 1; continue; }
+    const plano = naTelaInicial(pergunta);
+    const ressalvas = plano.declarar.join(' | ');
+    const campos = (fonte, decl) => ({
+      intencao: fonte.intencao,
+      ...(esperadoPlano.alvo !== undefined ? { alvo: fonte.alvo } : {}),
+      ...(esperadoPlano.escopo !== undefined ? { escopo: fonte.escopo } : {}),
+      ...(esperadoPlano.recusa !== undefined ? { recusa: Boolean(fonte.recusa) } : {}),
+      ...(esperadoPlano.declara ? { declara: decl } : {}),
+    });
+    conferir(esperadoPlano.id, 'plano da resposta na tela inicial',
+      campos(plano, (esperadoPlano.declara ?? []).filter((t) => ressalvas.includes(t))),
+      campos(esperadoPlano, esperadoPlano.declara));
+  }
+
+  // Toda pergunta que precisa de resumo declara, na tela inicial, que o
+  // catalogo indexa rotulo. E o que sustenta a oferta de carregar o recorte.
+  const semAviso = [...PERGUNTAS.entries()]
+    .filter(([, p]) => naTelaInicial(p).exigeResumo)
+    .filter(([, p]) => !naTelaInicial(p).declarar.some((d) => d.includes('só está no resumo')))
+    .map(([id]) => id);
+  conferir('E1', 'pergunta que exige resumo avisa o limite do catálogo', semAviso, []);
+}
+
+
 console.log(`\n${medidas - falhas} de ${medidas} conferências passaram.`);
-console.log('Q07, Q15 e Q18 a Q22 dependem da camada de síntese; Q10 a Q13 fecham com a triagem assinada; Q16 e Q17 estão bloqueadas até a extração ontológica.');
+console.log('O plano de resposta e deterministico e esta aferido acima; falta medir a redacao do modelo (citacao e ressalva) em rodada BYOK.');
+console.log('Q10 a Q13 fecham com a triagem assinada; Q16 e Q17 estao bloqueadas ate a extracao ontologica.');
 console.log(`Gabarito de ${G.geradoEm}, base ${G.bases.base_consolidada_ufsc.sha256.slice(0, 8)}.`);
 if (falhas) process.exit(1);

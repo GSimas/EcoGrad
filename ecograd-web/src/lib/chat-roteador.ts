@@ -69,18 +69,27 @@ function entreAspas(pergunta: string): string | null {
 /**
  * O assunto depois de uma preposição de tema. Corta a cauda de pergunta
  * ("... no acervo", "... na ufsc") que não faz parte do assunto.
+ *
+ * Vale o marcador que aparece **primeiro na frase**, não o primeiro da lista:
+ * em "abra o dossiê da Patricia de Sá Freire" o ` de ` do meio do nome vinha
+ * antes na lista e devolvia "sa freire", abrindo o dossiê de outra pessoa.
+ * Empate de posição fica com o marcador mais longo, que é o mais específico.
  */
 function depoisDe(limpa: string, marcadores: readonly string[]): string {
+  let melhor: { i: number; m: string } | null = null;
   for (const m of marcadores) {
     const i = limpa.indexOf(` ${m} `);
-    if (i >= 0) return cortarCauda(limpa.slice(i + m.length + 2));
+    if (i < 0) continue;
+    if (!melhor || i < melhor.i || (i === melhor.i && m.length > melhor.m.length)) melhor = { i, m };
   }
-  return '';
+  return melhor ? cortarCauda(limpa.slice(melhor.i + melhor.m.length + 2)) : '';
 }
 
 const CAUDA = /\s+(no|na|em|do|da|de)\s+(acervo|ufsc|base|catalogo)\b.*$/;
 const VERBO_FINAL = /\s+(tem|possui|orientou|publicou|produziu|escreveu|aparece|existe|existem)\s*$/;
-const cortarCauda = (s: string) => s.replace(CAUDA, '').replace(/\s+(e|em)\s+(quais|que)\s+.*$/, '').replace(/[,;]+.*$/, '').replace(VERBO_FINAL, '').trim();
+/** O recorte temporal é a intenção da pergunta, não parte do assunto. */
+const CAUDA_SERIE = /\s+(ano a ano|por ano|ao longo do tempo|na linha do tempo|em cada ano)\s*$/;
+const cortarCauda = (s: string) => s.replace(CAUDA, '').replace(/\s+(e|em)\s+(quais|que)\s+.*$/, '').replace(/[,;]+.*$/, '').replace(CAUDA_SERIE, '').replace(VERBO_FINAL, '').trim();
 
 interface Regra {
   intencao: Intencao;
@@ -197,7 +206,7 @@ const REGRAS: readonly Regra[] = [
     escopo: 'catalogo',
     ferramenta: 'existe_no_catalogo',
     argumentos: (alvo) => ({ consulta: alvo }),
-    declarar: [DECLARACOES.rotulo],
+    declarar: [DECLARACOES.rotulo, DECLARACOES.duplicata],
   },
   {
     intencao: 'ano',
