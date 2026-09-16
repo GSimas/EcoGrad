@@ -431,6 +431,7 @@ create index pessoa_perfil_nome_idx on pessoa_perfil using gin (sem_acento(nome)
 comment on table pessoa_perfil is 'Uma linha por pessoa unificada, com contagens por papel. obras_* conta trabalhos distintos; registros_* conta catalogações. Orientação histórica não informa vínculo atual nem disponibilidade.';
 comment on column pessoa_perfil.grafias is 'Quantas grafias do acervo foram unificadas nesta pessoa (1 = nenhuma fusão).';
 comment on column pessoa_perfil.orientadas_tcc_graduacao is 'Obras orientadas de nível TCC (Graduação).';
+comment on column pessoa_perfil.orientandos_distintos is 'Autores distintos orientados ou coorientados pela pessoa, em qualquer nível; pode passar do número de obras, porque uma obra pode ter mais de um autor.';
 comment on column pessoa_perfil.primeiro_ano is 'Primeiro ano com qualquer papel.';
 comment on column pessoa_perfil.primeiro_ano_orientando is 'Primeiro ano como orientador ou coorientador.';
 comment on column pessoa_perfil.colecao_principal is 'Coleção com mais registros da pessoa, em qualquer papel.';
@@ -554,6 +555,10 @@ returns table (tabela text, linhas bigint)
 language plpgsql security definer
 set search_path = public
 set statement_timeout = 0
+-- Ordenação em memória: no Supabase o espaço de arquivos temporários é pequeno,
+-- e com o `work_mem` padrão (3,5 MB) esta função para em "No space left on
+-- device" mesmo com o disco do banco quase vazio.
+set work_mem = '256MB'
 as $$
 begin
   truncate pessoa_perfil, pessoa_termo, pessoa_macrotema, pessoa_colecao, orientacao, colecao_perfil, colecao_ano, termo_perfil;
