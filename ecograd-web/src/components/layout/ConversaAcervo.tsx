@@ -179,11 +179,40 @@ function RespostaChat({ resposta, docs, indices, baseCarregada, carregando, aoCa
   </div>;
 }
 
+interface ColecaoNoCatalogo {
+  consulta: string;
+  encontrada: boolean;
+  colecoes: Array<{ nome: string; catalogo: 'ppg' | 'tcc' }>;
+  totalNoCatalogo: number;
+  unidade: string;
+}
+
+/**
+ * Coleção identificada, sem contagem. O catálogo sabe que a coleção existe e
+ * sabe carregá-la; quantos trabalhos ela tem só o recorte responde.
+ */
+function ColecaoView({ c }: { c: ColecaoNoCatalogo }) {
+  if (!c.encontrada) return <p className="text-sm text-slate-300">
+    Não encontrei uma coleção com esse nome entre as {c.totalNoCatalogo} do acervo. Procure pelo nome
+    completo do programa ou do curso na busca, e eu respondo sobre ela.
+  </p>;
+  return <div className="space-y-2">
+    <ul className="space-y-1 text-sm">
+      {c.colecoes.map((col) => <li key={col.nome} className="flex items-baseline gap-2">
+        <span className="chip shrink-0">{col.catalogo === 'ppg' ? 'pós-graduação' : 'graduação'}</span>
+        <span>{col.nome}</span>
+      </li>)}
+    </ul>
+    <p className="text-xs text-slate-400">{c.unidade}.</p>
+  </div>;
+}
+
 /** Cada ferramenta devolve uma forma; a resposta mostra o que aquela forma tem. */
 function CorpoResposta({ dados, docs }: { dados: unknown; docs: readonly Documento[] }) {
   const d = dados as Record<string, unknown>;
 
   if (ehRecorte(dados)) return <RecorteView r={dados} docs={docs} />;
+  if (Array.isArray(d.colecoes) && typeof d.totalNoCatalogo === 'number') return <ColecaoView c={dados as ColecaoNoCatalogo} />;
   if ('porPapel' in d) return <PessoaView p={dados as PessoaNoCatalogo} />;
   if ('palavrasChave' in d) return <TemaView t={dados as TemaNoCatalogo} />;
   if (Array.isArray(d.ranking)) return <div className="space-y-2">

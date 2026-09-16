@@ -234,8 +234,8 @@ for (const [id, consulta, chaveGab, chavePadrao] of [
 // pergunta foi lida no assunto certo: alvo errado abre o dossie de outra pessoa
 // ou busca um tema que ninguem pediu.
 const PLANOS = [
-  { id: 'Q01', intencao: 'colecao', declara: ['resumo utilizável'] },
-  { id: 'Q02', intencao: 'serie', alvo: 'egc', declara: ['em coleta'] },
+  { id: 'Q01', intencao: 'colecao', declara: ['não conta quantos registros'] },
+  { id: 'Q02', intencao: 'serie', alvo: 'egc', declara: ['não guarda o ano'] },
   { id: 'Q03', intencao: 'ranking_orientacao', declara: ['grafia'] },
   { id: 'Q04', intencao: 'panorama', declara: ['resumo utilizável', 'Registros e trabalhos distintos'] },
   { id: 'Q05', intencao: 'pessoa', alvo: 'patricia de sa freire', declara: ['grafia'] },
@@ -256,7 +256,7 @@ const PLANOS = [
   { id: 'Q20', intencao: 'qualidade', escopo: 'nenhum', recusa: true },
   { id: 'Q21', intencao: 'dado_pessoal', escopo: 'nenhum', recusa: true },
   { id: 'Q22', intencao: 'fora_do_acervo', alvo: 'psicologia positiva', recusa: true },
-  { id: 'Q23', intencao: 'ano', alvo: '2026', declara: ['em coleta'] },
+  { id: 'Q23', intencao: 'ano', alvo: '2026', escopo: 'nenhum', recusa: true },
   { id: 'Q24', intencao: 'contagem_pessoas', declara: ['grafia'] },
   { id: 'Q25', intencao: 'titulo', declara: ['Registros e trabalhos distintos'] },
 ];

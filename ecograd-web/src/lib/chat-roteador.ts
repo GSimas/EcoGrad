@@ -55,6 +55,8 @@ const DECLARACOES = {
   duplicata: 'Registros e trabalhos distintos são contagens diferentes: o acervo cataloga a mesma obra em mais de uma coleção.',
   cobertura: 'Parte dos registros não tem resumo utilizável e fica fora de qualquer leitura de texto.',
   ontologia: 'A base publicada não traz teorias, ferramentas e métodos extraídos: o que existe são menções no texto dos resumos, sem campo validado.',
+  semAnoNoCatalogo: 'O catálogo indexa rótulos — título, pessoa, palavra-chave, macrotema — e não guarda o ano do trabalho.',
+  semContagemPorColecao: 'O catálogo identifica a coleção, mas não conta quantos registros ela tem: a contagem sai do recorte carregado.',
 };
 
 /** Texto sem acento, caixa nem pontuação de borda, para casar padrão. */
@@ -137,6 +139,10 @@ const REGRAS: readonly Regra[] = [
     escopo: 'catalogo',
     ferramenta: 'tema_no_catalogo',
     argumentos: (alvo) => ({ consulta: alvo }),
+    // Pedir para carregar é o pedido de carregar: sem isto, a única pergunta
+    // que pede o recorte era a única sem o botão que o carrega.
+    exigeResumo: true,
+    declarar: [DECLARACOES.rotulo],
   },
   {
     intencao: 'acao_abrir',
@@ -288,17 +294,35 @@ export function planejar(pergunta: string, ctx: Contexto): Plano {
   let argumentos = regra?.argumentos?.(alvo) ?? { consulta: alvo, frase: true };
   const exigeResumo = regra?.exigeResumo ?? intencao === 'tema';
 
+  let recusa = regra?.recusa;
+
   // Sem base carregada, o que dependia do recorte passa pelo catálogo.
+  //
+  // Nem tudo tem equivalente, e é aqui que a resposta pode mentir: o ano não é
+  // rótulo do catálogo, e cair numa busca por texto devolvia os trabalhos com
+  // o ano no título como se fossem a produção daquele ano. Quando o catálogo
+  // não tem como responder, a resposta declara isso e não mostra número.
   if (escopo === 'recorte' && !ctx.baseCarregada) {
     escopo = 'catalogo';
     declarar.push(DECLARACOES.rotulo);
-    const equivalente = EQUIVALENTE_NO_CATALOGO[ferramenta];
-    if (equivalente) {
-      ferramenta = equivalente.nome;
-      argumentos = equivalente.argumentos(alvo);
+    if (intencao === 'ano') {
+      escopo = 'nenhum';
+      recusa = `${DECLARACOES.semAnoNoCatalogo} Para contar por ano eu preciso do recorte carregado: escolha a coleção na busca e refaça a pergunta.`;
+    } else if (intencao === 'serie') {
+      // A série exige o recorte, mas a coleção da pergunta pode ser carregada.
+      ferramenta = 'colecao_no_catalogo';
+      argumentos = { nome: alvo };
+      declarar.push(DECLARACOES.semAnoNoCatalogo);
     } else {
-      ferramenta = 'tema_no_catalogo';
-      argumentos = { consulta: alvo };
+      const equivalente = EQUIVALENTE_NO_CATALOGO[ferramenta];
+      if (equivalente) {
+        if (ferramenta === 'recorte_da_colecao') declarar.push(DECLARACOES.semContagemPorColecao);
+        ferramenta = equivalente.nome;
+        argumentos = equivalente.argumentos(alvo);
+      } else {
+        ferramenta = 'tema_no_catalogo';
+        argumentos = { consulta: alvo };
+      }
     }
   }
 
@@ -306,20 +330,22 @@ export function planejar(pergunta: string, ctx: Contexto): Plano {
     intencao, alvo, escopo,
     ferramenta: escopo === 'nenhum' ? null : ferramenta,
     argumentos: escopo === 'nenhum' ? {} : argumentos,
-    recusa: regra?.recusa,
+    recusa,
     declarar,
-    exigeResumo,
+    // Coleção e série só respondem de verdade com o recorte carregado.
+    exigeResumo: exigeResumo || (escopo === 'catalogo' && (intencao === 'colecao' || intencao === 'serie')),
   };
 }
 
 /** O que cada ferramenta do recorte tem de mais próximo no catálogo. */
 const EQUIVALENTE_NO_CATALOGO: Record<string, { nome: string; argumentos: (alvo: string) => Record<string, unknown> }> = {
   contar_acervo: { nome: 'panorama_do_catalogo', argumentos: () => ({}) },
-  recorte_da_colecao: { nome: 'tema_no_catalogo', argumentos: (alvo) => ({ consulta: alvo }) },
+  recorte_da_colecao: { nome: 'colecao_no_catalogo', argumentos: (alvo) => ({ nome: alvo }) },
   top_macrotemas: { nome: 'top_do_tipo', argumentos: () => ({ tipo: 'Macrotema', limite: 10 }) },
-  grafias_do_papel: { nome: 'top_do_tipo', argumentos: () => ({ tipo: 'Orientador', limite: 10 }) },
+  // Quantas grafias existem é contagem, não ranking: o panorama traz o total
+  // por tipo, enquanto `top_do_tipo` respondia quem mais orienta — outra pergunta.
+  grafias_do_papel: { nome: 'panorama_do_catalogo', argumentos: () => ({}) },
   origem_do_termo: { nome: 'tema_no_catalogo', argumentos: (alvo) => ({ consulta: alvo }) },
   registros_do_titulo: { nome: 'existe_no_catalogo', argumentos: (alvo) => ({ consulta: alvo }) },
-  serie_anual: { nome: 'tema_no_catalogo', argumentos: (alvo) => ({ consulta: alvo }) },
   buscar_no_texto: { nome: 'tema_no_catalogo', argumentos: (alvo) => ({ consulta: alvo }) },
 };

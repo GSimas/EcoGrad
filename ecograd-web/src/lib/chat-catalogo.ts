@@ -176,7 +176,46 @@ export function existeNoCatalogo(preparada: BuscaPreparada, consulta: string, li
   };
 }
 
+/** Ligações não entram na sigla: "Engenharia e Gestão do Conhecimento" vira EGC. */
+const LIGACAO = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'a', 'o', 'as', 'os']);
+const sigla = (nomeNormalizado: string) => nomeNormalizado
+  .split(/[\s-]+/)
+  .filter((palavra) => palavra && !LIGACAO.has(palavra))
+  .map((palavra) => palavra[0])
+  .join('');
+
+/**
+ * A coleção pelo nome. O índice do catálogo lista as coleções, mas não quantos
+ * registros cada uma tem — contagem por coleção só existe depois de carregar.
+ * Por isso esta ferramenta identifica e oferece o carregamento, e não inventa
+ * número: é o caminho honesto para "quantos trabalhos o PPG X tem?" na tela
+ * inicial, onde antes uma busca por rótulo devolvia zero e dois títulos soltos.
+ */
+export function colecaoNoCatalogo(preparada: BuscaPreparada, nome: string, limite = MAX_COLECOES_POR_ITEM) {
+  const alvo = normalizar(nome);
+  const todas = preparada.indice.colecoes.map(([n, catalogo]) => ({ nome: n, catalogo }));
+  const casam = alvo.length < 3 ? [] : todas.filter((c) => {
+    const n = normalizar(c.nome);
+    return n === alvo || n.includes(alvo) || alvo.includes(n) || sigla(n).includes(alvo);
+  });
+  const escolhidas = casam.slice(0, limite);
+  return {
+    consulta: nome,
+    encontrada: casam.length > 0,
+    colecoes: escolhidas,
+    totalNoCatalogo: todas.length,
+    colecoesParaCarregar: {
+      programas: escolhidas.filter((c) => c.catalogo === 'ppg').map((c) => c.nome),
+      cursosTcc: escolhidas.filter((c) => c.catalogo === 'tcc').map((c) => c.nome),
+      omitidas: Math.max(0, casam.length - escolhidas.length),
+      total: casam.length,
+    },
+    unidade: 'coleções identificadas; o catálogo não conta registros por coleção' as const,
+  };
+}
+
 export const FERRAMENTAS_CATALOGO = {
+  colecao_no_catalogo: (p: BuscaPreparada, a: { nome: string; limite?: number }) => colecaoNoCatalogo(p, a.nome, a.limite),
   panorama_do_catalogo: (p: BuscaPreparada) => panoramaDoCatalogo(p.indice),
   top_do_tipo: (p: BuscaPreparada, a: { tipo: TipoBusca; limite?: number }) => topDoTipo(p.indice, a.tipo, a.limite),
   pessoa_no_catalogo: (p: BuscaPreparada, a: { nome: string; limite?: number }) => pessoaNoCatalogo(p, a.nome, a.limite),
