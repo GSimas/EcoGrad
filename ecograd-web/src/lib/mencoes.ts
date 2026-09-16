@@ -57,6 +57,14 @@ export function dobrar(texto: string): string {
   return saida;
 }
 
+/**
+ * Chave de comparação: além de tirar acento e caixa, colapsa espaços e cola a
+ * pontuação à palavra anterior. O acervo guarda "Algas calcárias nos recifes
+ * brasileiros : diversidade" e quem responde escreve "brasileiros: diversidade"
+ * — a diferença é de digitação, não de obra.
+ */
+export const chaveDeBusca = (texto: string) => dobrar(texto).replace(/\s+/g, ' ').replace(/ ([:;,.!?])/g, '$1').trim();
+
 /** "Sobrenome, Nome Do Meio" também é escrito na ordem direta por quem responde. */
 function variantes(nome: string): string[] {
   const virgula = nome.indexOf(',');
@@ -74,7 +82,7 @@ export function dicionarioDoAcervo(docs: readonly Documento[]): DicionarioMencoe
   const dic: DicionarioMencoes = new Map();
   const registrar = (nome: string, mencao: Mencao) => {
     for (const v of variantes(nome)) {
-      const chave = dobrar(escaparHtml(v));
+      const chave = chaveDeBusca(escaparHtml(v));
       // Primeiro a registrar vence: título e palavra-chave homônimos não se sobrescrevem.
       if (chave.length >= MINIMO && !dic.has(chave)) dic.set(chave, mencao);
     }
@@ -102,7 +110,7 @@ export function mencoesNoTexto(texto: string, dic: DicionarioMencoes): Achado[] 
     const inicio = palavras[i].index;
     for (let j = i; j < Math.min(palavras.length, i + MAX_PALAVRAS); j++) {
       const fim = palavras[j].index + palavras[j][0].length;
-      const mencao = dic.get(chave.slice(inicio, fim));
+      const mencao = dic.get(chaveDeBusca(chave.slice(inicio, fim)));
       if (mencao) achados.push({ inicio, fim, mencao });
     }
   }
@@ -120,6 +128,34 @@ const botao = (texto: string, m: Mencao) => {
 };
 
 /**
+ * Abaixo disso um começo de título casa com obras demais para valer como
+ * identificação.
+ */
+const PREFIXO_MINIMO = 25;
+
+/**
+ * Trabalho cujo título **começa** pelo texto do link.
+ *
+ * Quem responde costuma citar o título sem o subtítulo — "Mar de lama: os
+ * efeitos dos desastres de mineração sobre as florestas submersas do Atlântico
+ * Sul", quando o acervo guarda "... Sul - caso dos rejeitos do desastre de
+ * Mariana (MG, Brasil)". Sem isto, esses links jamais viram botão.
+ *
+ * Dois trabalhos que comecem igual devolvem nada: melhor manter o link do que
+ * abrir o dossiê da obra errada.
+ */
+function documentoPorPrefixo(dic: DicionarioMencoes, chave: string): Mencao | null {
+  if (chave.length < PREFIXO_MINIMO) return null;
+  let achado: Mencao | null = null;
+  for (const [k, m] of dic) {
+    if (m.tipo !== 'Documento' || !k.startsWith(chave)) continue;
+    if (achado) return null;
+    achado = m;
+  }
+  return achado;
+}
+
+/**
  * Link de trabalho vira botão do dossiê **mais** o link da fonte original.
  *
  * O modelo é instruído a citar o trabalho como link do repositório da UFSC.
@@ -128,8 +164,10 @@ const botao = (texto: string, m: Mencao) => {
  */
 function linksDeDocumento(html: string, dic: DicionarioMencoes): string {
   return html.replace(/<a href="([^"]*)"[^>]*>([^<]+)<\/a>/g, (inteiro, href: string, texto: string) => {
-    const mencao = dic.get(dobrar(texto.trim()));
-    if (!mencao || mencao.tipo !== 'Documento') return inteiro;
+    const chave = chaveDeBusca(texto);
+    const exato = dic.get(chave);
+    const mencao = exato?.tipo === 'Documento' ? exato : documentoPorPrefixo(dic, chave);
+    if (!mencao) return inteiro;
     return `${botao(texto, mencao)}<a href="${href}" target="_blank" rel="noopener noreferrer" class="eco-fonte-externa" title="Fonte original, em nova aba">↗<span class="sr-only"> (abre a fonte original em nova aba)</span></a>`;
   });
 }

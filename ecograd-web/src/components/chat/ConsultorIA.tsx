@@ -203,7 +203,11 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
         {!!parciaisAnteriores?.length && <Expander titulo="Textos parciais de tentativas anteriores">{parciaisAnteriores.map((texto, i) => <Balao key={i} papel="assistant" conteudo={texto} dic={mencoes} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />)}</Expander>}
         {mensagens.map((m, i) => <Balao key={i} papel={m.role} conteudo={m.content} dic={m.role === 'assistant' ? mencoes : undefined} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />)}
         {parcial && <Balao papel="assistant" conteudo={streaming ? `${parcial}▌` : `[Resposta parcial interrompida] ${parcial}`} dic={mencoes} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />}
-        {streaming && !parcial && <p className="text-sm text-slate-400" role="status">O UFSCão está farejando o dossiê...</p>}
+        {streaming && !parcial && <p className="eco-farejando text-sm text-slate-400" role="status">
+          <RetratoUFSCao tamanho={22} />
+          <span>O UFSCão está farejando o dossiê</span>
+          <span aria-hidden className="flex items-center gap-1"><span className="ponto" /><span className="ponto" /><span className="ponto" /></span>
+        </p>}
         {erro && <Aviso tipo="erro"><p role="status">{erro}</p></Aviso>}
         {tentativa && !streaming && !contextoAnterior && <button type="button" className="btn" onClick={() => void enviarMensagem(dossie, true)}>Repetir última pergunta com o contexto atual</button>}
       </div>

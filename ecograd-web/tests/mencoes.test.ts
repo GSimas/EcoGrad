@@ -60,6 +60,34 @@ test('link de trabalho vira botão do dossiê mais o link da fonte original', ()
   assert.equal(html.match(/<button/g)?.length, 1, 'o botão não é duplicado pela varredura de texto');
 });
 
+test('pontuação e espaçamento diferentes não impedem o casamento do título', () => {
+  // O acervo guarda o espaço antes dos dois-pontos; quem responde escreve limpo.
+  const base = [doc({ titulo: 'Algas calcárias nos recifes brasileiros : diversidade, macroecologia e conservação' })];
+  const html = realcarMencoes(markdownParaHtml('Leia [Algas calcárias nos recifes brasileiros: diversidade, macroecologia e conservação](https://exemplo/9).'), dicionarioDoAcervo(base));
+  assert.match(html, /<button[^>]*data-mencao="Documento"[^>]*data-indice="0"/);
+});
+
+test('título citado sem o subtítulo vira botão do trabalho certo', () => {
+  const base = [doc({ titulo: 'Mar de lama: os efeitos dos desastres de mineração sobre as florestas submersas do Atlântico Sul - caso dos rejeitos de Mariana' })];
+  const html = realcarMencoes(markdownParaHtml('Veja [Mar de lama: os efeitos dos desastres de mineração sobre as florestas submersas do Atlântico Sul](https://exemplo/9).'), dicionarioDoAcervo(base));
+  assert.match(html, /<button[^>]*data-nome="Mar de lama: os efeitos dos desastres de mineração sobre as florestas submersas do Atlântico Sul - caso dos rejeitos de Mariana"/);
+});
+
+test('começo de título que serve a dois trabalhos continua link: abrir o dossiê errado seria pior', () => {
+  const base = [
+    doc({ titulo: 'Ecologia de recifes rochosos no litoral catarinense: parte um' }),
+    doc({ titulo: 'Ecologia de recifes rochosos no litoral catarinense: parte dois' }),
+  ];
+  const html = realcarMencoes(markdownParaHtml('[Ecologia de recifes rochosos no litoral catarinense](https://exemplo/9)'), dicionarioDoAcervo(base));
+  assert.doesNotMatch(html, /<button/);
+});
+
+test('texto curto não é tratado como começo de título', () => {
+  const base = [doc({ titulo: 'Mar de lama e seus efeitos duradouros no litoral' })];
+  const html = realcarMencoes(markdownParaHtml('[Mar de lama](https://exemplo/9)'), dicionarioDoAcervo(base));
+  assert.doesNotMatch(html, /<button/);
+});
+
 test('link que não é trabalho do acervo continua só link', () => {
   const html = realcarMencoes(markdownParaHtml('Veja [o repositório](https://repositorio.ufsc.br).'), dic);
   assert.doesNotMatch(html, /<button/);
