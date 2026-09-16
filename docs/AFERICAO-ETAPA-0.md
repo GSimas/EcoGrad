@@ -189,6 +189,43 @@ Duas leituras fecham a etapa:
 
 A mesma pergunta responde diferente em duas superfícies. O UFSCão (consultor sobre o recorte) recebe título, autoria, orientação, macrotema e conceitos, **nunca o resumo** — por construção não pode responder Q15, e recusou com honestidade, sem apresentar "questionário" ou "escala" como ferramenta. Mas não apontou para a conversa sobre o acervo, que consegue responder. Numa aferição das citações dele, 17 de 17 obras existiam e nenhuma contagem excedia o teto do acervo; o único desvio foi corrigir em silêncio um erro de digitação do título catalogado.
 
+## Etapa 2 medida, e o tesauro testado
+
+O índice de metadados e FTS está carregado no projeto `ecograd-indice` e **reproduz os gabaritos sem aproximação**: 16 conferências, todas exatas — 92.331 registros, 80.415 com resumo utilizável, 910 do EGC com 6 sem resumo, Fialho com 320 orientações na pós, os 40 registros da Patricia nos três papéis, 626 palavra-chave contra 205 macrotema, 9.527 grafias de orientador, 6.740 títulos repetidos.
+
+A porta da etapa era medir quanto se resolve só com isso. As perguntas contáveis: todas. A pergunta temática é que revelou o que interessa.
+
+### O que o FTS mudou
+
+Lendo os 25 primeiros resumos por `ts_rank` — a profundidade que a decisão D8 fixou:
+
+| | revocação | precisão |
+| --- | --- | --- |
+| Busca por rótulo (o app hoje) | 46% | 100% |
+| Ponta a ponta na Etapa 1 | 42% | 100% |
+| **FTS sobre título e resumo** | **79%** | **76%** |
+
+A precisão passa a meta de 70% e a revocação chega a um ponto dos 80%. **Sem nenhum vetor.** A maior parte da lacuna temática não era semântica: era o resumo não estar indexado.
+
+### O tesauro do próprio acervo
+
+O ganho acima depende de expandir "empreendedorismo feminino" para `empreendedor E (feminino OU mulher)`. A pergunta era se essa expansão pode sair do acervo, sem modelo.
+
+Pode. A função `tesauro(consulta)` toma como semente o que a busca por rótulo já alcança, colhe os lexemas dos resumos dessa semente e ordena por *lift* — frequente na semente, raro no acervo. Para Q10 o topo é `empreendedor` (123), `feminin` (46), `mulh` (22), e `consulta_expandida` monta exatamente `'empreendedor' & ('feminin' | 'mulh')`: a mesma consulta que havia sido escrita à mão, agora derivada. Para "blockchain quantico" não há semente, e a função cai na consulta literal em vez de inventar vocabulário.
+
+### Onde ele falha, e por quê isso decide a Etapa 4
+
+| | semente | revocação | precisão |
+| --- | --- | --- | --- |
+| Q10 "empreendedorismo feminino" | 11 obras | 79% | 76% |
+| Q11 "mulheres empreendedoras" | **3 obras** | 63% | 60% |
+
+Sobreposição entre as duas: **64%**, contra os 67% da busca literal. O tesauro **não** resolve a invariância a paráfrase.
+
+A causa é estrutural, não de ajuste de parâmetro: **o tesauro é iniciado pelo próprio casamento léxico que ele deveria substituir.** Quando o usuário usa o vocabulário do acervo, a semente é grande e a expansão é boa; quando usa outro vocabulário — que é o caso inteiro para o qual o recurso existe —, a semente encolhe, e com 3 obras qualquer palavra que apareça em 2 delas vira termo de expansão. Foi assim que Q11 herdou `provoc`, `sóci` e `enfrent`.
+
+Isso reposiciona a Etapa 4 com uma pergunta mais precisa do que a do ADR. Não é mais "o vetor melhora a recuperação?", já que o FTS sozinho entrega 79/76. É: **o vetor alcança o tema quando não existe foothold léxico nenhum?** — que é exatamente a dependência que o tesauro não consegue remover. E a régua subiu: 79/76 em Q10, não os 50/100 da busca literal.
+
 ## O que falta para fechar a Etapa 0
 
 - **Triagem de Q12 e Q13** (psicologia positiva): 82 obras pendentes, sem responsável. Adiada por decisão de 16/09/2026 para seguir com Q10 e Q11 primeiro. Enquanto não for feita, psicologia positiva não tem gabarito pontuável e **Q15 fica sem denominador** — o que também adia a evidência empírica que sustenta a necessidade da Etapa 3.
