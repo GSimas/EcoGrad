@@ -32,6 +32,7 @@ export function TabelaQL({ linhas, titulo }: { linhas: readonly LinhaQL[]; titul
             rotulo: 'Entidade',
             render: (l) => (
               <BotaoEntidade
+                tipo={String(l.Tipo)}
                 nome={String(l.Entidade)}
                 onClick={() => useEcoGradStore.getState().navegarPara(String(l.Tipo) as TipoBusca, String(l.Entidade))}
               />

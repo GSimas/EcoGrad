@@ -36,7 +36,7 @@ test('both theme token palettes meet text 4.5:1 and control/focus 3:1 against th
     const block=css.slice(css.indexOf(selector)).split('}')[0];
     const tokens=Object.fromEntries([...block.matchAll(/--([\w-]+):\s*(\d+ \d+ \d+);/g)].map(m=>[m[1],m[2].split(' ').map(Number)]));
     for(const surface of ['eco-bg','eco-panel']) {
-      for(const name of ['slate-100','slate-200','slate-300','slate-400','slate-500','eco-accent','info','warning','error','success']) assert.ok(contraste(tokens[name],tokens[surface])>=4.5,`${selector} ${name}/${surface}`);
+      for(const name of ['slate-100','slate-200','slate-300','slate-400','slate-500','eco-accent','info','warning','error','success','tipo-documento','tipo-pessoa','tipo-tema']) assert.ok(contraste(tokens[name],tokens[surface])>=4.5,`${selector} ${name}/${surface}`);
       assert.ok(contraste(tokens['control-border'],tokens[surface])>=3,`${selector} control/${surface}`);
     }
   }

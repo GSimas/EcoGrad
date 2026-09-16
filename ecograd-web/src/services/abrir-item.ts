@@ -1,8 +1,9 @@
 import { colecoesDoItem, MAX_COLECOES_POR_ITEM, type ResultadoBusca } from '@/lib/busca-global';
-import type { TipoBusca } from '@/types';
+import type { Documento, TipoBusca } from '@/types';
 import { mesmaSelecao } from '@/lib/selecao';
 import { canonizar, grupoDe, usePessoas } from './pessoas';
 import { mesmoRecorte, type ItemRecorte } from '@/lib/recorte';
+import { referenciaDocumento } from '@/lib/resultados';
 import { PAPEIS_PESSOA } from '@/types';
 import { carregarDados } from './calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -117,4 +118,21 @@ export function ampliarParaColecoesInteiras(): void {
   const s = useEcoGradStore.getState();
   if (!s.recorte.length || s.carregando) return;
   carregarDados(s.programasSelecionados, s.cursosTccSelecionados, 'panorama', undefined, []);
+}
+
+/**
+ * Abre o dossiê de um registro exato numa única mudança de estado, sem entrada
+ * a mais no histórico. `indice` é a posição em `docs`: é o que distingue dois
+ * registros de mesmo título em coleções diferentes.
+ */
+export function abrirRegistro(docs: readonly Documento[], indice: number): void {
+  const ref = referenciaDocumento(docs, indice);
+  if (!ref) return;
+  useEcoGradStore.setState((s) => ({
+    apresentacaoVista: true,
+    rota: 'busca' as const,
+    buscaTipo: 'Documento' as const,
+    buscaTermo: ref.titulo,
+    ui: { ...s.ui, 'dossie.documento': ref },
+  }));
 }

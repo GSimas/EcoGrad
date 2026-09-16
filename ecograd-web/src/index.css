@@ -23,6 +23,9 @@
     --warning: 255 220 150;
     --error: 255 177 177;
     --success: 136 232 188;
+    --tipo-documento: 160 131 180;
+    --tipo-pessoa: 112 145 169;
+    --tipo-tema: 92 153 122;
     --card-space: 1.25rem;
     --table-y: .75rem;
     --motion-fast: 140ms;
@@ -57,6 +60,9 @@
     --warning: 117 65 0;
     --error: 158 30 37;
     --success: 6 99 68;
+    --tipo-documento: 125 90 150;
+    --tipo-pessoa: 78 109 131;
+    --tipo-tema: 67 112 89;
   }
   /* Serifa de texto longo, empacotada com o app. */
   :root[data-fonte="serifada"] {
@@ -93,6 +99,9 @@
     --warning: 255 224 130;
     --error: 255 158 158;
     --success: 130 245 190;
+    --tipo-documento: 198 170 214;
+    --tipo-pessoa: 158 190 212;
+    --tipo-tema: 140 200 170;
     --vidro-opacidade: 1;
     --vidro-blur: 0px;
   }
@@ -113,6 +122,9 @@
     --warning: 88 48 0;
     --error: 140 0 0;
     --success: 0 82 54;
+    --tipo-documento: 92 62 115;
+    --tipo-pessoa: 44 78 100;
+    --tipo-tema: 34 82 60;
   }
 
   html,
@@ -308,6 +320,40 @@
 /* Markdown renderizado pelo chat */
 .markdown .eco-citacao { display: inline; min-height: 0; padding: 0 .1rem; border-radius: .25rem; color: rgb(var(--eco-accent)); font-size: .85em; font-weight: 600; cursor: pointer; }
 .markdown .eco-citacao:hover, .markdown .eco-citacao:focus-visible { text-decoration: underline; }
+/* Menção a um item do acervo no meio da prosa: pílula clicável que acompanha a
+   linha do texto — por isso `display: inline` e a fonte herdada. */
+.markdown .eco-mencao { display: inline; min-height: 0; padding: .05rem .4rem; border: 1px solid rgb(var(--eco-border)); border-radius: 999px; background: rgb(var(--eco-accent) / .08); color: rgb(var(--slate-100)); font: inherit; cursor: pointer; }
+.markdown .eco-mencao:hover, .markdown .eco-mencao:focus-visible { border-color: rgb(var(--eco-accent) / .6); background: rgb(var(--eco-accent) / .18); color: rgb(var(--eco-accent)); }
+/* Um item do acervo tem sempre a mesma cor, em qualquer tela: trabalho, pessoa
+   ou tema. `--tipo` é o único lugar que decide o tom; as regras abaixo só o
+   aplicam, e cada paleta do tema define o seu (ver o teste de contraste). */
+.eco-tipo-documento { --tipo: var(--tipo-documento); }
+.eco-tipo-pessoa { --tipo: var(--tipo-pessoa); }
+.eco-tipo-tema { --tipo: var(--tipo-tema); }
+.eco-tipo-documento, .eco-tipo-pessoa, .eco-tipo-tema { border-color: rgb(var(--tipo) / .45); background-color: rgb(var(--tipo) / .1); }
+/* Dentro do Markdown, a família vence o âmbar genérico de `.eco-mencao`. */
+.markdown .eco-mencao.eco-tipo-documento, .markdown .eco-mencao.eco-tipo-pessoa, .markdown .eco-mencao.eco-tipo-tema {
+  border-color: rgb(var(--tipo) / .45); background: rgb(var(--tipo) / .12); color: rgb(var(--tipo));
+}
+@media (hover: hover) {
+  .eco-tipo-documento:hover, .eco-tipo-pessoa:hover, .eco-tipo-tema:hover,
+  .eco-tipo-documento:focus-visible, .eco-tipo-pessoa:focus-visible, .eco-tipo-tema:focus-visible { border-color: rgb(var(--tipo) / .8); background-color: rgb(var(--tipo) / .2); }
+  .markdown .eco-mencao.eco-tipo-documento:hover, .markdown .eco-mencao.eco-tipo-pessoa:hover, .markdown .eco-mencao.eco-tipo-tema:hover,
+  .markdown .eco-mencao.eco-tipo-documento:focus-visible, .markdown .eco-mencao.eco-tipo-pessoa:focus-visible, .markdown .eco-mencao.eco-tipo-tema:focus-visible {
+    border-color: rgb(var(--tipo) / .8); background: rgb(var(--tipo) / .22); color: rgb(var(--tipo));
+  }
+}
+/* O retrato do UFSCão abre ampliado: o cursor e o realce dizem que ele é clicável. */
+.eco-retrato { cursor: zoom-in; transition: transform var(--motion-base) var(--ease-emphasized), box-shadow var(--motion-base) var(--ease-standard); }
+@media (hover: hover) { .eco-retrato:hover { transform: scale(1.06); box-shadow: 0 0 0 2px rgb(var(--eco-accent) / .5); } }
+/* Link para a fonte original ao lado do botão do trabalho, dentro da resposta. */
+.markdown .eco-fonte-externa { margin-left: .15rem; text-decoration: none; }
+/* Tabela do Markdown: rolagem própria, para não empurrar o balão da conversa. */
+.eco-tabela-markdown { margin-bottom: .75rem; overflow-x: auto; border: 1px solid rgb(var(--eco-border)); border-radius: .5rem; }
+.markdown table { width: 100%; border-collapse: collapse; font-size: .95em; }
+.markdown th, .markdown td { padding: .4rem .6rem; border-bottom: 1px solid rgb(var(--eco-border)); text-align: left; vertical-align: top; }
+.markdown th { background: rgb(var(--eco-panel)); color: rgb(var(--slate-200)); font-weight: 600; }
+.markdown tbody tr:last-child td { border-bottom: 0; }
 .markdown a {
   @apply text-eco-accent underline underline-offset-2 hover:text-amber-300;
 }
@@ -373,6 +419,9 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
   opacity: 1; cursor: not-allowed; color: rgb(var(--slate-500));
 }
 .btn:disabled { background: rgb(var(--eco-bg)); border-color: rgb(var(--eco-border)); box-shadow: none; transform: none; }
+/* O primário desabilitado some no tema escuro com o fundo de `.btn:disabled`: fica
+   quase preto e parece outro componente. Mantém o âmbar, apagado, e o texto legível. */
+.btn-primary:disabled { background: rgb(var(--eco-accent) / .28); border-color: rgb(var(--eco-accent) / .38); color: rgb(var(--slate-200)); }
 .info { color: rgb(var(--info)); }
 .aviso, .text-amber-200 { color: rgb(var(--warning)); }
 .erro, .text-red-400 { color: rgb(var(--error)); }

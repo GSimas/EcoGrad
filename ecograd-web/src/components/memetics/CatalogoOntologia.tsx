@@ -6,6 +6,7 @@ import { useMemo, useRef, useState } from 'react';
 import Papa from 'papaparse';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Aviso, Card, Expander, Progresso, Tabela } from '@/components/ui/primitives';
+import { Confirmacao } from '@/components/layout/Janela';
 import { baixarArquivo } from '@/lib/utils';
 import { parseOntologia } from '@/lib/foresight-math';
 import { COLUNAS_ONTOLOGIA, CHAVES_ONTOLOGIA, MAX_ARQUIVO, MAX_LINHAS, indexarDocumentos, linhasExportacaoOntologia, prepararImportacao } from '@/lib/ontologia-importacao';
@@ -18,6 +19,7 @@ import type { OntologiaIA } from '@/types';
 
 export function CatalogoOntologia() {
  const docs=useEcoGradStore(s=>s.docs);const baseVersion=useEcoGradStore(s=>s.baseVersion);
+ const [encerrando,setEncerrando]=useState(false);
  const {lote,importacao}=useEcoGradStore(s=>s.ia);const setIA=useEcoGradStore(s=>s.setIA);
  const [tamanho,setTamanho]=useSessionField('ontologia.tamanho',10);
  const [mensagem,setMensagem]=useSessionField('ontologia.mensagem','');
@@ -53,6 +55,7 @@ export function CatalogoOntologia() {
  const exportar=async()=>{
   setOcupado(true);try{const dados=await linhasExportacaoOntologia(docs,baseVersion);baixarArquivo(Papa.unparse(dados,{quotes:true}),'catalogo_ontologico_ia.csv');}catch{setMensagem('Não foi possível preparar a exportação.');}finally{setOcupado(false);}
  };
+ const encerrarLote=()=>{setIA({lote:null});setMensagem('Lote encerrado. O catálogo já aplicado permanece na análise.');};
  const criarLote=async()=>{
   const id=useEcoGradStore.getState().analysisId;const indice=await indexarDocumentos(docs);if(useEcoGradStore.getState().analysisId!==id)return;
   const ids=indice.map(i=>i.id);const ambiguos=ids.length-new Set(ids).size;
@@ -76,7 +79,11 @@ export function CatalogoOntologia() {
     <div className="flex flex-wrap gap-2">
      <button type="button" className="btn" disabled={processando||!pendentes||lote.aplicado} onClick={()=>void iniciarExtracao(tamanho,true)}>Retomar pendências e falhas</button>
      <button type="button" className="btn" disabled={processando||ocupado||calculando||!!resumoCuradoria.erro||!!resumoCuradoria.pendentes||!resumoCuradoria.aprovados||lote.aplicado} onClick={()=>void aplicar(new Map(), 'lote')}>Aplicar {resumoCuradoria.aprovados} termos aprovados</button>
-     {!processando&&<button type="button" className="btn" onClick={()=>{if(!lote.aplicado&&!window.confirm('Encerrar descarta os resultados deste lote ainda não aplicados. Exporte a revisão se precisar conservar uma cópia. Continuar?'))return;setIA({lote:null});setMensagem('Lote encerrado. O catálogo já aplicado permanece na análise.');}}>Encerrar revisão deste lote</button>}
+     {!processando&&<button type="button" className="btn" onClick={()=>{if(lote.aplicado){encerrarLote();return;}setEncerrando(true);}}>Encerrar revisão deste lote</button>}
+     <Confirmacao aberta={encerrando} onOpenChange={setEncerrando} rotulo="Encerrar e descartar" onConfirmar={encerrarLote}
+      titulo="Encerrar a revisão deste lote?" descricao="Os resultados ainda não aplicados serão descartados. Não há como desfazer.">
+      <p className="text-sm text-slate-300">Para conservar uma cópia, cancele e use <strong>Exportar revisão com fontes e evidências</strong> antes. O catálogo já aplicado permanece na análise.</p>
+     </Confirmacao>
     </div>
     <button type="button" className="btn" onClick={()=>baixarArquivo(JSON.stringify({formato:'ecograd-revisao-ia-v2',...lote},null,2),'ecograd-revisao-ia.json')}>Exportar revisão com fontes e evidências</button>
     <p className="text-sm">Trechos literais demonstram a origem da proposta, não garantem que sua categoria esteja correta. Confira o uso descrito no resumo antes de aplicar. Resultados antigos sem evidências são identificados abaixo e não são reprocessados automaticamente. O CSV científico mantém o formato anterior; conserve também o JSON de revisão.</p>

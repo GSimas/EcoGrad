@@ -113,7 +113,7 @@ Funciona sobre Palavras-chave, Macrotemas ou Artefatos da Ontologia IA.
 - **Ecologia Memética (SNA)** — rede de coocorrência entre memes, com métricas de redes complexas,
   métricas de ecologia profunda, grafo interativo e tabela de centralidade global exportável.
 
-### 5. 🤖 Consultor Acadêmico IA
+### 5. 🐕 UFSCão · Consultor de IA
 
 Chat com streaming que recebe o dossiê institucional completo — métricas de rede, mapa de
 especialidades de cada docente e catálogo de trabalhos com os links do repositório. Recomenda

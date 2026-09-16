@@ -2,6 +2,32 @@ import type { ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
+/**
+ * Confirmação de ação destrutiva na estética do EcoGrad.
+ *
+ * Existe para que nenhuma decisão do app dependa de `window.confirm`: o diálogo
+ * nativo ignora o tema, a tipografia e o foco da aplicação, muda de aparência a
+ * cada navegador e, em alguns, chega a travar a aba enquanto está aberto.
+ */
+export function Confirmacao({ aberta, onOpenChange, titulo, descricao, rotulo = 'Confirmar', onConfirmar, children }: {
+  aberta: boolean; onOpenChange: (value: boolean) => void;
+  titulo: string; descricao: string;
+  /** Texto do botão que executa a ação; diga o que ela faz, não “OK”. */
+  rotulo?: string;
+  onConfirmar: () => void;
+  children?: ReactNode;
+}) {
+  return <Janela aberta={aberta} onOpenChange={onOpenChange} titulo={titulo} descricao={descricao}>
+    <div className="space-y-4">
+      {children}
+      <div className="flex flex-wrap justify-end gap-2">
+        <button type="button" className="btn" onClick={() => onOpenChange(false)}>Cancelar</button>
+        <button type="button" className="btn btn-primary" onClick={() => { onOpenChange(false); onConfirmar(); }}>{rotulo}</button>
+      </div>
+    </div>
+  </Janela>;
+}
+
 export function Janela({ titulo, descricao, children, trigger, aberta, onOpenChange, larga = false }: {
   titulo: string; descricao: string; children: ReactNode; trigger?: ReactNode;
   aberta?: boolean; onOpenChange?: (value: boolean) => void; larga?: boolean;

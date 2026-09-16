@@ -136,7 +136,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
     par[0] === 'Nenhum' ? null : (
       <div className="space-y-1">
         <p className="text-xs text-slate-400">{rotulo}</p>
-        <Chip onClick={() => navegarPara(tipo, par[0])} title={par[0]}>
+        <Chip tipo={tipo} onClick={() => navegarPara(tipo, par[0])} title={par[0]}>
           {icone} {par[0].length > 60 ? `${par[0].slice(0, 60)}…` : par[0]} ·{' '}
           <span className="tabular-nums text-slate-500">{formatarDecimal(par[1])}</span>
         </Chip>
@@ -205,7 +205,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
                   <div className="space-y-1">
                     <p className="text-xs text-slate-400">Orientador com maior número de orientações:</p>
                     {topOriVol && (
-                      <Chip onClick={() => navegarPara('Orientador', topOriVol[0])}>
+                      <Chip tipo="Orientador" onClick={() => navegarPara('Orientador', topOriVol[0])}>
                         <School size={14} aria-hidden /> {topOriVol[0]} ({topOriVol[1]} orientações)
                       </Chip>
                     )}
@@ -213,7 +213,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
                   <div className="space-y-1">
                     <p className="text-xs text-slate-400">Coorientador com maior número de coorientações:</p>
                     {topCooriVol && (
-                      <Chip onClick={() => navegarPara('Co-orientador', topCooriVol[0])}>
+                      <Chip tipo="Co-orientador" onClick={() => navegarPara('Co-orientador', topCooriVol[0])}>
                         <Handshake size={14} aria-hidden /> {topCooriVol[0]} ({topCooriVol[1]} coorientações)
                       </Chip>
                     )}
@@ -228,7 +228,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {genealogia.formadores.map((f) => (
-                            <Chip key={f} onClick={() => navegarPara('Orientador', f)}>
+                            <Chip key={f} tipo="Orientador" onClick={() => navegarPara('Orientador', f)}>
                               <GraduationCap size={14} aria-hidden /> {f}
                             </Chip>
                           ))}
@@ -241,7 +241,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
                       <Expander titulo={`Autores com dissertação e tese na mesma coleção (${genealogia.mestreDoutor.length})`} icone={<User size={16} aria-hidden />} persistir={false}>
                         <div className="flex flex-wrap gap-1.5">
                           {genealogia.mestreDoutor.map(([autor, progs]) => (
-                            <Chip key={autor} onClick={() => navegarPara('Autor', autor)} title={progs.join(', ')}>
+                            <Chip key={autor} tipo="Autor" onClick={() => navegarPara('Autor', autor)} title={progs.join(', ')}>
                               <User size={14} aria-hidden /> {autor}
                             </Chip>
                           ))}

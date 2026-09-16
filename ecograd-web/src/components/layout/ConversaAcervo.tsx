@@ -6,7 +6,7 @@ import { construirIndicesInvertidos } from '@/lib/entities';
 import { executarFerramenta, type ItemRecorte, type Recorte } from '@/lib/chat-ferramentas';
 import { executarFerramentaCatalogo, type NomeFerramentaCatalogo, type PessoaNoCatalogo, type TemaNoCatalogo } from '@/lib/chat-catalogo';
 import { planejar, type Plano } from '@/lib/chat-roteador';
-import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
+import { abrirEscolhaDoAcervo, abrirRegistro } from '@/services/abrir-item';
 import { carregarDados } from '@/services/calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { Progresso } from '@/components/ui/primitives';
@@ -18,7 +18,6 @@ import {
 } from '@/lib/chat-sintese';
 import { markdownParaHtml } from '@/lib/markdown';
 import { lerConfigIA, provedorPorId, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
-import { referenciaDocumento } from '@/lib/resultados';
 import { escreverSintese } from '@/services/sintese-acervo';
 import type { Documento, IndicesInvertidos } from '@/types';
 
@@ -310,26 +309,13 @@ function recorteDe(dados: unknown): Recorte | null {
   return ehRecorte(interno) ? interno : null;
 }
 
-/** Abre o dossiê do registro exato numa única mudança de estado, sem entrada a mais no histórico. */
-function abrirDocumento(docs: readonly Documento[], indice: number) {
-  const ref = referenciaDocumento(docs, indice);
-  if (!ref) return;
-  useEcoGradStore.setState((s) => ({
-    apresentacaoVista: true,
-    rota: 'busca' as const,
-    buscaTipo: 'Documento' as const,
-    buscaTermo: ref.titulo,
-    ui: { ...s.ui, 'dossie.documento': ref },
-  }));
-}
-
 /** O título abre o dossiê no EcoGrad (regra de citação da aferição); a fonte original fica ao lado. */
 function CitacaoItem({ item, docs }: { item: ItemRecorte; docs: readonly Documento[] }) {
   const indice = indiceDoItem(docs, item);
   const titulo = item.titulo || 'Trabalho sem título';
   if (indice < 0) return <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-eco-accent underline">{titulo}</a>;
   return <>
-    <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirDocumento(docs, indice)}>{titulo}</button>
+    <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirRegistro(docs, indice)}>{titulo}</button>
     {item.url && <> <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-eco-accent" title="Fonte original, em nova aba">
       <ExternalLink size={13} className="inline" aria-hidden /><span className="sr-only">Fonte original (nova aba)</span>
     </a></>}
@@ -452,7 +438,7 @@ function SinteseCitada({ pergunta, recorte, declarar, docs, recorteCompleto }: {
   const abrirCitacao = (e: MouseEvent<HTMLDivElement>) => {
     const alvo = (e.target as HTMLElement).closest<HTMLElement>('[data-citacao]');
     const fonte = alvo ? fontes[Number(alvo.dataset.citacao) - 1] : undefined;
-    if (fonte) abrirDocumento(docs, fonte.indice);
+    if (fonte) abrirRegistro(docs, fonte.indice);
   };
   // Só vale aprofundar quando a leitura padrão não cobriu o recorte todo.
   const podeAprofundar = recorte.itensOmitidos > 0 || fontesPadrao.length >= RESUMOS_PADRAO;
@@ -524,7 +510,7 @@ function SinteseCitada({ pergunta, recorte, declarar, docs, recorteCompleto }: {
       <summary>Fontes {leitura?.aprofundada ? 'lidas' : 'enviadas'} ({milhares(fontes.length)})</summary>
       <ol className="mt-2 space-y-1">
         {fontes.map((f) => <li key={f.numero}>
-          <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirDocumento(docs, f.indice)}>[{f.numero}] {f.titulo || 'Trabalho sem título'}</button>
+          <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirRegistro(docs, f.indice)}>[{f.numero}] {f.titulo || 'Trabalho sem título'}</button>
           <span> · {f.ano ?? 'sem ano'} · {f.colecao}</span>
         </li>)}
       </ol>

@@ -27,7 +27,7 @@ Números apurados diretamente nas bases publicadas (`base_consolidada_ufsc.json.
 
 O EcoGrad é estático por decisão. `scripts/sync-data.mjs` deriva das bases os fragmentos por coleção, o índice global de busca (254.867 itens em 5,3 MB) e o índice de orientações; os nomes carregam hash de conteúdo e são servidos com `Cache-Control: immutable`. Todo o resto — índices invertidos, métricas, SNA, redes — é derivado no navegador a partir de `construirIndicesInvertidos(docs)`.
 
-Existem duas funções Netlify com `GEMINI_API_KEY` no servidor (síntese e extração de ontologia) e o Consultor IA em **BYOK**: a chave é do usuário e a requisição sai do navegador direto para um dos nove provedores configuráveis, sem passar pelos servidores do EcoGrad.
+Existem duas funções Netlify com `GEMINI_API_KEY` no servidor (síntese e extração de ontologia) e o UFSCão (consultor de IA) em **BYOK**: a chave é do usuário e a requisição sai do navegador direto para um dos nove provedores configuráveis, sem passar pelos servidores do EcoGrad.
 
 `netlify/functions/neo4j-query.ts` está desativado, com a justificativa registrada no próprio arquivo: "a aplicação atual usa arquivos JSON por coleção". Um backend sempre ligado já foi tentado e revertido neste projeto — precedente que pesa nesta decisão.
 

@@ -124,7 +124,7 @@ export async function initializeSession(queryClient: QueryClient) {
       delete values.activityIntents;
       const chat = values.chat as Conversa;
       values.chat = recoverConversation(chat);
-      // Sessões anteriores ao Consultor IA flutuante podem trazer a antiga página de chat.
+      // Sessões anteriores ao consultor de IA flutuante (hoje UFSCão) podem trazer a antiga página de chat.
       if (values.rota === 'chat') values.rota = 'dashboard';
       const ui = { ...(values.ui as Record<string, unknown>) };
       if (ui['ontologia.processando']) {

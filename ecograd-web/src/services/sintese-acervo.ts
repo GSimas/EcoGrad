@@ -5,7 +5,7 @@ const MAX_CARACTERES = 20000;
 
 /**
  * Envia a síntese citada ao provedor do usuário (BYOK, decisão D10 do ADR 001):
- * a requisição sai do navegador direto para o provedor, como no Consultor IA, e
+ * a requisição sai do navegador direto para o provedor, como no UFSCão, e
  * não passa pelos servidores do EcoGrad. `onTexto` recebe o texto acumulado.
  */
 export async function escreverSintese(config: ConfigIA, sistema: string, mensagem: string, onTexto: (acumulado: string) => void, signal: AbortSignal): Promise<string> {

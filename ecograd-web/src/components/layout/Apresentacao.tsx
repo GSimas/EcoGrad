@@ -55,7 +55,7 @@ export function Apresentacao() {
             <section className="space-y-3 border-t border-eco-border pt-5">
               <h3 className="text-base font-semibold text-eco-accent">O que os dados permitem saber</h3>
               <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama CAPES é uma consulta institucional independente; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
-              <p className="text-sm leading-relaxed text-slate-300">O Consultor IA fica no botão do canto inferior direito e usa a chave de API do provedor que você escolher. Ele recebe contexto limitado da análise. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
+              <p className="text-sm leading-relaxed text-slate-300">O UFSCão, consultor de IA, fica no botão do canto inferior direito e usa a chave de API do provedor que você escolher. Ele é uma inteligência artificial generativa: recebe contexto limitado da análise e pode errar, inclusive inventando trabalhos e nomes. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
             </section>
           </div>
         </Janela>
