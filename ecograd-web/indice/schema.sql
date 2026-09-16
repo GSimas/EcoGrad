@@ -397,7 +397,7 @@ comment on column rede_metrica.intermediacao is 'Betweenness centrality; aproxim
 comment on column rede_metrica.proximidade is 'Closeness centrality; aproximada por 256 pivôs acima de 4.000 nós.';
 comment on column rede_metrica.agrupamento is 'Coeficiente de clustering local.';
 comment on column rede_metrica.comunidade is 'Comunidade de Louvain dentro do escopo; o número só compara nós do mesmo escopo.';
-comment on column rede_metrica.ranking is 'Posição por intermediação decrescente dentro do escopo (1 = maior ponte).';
+comment on column rede_metrica.ranking is 'Posição por intermediação decrescente entre TODOS os nós do escopo, inclusive documentos, palavras-chave e macrotemas (1 = maior ponte). Para comparar só pessoas, ordene por intermediacao filtrando tipo.';
 
 create table pessoa_perfil (
   pessoa_id bigint primary key references pessoa(id) on delete cascade,
@@ -438,6 +438,7 @@ comment on column pessoa_perfil.colecao_principal is 'Coleção com mais registr
 comment on column pessoa_perfil.palavras_chave_como_autor is 'Até 10 palavras-chave mais frequentes nas obras em que é autor, da mais para a menos frequente. Lista completa em pessoa_termo.';
 comment on column pessoa_perfil.palavras_chave_como_orientador is 'Até 10 palavras-chave mais frequentes nas obras que orientou ou coorientou. Lista completa em pessoa_termo.';
 comment on column pessoa_perfil.macrotemas_como_autor is 'Até 5 macrotemas; classificação automática da base (NMF), não categoria oficial do programa.';
+comment on column pessoa_perfil.ranking_acervo is 'Posição por intermediação entre todos os nós da rede do acervo, inclusive documentos e palavras-chave; não é posição entre pessoas.';
 comment on column pessoa_perfil.intermediacao_acervo is 'Betweenness na rede do acervo inteiro (rede_metrica, escopo=acervo).';
 
 create table pessoa_termo (
