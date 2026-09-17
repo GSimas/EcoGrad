@@ -5,9 +5,15 @@
  *
  * D1 em uma linha: **este programa é a razão de o Postgres ser índice e não
  * fonte.** Ele lê `base_consolidada_ufsc.json.gz` e `base_tcc_ufsc.json.gz`,
- * que continuam canônicos, e escreve os CSV que `indice-carregar.mjs` copia
- * para o banco. Se o banco cair, pausar ou divergir, basta rodar os dois de
- * novo — nada aqui depende do estado anterior do Postgres.
+ * que continuam canônicos, aplica por cima os lotes da coleta semanal em
+ * `coletas/`, e escreve os CSV que `indice-carregar.mjs` copia para o banco. Se
+ * o banco cair, pausar ou divergir, basta rodar os dois de novo — nada aqui
+ * depende do estado anterior do Postgres.
+ *
+ * Os lotes entram pela **mesma função** que `sync-data.mjs` usa para o site
+ * (`aplicarColetas`). Duas implementações da mesma regra fariam o índice e o site
+ * responderem sobre acervos diferentes depois de cada coleta — em silêncio, que
+ * é o modo de falha que a D1 existe para evitar.
  *
  * As regras de identidade e de cobertura são as **mesmas das ferramentas do
  * chat**, importadas de `afericao-padroes.mjs` e repetidas de `chat-ferramentas`:
@@ -18,10 +24,11 @@
  */
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
-import { createWriteStream, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { identidadeObra, idObra } from './afericao-padroes.mjs';
+import { BATCH_FILE, aplicarColetas } from './collection-batches.mjs';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const raizApp = resolve(aqui, '..');
@@ -56,9 +63,20 @@ function escritor(nome) {
 
 const pos = ler('base_consolidada_ufsc.json.gz');
 const tcc = ler('base_tcc_ufsc.json.gz');
+
+// Os lotes da coleta semanal, na ordem do nome, que é a ordem de aplicação.
+const pastaColetas = join(raizRepo, 'coletas');
+const nomesLotes = existsSync(pastaColetas) ? readdirSync(pastaColetas).filter((n) => BATCH_FILE.test(n)).sort() : [];
+const lotes = nomesLotes.map((n) => ({
+  nome: n,
+  ...ler(join('coletas', n)),
+}));
+const bases = aplicarColetas({ ppg: pos.docs, tcc: tcc.docs }, lotes.map((l) => l.docs));
+if (nomesLotes.length) console.log(`${nomesLotes.length} lote(s) da coleta semanal aplicados.`);
+
 const todos = [
-  ...pos.docs.map((d) => ({ d, catalogo: 'ppg' })),
-  ...tcc.docs.map((d) => ({ d, catalogo: 'tcc' })),
+  ...bases.ppg.map((d) => ({ d, catalogo: 'ppg' })),
+  ...bases.tcc.map((d) => ({ d, catalogo: 'tcc' })),
 ];
 
 mkdirSync(destino, { recursive: true });
@@ -152,12 +170,19 @@ for (const [grafia, id] of grafias) await fGrafia.escrever(grafia, id);
 await Promise.all([fPessoa.fim(), fGrafia.fim()]);
 
 // --------------------------------------------------------------------- meta
-const baseVersion = sha256(pos.sha256 + tcc.sha256).slice(0, 16);
+//
+// `sha256_lotes` é a checagem de idade que faltava. As duas bases não mudam quando
+// um lote entra — elas nunca são reescritas —, então comparar só os hashes delas
+// dizia "em dia" sobre um índice que não tinha os documentos da última coleta. O
+// mesmo valor é recalculado do manifesto publicado, em `estadoDoIndice`.
+const shaLotes = sha256(lotes.map((l) => `${l.nome}:${l.sha256}`).join('\n'));
+const baseVersion = sha256(pos.sha256 + tcc.sha256 + shaLotes).slice(0, 16);
 const fMeta = escritor('indice_meta.csv');
-await fMeta.escrever('t', baseVersion, pos.sha256, tcc.sha256, new Date().toISOString(), registroId, documentos.size);
+await fMeta.escrever('t', baseVersion, pos.sha256, tcc.sha256, shaLotes, new Date().toISOString(), registroId, documentos.size);
 await fMeta.fim();
 
 console.log(`base_version ${baseVersion}`);
+console.log(`lotes aplicados      ${nomesLotes.length}`);
 console.log(`registros            ${registroId}`);
 console.log(`documentos           ${documentos.size}`);
 console.log(`obras com resumo utilizável   ${[...documentos.values()].filter((o) => utilizavel(o.resumo)).length}`);

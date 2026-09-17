@@ -29,11 +29,16 @@ $$;
 -- os gabaritos contam — o mesmo trabalho aparece em coleções diferentes, e às
 -- vezes em anos de catalogação diferentes.
 
+-- `sha256_lotes` cobre os lotes da coleta semanal (`coletas/*.json.gz`), que
+-- entram sobre as bases sem reescrevê-las: sem ele, comparar só `sha256_pos` e
+-- `sha256_tcc` declara "em dia" um índice que não tem os documentos da última
+-- coleta. É o sha dos pares `nome:sha256` de cada lote, na ordem de aplicação.
 create table indice_meta (
   id boolean primary key default true check (id),
   base_version text not null,
   sha256_pos text not null,
   sha256_tcc text not null,
+  sha256_lotes text not null,
   gerado_em timestamptz not null default now(),
   registros int not null,
   documentos int not null

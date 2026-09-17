@@ -8,7 +8,7 @@
  * conversa começou agora). Renderizar nos dois lugares pelo mesmo código é o que
  * impede a herdada de virar uma versão pior da original.
  */
-import { useMemo, type MouseEvent } from 'react';
+import { useEffect, useMemo, type MouseEvent } from 'react';
 import { itemDoAcervo, type IndiceBusca, type ResultadoBusca } from '@/lib/busca-global';
 import { markdownParaHtml } from '@/lib/markdown';
 import { dicionarioDeItens, realcarMencoes, type Mencao } from '@/lib/mencoes';
@@ -17,11 +17,13 @@ import {
   type Fonte, type Panorama,
 } from '@/lib/ufscao-acervo';
 import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
-import { Expander } from '@/components/ui/primitives';
+import { Expander, Progresso } from '@/components/ui/primitives';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { TipoBusca } from '@/types';
 
 const PAPEIS: TipoBusca[] = ['Autor', 'Orientador', 'Co-orientador'];
+/** Qual item da conversa disparou um download, para a tela poder dizer isso. */
+const CHAVE_ABRINDO = 'acervo.abrindo';
 const CAMPOS_DE_PESSOA = new Set(['nome', 'orientador', 'orientando', 'rotulo']);
 
 /** O mínimo que este módulo precisa saber de uma resposta, sem depender do serviço. */
@@ -57,8 +59,35 @@ export function abrirNoMotor(indice: IndiceBusca | undefined, tipo: 'Documento' 
     ? (tipo === 'Documento' ? [itemDoAcervo(indice, 'Documento', nome)] : PAPEIS.map((p) => itemDoAcervo(indice, p, nome)))
       .filter((i): i is ResultadoBusca => !!i)
     : [];
-  if (itens.length) { abrirEscolhaDoAcervo({ itens, colecoes: [] }); return; }
+  if (itens.length) {
+    const r = abrirEscolhaDoAcervo({ itens, colecoes: [] });
+    // Abrir um item pode exigir baixar as coleções dele, o que leva segundos.
+    // Sem marcar isso, o clique na citação não produz nada visível e parece quebrado.
+    if (r.carregando) useEcoGradStore.setState((s) => ({ ui: { ...s.ui, [CHAVE_ABRINDO]: { nome, colecoes: r.colecoes } } }));
+    return r;
+  }
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  return { carregando: false, colecoes: 0, omitidas: 0 };
+}
+
+/**
+ * O que acontece depois do clique numa citação ou num nome: as coleções do item
+ * são baixadas antes de o Motor de Busca abrir. Uma linha por superfície, e não
+ * uma por turno — o carregamento é do aplicativo inteiro, não da resposta.
+ */
+export function AberturaEmCurso() {
+  const abrindo = useEcoGradStore((s) => s.ui[CHAVE_ABRINDO]) as { nome: string; colecoes: number } | undefined;
+  const carregando = useEcoGradStore((s) => s.carregando);
+  const progresso = useEcoGradStore((s) => s.progressoCarregamento);
+  const mensagem = useEcoGradStore((s) => s.mensagemCarregamento);
+  useEffect(() => {
+    if (!carregando && abrindo) useEcoGradStore.setState((s) => ({ ui: { ...s.ui, [CHAVE_ABRINDO]: undefined } }));
+  }, [carregando, abrindo]);
+  if (!abrindo) return null;
+  const quantas = `${abrindo.colecoes} ${abrindo.colecoes === 1 ? 'coleção' : 'coleções'}`;
+  return <div className="info mt-3 text-xs">
+    <Progresso valor={progresso} texto={mensagem || `Abrindo “${abrindo.nome}”: baixando ${quantas} do acervo…`} />
+  </div>;
 }
 
 /**

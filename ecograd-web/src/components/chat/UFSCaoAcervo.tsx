@@ -8,7 +8,7 @@ import { carregarIndiceBusca, type IndiceBusca } from '@/lib/busca-global';
 import { estadoDoIndice, indiceConfigurado } from '@/lib/indice-remoto';
 import { markdownParaHtml } from '@/lib/markdown';
 import {
-  CorpoDaResposta, FontesDaResposta, fontesDaResposta,
+  AberturaEmCurso, CorpoDaResposta, FontesDaResposta, fontesDaResposta,
 } from '@/components/chat/RespostaDoAcervo';
 import { lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';
 import { LOTES_SIMULTANEOS } from '@/lib/chat-sintese';
@@ -74,7 +74,8 @@ export function UFSCaoAcervo() {
     controle.current = request;
     try {
       const turnos = conversa.map((r) => ({ pergunta: r.pergunta, plano: r.plano, resposta: r.texto }));
-      const resposta = await perguntarAoAcervo(config, pergunta, turnos, setEtapa, setParcial, request.signal);
+      const resposta = await perguntarAoAcervo(config, pergunta, turnos, setEtapa, setParcial, request.signal,
+        undefined, estado.data?.atualizado === false);
       setConversa((c) => [...c, resposta]);
       setParcial('');
     } catch (e) {
@@ -103,6 +104,9 @@ export function UFSCaoAcervo() {
       <ConfiguracaoIA inicial={config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
       {!configurado && <p className="text-xs text-slate-400">Sem chave de API, dá para <button type="button" className="underline" onClick={() => setSemIA(true)}>responder pelo catálogo, sem IA</button>: contagens e listas, sem texto escrito.</p>}
     </div> : <>
+      {estado.data?.atualizado === false && <Aviso tipo="aviso">
+        <p>O índice do acervo foi gerado de uma versão anterior das bases{estado.data.geradoEm ? ` (${new Date(estado.data.geradoEm).toLocaleDateString('pt-BR')})` : ''} e pode estar atrás do que a busca mostra. Trabalhos coletados depois disso podem faltar nas respostas.</p>
+      </Aviso>}
       {conversa.length === 0 && <Aviso tipo="aviso">
         <p><strong>O UFSCão é uma inteligência artificial</strong> e pode errar. Ele consulta o índice do acervo inteiro, escreve com o modelo do provedor que você configurou e cita as obras em que se baseou. Confira as fontes antes de usar a resposta.</p>
         <p className="mt-2">A pergunta e os dados apurados vão direto do seu navegador para o provedor, com a sua chave; o EcoGrad não guarda a conversa.</p>
@@ -121,6 +125,7 @@ export function UFSCaoAcervo() {
             <span aria-hidden className="flex items-center gap-1"><span className="ponto" /><span className="ponto" /><span className="ponto" /></span></p>}
       </>}
       {erro && <Aviso tipo="erro"><p role="status">{erro}</p></Aviso>}
+      <AberturaEmCurso />
 
       {conversa.length === 0 && !etapa && <div className="flex flex-wrap gap-2">
         {EXEMPLOS.map((e) => <button key={e} type="button" className="btn text-left text-xs" onClick={() => void enviar(e)}>{e}</button>)}

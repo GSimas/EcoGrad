@@ -9,10 +9,15 @@
  * Três regras do ADR moram aqui:
  *
  * **D1 — o índice é derivado, e pode estar atrás.** `indice_meta` guarda o
- * sha256 das duas bases que o geraram, e o `manifest.json` publicado guarda os
- * mesmos hashes. Comparar os dois é a checagem de idade, e ela é obrigatória:
- * sem ela, o índice envelhece em silêncio e responde sobre uma base que não é
- * mais a que o usuário vê na tela.
+ * sha256 das duas bases que o geraram **e dos lotes da coleta semanal**, e o
+ * `manifest.json` publicado guarda os mesmos hashes. Comparar os dois é a
+ * checagem de idade, e ela é obrigatória: sem ela, o índice envelhece em
+ * silêncio e responde sobre uma base que não é mais a que o usuário vê na tela.
+ *
+ * Os lotes contam separado porque as bases **nunca são reescritas**: a coleta
+ * semanal acrescenta `coletas/<data>.json.gz`, o site aplica por cima, e os
+ * hashes das duas bases continuam idênticos. Comparar só elas dizia "em dia"
+ * sobre um índice sem os documentos da última coleta.
  *
  * **D1 de novo — se cair, o resto continua inteiro.** Nenhuma falha daqui pode
  * derrubar a conversa: `estadoDoIndice` nunca lança, e devolve o motivo da
@@ -29,6 +34,21 @@ const CHAVE_INDICE = String(import.meta.env.VITE_INDICE_CHAVE ?? '');
 /** Nomes dos arquivos no manifesto, que são a referência de idade do índice. */
 const BASE_POS = 'base_consolidada_ufsc.json.gz';
 const BASE_TCC = 'base_tcc_ufsc.json.gz';
+/** Lotes da coleta semanal no manifesto: `coletas/2026-09-14T060000Z.json.gz`. */
+const LOTE = /^coletas\/.+\.json\.gz$/;
+
+/**
+ * O mesmo valor que `indice-derivar.mjs` grava em `sha256_lotes`: sha256 dos
+ * pares `nome:sha256` de cada lote, na ordem de aplicação (a do nome). Sem lote
+ * nenhum, é o sha da string vazia — e não um caso especial, para que um índice
+ * antigo e um acervo sem coleta comparem igual.
+ */
+async function shaDosLotes(files: Record<string, string>): Promise<string> {
+  const texto = Object.keys(files).filter((n) => LOTE.test(n)).sort()
+    .map((n) => `${n.slice('coletas/'.length)}:${files[n]}`).join('\n');
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+  return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 const TEMPO_LIMITE = 8000;
 
@@ -66,7 +86,7 @@ export async function estadoDoIndice(): Promise<EstadoIndice> {
   if (!indiceConfigurado()) return INDISPONIVEL('O índice não está configurado nesta instalação.');
   try {
     const [metaResposta, manifesto] = await Promise.all([
-      fetch(`${URL_INDICE}/rest/v1/indice_meta?select=base_version,sha256_pos,sha256_tcc,gerado_em`, {
+      fetch(`${URL_INDICE}/rest/v1/indice_meta?select=base_version,sha256_pos,sha256_tcc,sha256_lotes,gerado_em`, {
         headers: { apikey: CHAVE_INDICE, authorization: `Bearer ${CHAVE_INDICE}` },
         signal: AbortSignal.timeout(TEMPO_LIMITE),
       }),
@@ -74,7 +94,7 @@ export async function estadoDoIndice(): Promise<EstadoIndice> {
     ]);
     if (!metaResposta.ok) return INDISPONIVEL(`O índice respondeu ${metaResposta.status}.`);
 
-    const linhas = await metaResposta.json() as Array<{ base_version: string; sha256_pos: string; sha256_tcc: string; gerado_em: string }>;
+    const linhas = await metaResposta.json() as Array<{ base_version: string; sha256_pos: string; sha256_tcc: string; sha256_lotes: string | null; gerado_em: string }>;
     const meta = linhas[0];
     // Carga interrompida deixa as tabelas parciais e `indice_meta` vazia, de
     // propósito: sem o carimbo final, o índice não responde sobre meia base.
@@ -84,7 +104,11 @@ export async function estadoDoIndice(): Promise<EstadoIndice> {
     if (manifesto.ok) {
       const { files } = await manifesto.json() as { files?: Record<string, string> };
       if (files?.[BASE_POS] && files?.[BASE_TCC]) {
-        atualizado = files[BASE_POS] === meta.sha256_pos && files[BASE_TCC] === meta.sha256_tcc;
+        // `sha256_lotes` ausente é índice carregado antes desta coluna existir: a
+        // comparação cai para as duas bases, como era, em vez de acusar desatualizado.
+        const lotesConferem = meta.sha256_lotes === null || meta.sha256_lotes === undefined
+          || meta.sha256_lotes === await shaDosLotes(files);
+        atualizado = files[BASE_POS] === meta.sha256_pos && files[BASE_TCC] === meta.sha256_tcc && lotesConferem;
       }
     }
     return { disponivel: true, atualizado, baseVersion: meta.base_version, geradoEm: meta.gerado_em };

@@ -48,7 +48,7 @@ const TABELAS = [
   // ADR 004: saem de `npm run indice:enriquecer`, que roda antes da derivação.
   ['pessoa_fusao', 'pessoa_fusao.csv', '(grafia, canonico, metodo)'],
   ['rede_metrica', 'rede_metrica.csv', '(escopo, colecao, tipo, rotulo, grau_absoluto, grau, intermediacao, proximidade, agrupamento, comunidade, ranking, nos_na_rede)'],
-  ['indice_meta', 'indice_meta.csv', '(id, base_version, sha256_pos, sha256_tcc, gerado_em, registros, documentos)'],
+  ['indice_meta', 'indice_meta.csv', '(id, base_version, sha256_pos, sha256_tcc, sha256_lotes, gerado_em, registros, documentos)'],
 ];
 
 /** Derivados das tabelas carregadas; entram na mesma transação, antes do commit. */
