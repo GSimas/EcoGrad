@@ -11,6 +11,18 @@
 
 [build.environment]
   NODE_VERSION = "24"
+  # O scanner de segredos da Netlify falha o build quando acha o valor de uma
+  # variável de ambiente no repositório ou no que foi compilado. Estas duas são
+  # públicas por desenho, e o próprio prefixo `VITE_` diz isso: o Vite grava o
+  # valor dentro do JS que vai ao navegador, então é impossível que não estejam
+  # no build — e o `.env.example` documenta a URL de propósito. A chave é a
+  # publicável (`anon`), com RLS somente leitura e nenhuma tabela de escrita
+  # alcançável; o segredo do índice é a `service_role`, que nunca entra aqui.
+  #
+  # Omitir só estas duas, e não desligar o scanner: GEMINI_API_KEY,
+  # NEO4J_PASSWORD e SUPABASE_DB_URL são segredos de verdade e continuam
+  # vigiados.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_INDICE_URL,VITE_INDICE_CHAVE"
 
 [functions]
   # `directory` é lido pelo runtime atual do Netlify Dev; o `functions` em
