@@ -7,6 +7,17 @@ export function historicoEnviado(mensagens:readonly ChatMessage[]) {
   while(saida[0]?.role==='assistant')saida.shift();
   return saida;
 }
+/**
+ * A conversa da tela inicial virada histórico do painel flutuante.
+ *
+ * Vai antes das mensagens do próprio painel, e não entra em `chat.mensagens`:
+ * o painel a mostra à parte, e reenviá-la como se fosse dele duplicaria a
+ * conversa na tela. O aviso de que essas respostas cobrem outro recorte está
+ * no prompt de sistema, onde o modelo não pode confundi-lo com fala do usuário.
+ */
+export function herdadoDaTelaInicial(turnos:readonly {pergunta:string;resposta:string}[]):ChatMessage[] {
+  return turnos.flatMap((t)=>[{role:'user' as const,content:t.pergunta},{role:'assistant' as const,content:t.resposta}]);
+}
 /** Preserve the existing evenly spaced sample, while exposing the exact server character cut. */
 export function amostraSintese(docs:readonly Documento[]) {
   const linhas:string[]=[];const salto=Math.max(1,Math.floor(docs.length/25));

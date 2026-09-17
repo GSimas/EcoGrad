@@ -66,6 +66,37 @@ export interface Panorama {
 
 export interface Dados { sql: string; linhas: Record<string, unknown>[]; truncado: boolean }
 
+/**
+ * Onde a conversa da tela inicial fica na sessão. Sai daqui porque duas telas
+ * a leem: a que escreve, e o painel flutuante que a herda.
+ */
+export const CHAVE_CONVERSA_ACERVO = 'ufscao.acervo.conversa';
+
+/** Quantos turnos da tela inicial o painel flutuante leva ao modelo. */
+export const TURNOS_HERDADOS = 3;
+const MAX_CARACTERES_HERDADOS = 6000;
+
+/**
+ * Os últimos turnos da conversa da tela inicial, prontos para virar histórico
+ * de outra conversa. Quando a resposta foi aprofundada, vale a aprofundada: é
+ * a que o usuário pagou para ler, e a que ele tem na cabeça ao continuar.
+ */
+export function turnosHerdados(
+  conversa: readonly { pergunta: string; texto: string; aprofundamento?: { texto: string } }[],
+): Array<{ pergunta: string; resposta: string }> {
+  const turnos: Array<{ pergunta: string; resposta: string }> = [];
+  let caracteres = 0;
+  for (const r of [...conversa].reverse()) {
+    if (turnos.length >= TURNOS_HERDADOS) break;
+    const resposta = (r.aprofundamento?.texto || r.texto || '').trim();
+    if (!r.pergunta?.trim() || !resposta) continue;
+    if (caracteres + resposta.length > MAX_CARACTERES_HERDADOS && turnos.length) break;
+    turnos.unshift({ pergunta: r.pergunta.trim(), resposta: resposta.slice(0, MAX_CARACTERES_HERDADOS) });
+    caracteres += resposta.length;
+  }
+  return turnos;
+}
+
 /** O que já foi dito na conversa, para perguntas de seguimento ("e depois de 2020?"). */
 export interface Turno { pergunta: string; plano: Plano | null; resposta: string }
 

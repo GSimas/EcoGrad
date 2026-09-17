@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { SEM_RELEVANCIA } from '../src/lib/chat-sintese';
+import { promptConsultor, type DossieConsultor } from '../src/lib/consultor-prompt';
+import { herdadoDaTelaInicial } from '../src/lib/ia-contexto';
 import {
-  citacoesInvalidas, dicionarioCompacto, fontesDaAmostra, lerPlano, obrasLidas, planejarLeituraDoTema,
-  promptPlanejamento, promptReducaoDoTema, promptResposta, realcarCitacoes,
-  type Panorama,
+  TURNOS_HERDADOS, citacoesInvalidas, dicionarioCompacto, fontesDaAmostra, lerPlano, obrasLidas,
+  planejarLeituraDoTema, promptPlanejamento, promptReducaoDoTema, promptResposta, realcarCitacoes,
+  turnosHerdados, type Panorama,
 } from '../src/lib/ufscao-acervo';
 
 test('o plano e lido mesmo com cerca de codigo e texto em volta, e tipo invalido e recusado', () => {
@@ -128,4 +130,56 @@ test('a reducao do tema conta pelo panorama, cita as obras lidas e declara o que
   const cortada = promptReducaoDoTema('tema?', panorama, { obras: 900, comResumo: 700, lidas: 400 }, obras, []);
   assert.match(cortada.sistema, /400 obras de maior aderência, de 700 com resumo utilizável[\s\S]*você deve dizer isso/);
   assert.match(cortada.mensagem, /nenhum lote encontrou conteúdo relevante/);
+});
+
+test('a conversa herdada leva os ultimos turnos, prefere a aprofundada e respeita o orcamento', () => {
+  const conversa = [
+    { pergunta: 'p1', texto: 'r1' },
+    { pergunta: 'p2', texto: 'r2', aprofundamento: { texto: 'r2 aprofundada' } },
+    { pergunta: 'p3', texto: 'r3' },
+    { pergunta: 'p4', texto: 'r4' },
+  ];
+  const turnos = turnosHerdados(conversa);
+  assert.equal(turnos.length, TURNOS_HERDADOS, 'so os ultimos turnos vao');
+  assert.deepEqual(turnos.map((t) => t.pergunta), ['p2', 'p3', 'p4'], 'na ordem da conversa, nao invertida');
+  assert.equal(turnos[0].resposta, 'r2 aprofundada', 'quem pagou pela leitura aprofundada continua a partir dela');
+
+  assert.deepEqual(turnosHerdados([]), []);
+  assert.deepEqual(turnosHerdados([{ pergunta: '  ', texto: 'orfa' }, { pergunta: 'p', texto: '  ' }]), [],
+    'turno sem pergunta ou sem resposta nao vira historico');
+
+  // Um turno gigante nao pode arrastar os outros: o primeiro cabe, o resto para.
+  const gigante = [
+    { pergunta: 'antiga', texto: 'x'.repeat(100) },
+    { pergunta: 'enorme', texto: 'y'.repeat(7000) },
+  ];
+  const cortado = turnosHerdados(gigante);
+  assert.deepEqual(cortado.map((t) => t.pergunta), ['enorme'], 'o mais recente entra sozinho');
+  assert.equal(cortado[0].resposta.length, 6000, 'e ainda assim truncado');
+});
+
+test('o historico herdado vira pares user/assistant para o painel flutuante', () => {
+  const mensagens = herdadoDaTelaInicial([{ pergunta: 'quem orienta?', resposta: 'Fulana orienta [1]' }]);
+  assert.deepEqual(mensagens, [
+    { role: 'user', content: 'quem orienta?' },
+    { role: 'assistant', content: 'Fulana orienta [1]' },
+  ]);
+  assert.deepEqual(herdadoDaTelaInicial([]), []);
+});
+
+test('o prompt do consultor declara o recorte da conversa herdada, e so quando ela existe', () => {
+  const dossie: DossieConsultor = {
+    nomePrograma: 'PPGEGC', totalDocumentos: 0,
+    lideresVolume: [], pontesInterdisciplinares: [], principaisConceitos: [],
+    docentes: [], catalogo: [],
+  };
+
+  const sem = promptConsultor(dossie, 'e depois de 2020?', 0);
+  assert.doesNotMatch(sem, /CONVERSA HERDADA/, 'sem turnos herdados o prompt nao muda');
+
+  const com = promptConsultor(dossie, 'e depois de 2020?', 2);
+  assert.match(com, /As primeiras 2 trocas desta conversa vieram da tela inicial/);
+  assert.match(com, /ACERVO INTEIRO/);
+  assert.match(com, /nem reaproveite as citações \[n\]/, 'a numeracao antiga nao pode reaparecer');
+  assert.match(com, /não está no recorte carregado/, 'obra de fora precisa ser declarada');
 });
