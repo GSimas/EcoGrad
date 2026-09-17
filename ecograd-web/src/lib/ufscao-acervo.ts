@@ -19,6 +19,7 @@ import {
   MAX_CARACTERES_RESUMO, SEM_RELEVANCIA, planejarAprofundamento, sistemaSintese,
   type FonteResumo, type PlanoAprofundamento,
 } from './chat-sintese';
+import { PERSONA_UFSCAO, REGRAS_DE_SEGURANCA, cercarDadosDoAcervo } from './guardrails';
 import exemplos from './consultas-exemplo.json';
 import { escaparHtml } from './markdown';
 
@@ -231,7 +232,7 @@ function blocoDados(dados: Dados | null, erroSql: string | null) {
   let json = JSON.stringify(linhas);
   if (json.length > MAX_CARACTERES_DADOS) json = json.slice(0, MAX_CARACTERES_DADOS) + ' …(cortado)';
   const aviso = dados.truncado || dados.linhas.length > linhas.length ? ' Resultado truncado: há mais linhas do que as mostradas.' : '';
-  return `DADOS (SQL executado no índice, ${dados.linhas.length} linhas).${aviso}\nSQL: ${dados.sql}\nLinhas: ${json}`;
+  return `DADOS (SQL executado no índice, ${dados.linhas.length} linhas).${aviso}\nSQL: ${dados.sql}\nLinhas:\n${cercarDadosDoAcervo(json)}`;
 }
 
 /** Os números do panorama, sem a amostra: a leitura padrão e o aprofundamento usam os mesmos. */
@@ -254,12 +255,12 @@ function blocoPanorama(p: Panorama | null, plano: Plano, erro: string | null) {
   if (!p) return '';
   const semAmostra = !(p.amostra ?? []).length;
   if (!p.obras && semAmostra) return `PANORAMA DO TEMA: nenhuma obra encontrada para ${JSON.stringify(plano.grupos)}${plano.colecao ? ` na coleção "${plano.colecao}"` : ''}${p.busca_por_significado ? ', nem pelos termos nem por significado' : ''}.`;
-  const amostra = (p.amostra ?? []).map((o, i) => [
+  const amostra = cercarDadosDoAcervo((p.amostra ?? []).map((o, i) => [
     `[${i + 1}] ${o.titulo} (${o.ano ?? 'sem ano'}) — ${o.colecao} · ${o.nivel ?? 'nível não informado'}${o.origem === 'significado' ? ' · ACHADA SÓ POR SIGNIFICADO (não usa os termos da busca)' : ''}`,
     `    Autoria: ${(o.autores ?? []).join('; ') || 'não informada'} · Orientação: ${o.orientador || 'não informada'}`,
     `    Palavras-chave: ${(o.palavras_chave ?? []).slice(0, 8).join('; ') || 'não informadas'}`,
     `    Trecho do resumo: ${o.trecho ? o.trecho.replace(/\s+/g, ' ').slice(0, MAX_CARACTERES_TRECHO) : 'sem resumo utilizável'}`,
-  ].join('\n')).join('\n');
+  ].join('\n')).join('\n'));
   if (p.amplo_demais) {
     return [
       'PANORAMA DO TEMA: o tema é amplo demais para contar as obras dentro do limite de tempo do banco. NÃO dê nenhum número de obras. As obras abaixo vieram só da busca por significado, como exemplos. Diga isso e sugira restringir por programa, período ou um subtema.',
@@ -285,24 +286,23 @@ function blocoPanorama(p: Panorama | null, plano: Plano, erro: string | null) {
   ].join('\n');
 }
 
-export function promptResposta(pergunta: string, plano: Plano, dados: Dados | null, erroSql: string | null, panorama: Panorama | null, erroPanorama: string | null, turnos: readonly Turno[] = []) {
-  const sistema = `Você é o UFSCão, consultor acadêmico do EcoGrad, que responde sobre o acervo de teses, dissertações e TCCs da UFSC. O nome homenageia os UFSCães, os cachorros dos campi: seja caloroso e simpático, sem trocar rigor por simpatia.
+export function promptResposta(pergunta: string, plano: Plano, dados: Dados | null, erroSql: string | null, panorama: Panorama | null, erroPanorama: string | null, turnos: readonly Turno[] = [], indiceAtrasado = false) {
+  const sistema = `${PERSONA_UFSCAO}
 
-Você é uma inteligência artificial, não uma pessoa nem fonte oficial da UFSC; diga isso se alguém tratar você assim. Pode errar: quando o CONTEXTO não sustenta algo, diga que não encontrou base.
+${REGRAS_DE_SEGURANCA}
 
-REGRAS
+REGRAS DA RESPOSTA
 - Use SOMENTE o CONTEXTO. Todo número vem de DADOS ou do PANORAMA, com a unidade: obras (trabalhos distintos) ou registros (catalogações).
 - Cada afirmação sobre um trabalho da AMOSTRA leva a citação [n] logo depois. Colchetes com número servem SÓ para obras da AMOSTRA: sem AMOSTRA no contexto, não use [n] nenhum, nem para numerar linhas de DADOS. Nunca invente título, pessoa, ano ou vínculo.
 - A amostra é parte do total: descreva tendências com o PANORAMA e use a amostra como exemplos, sem dizer que ela é o conjunto.
 - Obra marcada "ACHADA SÓ POR SIGNIFICADO" não usa os termos da busca: pode ser exemplo valioso de vocabulário diferente, mas confira pelo trecho se trata mesmo do tema e nunca a some às contagens.
 - O último ano do acervo está em coleta: não chame seus números de queda nem de projeção.
-- Pessoas foram unificadas automaticamente a partir das grafias do acervo, sem revisão humana; macrotema é classificação automática da base, não categoria oficial; o último ano do acervo ainda está em coleta.
-- Não faça juízo de qualidade ("melhor", "mais relevante") nem informe vínculo atual, vaga ou disponibilidade de orientador: o acervo só mostra orientação histórica.
+- Pessoas foram unificadas automaticamente a partir das grafias do acervo, sem revisão humana; macrotema é classificação automática da base, não categoria oficial; o último ano do acervo ainda está em coleta.${indiceAtrasado ? '\n- O índice que você consultou foi gerado de uma versão anterior das bases e pode estar atrás do que a busca do EcoGrad mostra. Diga isso na resposta, numa frase, e avise que trabalhos recentes podem faltar.' : ''}
 - Se a consulta falhou ou nada foi encontrado, diga isso com clareza e sugira como reformular (outros termos, um programa, um período).
 - Se a pergunta é "fora", recuse com gentileza e explique o que o acervo permite responder.
 
 FORMA
-- Markdown, de 120 a 350 palavras. Comece direto pela resposta: sem saudação, sem elogiar a pergunta. Depois o panorama em poucas linhas, e então destaques da amostra com [n].
+- Markdown, de 120 a 350 palavras, em tom de conversa: trate quem pergunta por "você" e escreva como quem explica para alguém ao lado, não como relatório. Uma abertura curta e calorosa cabe bem; elogiar a pergunta, não. O essencial vem logo: panorama em poucas linhas e então os destaques da amostra com [n].
 - Nomes de pessoas no formato do acervo ("Sobrenome, Nome") ou na ordem direta, como ficar mais natural.
 - Termine com um próximo passo útil: abrir uma obra citada, refinar por programa ou período, ou perguntar sobre um orientador.`;
   const contexto = plano.tipo === 'conversa' || plano.tipo === 'fora'
