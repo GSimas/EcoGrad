@@ -89,8 +89,27 @@ try {
   // metade das tabelas da versão nova responderia contagem errada com cara de
   // resposta certa, que é o pior defeito possível neste projeto.
   await cliente.query('begin');
+
+  // Os vetores sobrevivem à recarga.
+  //
+  // `documento_embedding` referencia `documento` com `on delete cascade`, e o
+  // `truncate ... cascade` abaixo levaria os 85 mil vetores junto. Na máquina de
+  // quem carrega isso quase não se nota: `indice:embeddings` reencontra tudo no
+  // cache local e recarrega de graça. Numa rotina de CI, onde o cache começa
+  // vazio, significaria pagar US$ 8 em embeddings **toda semana** — sozinho,
+  // acima do teto de US$ 35/mês da R5 do ADR 003.
+  //
+  // A cópia é temporária e vive dentro desta transação: se a carga abortar, ela
+  // some junto e o `documento_embedding` original continua intacto pelo rollback.
+  // O vetor só volta para obra cujo id sobreviveu à recarga; o resto é descartado,
+  // e `indice:embeddings` recalcula o que faltar.
+  await cliente.query('create temp table embedding_preservado on commit drop as table documento_embedding');
+  const { rows: [{ n: preservados }] } = await cliente.query('select count(*)::int as n from embedding_preservado');
+
   await cliente.query(`truncate ${TABELAS.map(([t]) => t).join(', ')} restart identity cascade`);
   for (const [nome] of INDICES) await cliente.query(`drop index if exists ${nome}`);
+  // Reinserir 85 mil vetores com o HNSW montado custa minutos; sem ele, segundos.
+  await cliente.query('drop index if exists documento_embedding_hnsw_idx');
 
   for (const [tabela, arquivo, colunas] of TABELAS) {
     const t = Date.now();
@@ -100,6 +119,18 @@ try {
     ));
     await pipeline(createReadStream(caminho), fluxo);
     console.log(`  ${tabela.padEnd(24)} ${mb(statSync(caminho).size).padStart(9)}  ${segundos(t)}`);
+  }
+
+  // De volta, só o que ainda tem obra correspondente.
+  if (preservados) {
+    const t = Date.now();
+    const { rowCount } = await cliente.query(`
+      insert into documento_embedding (documento_id, embedding, modelo, texto_sha256)
+      select p.documento_id, p.embedding, p.modelo, p.texto_sha256
+      from embedding_preservado p join documento d on d.id = p.documento_id
+    `);
+    await cliente.query('create index documento_embedding_hnsw_idx on documento_embedding using hnsw (embedding extensions.halfvec_cosine_ops)');
+    console.log(`  ${'documento_embedding'.padEnd(24)} ${String(rowCount).padStart(9)}  ${segundos(t)} (de ${preservados} preservados)`);
   }
 
   // As sequências continuam de onde os ids da derivação pararam.

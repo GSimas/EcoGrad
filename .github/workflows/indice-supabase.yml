@@ -15,7 +15,7 @@ name: Atualizar índice do Supabase
 #
 # Segredos necessários no repositório (Settings → Secrets and variables → Actions):
 #   SUPABASE_DB_URL   string de conexão do pooler em modo sessão (porta 5432)
-#   GEMINI_API_KEY    embeddings das obras novas (incremental: só paga o que mudou).
+#   GEMINI_API_KEY    embeddings das obras novas (só paga a obra nova; ver `--incremental`).
 #                     O repositório já traz `GEMINI_API_KEY_GITHUB`, e ela serve: a
 #                     expressão abaixo aceita qualquer um dos dois nomes, para não
 #                     exigir cadastrar de novo uma chave que já existe.
@@ -105,16 +105,19 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: npm run indice:carregar
 
-      # Incremental: cada vetor é guardado com o sha256 do texto que o gerou, e
-      # obra sem resumo alterado não é reenviada. Uma semana de coleta custa
-      # centavos; a carga inicial dos 85 mil custou cerca de US$ 8.
+      # `--incremental` e obrigatorio aqui, e nao uma otimizacao. O cache que torna
+      # os embeddings baratos e um arquivo em `indice-out/`, que num runner comeca
+      # sempre vazio: sem a flag, toda execucao semanal regeraria os 85 mil vetores
+      # por cerca de US$ 8, acima sozinho do teto de US$ 35/mes da R5 do ADR 003.
+      # Com ela, o que ja foi pago e lido do proprio banco -- que a carga preserva --
+      # e so a obra nova ou com resumo alterado vai ao modelo.
       - name: Embeddings das obras novas
         if: inputs.pular_embeddings != true
         working-directory: ecograd-web
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GEMINI_API_KEY_GITHUB }}
-        run: npm run indice:embeddings
+        run: npm run indice:embeddings -- --incremental
 
       - name: Conferir o que ficou no ar
         working-directory: ecograd-web

@@ -1,7 +1,8 @@
 /**
  * Vetores das obras para a busca por significado (ADR 004, fase B).
  *
- *   npm run indice:embeddings              gera o que falta e carrega no banco
+ *   npm run indice:embeddings                  gera o que falta e recarrega tudo
+ *   npm run indice:embeddings -- --incremental gera e carrega só o que mudou
  *   npm run indice:embeddings -- --so-gerar
  *
  * Uma obra, um vetor: `gemini-embedding-2` com 768 dimensões, já normalizado,
@@ -11,8 +12,17 @@
  *
  * **Retomável e barato de refazer.** Cada vetor fica em
  * `indice-out/embeddings.jsonl` com o sha256 do texto que o gerou. Rodar de novo
- * só chama o modelo para obra nova ou resumo alterado: a carga semanal custa
- * centavos, e uma interrupção no meio não joga fora o que já foi pago.
+ * só chama o modelo para obra nova ou resumo alterado, e uma interrupção no meio
+ * não joga fora o que já foi pago.
+ *
+ * **`--incremental` é para a rotina automática.** O cache acima é um arquivo local,
+ * e num runner de CI ele começa vazio: sem isto, toda execução semanal regeraria os
+ * 85 mil vetores e custaria US$ 8, acima do teto de US$ 35/mês da R5 do ADR 003.
+ * No modo incremental o que já foi pago é lido do **próprio banco** — que guarda
+ * `texto_sha256` por obra exatamente para isso —, e a carga deixa de ser um
+ * `truncate` seguido de COPY inteiro: some o que ficou velho, entra o que é novo.
+ * Depende de a recarga do índice preservar os vetores, o que `indice-carregar.mjs`
+ * faz desde a mesma mudança.
  *
  * Custo medido na primeira carga: cerca de 38 milhões de tokens, US$ 8 à tabela
  * de 16/09/2026 (US$ 0,20 por milhão).
@@ -33,6 +43,9 @@ const aqui = dirname(fileURLToPath(import.meta.url));
 const raizApp = resolve(aqui, '..');
 const raizRepo = resolve(raizApp, '..');
 const cache = join(raizApp, 'indice-out', 'embeddings.jsonl');
+
+/** Na rotina automática: o que já foi pago vem do banco, e a carga toca só no que mudou. */
+const incremental = process.argv.includes('--incremental');
 
 const MODELO = 'gemini-embedding-2';
 const DIMENSOES = 768;
@@ -76,10 +89,28 @@ if (existsSync(cache)) {
   }
 }
 
+// No modo incremental, o banco é a fonte do que já existe: `documento_id` -> sha do
+// texto que gerou o vetor guardado. O cache local continua valendo por cima, para
+// quem roda na própria máquina e já pagou por obras que o banco ainda não tem.
+const noBanco = new Map();
+if (incremental) {
+  const url = de('SUPABASE_DB_URL');
+  if (!url) { console.error('SUPABASE_DB_URL ausente: --incremental precisa ler o que o banco já tem.'); process.exit(1); }
+  const c = new pg.Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
+  await c.connect();
+  const { rows } = await c.query('select documento_id, texto_sha256 from documento_embedding');
+  for (const r of rows) noBanco.set(r.documento_id, r.texto_sha256);
+  await c.end();
+  console.log(`${noBanco.size} vetores já no banco`);
+}
+
 /** `INDICE_EMBEDDINGS_LIMITE` gera só as N primeiras pendentes: ensaio de vazão e custo antes da carga inteira. */
 const limite = Number(process.env.INDICE_EMBEDDINGS_LIMITE ?? Infinity);
-const pendentes = [...obras.values()].map((o) => ({ ...o, texto: textoDa(o) })).map((o) => ({ ...o, sha: sha(o.texto) })).filter((o) => !prontos.has(o.sha)).slice(0, limite);
-console.log(`${obras.size} obras · ${prontos.size} vetores em cache · ${pendentes.length} a gerar agora`);
+const comSha = [...obras.values()].map((o) => ({ ...o, texto: textoDa(o) })).map((o) => ({ ...o, sha: sha(o.texto) }));
+/** Obra cujo vetor no banco já corresponde ao texto atual: não precisa gerar nem recarregar. */
+const jaNoBanco = (o) => noBanco.get(o.id) === o.sha;
+const pendentes = comSha.filter((o) => !prontos.has(o.sha) && !jaNoBanco(o)).slice(0, limite);
+console.log(`${obras.size} obras · ${prontos.size} em cache · ${noBanco.size} no banco · ${pendentes.length} a gerar agora`);
 
 async function embeddar(lote) {
   for (let tentativa = 1; ; tentativa++) {
@@ -140,14 +171,18 @@ try {
   await cliente.query('set statement_timeout = 0');
   await cliente.query("set maintenance_work_mem = '256MB'");
   await cliente.query('begin');
-  await cliente.query('truncate documento_embedding');
-  await cliente.query('drop index if exists documento_embedding_hnsw_idx');
+  if (!incremental) {
+    await cliente.query('truncate documento_embedding');
+    await cliente.query('drop index if exists documento_embedding_hnsw_idx');
+  }
   // Formato texto do COPY: barra invertida, tabulação e quebra de linha precisam
   // de escape, senão o id muda e a obra não casa com `documento`.
   const copiavel = (t) => t.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n').replace(/\r/g, '\\r');
   const linhas = function* () {
-    for (const o of obras.values()) {
-      const s = sha(textoDa(o));
+    for (const o of comSha) {
+      const s = o.sha;
+      // No incremental só entra o que o banco ainda não tem com este texto.
+      if (incremental && jaNoBanco(o)) continue;
       const v = prontos.get(s);
       if (!v) continue;
       const b = Buffer.from(v, 'base64');
@@ -155,9 +190,34 @@ try {
       yield `${copiavel(o.id)}\t[${Array.from(numeros, (x) => x.toPrecision(6)).join(',')}]\t${MODELO}\t${s}\n`;
     }
   };
-  await pipeline(Readable.from(linhas()), cliente.query(copyFrom('copy documento_embedding (documento_id, embedding, modelo, texto_sha256) from stdin')));
-  console.log(`  vetores carregados em ${Math.round((Date.now() - t) / 1000)} s; construindo HNSW…`);
-  await cliente.query('create index documento_embedding_hnsw_idx on documento_embedding using hnsw (embedding extensions.halfvec_cosine_ops)');
+  if (incremental) {
+    // Some o que envelheceu: obra que sumiu do acervo, ou cujo resumo mudou e o
+    // vetor guardado passou a descrever outro texto.
+    await cliente.query('create temp table emb_atual (documento_id text primary key, texto_sha256 text not null) on commit drop');
+    const desejados = function* () {
+      for (const o of comSha) yield `${copiavel(o.id)}\t${o.sha}\n`;
+    };
+    await pipeline(Readable.from(desejados()), cliente.query(copyFrom('copy emb_atual (documento_id, texto_sha256) from stdin')));
+    const { rowCount: removidos } = await cliente.query(`
+      delete from documento_embedding e where not exists (
+        select 1 from emb_atual a where a.documento_id = e.documento_id and a.texto_sha256 = e.texto_sha256
+      )
+    `);
+
+    await cliente.query('create temp table emb_novo (documento_id text, embedding extensions.halfvec(768), modelo text, texto_sha256 text) on commit drop');
+    await pipeline(Readable.from(linhas()), cliente.query(copyFrom('copy emb_novo (documento_id, embedding, modelo, texto_sha256) from stdin')));
+    const { rowCount: inseridos } = await cliente.query(`
+      insert into documento_embedding (documento_id, embedding, modelo, texto_sha256)
+      select documento_id, embedding, modelo, texto_sha256 from emb_novo
+      on conflict (documento_id) do update
+        set embedding = excluded.embedding, modelo = excluded.modelo, texto_sha256 = excluded.texto_sha256
+    `);
+    console.log(`  ${inseridos} vetores entraram, ${removidos} saíram, em ${Math.round((Date.now() - t) / 1000)} s`);
+  } else {
+    await pipeline(Readable.from(linhas()), cliente.query(copyFrom('copy documento_embedding (documento_id, embedding, modelo, texto_sha256) from stdin')));
+    console.log(`  vetores carregados em ${Math.round((Date.now() - t) / 1000)} s; construindo HNSW…`);
+    await cliente.query('create index documento_embedding_hnsw_idx on documento_embedding using hnsw (embedding extensions.halfvec_cosine_ops)');
+  }
   await cliente.query('commit');
   await cliente.query('analyze documento_embedding');
   const { rows: [{ n }] } = await cliente.query('select count(*)::int as n from documento_embedding');
