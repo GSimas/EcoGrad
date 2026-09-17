@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpen, Github, Route } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { BuscaGlobal } from './BuscaGlobal';
-import { ConversaAcervo } from './ConversaAcervo';
+import { UFSCaoAcervo } from '@/components/chat/UFSCaoAcervo';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Janela } from './Janela';
@@ -39,7 +39,7 @@ export function Apresentacao() {
         <div className="mt-6 w-full max-w-md self-center sm:w-auto">
           <GrupoOpcoes opcoes={MODOS} valor={modo} onChange={setModo} />
         </div>
-        <div className="w-full">{modo === 'Conversar' ? <ConversaAcervo /> : <BuscaGlobal />}</div>
+        <div className="w-full">{modo === 'Conversar' ? <UFSCaoAcervo /> : <BuscaGlobal />}</div>
         {carregada && <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <button type="button" className="btn btn-primary px-6 py-3 disabled:opacity-60" disabled={carregando} onClick={() => navigatePage(rota)}>Continuar análise atual <ArrowRight size={16} /></button>
         </div>}
@@ -55,7 +55,7 @@ export function Apresentacao() {
             <section className="space-y-3 border-t border-eco-border pt-5">
               <h3 className="text-base font-semibold text-eco-accent">O que os dados permitem saber</h3>
               <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama CAPES é uma consulta institucional independente; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
-              <p className="text-sm leading-relaxed text-slate-300">O UFSCão, consultor de IA, fica no botão do canto inferior direito e usa a chave de API do provedor que você escolher. Ele é uma inteligência artificial generativa: recebe contexto limitado da análise e pode errar, inclusive inventando trabalhos e nomes. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
+              <p className="text-sm leading-relaxed text-slate-300">O UFSCão, consultor de IA, responde sobre o acervo inteiro em Conversar, na tela inicial, e sobre as coleções carregadas no botão do canto inferior direito. Nos dois casos usa a chave de API do provedor que você escolher. Ele é uma inteligência artificial generativa: recebe contexto limitado da análise e pode errar, inclusive inventando trabalhos e nomes. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
             </section>
           </div>
         </Janela>

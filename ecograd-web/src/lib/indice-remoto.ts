@@ -130,6 +130,43 @@ export const pessoaNoIndice = (nome: string) =>
 export const macrotemasDoIndice = (limite = 10) =>
   rpc<Array<{ macrotema: string; registros: number; origem: string }>>('top_macrotemas', { limite });
 
+/**
+ * SQL do modelo, executado como `consulta_leitor` sobre as views do schema
+ * `consulta` (ADR 004). O banco recusa escrita, múltiplas instruções e o que
+ * passar de 3 segundos; o erro volta com a mensagem do Postgres, que é o que o
+ * modelo precisa para corrigir a consulta.
+ */
+export async function consultarIndice(sql: string, limite = 200): Promise<{ linhas: Record<string, unknown>[]; truncado: boolean }> {
+  const r = await fetch(`${URL_INDICE}/rest/v1/rpc/consultar`, {
+    method: 'POST',
+    headers: { apikey: CHAVE_INDICE, authorization: `Bearer ${CHAVE_INDICE}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ consulta_sql: sql, limite }),
+    signal: AbortSignal.timeout(TEMPO_LIMITE),
+  });
+  const corpo = await r.json().catch(() => null) as { linhas?: Record<string, unknown>[]; truncado?: boolean; message?: string } | null;
+  if (!r.ok) throw new Error(corpo?.message ?? `índice respondeu ${r.status}`);
+  return { linhas: corpo?.linhas ?? [], truncado: corpo?.truncado === true };
+}
+
+/** O esquema consultável, que o modelo lê antes de escrever SQL. */
+export const dicionarioDoIndice = () =>
+  consultarIndice('select visao, descricao_visao, coluna, tipo, descricao from dicionario', 1000)
+    .then((r) => r.linhas as unknown as import('./ufscao-acervo').LinhaDicionario[]);
+
+/**
+ * Panorama exato e amostra representativa de um tema. Tema muito amplo pode
+ * passar dos 3 segundos com o cache do banco frio; a segunda tentativa costuma
+ * achar o cache quente, então repete uma vez antes de desistir.
+ */
+export async function panoramaTematico(grupos: string[][], filtros: { colecao?: string; ano_min?: number; ano_max?: number } = {}, amostra = 20) {
+  const corpo = { grupos, amostra, colecao_filtro: filtros.colecao ?? null, ano_min: filtros.ano_min ?? null, ano_max: filtros.ano_max ?? null };
+  try {
+    return await rpc<import('./ufscao-acervo').Panorama>('panorama_tematico', corpo);
+  } catch {
+    return rpc<import('./ufscao-acervo').Panorama>('panorama_tematico', corpo);
+  }
+}
+
 export const registrosDoTituloNoIndice = (titulo: string) =>
   rpc<Array<{ documento_id: string; titulo: string; colecao: string; ano: number; url: string }>>(
     'registros_do_titulo', { titulo_busca: titulo });

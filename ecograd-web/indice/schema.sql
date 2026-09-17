@@ -926,3 +926,135 @@ as $$ select consulta.executar(consulta_sql, limite) $$;
 grant usage on schema consulta to anon, authenticated;
 grant execute on function consulta.executar(text, int) to anon, authenticated;
 grant execute on function consultar(text, int) to anon, authenticated;
+
+-- ============================================================================
+-- Panorama temático e amostra representativa (ADR 004, fase A, decisão E2).
+--
+-- O modelo não escolhe obras: traduz a pergunta em grupos de sinônimos, e o
+-- banco devolve o panorama exato do que casou e uma amostra espalhada pelas
+-- coleções. Os grupos substituem o tesauro, que falhava justamente quando a
+-- pergunta não usava o vocabulário do acervo (ADR 003).
+-- ============================================================================
+
+-- Sem o registro_id no índice, achar as obras de 750 palavras-chave visita a
+-- tabela 9 mil vezes; com ele, a busca não sai do índice.
+create index if not exists registro_palavra_chave_termo_registro_idx on registro_palavra_chave (termo, registro_id);
+
+-- `[["empreendedorismo", "empreendedora"], ["feminino", "mulheres"]]` vira
+-- (empreendedorismo OU empreendedora) E (feminino OU mulheres). Termo de várias
+-- palavras vira frase.
+create or replace function consulta_por_grupos(grupos jsonb) returns tsquery
+language plpgsql stable
+set search_path = public
+as $$
+declare g jsonb; t text; ou tsquery; e tsquery; q tsquery;
+begin
+  if jsonb_typeof(grupos) <> 'array' then return null; end if;
+  for g in select value from jsonb_array_elements(grupos) loop
+    if jsonb_typeof(g) <> 'array' then continue; end if;
+    ou := null;
+    for t in select value from jsonb_array_elements_text(g) limit 12 loop
+      e := phraseto_tsquery('portuguese', left(t, 80));
+      if e is null or numnode(e) = 0 then continue; end if;
+      ou := case when ou is null then e else ou || e end;
+    end loop;
+    if ou is null then continue; end if;
+    q := case when q is null then ou else q && ou end;
+  end loop;
+  return q;
+end;
+$$;
+
+-- Obra candidata é a que casa os grupos no título e resumo (FTS) ou nas
+-- palavras-chave: "gestão do conhecimento" está no texto de 483 obras e nas
+-- palavras-chave de 1.119, e só a união reproduz o gabarito de Q06.
+--
+-- Amostra: cada coleção tem cota proporcional à sua fatia das obras encontradas,
+-- e dentro da cota vão as de maior aderência. É o que impede a amostra de ser
+-- só o programa que mais escreve sobre o tema.
+create or replace function panorama_tematico(grupos jsonb, amostra int default 20, colecao_filtro text default null,
+                                             ano_min int default null, ano_max int default null)
+returns json
+language sql stable
+set search_path = public
+set work_mem = '32MB'
+as $$
+  with parametros as materialized (
+    select consulta_por_grupos(grupos) as q, least(greatest(coalesce(amostra, 20), 5), 30) as n
+  ),
+  termos as materialized (
+    select g.ordem as grupo, sem_acento(left(t.termo, 80)) as termo
+    from jsonb_array_elements(case when jsonb_typeof(grupos) = 'array' then grupos else '[]' end) with ordinality as g(valor, ordem),
+         lateral jsonb_array_elements_text(case when jsonb_typeof(g.valor) = 'array' then g.valor else '[]' end) as t(termo)
+    where length(btrim(t.termo)) >= 3
+  ),
+  termos_pc as materialized (
+    select distinct t.grupo, tp.termo from termos t join termo_perfil tp on sem_acento(tp.termo) like '%' || t.termo || '%'
+  ),
+  -- `offset 0` mantém a junção por termo: sem ele o planejador estima milhões de
+  -- termos casados e varre a tabela inteira de palavras-chave.
+  obras_pc as materialized (
+    select r.documento_id
+    from termos_pc tp
+    cross join lateral (select k.registro_id from registro_palavra_chave k where k.termo = tp.termo offset 0) k
+    join registro r on r.id = k.registro_id
+    group by r.documento_id having count(distinct tp.grupo) = (select count(distinct grupo) from termos)
+  ),
+  candidatas as materialized (
+    select d.id, ts_rank(d.tsv, p.q) as aderencia from documento d, parametros p where p.q is not null and d.tsv @@ p.q
+    union all
+    select documento_id, 0 from obras_pc
+  ),
+  pontuadas as (
+    select id, max(aderencia) + case when count(*) > 1 or bool_or(aderencia = 0) then 0.1 else 0 end as aderencia
+    from candidatas group by id
+  ),
+  obra as materialized (
+    select distinct on (r.documento_id) r.documento_id, r.id as registro_id, r.colecao, r.ano, r.nivel_academico,
+           r.macrotema, r.url, a.aderencia, r.resumo_utilizavel
+    from pontuadas a join registro r on r.documento_id = a.id
+    where (colecao_filtro is null or sem_acento(r.colecao) like '%' || sem_acento(colecao_filtro) || '%')
+      and (ano_min is null or r.ano >= ano_min)
+      and (ano_max is null or r.ano <= ano_max)
+    order by r.documento_id, r.ano desc nulls last, r.id
+  ),
+  cotas as (
+    select colecao, count(*)::numeric / sum(count(*)) over () as fatia from obra group by colecao
+  ),
+  escolhidas as (
+    select o.* from (
+      select o.*, row_number() over (partition by o.colecao order by o.aderencia desc, o.documento_id) as posicao,
+             ceil((select n from parametros) * c.fatia) as cota
+      from obra o join cotas c using (colecao)
+    ) o
+    order by (posicao <= cota) desc, aderencia desc, documento_id
+    limit (select n from parametros)
+  )
+  select json_build_object(
+    'consulta', (select q::text from parametros),
+    'palavras_chave_casadas', (select json_agg(termo) from (select distinct termo from termos_pc order by termo limit 40) x),
+    'obras', (select count(*) from obra),
+    'registros', (select count(*) from registro r where r.documento_id in (select documento_id from obra)),
+    'obras_sem_resumo', (select count(*) from obra where not resumo_utilizavel),
+    'por_ano', (select json_agg(json_build_array(ano, obras) order by ano) from (select ano, count(*) obras from obra where ano is not null group by ano) x),
+    'por_colecao', (select json_agg(json_build_array(colecao, obras) order by obras desc, colecao) from (select colecao, count(*) obras from obra group by colecao order by 2 desc, 1 limit 10) x),
+    'por_nivel', (select json_agg(json_build_array(nivel_academico, obras) order by obras desc) from (select nivel_academico, count(*) obras from obra group by 1) x),
+    'por_macrotema', (select json_agg(json_build_array(macrotema, obras) order by obras desc, macrotema) from (select macrotema, count(*) obras from obra where macrotema is not null group by 1 order by 2 desc, 1 limit 8) x),
+    'principais_orientadores', (select json_agg(json_build_array(nome, obras) order by obras desc, nome) from (
+        select p.nome_canonico as nome, count(distinct o.documento_id) obras
+        from obra o join registro r on r.documento_id = o.documento_id
+        join registro_pessoa rp on rp.registro_id = r.id and rp.papel = 'Orientador' join pessoa p on p.id = rp.pessoa_id
+        group by 1 order by 2 desc, 1 limit 8) x),
+    'amostra', (select json_agg(json_build_object(
+        'documento_id', e.documento_id, 'titulo', d.titulo, 'ano', e.ano, 'colecao', e.colecao, 'nivel', e.nivel_academico,
+        'url', e.url, 'aderencia', round(e.aderencia::numeric, 4),
+        'autores', (select json_agg(p.nome_canonico) from registro_pessoa rp join pessoa p on p.id = rp.pessoa_id where rp.registro_id = e.registro_id and rp.papel = 'Autor'),
+        'orientador', (select string_agg(p.nome_canonico, '; ') from registro_pessoa rp join pessoa p on p.id = rp.pessoa_id where rp.registro_id = e.registro_id and rp.papel = 'Orientador'),
+        'palavras_chave', (select json_agg(k.termo) from registro_palavra_chave k where k.registro_id = e.registro_id),
+        'trecho', case when d.resumo_utilizavel then ts_headline('portuguese', d.resumo, coalesce((select q from parametros), plainto_tsquery('portuguese', '')),
+            'StartSel="", StopSel="", MaxFragments=2, MaxWords=45, MinWords=20, FragmentDelimiter=" … "') end
+      ) order by e.aderencia desc) from escolhidas e join documento d on d.id = e.documento_id)
+  );
+$$;
+
+grant execute on function consulta_por_grupos(jsonb), panorama_tematico(jsonb, int, text, int, int) to anon, authenticated;

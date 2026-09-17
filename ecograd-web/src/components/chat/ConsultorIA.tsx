@@ -44,7 +44,7 @@ function topPorMetrica(
  */
 const RETRATO = '/ufscao.png';
 const RETRATO_AVATAR = '/ufscao-256.png';
-function RetratoUFSCao({ tamanho, className }: { tamanho: number; className?: string }) {
+export function RetratoUFSCao({ tamanho, className }: { tamanho: number; className?: string }) {
   const [falhou, setFalhou] = useState(false);
   if (falhou) return <Dog size={tamanho} className={className} aria-hidden />;
   return <img src={RETRATO_AVATAR} alt="" aria-hidden width={tamanho} height={tamanho}

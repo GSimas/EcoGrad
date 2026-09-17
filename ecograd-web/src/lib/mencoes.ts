@@ -98,6 +98,22 @@ export function dicionarioDoAcervo(docs: readonly Documento[]): DicionarioMencoe
   return dic;
 }
 
+/**
+ * Dicionário de itens soltos, sem base carregada: o UFSCão da tela inicial
+ * realça só o que o banco devolveu na resposta — pessoas, títulos e temas que
+ * ele de fato consultou.
+ */
+export function dicionarioDeItens(itens: readonly Mencao[]): DicionarioMencoes {
+  const dic: DicionarioMencoes = new Map();
+  for (const m of itens) {
+    for (const v of variantes(m.nome)) {
+      const chave = chaveDeBusca(escaparHtml(v));
+      if (chave.length >= MINIMO && !dic.has(chave)) dic.set(chave, m);
+    }
+  }
+  return dic;
+}
+
 export interface Achado { inicio: number; fim: number; mencao: Mencao }
 
 /** Menções sem sobreposição num trecho de texto, a mais longa vencendo a mais curta. */
