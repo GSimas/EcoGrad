@@ -37,7 +37,7 @@ O ADR 001 já tinha as peças certas — índice derivado, contagem só em SQL, 
 | **A0** *(feita)* | Unificação conservadora, perfis, orientações, métricas de rede; views comentadas e função `consultar` somente leitura para NL2SQL | carga do índice |
 | **A** *(feita)* | UFSCão na tela inicial: reescrita da consulta pelo modelo, candidatos por FTS, panorama SQL, amostra representativa, citações para o Motor de Busca | A0 |
 | **B** | pgvector com embeddings Gemini e fusão RRF na amostra *(feita em 16/09/2026: vetor 79/100 em Q11 contra 63/83 do texto; ver [aferição](AFERICAO-ETAPA-0.md#a-busca-por-significado-medida-fase-b-do-adr-004). MMR não entrou: a cota por coleção já espalha a amostra)* | A |
-| **C** | "Aprofundar" sobre o índice | A |
+| **C** | "Aprofundar" sobre o índice: `obras_do_tema` lista o conjunto léxico do tema, `resumos_das_obras` lê os resumos em páginas, e o modelo do usuário lê todos em lotes — com chamadas, tokens e tempo na tela antes de gastar a chave dele *(feita em 17/09/2026: as duas funções conferidas contra o acervo, com paridade exata de contagem em sete recortes; ver [aferição](AFERICAO-ETAPA-0.md#aprofundar-sobre-o-índice-medido-fase-c-do-adr-004))* | A |
 
 ## Continua valendo
 
@@ -52,3 +52,4 @@ D1 (índice derivado e reconstruível), D2 (contagem só em SQL, nunca por simil
 - Embedding com chave do projeto é custo e superfície de abuso novos. Limite por origem e teto de orçamento são pré-requisito da fase B, não melhoria posterior.
 - NL2SQL erra em silêncio. Só views preparadas, SQL e resultado visíveis na resposta, e os gabaritos exatos da Etapa 2 como teste antes de ir para a tela.
 - O índice cresce: rede e perfis somam centenas de milhares de linhas, e o disco do projeto passa a ser restrição a acompanhar.
+- Aprofundar (fase C) é uma ordem de grandeza mais caro que a leitura padrão, e o teto de 400 obras é escolha de produto, não limite do banco: é onde a conta deixa de ser razoável para quem paga. Tema maior que isso é lido só nas obras de maior aderência, e a resposta declara que a leitura não foi do tema inteiro. Só o conjunto léxico entra: dizer "li todas as obras do tema" sobre um conjunto que inclui vizinhos por similaridade seria falso, pela D2.

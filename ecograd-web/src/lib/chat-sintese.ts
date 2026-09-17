@@ -30,7 +30,7 @@ export const LOTES_SIMULTANEOS = 3;
 export const SEM_RELEVANCIA = 'NADA RELEVANTE';
 
 /** O resumo médio da pós tem 2.133 caracteres; o raro muito longo não pode dominar o contexto. */
-const MAX_CARACTERES_RESUMO = 3000;
+export const MAX_CARACTERES_RESUMO = 3000;
 /** Português dá perto de 4 caracteres por token. É ordem de grandeza para avisar, não cobrança. */
 const CARACTERES_POR_TOKEN = 4;
 /** Regras, pergunta e recorte, repetidos em cada chamada. */
@@ -41,10 +41,13 @@ const TOKENS_SINTESE = 900;
 /** Faixa por chamada com streaming; muda com provedor, modelo e horário. */
 const SEGUNDOS_POR_CHAMADA: readonly [number, number] = [8, 30];
 
-export interface FonteSintese {
+/**
+ * Uma obra com resumo, numerada para citação. É o mínimo que os prompts e a
+ * estimativa de custo precisam — e o que o índice também sabe devolver, na fase
+ * C do ADR 004, sem ter um `docs` local onde achar o registro.
+ */
+export interface FonteResumo {
   numero: number;
-  /** Posição em `docs`: abre o dossiê do registro exato, não de um homônimo. */
-  indice: number;
   titulo: string;
   ano: number | null;
   colecao: string;
@@ -52,6 +55,11 @@ export interface FonteSintese {
   autores: readonly string[];
   orientador: string;
   resumo: string;
+}
+
+export interface FonteSintese extends FonteResumo {
+  /** Posição em `docs`: abre o dossiê do registro exato, não de um homônimo. */
+  indice: number;
 }
 
 /** O registro de `docs` que um item do recorte descreve, por título, URL e coleção. */
@@ -106,15 +114,18 @@ function blocoRecorte(recorte: Recorte, declarar: readonly string[]): string[] {
   ];
 }
 
-const blocoFontes = (fontes: readonly FonteSintese[]) => fontes.flatMap((f) => [
+export const blocoFontes = (fontes: readonly FonteResumo[]) => fontes.flatMap((f) => [
   '',
   `[${f.numero}] ${f.titulo || 'Trabalho sem título'} (${f.ano ?? 'sem ano'}) · ${f.colecao} · ${f.nivel || 'nível não informado'}`,
   `Autoria: ${f.autores.join('; ') || 'não informada'} · Orientação: ${f.orientador || 'não informada'}`,
   `Resumo: ${f.resumo}`,
 ]);
 
-/** Regras de pontuação da aferição (docs/AFERICAO-ETAPA-0.md), valem para as duas profundidades. */
-function sistemaSintese(material: string, leitura: string): string {
+/**
+ * Regras de pontuação da aferição (docs/AFERICAO-ETAPA-0.md), valem para as duas
+ * profundidades e para as duas superfícies: coleções carregadas e índice.
+ */
+export function sistemaSintese(material: string, leitura: string): string {
   return [
     'Você escreve a síntese de uma resposta do EcoGrad sobre o acervo de trabalhos acadêmicos da UFSC.',
     'O aplicativo já apurou o recorte (números, coleções, anos) e o mostra ao usuário antes do seu texto. Sua parte é só sintetizar o que o material fornecido diz sobre a pergunta.',
@@ -150,8 +161,8 @@ export function promptSintese(pergunta: string, recorte: Recorte, fontes: readon
   return { sistema, mensagem };
 }
 
-export interface PlanoAprofundamento {
-  lotes: FonteSintese[][];
+export interface PlanoAprofundamento<F extends FonteResumo = FonteSintese> {
+  lotes: F[][];
   /** Um por lote, mais a síntese final. */
   chamadas: number;
   tokensEntrada: number;
@@ -161,8 +172,8 @@ export interface PlanoAprofundamento {
 }
 
 /** Lotes e estimativa de volume, mostrados ao usuário antes de gastar a chave dele. */
-export function planejarAprofundamento(fontes: readonly FonteSintese[], tamanhoLote = RESUMOS_POR_LOTE): PlanoAprofundamento {
-  const lotes: FonteSintese[][] = [];
+export function planejarAprofundamento<F extends FonteResumo>(fontes: readonly F[], tamanhoLote = RESUMOS_POR_LOTE): PlanoAprofundamento<F> {
+  const lotes: F[][] = [];
   for (let i = 0; i < fontes.length; i += tamanhoLote) lotes.push(fontes.slice(i, i + tamanhoLote));
   const caracteresFontes = blocoFontes(fontes).join('\n').length;
   const tokensEntrada = Math.ceil((caracteresFontes + CARACTERES_FIXOS_POR_CHAMADA * (lotes.length + 1)) / CARACTERES_POR_TOKEN)
@@ -178,7 +189,7 @@ export function planejarAprofundamento(fontes: readonly FonteSintese[], tamanhoL
 }
 
 /** Leitura de um lote: só extrai, com a numeração global, o que os resumos dizem sobre a pergunta. */
-export function promptLote(pergunta: string, lote: readonly FonteSintese[]) {
+export function promptLote(pergunta: string, lote: readonly FonteResumo[]) {
   const sistema = [
     'Você lê um lote de resumos do acervo de trabalhos acadêmicos da UFSC para ajudar a responder uma pergunta.',
     'Extraia, em tópicos curtos, apenas o que estes resumos dizem de relevante para a pergunta. Cada tópico termina com a citação da fonte, com o número dela, como [21].',

@@ -23,6 +23,7 @@ import {
   panoramaDoIndice, pessoaNoIndice, registrosDoTituloNoIndice, serieDoIndice,
 } from '@/lib/indice-remoto';
 import { escreverSintese } from '@/services/sintese-acervo';
+import { formatarDuracao } from '@/lib/utils';
 import type { Documento, IndicesInvertidos } from '@/types';
 
 /** Perguntas de partida: mostram o que o chat sabe fazer sem precisar explicar. */
@@ -480,8 +481,7 @@ function CitacaoItem({ item, docs }: { item: ItemRecorte; docs: readonly Documen
 }
 
 const milhares = (n: number) => n.toLocaleString('pt-BR');
-const duracao = ([min, max]: readonly [number, number]) =>
-  max < 60 ? 'menos de 1 minuto' : `cerca de ${Math.max(1, Math.round(min / 60))} a ${Math.ceil(max / 60)} minutos`;
+const duracao = formatarDuracao;
 
 type Leitura = { recorte: Recorte; fontes: FonteSintese[]; aprofundada: boolean };
 type Proposta = { recorte: Recorte; fontes: FonteSintese[]; plano: PlanoAprofundamento };

@@ -15,6 +15,10 @@
  * Nada aqui chama rede. Importa por caminho relativo: os testes compilam sem o
  * atalho `@/`.
  */
+import {
+  MAX_CARACTERES_RESUMO, SEM_RELEVANCIA, planejarAprofundamento, sistemaSintese,
+  type FonteResumo, type PlanoAprofundamento,
+} from './chat-sintese';
 import exemplos from './consultas-exemplo.json';
 import { escaparHtml } from './markdown';
 
@@ -199,6 +203,21 @@ function blocoDados(dados: Dados | null, erroSql: string | null) {
   return `DADOS (SQL executado no índice, ${dados.linhas.length} linhas).${aviso}\nSQL: ${dados.sql}\nLinhas: ${json}`;
 }
 
+/** Os números do panorama, sem a amostra: a leitura padrão e o aprofundamento usam os mesmos. */
+function marcadoresDoPanorama(p: Panorama): string[] {
+  const extras = p.busca_por_significado && p.obras_so_por_significado
+    ? ` Além delas, ${p.obras_so_por_significado} obras próximas em significado não usam os termos; elas NÃO entram em nenhuma contagem.`
+    : '';
+  return [
+    `- Obras encontradas: ${p.obras} (${p.registros} registros); sem resumo utilizável: ${p.obras_sem_resumo ?? 0}.${extras}`,
+    `- Por coleção (top 10): ${lista(p.por_colecao)}`,
+    `- Por nível: ${lista(p.por_nivel)}`,
+    `- Por ano: ${lista(p.por_ano, 60)}`,
+    `- Macrotemas (classificação automática): ${lista(p.por_macrotema)}`,
+    `- Orientadores com mais obras no tema: ${lista(p.principais_orientadores)}`,
+  ];
+}
+
 function blocoPanorama(p: Panorama | null, plano: Plano, erro: string | null) {
   if (erro) return `PANORAMA DO TEMA: a busca falhou (${erro}). O tema pode ser amplo demais: sugira restringir por programa ou período.`;
   if (!p) return '';
@@ -226,17 +245,9 @@ function blocoPanorama(p: Panorama | null, plano: Plano, erro: string | null) {
       amostra,
     ].join('\n');
   }
-  const extras = p.busca_por_significado && p.obras_so_por_significado
-    ? `\n- Além delas, ${p.obras_so_por_significado} obras próximas em significado não usam os termos; algumas estão na amostra, marcadas. Elas NÃO entram em nenhuma contagem.`
-    : '';
   return [
     `PANORAMA DO TEMA (apurado sobre TODAS as obras que casaram com os termos da busca; números exatos):`,
-    `- Obras encontradas: ${p.obras} (${p.registros} registros); sem resumo utilizável: ${p.obras_sem_resumo ?? 0}${extras}`,
-    `- Por coleção (top 10): ${lista(p.por_colecao)}`,
-    `- Por nível: ${lista(p.por_nivel)}`,
-    `- Por ano: ${lista(p.por_ano, 60)}`,
-    `- Macrotemas (classificação automática): ${lista(p.por_macrotema)}`,
-    `- Orientadores com mais obras no tema: ${lista(p.principais_orientadores)}`,
+    ...marcadoresDoPanorama(p),
     '',
     `AMOSTRA (${(p.amostra ?? []).length} de ${p.obras} obras, espalhadas pelas coleções em proporção ao tamanho de cada uma; cite como [n]):`,
     amostra,
@@ -301,3 +312,107 @@ export function realcarCitacoes(html: string, fontes: readonly Fonte[]): string 
 export const citacoesInvalidas = (texto: string, total: number) =>
   [...new Set([...texto.matchAll(/\[(\d{1,3}(?:\s*[,;]\s*\d{1,3})*)\]/g)]
     .flatMap((m) => m[1].split(/\s*[,;]\s*/).map(Number)).filter((n) => n < 1 || n > total))];
+
+// ------------------------------------------------- aprofundar (ADR 004, fase C)
+//
+// A leitura padrão manda ao modelo a amostra de 15 a 20 obras que o banco
+// escolheu (decisão D8). "Aprofundar" lê **todas** as obras do tema que têm
+// resumo utilizável, em lotes, como o UFSCão das coleções carregadas já faz
+// sobre o recorte baixado — com a mesma estimativa de chamadas, tokens e tempo
+// antes de gastar a chave de quem pergunta, e as mesmas regras de citação.
+//
+// Só o conjunto léxico entra: a obra achada por significado não tem total (D2),
+// e "li todas as obras do tema" precisa ser verdade sobre um conjunto contável.
+
+/**
+ * Teto de obras lidas numa pergunta. Não é limite do banco: é o ponto em que a
+ * conta deixa de ser razoável para quem paga. 400 resumos são cerca de 213 mil
+ * tokens de entrada e 21 chamadas — uma ordem de grandeza acima da leitura
+ * padrão, e já caro em qualquer provedor. Acima disso o caminho honesto é
+ * restringir o tema, não ler mais.
+ */
+export const TETO_APROFUNDAR = 400;
+
+/** Uma obra como `resumos_das_obras` a devolve. */
+export interface ObraDoIndice {
+  documento_id: string; titulo: string; ano: number | null; colecao: string;
+  nivel: string | null; url: string | null; autores: string[] | null; orientador: string | null; resumo: string | null;
+}
+
+/** Obra lida no aprofundamento: serve de material ao modelo e de alvo da citação. */
+export interface ObraLida extends Fonte, FonteResumo {}
+
+/**
+ * Numera as obras na ordem em que o índice as devolveu, que é a ordem de
+ * aderência. A numeração é a das citações e precisa ser estável entre os lotes
+ * e a síntese final: por isso ela sai daqui, e não de cada lote.
+ */
+export function obrasLidas(obras: readonly ObraDoIndice[], inicio = 0): ObraLida[] {
+  return obras.map((o, i) => ({
+    numero: inicio + i + 1,
+    documentoId: o.documento_id,
+    titulo: o.titulo,
+    ano: o.ano,
+    colecao: o.colecao,
+    url: o.url,
+    origem: 'texto' as const,
+    nivel: o.nivel ?? '',
+    autores: o.autores ?? [],
+    orientador: o.orientador ?? '',
+    resumo: (o.resumo ?? '').trim().slice(0, MAX_CARACTERES_RESUMO),
+  }));
+}
+
+/** Lotes e estimativa de volume, mostrados antes de gastar a chave do usuário. */
+export const planejarLeituraDoTema = (obras: readonly ObraLida[]): PlanoAprofundamento<ObraLida> =>
+  planejarAprofundamento(obras);
+
+/** O que fica guardado na conversa depois de aprofundar: o texto e as fontes, sem os resumos. */
+export interface Aprofundamento {
+  texto: string;
+  leitura: LeituraDoTema;
+  fontes: Fonte[];
+}
+
+export interface LeituraDoTema {
+  /** Obras que casaram os termos, com resumo utilizável ou não. */
+  obras: number;
+  /** Quantas delas têm resumo utilizável: é o universo que dá para ler. */
+  comResumo: number;
+  /** Quantas foram lidas de fato — menor que `comResumo` quando bateu no teto. */
+  lidas: number;
+}
+
+/**
+ * Síntese final do aprofundamento, escrita sobre as notas citadas dos lotes. O
+ * panorama continua sendo o único lugar de onde número pode sair, e a leitura
+ * declara o que ficou de fora: obra sem resumo, e obra além do teto.
+ */
+export function promptReducaoDoTema(
+  pergunta: string, panorama: Panorama, leitura: LeituraDoTema, obras: readonly ObraLida[],
+  notas: readonly string[], turnos: readonly Turno[] = [],
+) {
+  const uteis = notas.map((n) => (n ?? '').trim()).filter((n) => n && !n.toUpperCase().includes(SEM_RELEVANCIA));
+  const cobertura = leitura.lidas >= leitura.comResumo
+    ? `As notas cobrem as ${leitura.lidas} obras com resumo utilizável do tema, de ${leitura.obras} no total`
+    : `As notas cobrem as ${leitura.lidas} obras de maior aderência, de ${leitura.comResumo} com resumo utilizável (o tema tem ${leitura.obras} obras): a leitura não é do tema inteiro, e você deve dizer isso`;
+  const sistema = sistemaSintese(
+    'as NOTAS dos lotes e as citações que elas já trazem',
+    `${cobertura}. São notas, não o texto original: não conte trabalhos nem estime proporções por conta própria — todo número sai do PANORAMA.`,
+  );
+  const mensagem = [
+    `${historicoTexto(turnos)}PERGUNTA: ${pergunta}`,
+    '',
+    'PANORAMA DO TEMA (apurado pelo banco sobre TODAS as obras que casaram com os termos; é o único lugar de onde número pode vir):',
+    ...marcadoresDoPanorama(panorama),
+    '',
+    `FONTES LIDAS (${obras.length}; os números das citações se referem a elas):`,
+    ...obras.map((o) => `[${o.numero}] ${o.titulo || 'Trabalho sem título'} (${o.ano ?? 'sem ano'}) · ${o.colecao}`),
+    '',
+    uteis.length
+      ? 'NOTAS DOS LOTES (só estas afirmações podem ser usadas, com as citações que já trazem):'
+      : 'NOTAS DOS LOTES: nenhum lote encontrou conteúdo relevante para a pergunta.',
+    ...uteis.flatMap((n, i) => ['', `— Notas ${i + 1} —`, n]),
+  ].join('\n');
+  return { sistema, mensagem };
+}

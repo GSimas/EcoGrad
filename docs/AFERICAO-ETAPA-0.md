@@ -259,6 +259,18 @@ Revocação / precisão; precisão sobre as obras recuperadas que foram triadas,
 
 A escala de similaridade é comprimida: as obras que pertencem a Q10 ficaram entre 0,70 e 0,81, e um tema sem nada no acervo ("bolo de chocolate") não passa de 0,66, mas "blockchain quântico" acha criptografia pós-quântica a 0,74. O limiar de 0,70 corta ruído e não prova ausência — por isso amostra achada só por significado vai ao modelo marcada como aproximação, e sem nenhuma contagem.
 
+## Aprofundar sobre o índice, medido (fase C do ADR 004)
+
+A fase C lê **todas** as obras do tema, e não a amostra de 15 a 20 da leitura padrão. Isso só é honesto se o conjunto lido for exatamente o que `panorama_tematico` contou — caso contrário a resposta descreveria um recorte e leria outro. As duas funções novas foram conferidas contra o acervo em 17/09/2026, pela chave anônima:
+
+**Paridade de contagem: exata nos sete recortes testados.** Q10 sem filtro (121 obras), Q10 por coleção (21), Q10 por período (47), Q10 pelos dois (10), Q11 (32), gestão do conhecimento (1.186) e psicologia positiva (12): em todos, `obras_do_tema` e `panorama_tematico` devolvem o mesmo total e a mesma `tsquery`. As 20 obras da amostra do panorama estavam todas na lista a ler — aprofundar é superconjunto da leitura padrão, nunca um recorte à parte.
+
+**Tempo, e o teto de 3 s do papel anônimo.** O recorte de Q10 sai em 0,6 s e "gestão do conhecimento" oscilou entre 1,0 s e 2,8 s. Com o cache frio, "educação" e "saúde" estouraram (erro 57014) na primeira chamada da sessão e saíram em cerca de 1 s nas seguintes — o mesmo padrão que a sondagem da amostra cega registrou. Daí a segunda tentativa em `obrasDoTema`, e a mensagem que diz o que fazer no lugar de "índice respondeu 500": restringir por programa ou período, o que foi verificado (educação por coleção sai em 0,8 s, por período em 0,6 s).
+
+**Volume que o navegador paga.** 100 resumos por página são cerca de 270 KB em 0,4 s; as quatro páginas do teto de 400 obras saíram em 1,96 s, com 214 mil caracteres de resumo — perto de 53 mil tokens só de material, o que confirma a ordem de grandeza que sustenta o teto.
+
+**Limite declarado.** Isto mede paridade e tempo, não qualidade de resposta: nenhuma síntese aprofundada foi pontuada contra gabarito. A leitura ponta a ponta gasta a chave de quem pergunta, e continua sem medição.
+
 ## O que falta para fechar a Etapa 0
 
 - **Triagem de Q12 e Q13** (psicologia positiva): 82 obras pendentes, sem responsável. Adiada por decisão de 16/09/2026 para seguir com Q10 e Q11 primeiro. Enquanto não for feita, psicologia positiva não tem gabarito pontuável e **Q15 fica sem denominador** — o que também adia a evidência empírica que sustenta a necessidade da Etapa 3.

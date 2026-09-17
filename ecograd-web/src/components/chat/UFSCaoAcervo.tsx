@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Eraser, Send, Settings, Square, User } from 'lucide-react';
+import { Eraser, Layers, Send, Settings, Square, User } from 'lucide-react';
 import { ConfiguracaoIA, RetratoUFSCao } from '@/components/chat/ConsultorIA';
 import { ConversaAcervo } from '@/components/layout/ConversaAcervo';
 import { Aviso, Expander } from '@/components/ui/primitives';
@@ -9,10 +9,18 @@ import { estadoDoIndice, indiceConfigurado } from '@/lib/indice-remoto';
 import { markdownParaHtml } from '@/lib/markdown';
 import { dicionarioDeItens, realcarMencoes, type Mencao } from '@/lib/mencoes';
 import { lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';
-import { citacoesInvalidas, fontesDaAmostra, realcarCitacoes, type Fonte } from '@/lib/ufscao-acervo';
-import { baixarArquivo } from '@/lib/utils';
+import { LOTES_SIMULTANEOS } from '@/lib/chat-sintese';
+import {
+  TETO_APROFUNDAR, citacoesInvalidas, fontesDaAmostra, realcarCitacoes,
+  type Aprofundamento, type Fonte, type Turno as TurnoDaConversa,
+} from '@/lib/ufscao-acervo';
+import { baixarArquivo, formatarDuracao, formatarNumero } from '@/lib/utils';
 import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
-import { perguntarAoAcervo, type Etapa, type RespostaAcervo } from '@/services/ufscao-acervo';
+import {
+  aprofundarTema, perguntarAoAcervo, prepararAprofundamento,
+  type Etapa, type PreparoAprofundamento, type RespostaAcervo,
+} from '@/services/ufscao-acervo';
+import type { ConfigIA } from '@/lib/provedores-ia';
 import { useSessionField } from '@/hooks/useSessionField';
 import type { TipoBusca } from '@/types';
 
@@ -132,7 +140,10 @@ export function UFSCaoAcervo() {
         <p className="mt-2">A pergunta e os dados apurados vão direto do seu navegador para o provedor, com a sua chave; o EcoGrad não guarda a conversa.</p>
       </Aviso>}
 
-      {conversa.map((r) => <Turno key={r.id} resposta={r} indice={catalogo.data} />)}
+      {conversa.map((r, i) => <Turno key={r.id} resposta={r} indice={catalogo.data} config={config}
+        ocupado={!!etapa}
+        turnos={conversa.slice(0, i).map((a) => ({ pergunta: a.pergunta, plano: a.plano, resposta: a.texto }))}
+        aoAprofundar={(aprofundamento) => setConversa((c) => c.map((x) => (x.id === r.id ? { ...x, aprofundamento } : x)))} />)}
 
       {etapa && <>
         <Balao papel="user">{perguntaAtual}</Balao>
@@ -171,7 +182,14 @@ function Balao({ papel, children }: { papel: 'user' | 'assistant'; children: Rea
   </div>;
 }
 
-function Turno({ resposta: r, indice }: { resposta: RespostaAcervo; indice: IndiceBusca | undefined }) {
+function Turno({ resposta: r, indice, config, ocupado, turnos, aoAprofundar }: {
+  resposta: RespostaAcervo;
+  indice: IndiceBusca | undefined;
+  config: ConfigIA | null;
+  ocupado: boolean;
+  turnos: TurnoDaConversa[];
+  aoAprofundar: (a: Aprofundamento) => void;
+}) {
   const fontes = useMemo(() => fontesDaAmostra(r.panorama), [r.panorama]);
   const dic = useMemo(() => dicionarioDeItens(itensDaResposta(r)), [r]);
   const html = useMemo(() => realcarMencoes(realcarCitacoes(markdownParaHtml(r.texto), fontes), dic), [r.texto, fontes, dic]);
@@ -203,7 +221,142 @@ function Turno({ resposta: r, indice }: { resposta: RespostaAcervo; indice: Indi
         </ol>
       </details>}
       <ComoApurei resposta={r} />
+      <Aprofundar resposta={r} indice={indice} config={config} ocupado={ocupado} turnos={turnos} aoAprofundar={aoAprofundar} />
     </Balao>
+  </div>;
+}
+
+/**
+ * "Aprofundar" sobre o índice (ADR 004, fase C). A leitura padrão citou a
+ * amostra que o banco escolheu; aqui o modelo lê **todas** as obras do tema
+ * com resumo utilizável, em lotes. É muito mais caro, e quem paga é quem
+ * pergunta: por isso a conta aparece inteira antes, e só um clique depois dela
+ * gasta a chave. O resultado fica guardado no turno, para não se perder.
+ */
+function Aprofundar({ resposta: r, indice, config, ocupado, turnos, aoAprofundar }: {
+  resposta: RespostaAcervo;
+  indice: IndiceBusca | undefined;
+  config: ConfigIA | null;
+  ocupado: boolean;
+  turnos: TurnoDaConversa[];
+  aoAprofundar: (a: Aprofundamento) => void;
+}) {
+  const [preparo, setPreparo] = useState<PreparoAprofundamento | null>(null);
+  const [estado, setEstado] = useState<'ocioso' | 'preparando' | 'lendo'>('ocioso');
+  const [progresso, setProgresso] = useState<{ feitos: number; lotes: number } | null>(null);
+  const [parcial, setParcial] = useState('');
+  const [erro, setErro] = useState<string | null>(null);
+  const controle = useRef<AbortController | null>(null);
+  useEffect(() => () => controle.current?.abort(), []);
+
+  const feito = r.aprofundamento;
+  const p = r.panorama;
+  // Só vale aprofundar o que o banco contou e a leitura padrão não cobriu: tema
+  // amplo demais não tem total, e aí não há conjunto para ler inteiro.
+  const cabe = !!r.plano?.grupos && !!p && !p.amplo_demais && p.obras > (p.amostra ?? []).length;
+  if (!cabe && !feito) return null;
+
+  const executar = async (tarefa: (request: AbortController, ativa: ConfigIA) => Promise<void>) => {
+    if (!config) { setErro('Configure o provedor de IA para aprofundar.'); return; }
+    const request = new AbortController();
+    controle.current = request;
+    setErro(null);
+    try {
+      await tarefa(request, config);
+    } catch (e) {
+      setErro(request.signal.aborted ? 'Leitura interrompida por você.' : e instanceof Error ? e.message : 'Não consegui aprofundar.');
+    } finally {
+      setEstado('ocioso');
+      setProgresso(null);
+      if (controle.current === request) controle.current = null;
+    }
+  };
+
+  const propor = () => void executar(async (request) => {
+    setEstado('preparando');
+    setPreparo(await prepararAprofundamento(r.plano!, request.signal));
+  });
+
+  const ler = (pronto: PreparoAprofundamento) => void executar(async (request, ativa) => {
+    setEstado('lendo');
+    setPreparo(null);
+    setParcial('');
+    const texto = await aprofundarTema(ativa, r.pergunta, r.panorama!, pronto, turnos,
+      (feitos, lotes) => setProgresso({ feitos, lotes }), setParcial, request.signal);
+    aoAprofundar({ texto, leitura: pronto.leitura, fontes: pronto.obras.map(({ numero, documentoId, titulo, ano, colecao, url }) => ({ numero, documentoId, titulo, ano, colecao, url })) });
+    setParcial('');
+  });
+
+  return <div className="mt-3 space-y-2 border-t border-eco-border pt-3 text-xs">
+    {!feito && estado === 'ocioso' && !preparo && <button type="button" className="btn text-xs" disabled={ocupado} onClick={propor}>
+      <Layers size={14} className="shrink-0" aria-hidden /> Aprofundar: ler todos os resumos do tema
+    </button>}
+
+    {estado === 'preparando' && <p role="status" className="text-slate-400">Vendo quantas obras do tema têm resumo para ler…</p>}
+
+    {preparo && estado === 'ocioso' && <div className="info space-y-2" role="region" aria-label="Custo de aprofundar">
+      <p>
+        Aprofundar lê <strong>{formatarNumero(preparo.leitura.lidas)} resumos</strong>
+        {preparo.leitura.lidas < preparo.leitura.comResumo
+          ? <> — os de maior aderência entre os {formatarNumero(preparo.leitura.comResumo)} do tema, porque a leitura para em {formatarNumero(TETO_APROFUNDAR)} obras</>
+          : <> de {formatarNumero(preparo.leitura.obras)} obras ({formatarNumero(preparo.leitura.obras - preparo.leitura.comResumo)} não têm resumo utilizável)</>}
+        , em {preparo.plano.lotes.length} {preparo.plano.lotes.length === 1 ? 'lote' : 'lotes'}: <strong>{preparo.plano.chamadas} chamadas</strong> ao seu provedor, até {LOTES_SIMULTANEOS} ao mesmo tempo.
+      </p>
+      <p>
+        Estimativa: ~{formatarNumero(preparo.plano.tokensEntrada)} tokens de entrada e ~{formatarNumero(preparo.plano.tokensSaida)} de saída, cobrados na sua conta.
+        Tempo: {formatarDuracao(preparo.plano.segundos)}. É ordem de grandeza: custo e tempo reais variam com o provedor e o modelo.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="btn btn-primary text-xs" onClick={() => ler(preparo)} disabled={!preparo.plano.lotes.length}>
+          <Layers size={14} className="shrink-0" aria-hidden /> Aprofundar agora
+        </button>
+        <button type="button" className="btn text-xs" onClick={() => setPreparo(null)}>Cancelar</button>
+      </div>
+    </div>}
+
+    {estado === 'lendo' && <div className="space-y-2">
+      <p role="status" className="text-slate-400">
+        {progresso && progresso.feitos < progresso.lotes
+          ? `Lendo os resumos em lotes: ${progresso.feitos} de ${progresso.lotes} concluídos.`
+          : 'Lotes lidos. Escrevendo a síntese sobre as notas…'}
+      </p>
+      {parcial && <div className="markdown" dangerouslySetInnerHTML={{ __html: markdownParaHtml(`${parcial}▌`) }} />}
+      <button type="button" className="btn text-xs" onClick={() => controle.current?.abort()}>
+        <Square size={14} className="shrink-0" aria-hidden /> Interromper
+      </button>
+    </div>}
+
+    {erro && <p role="alert" className="erro">{erro}</p>}
+    {feito && <RespostaAprofundada aprofundamento={feito} indice={indice} />}
+  </div>;
+}
+
+function RespostaAprofundada({ aprofundamento: a, indice }: { aprofundamento: Aprofundamento; indice: IndiceBusca | undefined }) {
+  const html = useMemo(() => realcarCitacoes(markdownParaHtml(a.texto), a.fontes), [a.texto, a.fontes]);
+  const invalidas = useMemo(() => citacoesInvalidas(a.texto, a.fontes.length), [a.texto, a.fontes.length]);
+  const abrir = (e: MouseEvent<HTMLDivElement>) => {
+    const alvo = (e.target as HTMLElement).closest<HTMLElement>('[data-fonte]');
+    const f = alvo ? a.fontes.find((x) => x.numero === Number(alvo.dataset.fonte)) : undefined;
+    if (f) abrirNoMotor(indice, 'Documento', f.titulo, f.url);
+  };
+  const parcial = a.leitura.lidas < a.leitura.comResumo;
+  return <div className="space-y-2">
+    <p className="uppercase tracking-wide text-slate-400">
+      Resposta aprofundada · {formatarNumero(a.leitura.lidas)} resumos lidos
+      {parcial ? ` dos ${formatarNumero(a.leitura.comResumo)} do tema` : ` de ${formatarNumero(a.leitura.obras)} obras`}
+    </p>
+    {/* O HTML vem de `markdownParaHtml`, que escapa o texto do modelo antes de marcar. */}
+    <div className="markdown" onClick={abrir} dangerouslySetInnerHTML={{ __html: html }} />
+    {invalidas.length > 0 && <p className="erro">A resposta cita {invalidas.map((n) => `[${n}]`).join(', ')}, que não existe entre as obras lidas. Desconsidere essas citações.</p>}
+    <details>
+      <summary className="cursor-pointer text-slate-300">Obras lidas ({formatarNumero(a.fontes.length)})</summary>
+      <ol className="mt-2 space-y-1">
+        {a.fontes.map((f) => <li key={f.numero} className="flex gap-1">
+          <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirNoMotor(indice, 'Documento', f.titulo, f.url)}>[{f.numero}] {f.titulo}</button>
+          <span className="shrink-0 text-slate-400">· {f.ano ?? 'sem ano'} · {f.colecao}</span>
+        </li>)}
+      </ol>
+    </details>
   </div>;
 }
 

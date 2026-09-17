@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { SEM_RELEVANCIA } from '../src/lib/chat-sintese';
 import {
-  citacoesInvalidas, dicionarioCompacto, fontesDaAmostra, lerPlano, promptPlanejamento, promptResposta, realcarCitacoes,
+  citacoesInvalidas, dicionarioCompacto, fontesDaAmostra, lerPlano, obrasLidas, planejarLeituraDoTema,
+  promptPlanejamento, promptReducaoDoTema, promptResposta, realcarCitacoes,
   type Panorama,
 } from '../src/lib/ufscao-acervo';
 
@@ -81,4 +83,49 @@ test('o planejamento leva dicionario, exemplos e so os ultimos turnos da convers
   assert.match(sistema, /obras_orientadas \(integer\)/);
   assert.doesNotMatch(mensagem, /p1/);
   assert.match(mensagem, /p2[\s\S]*p4[\s\S]*PERGUNTA: e depois de 2020\?/);
+});
+
+const doIndice = (n: number, resumo = 'x'.repeat(50)) => ({
+  documento_id: `d${n}`, titulo: `Obra ${n}`, ano: 2000 + n, colecao: 'TCC Administração',
+  nivel: null, url: null, autores: null, orientador: null, resumo,
+});
+
+test('aprofundar numera na ordem do indice, normaliza o que falta e corta resumo longo', () => {
+  const [a, b] = obrasLidas([
+    { ...doIndice(1), nivel: 'Mestrado', autores: ['Silva, Ana'], orientador: 'Souza, Bia' },
+    { ...doIndice(2), resumo: 'y'.repeat(5000) },
+  ]);
+  assert.equal(a.numero, 1);
+  assert.equal(a.documentoId, 'd1');
+  assert.equal(a.origem, 'texto', 'obra lida entra pelos termos: significado nao tem total (D2)');
+  assert.equal(b.numero, 2);
+  assert.deepEqual([b.nivel, b.autores, b.orientador], ['', [], ''], 'nulo do banco vira vazio, nao "null" no prompt');
+  assert.equal(b.resumo.length, 3000, 'resumo longo nao pode dominar o contexto');
+  assert.equal(obrasLidas([doIndice(9)], 40)[0].numero, 41, 'a numeracao continua de onde parou');
+});
+
+test('a conta do aprofundamento sai antes de gastar a chave', () => {
+  const plano = planejarLeituraDoTema(obrasLidas(Array.from({ length: 45 }, (_, i) => doIndice(i))));
+  assert.equal(plano.lotes.length, 3, '45 obras em lotes de 20');
+  assert.equal(plano.chamadas, 4, 'um por lote, mais a sintese final');
+  assert.ok(plano.tokensEntrada > 0 && plano.tokensSaida > 0);
+  assert.ok(plano.segundos[0] < plano.segundos[1]);
+  assert.equal(planejarLeituraDoTema([]).lotes.length, 0, 'sem obra com resumo nao ha o que ler');
+});
+
+test('a reducao do tema conta pelo panorama, cita as obras lidas e declara o que ficou de fora', () => {
+  const obras = obrasLidas([doIndice(1), doIndice(2)]);
+  const leitura = { obras: 51, comResumo: 2, lidas: 2 };
+  const { sistema, mensagem } = promptReducaoDoTema('empreendedorismo feminino?', panorama, leitura, obras,
+    ['- Fala de microcredito [1]', `  ${SEM_RELEVANCIA}  `]);
+  assert.match(mensagem, /Obras encontradas: 51 \(57 registros\)/, 'o numero vem do panorama, nao da leitura');
+  assert.match(mensagem, /FONTES LIDAS \(2; os n/);
+  assert.match(mensagem, /\[1\] Obra 1 \(2001\)/);
+  assert.match(mensagem, /- Fala de microcredito \[1\]/);
+  assert.doesNotMatch(mensagem, new RegExp(SEM_RELEVANCIA), 'lote sem nada relevante nao entra na sintese');
+  assert.match(sistema, /cobrem as 2 obras com resumo utilizável do tema, de 51 no total/);
+
+  const cortada = promptReducaoDoTema('tema?', panorama, { obras: 900, comResumo: 700, lidas: 400 }, obras, []);
+  assert.match(cortada.sistema, /400 obras de maior aderência, de 700 com resumo utilizável[\s\S]*você deve dizer isso/);
+  assert.match(cortada.mensagem, /nenhum lote encontrou conteúdo relevante/);
 });

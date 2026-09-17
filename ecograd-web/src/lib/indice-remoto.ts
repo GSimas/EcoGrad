@@ -173,3 +173,62 @@ export async function panoramaTematico(grupos: string[][], filtros: { colecao?: 
 export const registrosDoTituloNoIndice = (titulo: string) =>
   rpc<Array<{ documento_id: string; titulo: string; colecao: string; ano: number; url: string }>>(
     'registros_do_titulo', { titulo_busca: titulo });
+
+export interface ObrasDoTema {
+  consulta: string | null;
+  /** Obras que casaram os termos — o total exato do tema (D2: sem o vetor). */
+  obras: number;
+  /** Quantas delas têm resumo utilizável: são as que dá para ler. */
+  com_resumo: number;
+  teto: number;
+  /** Até `teto` ids, em ordem de aderência. É essa ordem que numera as citações. */
+  ids: string[];
+}
+
+/**
+ * Todas as obras do tema, para o "Aprofundar" da fase C — só a lista de ids,
+ * que é o que custa caro montar. Os resumos vêm depois, por `resumosDasObras`.
+ *
+ * Medido em 17/09/2026 contra o acervo: o recorte de Q10 (121 obras) sai em
+ * 0,6 s, e "gestão do conhecimento" (1.186 obras) oscilou entre 1,0 s e 2,8 s —
+ * perto demais do teto de 3 s do papel anônimo. Por isso a segunda tentativa,
+ * que costuma achar o cache quente; e por isso o estouro vira uma frase que diz
+ * o que fazer, em vez de "índice respondeu 500". Tema desse porte chega aqui:
+ * `panorama_tematico` o conta, então a tela oferece o botão.
+ */
+export async function obrasDoTema(
+  grupos: string[][], filtros: { colecao?: string; ano_min?: number; ano_max?: number } = {}, teto?: number,
+): Promise<ObrasDoTema> {
+  const corpo = {
+    grupos, colecao_filtro: filtros.colecao ?? null, ano_min: filtros.ano_min ?? null, ano_max: filtros.ano_max ?? null,
+    ...(teto ? { teto } : {}),
+  };
+  for (let tentativa = 0; ; tentativa += 1) {
+    const r = await fetch(`${URL_INDICE}/rest/v1/rpc/obras_do_tema`, {
+      method: 'POST',
+      headers: { apikey: CHAVE_INDICE, authorization: `Bearer ${CHAVE_INDICE}`, 'content-type': 'application/json' },
+      body: JSON.stringify(corpo),
+      signal: AbortSignal.timeout(TEMPO_LIMITE),
+    });
+    if (r.ok) return await r.json() as ObrasDoTema;
+    const erro = await r.json().catch(() => null) as { code?: string; message?: string } | null;
+    // 57014 é `statement_timeout` do Postgres.
+    if (erro?.code === '57014') {
+      if (tentativa === 0) continue;
+      throw new Error('O tema tem obras demais para listar dentro do limite de tempo do banco. Dá para aprofundar um recorte menor: restrinja por programa ou por período e pergunte de novo.');
+    }
+    throw new Error(erro?.message ?? `índice respondeu ${r.status}`);
+  }
+}
+
+export interface ObraComResumo {
+  documento_id: string; titulo: string; ano: number | null; colecao: string;
+  nivel: string | null; url: string | null; autores: string[] | null; orientador: string | null; resumo: string;
+}
+
+/**
+ * Resumo completo de uma página de obras, na ordem em que os ids vêm. A função
+ * do banco corta em 200 ids por chamada e não avisa; quem chama pagina em 100,
+ * bem abaixo disso. Medido: 100 resumos são cerca de 270 KB em 0,4 s.
+ */
+export const resumosDasObras = (ids: readonly string[]) => rpc<ObraComResumo[]>('resumos_das_obras', { ids });

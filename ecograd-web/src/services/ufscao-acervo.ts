@@ -1,8 +1,11 @@
-import { consultarIndice, dicionarioDoIndice, panoramaTematico } from '@/lib/indice-remoto';
+import { LOTES_SIMULTANEOS, promptLote, type PlanoAprofundamento } from '@/lib/chat-sintese';
+import { consultarIndice, dicionarioDoIndice, obrasDoTema, panoramaTematico, resumosDasObras } from '@/lib/indice-remoto';
 import type { ConfigIA } from '@/lib/provedores-ia';
 import {
-  dicionarioCompacto, lerPlano, promptCorrecaoSql, promptPlanejamento, promptResposta,
-  type Dados, type Panorama, type Plano, type Turno,
+  TETO_APROFUNDAR, dicionarioCompacto, lerPlano, obrasLidas, planejarLeituraDoTema, promptCorrecaoSql,
+  promptPlanejamento, promptReducaoDoTema, promptResposta,
+  type Aprofundamento, type Dados, type LeituraDoTema, type ObraDoIndice, type ObraLida, type Panorama,
+  type Plano, type Turno,
 } from '@/lib/ufscao-acervo';
 import { escreverSintese } from './sintese-acervo';
 
@@ -40,6 +43,8 @@ export interface RespostaAcervo {
   planoImprovisado?: boolean;
   /** A busca de tema tentou usar significado e não conseguiu: ficou só nos termos. */
   semSignificado?: boolean;
+  /** Leitura de todos os resumos do tema, quando o usuário pediu e pagou por ela (fase C). */
+  aprofundamento?: Aprofundamento;
 }
 
 /** O dicionário muda só com o esquema: uma leitura por sessão. */
@@ -115,4 +120,82 @@ export async function perguntarAoAcervo(
   const resposta = promptResposta(pergunta, plano, dados, erroSql, panorama, erroPanorama, turnos);
   const texto = await escreverSintese(config, resposta.sistema, resposta.mensagem, aoEscrever, signal);
   return { id: Date.now(), pergunta, plano, dados, erroSql, panorama, erroPanorama, texto, planoImprovisado, semSignificado };
+}
+
+/**
+ * "Aprofundar" sobre o índice (ADR 004, fase C).
+ *
+ * Duas metades, de propósito: `prepararAprofundamento` só fala com o índice e
+ * devolve quanto vai custar; `aprofundarTema` é o que gasta a chave do usuário,
+ * e só roda depois que ele viu a conta. É a mesma ordem do UFSCão das coleções
+ * carregadas — quantos resumos se lê domina o custo, e quem paga é quem
+ * pergunta.
+ */
+
+/** Obras por chamada a `resumos_das_obras`: o banco aceita 200, e 100 mantém a resposta em torno de 200 KB. */
+const OBRAS_POR_PAGINA = 100;
+
+export interface PreparoAprofundamento {
+  obras: ObraLida[];
+  leitura: LeituraDoTema;
+  plano: PlanoAprofundamento<ObraLida>;
+}
+
+/** Lista as obras do tema e lê os resumos, sem chamar modelo nenhum. */
+export async function prepararAprofundamento(plano: Plano, signal: AbortSignal): Promise<PreparoAprofundamento> {
+  if (!plano.grupos) throw new Error('Esta resposta não veio de uma busca de tema.');
+  const filtros = { colecao: plano.colecao, ano_min: plano.ano_min, ano_max: plano.ano_max };
+  const { obras, com_resumo, ids } = await obrasDoTema(plano.grupos, filtros, TETO_APROFUNDAR);
+
+  const lidas: ObraDoIndice[] = [];
+  for (let i = 0; i < ids.length; i += OBRAS_POR_PAGINA) {
+    signal.throwIfAborted();
+    lidas.push(...await resumosDasObras(ids.slice(i, i + OBRAS_POR_PAGINA)));
+  }
+  const numeradas = obrasLidas(lidas);
+  return {
+    obras: numeradas,
+    leitura: { obras, comResumo: com_resumo, lidas: numeradas.length },
+    plano: planejarLeituraDoTema(numeradas),
+  };
+}
+
+/**
+ * Lê os lotes e escreve a síntese sobre as notas. Um lote que falha para os
+ * demais: síntese sobre notas incompletas pareceria completa.
+ */
+export async function aprofundarTema(
+  config: ConfigIA, pergunta: string, panorama: Panorama, preparo: PreparoAprofundamento,
+  turnos: readonly Turno[], aoProgredir: (feitos: number, lotes: number) => void,
+  aoEscrever: (texto: string) => void, signal: AbortSignal,
+): Promise<string> {
+  const total = preparo.plano.lotes.length;
+  if (!total) throw new Error('Nenhuma obra do tema tem resumo utilizável para ler.');
+  const notas: string[] = new Array(total).fill('');
+  const controle = new AbortController();
+  const parar = () => controle.abort(signal.reason);
+  signal.addEventListener('abort', parar, { once: true });
+  let proximo = 0;
+  let feitos = 0;
+  aoProgredir(feitos, total);
+  try {
+    const trabalhador = async () => {
+      while (proximo < total && !controle.signal.aborted) {
+        const i = proximo++;
+        const { sistema, mensagem } = promptLote(pergunta, preparo.plano.lotes[i]);
+        try {
+          notas[i] = await escreverSintese(config, sistema, mensagem, () => {}, controle.signal);
+        } catch (e) {
+          controle.abort();
+          throw e;
+        }
+        aoProgredir((feitos += 1), total);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(LOTES_SIMULTANEOS, total) }, trabalhador));
+    const { sistema, mensagem } = promptReducaoDoTema(pergunta, panorama, preparo.leitura, preparo.obras, notas, turnos);
+    return await escreverSintese(config, sistema, mensagem, aoEscrever, controle.signal);
+  } finally {
+    signal.removeEventListener('abort', parar);
+  }
 }

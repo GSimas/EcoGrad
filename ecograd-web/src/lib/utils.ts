@@ -10,6 +10,11 @@ export function formatarNumero(v: number): string {
   return new Intl.NumberFormat('pt-BR').format(v);
 }
 
+/** Faixa de tempo em segundos, como o usuário lê antes de mandar ler os resumos. */
+export function formatarDuracao([min, max]: readonly [number, number]): string {
+  return max < 60 ? 'menos de 1 minuto' : `cerca de ${Math.max(1, Math.round(min / 60))} a ${Math.ceil(max / 60)} minutos`;
+}
+
 export function formatarDecimal(v: number, casas = 4): string {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
 }

@@ -1127,3 +1127,112 @@ as $$
 $$;
 
 grant execute on function consulta_por_grupos(jsonb), panorama_tematico(jsonb, int, text, int, int, text, real) to anon, authenticated;
+
+-- ============================================================================
+-- Aprofundar sobre o índice (ADR 004, fase C).
+--
+-- A leitura padrão manda ao modelo a amostra de 15 a 20 obras que
+-- `panorama_tematico` escolheu (decisão D8). Aprofundar lê **todas** as obras do
+-- tema, em lotes, como o UFSCão das coleções carregadas já faz sobre o recorte
+-- baixado — e por isso precisa de duas coisas que a amostra não dá: a lista
+-- inteira e o resumo completo de cada obra.
+--
+-- São duas funções, e não uma, porque o custo está todo na primeira: montar o
+-- conjunto candidato é a parte cara (junção de palavras-chave mais FTS), e ler
+-- resumo por chave primária é barato. Uma chamada monta a lista de ids; as
+-- seguintes buscam os resumos em páginas, sem refazer a busca a cada página.
+--
+-- **Só o conjunto léxico entra (D2).** O vizinho por similaridade não tem total:
+-- dizer "li todas as obras do tema" sobre um conjunto que inclui os 40 vizinhos
+-- mais próximos seria falso. O vetor continua na amostra da leitura padrão, com
+-- a origem declarada; aqui ele não entra.
+create or replace function obras_do_tema(grupos jsonb, colecao_filtro text default null,
+                                         ano_min int default null, ano_max int default null,
+                                         teto int default 400)
+returns json
+language sql stable
+set search_path = public
+set work_mem = '32MB'
+as $$
+  with parametros as materialized (
+    select consulta_por_grupos(grupos) as q, least(greatest(coalesce(teto, 400), 1), 1000) as t
+  ),
+  termos as materialized (
+    select g.ordem as grupo, sem_acento(left(t.termo, 80)) as termo
+    from jsonb_array_elements(case when jsonb_typeof(grupos) = 'array' then grupos else '[]' end) with ordinality as g(valor, ordem),
+         lateral jsonb_array_elements_text(case when jsonb_typeof(g.valor) = 'array' then g.valor else '[]' end) as t(termo)
+    where length(btrim(t.termo)) >= 3
+  ),
+  termos_pc as materialized (
+    select distinct t.grupo, tp.termo from termos t join termo_perfil tp on sem_acento(tp.termo) like '%' || t.termo || '%'
+  ),
+  obras_pc as materialized (
+    select r.documento_id
+    from termos_pc tp
+    cross join lateral (select k.registro_id from registro_palavra_chave k where k.termo = tp.termo offset 0) k
+    join registro r on r.id = k.registro_id
+    group by r.documento_id having count(distinct tp.grupo) = (select count(distinct grupo) from termos)
+  ),
+  candidatas as materialized (
+    select d.id, ts_rank(d.tsv, p.q) as aderencia from documento d, parametros p where p.q is not null and d.tsv @@ p.q
+    union all
+    select documento_id, 0 from obras_pc
+  ),
+  pontuadas as (
+    select id, max(aderencia) + case when count(*) > 1 or bool_or(aderencia = 0) then 0.1 else 0 end as aderencia
+    from candidatas group by id
+  ),
+  -- O mesmo recorte da amostra: um registro por obra, e os filtros do plano.
+  com_registro as (
+    select distinct on (r.documento_id) r.documento_id
+    from registro r
+    where r.documento_id in (select id from pontuadas)
+      and (colecao_filtro is null or sem_acento(r.colecao) like '%' || sem_acento(colecao_filtro) || '%')
+      and (ano_min is null or r.ano >= ano_min)
+      and (ano_max is null or r.ano <= ano_max)
+    order by r.documento_id, r.ano desc nulls last, r.id
+  ),
+  -- `resumo_utilizavel` aqui é o da obra, não o do registro: entre registros da
+  -- mesma obra fica o resumo mais longo, e é ele que o modelo vai ler.
+  obra as materialized (
+    select c.documento_id, a.aderencia, d.resumo_utilizavel
+    from com_registro c join pontuadas a on a.id = c.documento_id join documento d on d.id = c.documento_id
+  )
+  select json_build_object(
+    'consulta', (select q::text from parametros),
+    'obras', (select count(*) from obra),
+    'com_resumo', (select count(*) from obra where resumo_utilizavel),
+    'teto', (select t from parametros),
+    'ids', coalesce((select json_agg(documento_id) from (
+      select documento_id from obra where resumo_utilizavel
+      order by aderencia desc, documento_id limit (select t from parametros)
+    ) x), '[]'::json)
+  );
+$$;
+
+-- Resumo completo das obras pedidas, na ordem em que `ids` vem — que é a ordem
+-- de aderência de `obras_do_tema`, e portanto a numeração das citações. Obra sem
+-- resumo utilizável não volta: `obras_do_tema` já não a lista.
+create or replace function resumos_das_obras(ids text[])
+returns json
+language sql stable
+set search_path = public
+as $$
+  with pedidas as (select id, ordem from unnest(coalesce(ids, '{}')) with ordinality as u(id, ordem) limit 200),
+  escolhido as (
+    select distinct on (r.documento_id) r.documento_id, r.id as registro_id, r.colecao, r.ano, r.nivel_academico, r.url
+    from registro r where r.documento_id in (select id from pedidas)
+    order by r.documento_id, r.ano desc nulls last, r.id
+  )
+  select coalesce(json_agg(json_build_object(
+    'documento_id', e.documento_id, 'titulo', d.titulo, 'ano', e.ano, 'colecao', e.colecao,
+    'nivel', e.nivel_academico, 'url', e.url,
+    'autores', (select json_agg(p.nome_canonico) from registro_pessoa rp join pessoa p on p.id = rp.pessoa_id where rp.registro_id = e.registro_id and rp.papel = 'Autor'),
+    'orientador', (select string_agg(p.nome_canonico, '; ') from registro_pessoa rp join pessoa p on p.id = rp.pessoa_id where rp.registro_id = e.registro_id and rp.papel = 'Orientador'),
+    'resumo', left(d.resumo, 3000)
+  ) order by pe.ordem) , '[]'::json)
+  from escolhido e join documento d on d.id = e.documento_id join pedidas pe on pe.id = e.documento_id
+  where d.resumo_utilizavel;
+$$;
+
+grant execute on function obras_do_tema(jsonb, text, int, int, int), resumos_das_obras(text[]) to anon, authenticated;
