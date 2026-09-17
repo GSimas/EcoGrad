@@ -86,7 +86,7 @@ const TABELAS = [
   ['rede_metrica', 'rede_metrica.csv', ['escopo', 'colecao', 'tipo', 'rotulo', 'grau_absoluto', 'grau', 'intermediacao', 'proximidade', 'agrupamento', 'comunidade', 'ranking', 'nos_na_rede'],
     { grau_absoluto: 'int', grau: 'num', intermediacao: 'num', proximidade: 'num', agrupamento: 'num', comunidade: 'int', ranking: 'int', nos_na_rede: 'int' }],
   // Por último, de propósito: é o carimbo de que a carga terminou inteira.
-  ['indice_meta', 'indice_meta.csv', ['id', 'base_version', 'sha256_pos', 'sha256_tcc', 'gerado_em', 'registros', 'documentos'], { id: 'bool', registros: 'int', documentos: 'int' }],
+  ['indice_meta', 'indice_meta.csv', ['id', 'base_version', 'sha256_pos', 'sha256_tcc', 'sha256_lotes', 'gerado_em', 'registros', 'documentos'], { id: 'bool', registros: 'int', documentos: 'int' }],
 ];
 
 
