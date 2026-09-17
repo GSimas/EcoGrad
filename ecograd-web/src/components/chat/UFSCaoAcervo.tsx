@@ -24,12 +24,6 @@ import {
 import type { ConfigIA } from '@/lib/provedores-ia';
 import { useSessionField } from '@/hooks/useSessionField';
 
-const EXEMPLOS = [
-  'Como os trabalhos da UFSC estão tratando empreendedorismo feminino?',
-  'Quem mais orientou trabalhos sobre gestão do conhecimento?',
-  'Quantos trabalhos a Patricia de Sá Freire tem, e em quais papéis?',
-];
-
 const ETAPAS: Record<Etapa, string> = {
   planejando: 'O UFSCão está entendendo a pergunta',
   consultando: 'O UFSCão está farejando o acervo inteiro',
@@ -126,10 +120,6 @@ export function UFSCaoAcervo() {
       </>}
       {erro && <Aviso tipo="erro"><p role="status">{erro}</p></Aviso>}
       <AberturaEmCurso />
-
-      {conversa.length === 0 && !etapa && <div className="flex flex-wrap gap-2">
-        {EXEMPLOS.map((e) => <button key={e} type="button" className="btn text-left text-xs" onClick={() => void enviar(e)}>{e}</button>)}
-      </div>}
 
       <form className="flex items-end gap-2" onSubmit={(e: FormEvent) => { e.preventDefault(); void enviar(entrada); }}>
         <textarea value={entrada} onChange={(e) => setEntrada(e.target.value)} rows={2} maxLength={2000}

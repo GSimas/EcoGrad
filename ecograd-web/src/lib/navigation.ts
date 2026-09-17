@@ -8,6 +8,20 @@ export const HISTORY_LIMIT = 256 * 1024;
 export const HISTORY_COUNT = 60;
 export const HISTORY_TTL = 24 * 60 * 60 * 1000;
 export const analysisPage = (page: Page): page is Rota => ['dashboard', 'busca', 'foresight', 'memetica'].includes(page);
+
+/**
+ * As páginas que o EcoGrad oferece agora. Foresight e Memética continuam
+ * inteiras no código — motores, testes e paridade com o backend Python —, e só
+ * não são alcançáveis: sair desta lista é o único passo para trazer de volta.
+ *
+ * Esconder de verdade é mais do que tirar do menu. Uma sessão antiga guarda a
+ * rota, e o endereço `#/foresight` continua sendo digitável; por isso
+ * `rotaVisivel` também guarda a restauração da sessão e a leitura da URL.
+ */
+export const ROTAS_VISIVEIS: readonly Rota[] = ['dashboard', 'busca'];
+export const rotaVisivel = (rota: string): rota is Rota => (ROTAS_VISIVEIS as readonly string[]).includes(rota);
+/** Para onde vai quem chega numa página escondida, por sessão antiga ou por URL. */
+export const ROTA_PADRAO: Rota = 'dashboard';
 /** Only fixed, public page names can enter a URL. No entity, draft, collection or search query. */
 export const pageUrl = (page: Page) => `#/${page === 'nao-encontrada' ? 'pagina-nao-encontrada' : page}`;
 export function parsePage(hash: string): Page | null {
@@ -16,7 +30,11 @@ export function parsePage(hash: string): Page | null {
   return (PAGES as readonly string[]).includes(value) && hash.startsWith('#/') ? value as Page : 'nao-encontrada';
 }
 /** Sem base carregada o lugar é a apresentação: é lá que as coleções são escolhidas. */
-export function statePage(s: EcoGradState): Page { return !s.apresentacaoVista || !s.dadosCarregados ? 'inicio' : s.rota; }
+export function statePage(s: EcoGradState): Page {
+  if (!s.apresentacaoVista || !s.dadosCarregados) return 'inicio';
+  // A sessão guardada pode apontar para uma página que hoje está escondida.
+  return rotaVisivel(s.rota) ? s.rota : ROTA_PADRAO;
+}
 export const contextualKey = (key: string) => /^(tabela\.|grafico\.|rede\.|tabs\.|expander\.|dossie\.|orbita\.|capes\.|memes\.|dashboard\.|busca\.texto\.)/.test(key);
 export type ViewContext = Pick<EcoGradState, 'buscaTipo' | 'buscaTermo' | 'tipoForesight' | 'janelaRecente' | 'metodoCorte' | 'percentilCorte' | 'usarBootstrap' | 'fonteMemes' | 'minCoocorrencia'> & { ui: Record<string, unknown> };
 export function captureContext(s: EcoGradState): ViewContext {

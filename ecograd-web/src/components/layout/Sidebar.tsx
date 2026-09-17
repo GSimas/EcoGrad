@@ -1,5 +1,5 @@
 import { Aparencia } from './Aparencia';
-import { PAGE_LABELS } from '@/lib/navigation';
+import { PAGE_LABELS, rotaVisivel } from '@/lib/navigation';
 import { navigatePage, useNavigation } from '@/services/navigation';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -13,12 +13,14 @@ import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import { RecorteAtivo } from './RecorteAtivo';
 import type { Rota } from '@/types';
 
-const ITENS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }> = [
+const TODAS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }> = [
   { rota: 'dashboard', rotulo: 'Dashboard', icone: LayoutDashboard },
   { rota: 'busca', rotulo: 'Motor de Busca', icone: Search },
   { rota: 'foresight', rotulo: 'Foresight', icone: Radar },
   { rota: 'memetica', rotulo: 'Memética e Ontologia', icone: Dna },
 ];
+/** Só o que está visível agora chega ao menu (`ROTAS_VISIVEIS`, em `lib/navigation`). */
+const ITENS = TODAS.filter(({ rota }) => rotaVisivel(rota));
 
 export function AcessosAjuda({ compacto = false }: { compacto?: boolean }) {
   return <>
