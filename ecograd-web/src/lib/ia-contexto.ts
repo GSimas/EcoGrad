@@ -1,7 +1,6 @@
 import type { ChatMessage, Documento } from '../types';
 export const LIMITE_MENSAGEM=8000;
 export const LIMITE_HISTORICO=24000;
-export const LIMITE_CATALOGO=1500;
 export function historicoEnviado(mensagens:readonly ChatMessage[]) {
   const saida:ChatMessage[]=[];let caracteres=0;
   for(const m of [...mensagens].reverse()){if(saida.length>=20 || caracteres+m.content.length>LIMITE_HISTORICO) break;saida.unshift(m);caracteres+=m.content.length;}

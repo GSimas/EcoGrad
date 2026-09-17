@@ -1,6 +1,8 @@
 # ADR 001 — Chat semântico sobre o acervo completo
 
-**Status:** proposto. Nenhuma infraestrutura criada, nenhum serviço contratado, nenhum dado enviado a terceiros, nenhum commit ou publicação decorrente desta decisão.
+**Status:** aceito, com as Etapas 0, 1 e 2 executadas. A infraestrutura da Etapa 2 existe: o projeto `ecograd-indice` no Supabase guarda o índice derivado, e o acervo — que é público e vem do repositório institucional — está lá. As Etapas 3 a 5 seguem não autorizadas.
+
+**Revisado por** [ADR 003](ADR-003-O-QUE-A-MEDICAO-MUDOU.md), que corrige o que a medição das Etapas 1 e 2 desmentiu deste documento, e pelo [ADR 004](ADR-004-UFSCAO-SOBRE-O-ACERVO.md), que redefine o objetivo e a ordem das etapas. Onde divergirem, vale o mais recente.
 
 **Data:** 15/09/2026 · **Decisor:** Gustavo Simas (produto e operação) · Primeiro registro da série ADR do EcoGrad.
 
@@ -27,7 +29,7 @@ Números apurados diretamente nas bases publicadas (`base_consolidada_ufsc.json.
 
 O EcoGrad é estático por decisão. `scripts/sync-data.mjs` deriva das bases os fragmentos por coleção, o índice global de busca (254.867 itens em 5,3 MB) e o índice de orientações; os nomes carregam hash de conteúdo e são servidos com `Cache-Control: immutable`. Todo o resto — índices invertidos, métricas, SNA, redes — é derivado no navegador a partir de `construirIndicesInvertidos(docs)`.
 
-Existem duas funções Netlify com `GEMINI_API_KEY` no servidor (síntese e extração de ontologia) e o Consultor IA em **BYOK**: a chave é do usuário e a requisição sai do navegador direto para um dos nove provedores configuráveis, sem passar pelos servidores do EcoGrad.
+Existem duas funções Netlify com `GEMINI_API_KEY` no servidor (síntese e extração de ontologia) e o UFSCão (consultor de IA) em **BYOK**: a chave é do usuário e a requisição sai do navegador direto para um dos nove provedores configuráveis, sem passar pelos servidores do EcoGrad.
 
 `netlify/functions/neo4j-query.ts` está desativado, com a justificativa registrada no próprio arquivo: "a aplicação atual usa arquivos JSON por coleção". Um backend sempre ligado já foi tentado e revertido neste projeto — precedente que pesa nesta decisão.
 
@@ -64,7 +66,7 @@ As regras abaixo são a decisão; cada uma responde a um risco concreto.
 
 **D9 — O agente age dentro do app:** carregar as coleções do recorte, abrir o dossiê de uma pessoa, mandar o resultado para o Motor de Busca. Sem isso, o chat viraria um aplicativo paralelo e não verificável ao lado do rigoroso.
 
-**D10 — Custeio: BYOK permanece o padrão.** A chave continua sendo do usuário e não passa pelos servidores do EcoGrad. Sem login, sem histórico salvo. Teto de **US$ 25/mês** para infraestrutura. Um eventual modo de demonstração com chave do projeto **não está autorizado por esta decisão** e, se vier, exige trava de orçamento, limite por origem e uma decisão própria — o teto de US$ 25 não acomoda infraestrutura e consumo de modelo ao mesmo tempo.
+**D10 — Custeio: BYOK permanece o padrão.** A chave continua sendo do usuário e não passa pelos servidores do EcoGrad. Sem login, sem histórico salvo. Teto de **US$ 25/mês** para infraestrutura. *Corrigido para US$ 35/mês pelo ADR 003: o teto supunha o plano Pro dedicado ao EcoGrad, e a organização já hospedava outro projeto.* Um eventual modo de demonstração com chave do projeto **não está autorizado por esta decisão** e, se vier, exige trava de orçamento, limite por origem e uma decisão própria — o teto de US$ 25 não acomoda infraestrutura e consumo de modelo ao mesmo tempo.
 
 **D11 — A unificação de pessoas sobe para o servidor.** Deixa de ser preferência por navegador e passa a ser curadoria versionada no repositório, aplicada tanto na geração dos JSON estáticos quanto na do índice — com justificativa registrada, como já se faz na curadoria por termo. A fusão local continua existindo como camada pessoal por cima da canônica. Sem isso, o agente contaria "Patricia de Sa" e "Patricia de Sá Freire" como duas pessoas, contradizendo o que o usuário vê na tela.
 
@@ -97,13 +99,14 @@ Recorrente:
 | Item | Estimativa |
 | --- | --- |
 | Supabase Pro (8 GB) | **US$ 25/mês** |
+| Projeto dedicado `ecograd-indice`, ao lado do que já existia na organização | **US$ 10/mês** |
 | Atualização semanal incremental (embeddings + ontologia dos novos) | centavos |
 | Por pergunta, leitura padrão de 20 resumos | ~US$ 0,006 — **pago pelo usuário (BYOK)** |
 | Por pergunta com "aprofundar" sobre ~300 documentos | ~US$ 0,06 a 0,12 — **pago pelo usuário** |
 
 Dimensionamento do armazenamento: 92.331 vetores de 1.536 dimensões em `float32` ocupariam 567 MB só de vetores; em `halfvec(512)` caem para **95 MB**, e com índice HNSW e os textos o banco fica na casa de 300 a 400 MB. O plano gratuito do Supabase tem 500 MB e caberia, mas **pausa após sete dias sem uso** — inviável para um aplicativo público, daí o plano pago.
 
-Total para o projeto: **US$ 25/mês mais US$ 16 a 81 de partida**, dentro do teto definido. Preços de provedor mudam; confirmar antes de contratar.
+Total para o projeto: **US$ 35/mês mais US$ 16 a 81 de partida** — os US$ 25 do Pro mais US$ 10 do projeto dedicado, confirmados na API do Supabase em 16/09/2026. O teto original de US$ 25 supunha o plano inteiro para o EcoGrad; como a organização já rodava outro projeto, o crédito de computação do Pro estava tomado. A alternativa sem custo adicional — um schema dentro do projeto existente — foi descartada porque a chave anônima é do projeto, não do schema: publicá-la num app estático exporia os dois acervos ao mesmo tráfego.
 
 O custo relevante não é o financeiro. É operacional: um serviço sempre ligado, um pipeline de sincronização, uma segunda representação do acervo que pode divergir, e o trabalho de avaliar se a recuperação está boa.
 
@@ -139,11 +142,11 @@ O custo relevante não é o financeiro. É operacional: um serviço sempre ligad
 
 ## Plano por etapas, com porta de saída
 
-**Etapa 0 — Aferição.** 25 perguntas com resposta conhecida, incluindo as duas do briefing. Sem infraestrutura. *Porta: se não for possível escrever o gabarito de uma pergunta, ela não deve ser prometida ao usuário.*
+**Etapa 0 — Aferição.** *(cumprida para Q10 e Q11; Q12 e Q13 dispensadas por decisão de 16/09/2026.)* 25 perguntas com resposta conhecida, incluindo as duas do briefing. Sem infraestrutura. *Porta: se não for possível escrever o gabarito de uma pergunta, ela não deve ser prometida ao usuário.*
 
-**Etapa 1 — Chat com ferramentas sobre o recorte já carregado.** Zero infraestrutura, aproveitando os índices invertidos locais. Valida o alternador, o formato recorte-antes-da-síntese e as ações no app. *Porta: se o formato não convencer aqui, nenhum banco resolve.*
+**Etapa 1 — Chat com ferramentas sobre o recorte já carregado.** *(cumprida: a porta passou, e a revocação medida de ponta a ponta foi 42%.)* Zero infraestrutura, aproveitando os índices invertidos locais. Valida o alternador, o formato recorte-antes-da-síntese e as ações no app. *Porta: se o formato não convencer aqui, nenhum banco resolve.*
 
-**Etapa 2 — Índice no Supabase apenas com metadados, FTS e agregados.** Sem vetor. Já responde quem, quantos e quando sobre o acervo inteiro. Mede também quanta duplicação existe de fato. *Porta: medir quantas das 25 perguntas ficam resolvidas só com isso.*
+**Etapa 2 — Índice no Supabase apenas com metadados, FTS e agregados.** *(cumprida: 16 gabaritos reproduzidos exatamente, e o FTS entrega 79% de revocação com 76% de precisão.)* Sem vetor. Já responde quem, quantos e quando sobre o acervo inteiro. Mede também quanta duplicação existe de fato. *Porta: medir quantas das 25 perguntas ficam resolvidas só com isso.*
 
 **Etapa 3 — Ontologia no pipeline.** Ferramentas, teorias e métodos viram consulta estruturada. *Porta: amostra curada por humano antes de publicar o enriquecimento.*
 
@@ -153,10 +156,10 @@ O custo relevante não é o financeiro. É operacional: um serviço sempre ligad
 
 ## O que esta decisão não autoriza
 
-Contratar serviço, provisionar banco, enviar qualquer parte do acervo a terceiros, criar chave, alterar código de produção ou publicar. Cada etapa acima é aprovada separadamente.
+*Valia enquanto o status era `proposto`.* As Etapas 0, 1 e 2 foram aprovadas e executadas: o serviço está contratado, o banco provisionado e o acervo indexado. Seguem **não autorizadas** a extração ontológica sobre a base inteira (Etapa 3), o índice vetorial (Etapa 4), a unificação canônica de pessoas (Etapa 5), a publicação do app contra o índice e qualquer modo de demonstração com chave do projeto. Cada uma é aprovada separadamente.
 
 ## Pendências do decisor
 
-- Confirmar os preços vigentes de Supabase e dos modelos antes da Etapa 2.
+- ~~Confirmar os preços vigentes de Supabase e dos modelos antes da Etapa 2.~~ Feito em 16/09/2026: Pro em US$ 25/mês, projeto adicional em US$ 10/mês.
 - Decidir, em ADR próprio, se haverá modo de demonstração com chave do projeto.
 - Definir o responsável pela revisão humana da ontologia (Etapa 3) e das fusões canônicas (Etapa 5), hoje sem dono declarado.

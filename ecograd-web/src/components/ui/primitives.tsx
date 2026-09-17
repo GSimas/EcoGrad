@@ -3,6 +3,7 @@ import { useId, useRef, useState, type ReactNode } from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { ChevronDown, Info, ChevronRight } from 'lucide-react';
 import { cn, formatarNumero } from '@/lib/utils';
+import { classeDoTipo } from '@/lib/tipos-cor';
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={cn('card', className)}>{children}</div>;
@@ -17,10 +18,14 @@ export function Secao({ children, icone }: { children: ReactNode; icone?: ReactN
   );
 }
 
-/** Nome de entidade com invólucro de botão, que abre o dossiê — o mesmo das tabelas de orientandos. */
-export function BotaoEntidade({ nome, onClick, icone }: { nome: string; onClick: () => void; icone?: ReactNode }) {
+/**
+ * Nome de entidade com invólucro de botão, que abre o dossiê — o mesmo das
+ * tabelas de orientandos. `tipo` pinta o botão na cor da família do item
+ * (trabalho, pessoa ou tema), a mesma usada no resto do EcoGrad.
+ */
+export function BotaoEntidade({ nome, onClick, icone, tipo }: { nome: string; onClick: () => void; icone?: ReactNode; tipo?: string }) {
   return (
-    <button type="button" className="eco-entity-link group flex min-h-11 w-full min-w-48 items-center gap-2 rounded-lg border border-eco-border bg-eco-bg/40 px-3 py-2 text-left" onClick={onClick}>
+    <button type="button" className={cn('eco-entity-link group flex min-h-11 w-full min-w-48 items-center gap-2 rounded-lg border border-eco-border bg-eco-bg/40 px-3 py-2 text-left', classeDoTipo(tipo))} onClick={onClick}>
       {icone}
       <span className="min-w-0 flex-1 break-words text-sm font-medium text-slate-100">{nome}</span>
       <ChevronRight size={16} className="shrink-0 text-slate-500" aria-hidden="true" />
@@ -90,13 +95,16 @@ export function Chip({
   children,
   onClick,
   title,
+  tipo,
 }: {
   children: ReactNode;
   onClick?: () => void;
   title?: string;
+  /** Família do item (trabalho, pessoa ou tema), que decide a cor. */
+  tipo?: string;
 }) {
   return (
-    <button type="button" className="btn-chip" onClick={onClick} title={title}>
+    <button type="button" className={cn('btn-chip', classeDoTipo(tipo))} onClick={onClick} title={title}>
       {children}
     </button>
   );

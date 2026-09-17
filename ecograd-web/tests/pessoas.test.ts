@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mapaDeGrafias, grupoDe, validarPessoas, type GrupoPessoa } from '../src/services/pessoas';
-import { aplicarUnificacao, variacaoDoMesmoNome } from '../src/lib/unificacao';
+import { aplicarUnificacao, unificacaoConservadora, variacaoDoMesmoNome } from '../src/lib/unificacao';
 import { construirIndicesInvertidos } from '../src/lib/entities';
 import type { Documento } from '../src/types';
 
@@ -88,4 +88,24 @@ test('variacoes do mesmo nome sao reconhecidas mesmo com nome do meio faltando',
   assert.equal(variacaoDoMesmoNome('Freire, Ida Mara', 'Freire, Andrea Santarosa'), false);
   assert.equal(variacaoDoMesmoNome('Marques, Maria Risoleta Freire', 'Vieira, Paulo Freire'), false);
   assert.equal(variacaoDoMesmoNome('', 'Qualquer'), false);
+});
+
+test('a unificacao conservadora funde normalizacao e abreviacao unica, e recusa o ambiguo', () => {
+  const oc = (nome: string, colecao = 'EGC') => ({ nome, colecao });
+  const fusoes = unificacaoConservadora([
+    oc('Dal Ri Jr., Arno'), oc('Dal Ri Jr., Arno'), oc('Dal Ri. Jr., Arno'),
+    oc('Vieira, Paulo Freire'), oc('Vieira, Paulo Henrique Freire'),
+    oc('Silva, Ana'), oc('Silva, Ana Maria'), oc('Silva, Ana Paula'),     // ambiguo
+    oc('Costa, Joao'), oc('Costa, Joao Pedro', 'Outra coleção'),          // sem coleção em comum
+    oc('Souza, Maria'), oc('Souza, Carla Maria'),                         // primeiro prenome difere
+    oc('Lima, Rui'), oc('Lima, Rui Alves'), oc('Lima, Rui Alves Neto'),   // cadeia: vai para a maximal
+    oc('Sem Virgula Nome'),
+    oc('Radunz, Vera'), oc('Radunz, Vera; Souza, Ana Izabel'),            // grafia com duas pessoas
+  ]);
+  assert.deepEqual(fusoes, [
+    { grafia: 'Dal Ri. Jr., Arno', canonico: 'Dal Ri Jr., Arno', metodo: 'normalizacao' },
+    { grafia: 'Lima, Rui', canonico: 'Lima, Rui Alves Neto', metodo: 'abreviacao' },
+    { grafia: 'Lima, Rui Alves', canonico: 'Lima, Rui Alves Neto', metodo: 'abreviacao' },
+    { grafia: 'Vieira, Paulo Freire', canonico: 'Vieira, Paulo Henrique Freire', metodo: 'abreviacao' },
+  ]);
 });

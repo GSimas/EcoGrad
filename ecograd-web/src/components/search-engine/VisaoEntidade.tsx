@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { classeDoTipo } from '@/lib/tipos-cor';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BotaoEntidade, Card, Kpi, Tabela } from '@/components/ui/primitives';
 import { Trabalhos, FonteTrabalho } from '@/components/results/Trabalhos';
@@ -62,7 +63,7 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
         </header>
         {pessoas.length ? <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{pessoas.map((p) => {
           const Icone = p.icone;
-          return <li key={`${p.tipo}:${p.nome}`}><button type="button" className="eco-entity-link group flex h-full min-h-20 w-full items-center gap-3 rounded-lg border border-eco-border bg-eco-bg/45 p-3 text-left" onClick={() => navegar(p.tipo, p.nome)}>
+          return <li key={`${p.tipo}:${p.nome}`}><button type="button" className={`eco-entity-link group flex h-full min-h-20 w-full items-center gap-3 rounded-lg border border-eco-border bg-eco-bg/45 p-3 text-left ${classeDoTipo(p.tipo)}`} onClick={() => navegar(p.tipo, p.nome)}>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-eco-accent/10 text-eco-accent"><Icone size={18} aria-hidden="true" /></span>
             <span className="min-w-0 flex-1"><span className="block text-[.68rem] font-semibold uppercase tracking-wide text-slate-400">{p.tipo}</span><span className="mt-0.5 block break-words text-sm font-medium text-slate-100">{p.nome}</span></span>
             <ChevronRight size={17} className="shrink-0 text-slate-500" aria-hidden="true" />
@@ -71,11 +72,11 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
         <div className={`grid gap-3 ${doc.macrotema ? 'lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]' : ''}`}>
           <section className="rounded-lg border border-eco-border bg-eco-bg/35 p-4" aria-label="Palavras-chave do trabalho">
             <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Tag size={17} className="text-eco-accent" aria-hidden="true" />Palavras-chave</h4>
-            {doc.palavras_chave.length ? <div className="flex flex-wrap gap-2">{[...new Set(doc.palavras_chave)].map((p) => <button key={p} className="btn-chip min-h-10 text-left" type="button" onClick={() => navegar('Palavra-chave', p)}>{p}</button>)}</div> : <p className="text-sm text-slate-400">Palavras-chave não informadas.</p>}
+            {doc.palavras_chave.length ? <div className="flex flex-wrap gap-2">{[...new Set(doc.palavras_chave)].map((p) => <button key={p} className="btn-chip eco-tipo-tema min-h-10 text-left" type="button" onClick={() => navegar('Palavra-chave', p)}>{p}</button>)}</div> : <p className="text-sm text-slate-400">Palavras-chave não informadas.</p>}
           </section>
           {doc.macrotema && <section className="rounded-lg border border-eco-border bg-eco-bg/35 p-4">
             <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-200"><Layers3 size={17} className="text-eco-accent" aria-hidden="true" />Classificação temática da base</h4>
-            <button className="eco-entity-link flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-eco-accent/30 bg-eco-accent/10 px-3 py-2 text-left text-sm font-medium text-eco-accent" type="button" onClick={() => navegar('Macrotema', doc.macrotema)}><span>{doc.macrotema}</span><ChevronRight size={17} className="shrink-0" aria-hidden="true" /></button>
+            <button className="eco-entity-link eco-tipo-tema flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm font-medium" type="button" onClick={() => navegar('Macrotema', doc.macrotema)}><span>{doc.macrotema}</span><ChevronRight size={17} className="shrink-0" aria-hidden="true" /></button>
           </section>}
         </div>
       </Card>
@@ -203,7 +204,7 @@ function Orientandos({ termo }: { termo: string }) {
       colunas={[
         { chave: 'nome', rotulo: 'Pessoa', render: (l) => {
           const nome = String(l.nome);
-          return <BotaoEntidade nome={nome} onClick={() => void abrir(nome)} icone={ehOrientador(nome)
+          return <BotaoEntidade tipo="Pessoa" nome={nome} onClick={() => void abrir(nome)} icone={ehOrientador(nome)
             ? <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-eco-action/20 text-eco-action" title="Também orientador ou coorientador"><GraduationCap size={15} aria-hidden="true" /><span className="sr-only">Também orientador ou coorientador:</span></span>
             : <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-eco-accent/10 text-eco-accent"><UserRound size={14} aria-hidden="true" /></span>} />;
         } },

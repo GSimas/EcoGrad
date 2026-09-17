@@ -21,7 +21,9 @@ export async function enviarMensagem(dossie:DossieConsultor,repetir=false,config
  atualizar({mensagens:historico,entrada:repetir?chat.entrada:'',parcial:'',erro:null,streaming:true,contexto:analysisId,tentativa:{historico,contexto:analysisId},parciaisAnteriores:repetir&&chat.parcial?[...(chat.parciaisAnteriores??[]),chat.parcial]:chat.parciaisAnteriores});
  let acumulado='';
  try{
-  const {url,init}=requisicaoChat(config,promptConsultor(dossie),historicoEnviado(historico));
+  // O dossiê é montado para ESTA pergunta: sem ela iria o acervo inteiro a cada mensagem.
+  const pergunta=[...historico].reverse().find(m=>m.role==='user')?.content??'';
+  const {url,init}=requisicaoChat(config,promptConsultor(dossie,pergunta),historicoEnviado(historico));
   if(new TextEncoder().encode(String(init.body)).length>1500000)throw new Error('Contexto excede 1,5 MB. Reduza a seleção de coleções antes de consultar.');
   let response:Response;
   try{response=await fetch(url,{...init,signal:request.signal});}

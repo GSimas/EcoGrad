@@ -1,8 +1,9 @@
-import { colecoesDoItem, type ResultadoBusca } from '@/lib/busca-global';
-import type { TipoBusca } from '@/types';
+import { colecoesDoItem, MAX_COLECOES_POR_ITEM, type ResultadoBusca } from '@/lib/busca-global';
+import type { Documento, TipoBusca } from '@/types';
 import { mesmaSelecao } from '@/lib/selecao';
 import { canonizar, grupoDe, usePessoas } from './pessoas';
 import { mesmoRecorte, type ItemRecorte } from '@/lib/recorte';
+import { referenciaDocumento } from '@/lib/resultados';
 import { PAPEIS_PESSOA } from '@/types';
 import { carregarDados } from './calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -15,15 +16,16 @@ export interface EscolhaAcervo {
 
 /**
  * União das coleções a carregar: as escolhidas diretamente mais as de cada item.
- * `omitidas` soma o que ficou de fora do limite por item.
+ * `limite` vale por item (`Infinity` traz todas as coleções em que ele aparece);
+ * `omitidas` soma o que ficou de fora dele.
  */
-export function colecoesDaEscolha({ itens, colecoes }: EscolhaAcervo) {
+export function colecoesDaEscolha({ itens, colecoes }: EscolhaAcervo, limite = MAX_COLECOES_POR_ITEM) {
   const programas = new Set<string>();
   const cursosTcc = new Set<string>();
   let omitidas = 0;
   for (const c of colecoes) (c.catalogo === 'ppg' ? programas : cursosTcc).add(c.nome);
   for (const item of itens) {
-    const escolha = colecoesDoItem(item);
+    const escolha = colecoesDoItem(item, limite);
     escolha.programas.forEach((n) => programas.add(n));
     escolha.cursosTcc.forEach((n) => cursosTcc.add(n));
     omitidas += escolha.omitidas;
@@ -88,9 +90,10 @@ function abrir(escolha: EscolhaAcervo) {
 /**
  * Abre a escolha da apresentação. Se a análise atual não tem exatamente essas
  * coleções, carrega as novas (substituindo a análise) e abre ao terminar.
+ * `limite` é o de `colecoesDaEscolha`.
  */
-export function abrirEscolhaDoAcervo(escolha: EscolhaAcervo): { carregando: boolean; colecoes: number; omitidas: number } {
-  const { programas, cursosTcc, omitidas } = colecoesDaEscolha(escolha);
+export function abrirEscolhaDoAcervo(escolha: EscolhaAcervo, limite = MAX_COLECOES_POR_ITEM): { carregando: boolean; colecoes: number; omitidas: number } {
+  const { programas, cursosTcc, omitidas } = colecoesDaEscolha(escolha, limite);
   const colecoes = programas.length + cursosTcc.length;
   if (colecoes === 0) return { carregando: false, colecoes, omitidas };
   const recorte = recorteDaEscolha(escolha);
@@ -115,4 +118,21 @@ export function ampliarParaColecoesInteiras(): void {
   const s = useEcoGradStore.getState();
   if (!s.recorte.length || s.carregando) return;
   carregarDados(s.programasSelecionados, s.cursosTccSelecionados, 'panorama', undefined, []);
+}
+
+/**
+ * Abre o dossiê de um registro exato numa única mudança de estado, sem entrada
+ * a mais no histórico. `indice` é a posição em `docs`: é o que distingue dois
+ * registros de mesmo título em coleções diferentes.
+ */
+export function abrirRegistro(docs: readonly Documento[], indice: number): void {
+  const ref = referenciaDocumento(docs, indice);
+  if (!ref) return;
+  useEcoGradStore.setState((s) => ({
+    apresentacaoVista: true,
+    rota: 'busca' as const,
+    buscaTipo: 'Documento' as const,
+    buscaTermo: ref.titulo,
+    ui: { ...s.ui, 'dossie.documento': ref },
+  }));
 }

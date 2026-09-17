@@ -59,7 +59,7 @@ export default function App() {
           // `min-h-full` (e não `h-full`): com altura fixa em 100%, o conteúdo
           // que transborda escapa da caixa e o `padding-bottom` fica desenhado
           // uma tela acima do fim real — o respiro simplesmente não aparece.
-          // `pb-24` também deixa o fim da página livre do botão do Consultor IA.
+          // `pb-24` também deixa o fim da página livre do botão do UFSCão.
           <div key={rota} className="eco-page-enter mx-auto min-h-full w-full min-w-0 max-w-[1400px] px-3 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-8">
             {rota === 'dashboard' && <Dashboard />}
             {rota === 'busca' && <MotorBusca />}

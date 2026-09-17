@@ -1,0 +1,546 @@
+{
+  "geradoEm": "2026-09-15T18:24:40.175Z",
+  "bases": {
+    "base_consolidada_ufsc": {
+      "sha256": "7b1cbeb9dea18b2d60abd671958b8371cdf13e1efe17af2dd4e5764bc500edcc",
+      "registros": 49915
+    },
+    "base_tcc_ufsc": {
+      "sha256": "e36c0d0ae50c2b510c9160c9555abd423b0ab0f09d3d759c08e1b97703dd9282",
+      "registros": 42416
+    }
+  },
+  "Q01_colecaoEgc": {
+    "registros": 910,
+    "niveis": [
+      [
+        "Dissertação (Mestrado)",
+        457
+      ],
+      [
+        "Tese (Doutorado)",
+        453
+      ]
+    ],
+    "anoMin": 2006,
+    "anoMax": 2026,
+    "semResumoUtilizavel": 6
+  },
+  "Q02_egcPorAno": {
+    "serie": [
+      [
+        "2006",
+        10
+      ],
+      [
+        "2007",
+        23
+      ],
+      [
+        "2008",
+        35
+      ],
+      [
+        "2009",
+        23
+      ],
+      [
+        "2010",
+        7
+      ],
+      [
+        "2011",
+        34
+      ],
+      [
+        "2012",
+        136
+      ],
+      [
+        "2013",
+        42
+      ],
+      [
+        "2014",
+        36
+      ],
+      [
+        "2015",
+        52
+      ],
+      [
+        "2016",
+        47
+      ],
+      [
+        "2017",
+        60
+      ],
+      [
+        "2018",
+        50
+      ],
+      [
+        "2019",
+        44
+      ],
+      [
+        "2020",
+        42
+      ],
+      [
+        "2021",
+        47
+      ],
+      [
+        "2022",
+        44
+      ],
+      [
+        "2023",
+        56
+      ],
+      [
+        "2024",
+        48
+      ],
+      [
+        "2025",
+        59
+      ],
+      [
+        "2026",
+        15
+      ]
+    ],
+    "pico": [
+      "2012",
+      136
+    ]
+  },
+  "Q03_orientaMais": {
+    "ranking": [
+      [
+        "Fialho, Francisco Antonio Pereira",
+        320
+      ],
+      [
+        "Loch, Carlos",
+        192
+      ],
+      [
+        "Rojas Lezana, Alvaro Guillermo",
+        164
+      ],
+      [
+        "Lapolli, Edis Mafra",
+        155
+      ],
+      [
+        "Barbi, Ivo",
+        149
+      ]
+    ],
+    "escopo": "pós-graduação; conta registros por grafia de orientador"
+  },
+  "Q04_tamanhoAcervo": {
+    "registros": 92331,
+    "comResumoUtilizavel": 80415,
+    "semResumoUtilizavel": 11916,
+    "niveis": [
+      [
+        "TCC (Graduação)",
+        39915
+      ],
+      [
+        "Dissertação (Mestrado)",
+        36261
+      ],
+      [
+        "Tese (Doutorado)",
+        13572
+      ],
+      [
+        "TCC (Especialização)",
+        2501
+      ],
+      [
+        "Outros",
+        82
+      ]
+    ]
+  },
+  "Q05_pessoaTresPapeis": {
+    "registros": 40,
+    "trabalhosDistintos": 40,
+    "colecoes": 5,
+    "autor": 2,
+    "orientador": 28,
+    "coorientador": 10,
+    "grafiasNaBase": [
+      "Freire, Patricia De Sa"
+    ]
+  },
+  "Q06_gestaoConhecimento": {
+    "registros": 1189,
+    "trabalhosDistintos": 1177,
+    "semResumoUtilizavel": 18
+  },
+  "Q08_educacaoInfantil": {
+    "comoPalavraChave": 626,
+    "comoMacrotema": 205
+  },
+  "Q09_topMacrotemas": {
+    "ranking": [
+      [
+        "Conectores de Discurso",
+        605
+      ],
+      [
+        "Geografia Urbana Catarinense",
+        578
+      ],
+      [
+        "Didática do Ensino",
+        480
+      ],
+      [
+        "Ergonomia Saúde Ocupacional",
+        434
+      ],
+      [
+        "Gênero e Trabalho Social",
+        424
+      ],
+      [
+        "Qualidade Vida Trabalho",
+        397
+      ],
+      [
+        "Formação Docente Infantil",
+        395
+      ],
+      [
+        "Universidade Federal Pós-Graduação",
+        365
+      ]
+    ],
+    "distintos": 2325
+  },
+  "Q10_empreendedorismoFeminino": {
+    "registros": 31,
+    "trabalhosDistintos": 29,
+    "semResumoUtilizavel": 0,
+    "alcancaveisPelaBuscaAtual": 21,
+    "somenteNoResumo": 10,
+    "colecoes": [
+      [
+        "TCC Administração",
+        7
+      ],
+      [
+        "Programa de Pós-Graduação em Engenharia de Produção",
+        4
+      ],
+      [
+        "Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento",
+        4
+      ],
+      [
+        "Programa de Pós-Graduação em Sociologia Política",
+        2
+      ],
+      [
+        "TCC Ciências Econômicas",
+        2
+      ],
+      [
+        "Programa de Pós-Graduação em Educação (ID: 75514)",
+        1
+      ],
+      [
+        "Programa de Pós-Graduação em Psicologia (ID: 77448)",
+        1
+      ],
+      [
+        "Programa de Pós-Graduação em Administração",
+        1
+      ],
+      [
+        "Programa de Pós-Graduação em Ciência da Informação",
+        1
+      ],
+      [
+        "Programa de Pós-Graduação em Educação",
+        1
+      ]
+    ],
+    "macrotemas": [
+      [
+        "Mulheres no Mercado Trabalho",
+        3
+      ],
+      [
+        "Gênero e Trabalho Social",
+        2
+      ],
+      [
+        "Competências Digitais Empreendedoras",
+        2
+      ],
+      [
+        "Gênero e Trabalho Rural",
+        2
+      ],
+      [
+        "Gênero e Mercado Trabalho",
+        2
+      ],
+      [
+        "Pequenas Empresas Inovação",
+        1
+      ],
+      [
+        "Gestão Conhecimento Organizacional",
+        1
+      ],
+      [
+        "Relações de Trabalho e Capital",
+        1
+      ]
+    ],
+    "serieAnual": [
+      [
+        "2002",
+        1
+      ],
+      [
+        "2004",
+        2
+      ],
+      [
+        "2013",
+        1
+      ],
+      [
+        "2014",
+        2
+      ],
+      [
+        "2015",
+        2
+      ],
+      [
+        "2017",
+        2
+      ],
+      [
+        "2018",
+        1
+      ],
+      [
+        "2019",
+        3
+      ],
+      [
+        "2020",
+        2
+      ],
+      [
+        "2021",
+        2
+      ],
+      [
+        "2022",
+        6
+      ],
+      [
+        "2023",
+        3
+      ],
+      [
+        "2024",
+        2
+      ],
+      [
+        "2025",
+        2
+      ]
+    ]
+  },
+  "Q12_psicologiaPositiva": {
+    "registros": 26,
+    "trabalhosDistintos": 22,
+    "semResumoUtilizavel": 0,
+    "alcancaveisPelaBuscaAtual": 16,
+    "somenteNoResumo": 10,
+    "colecoes": [
+      [
+        "Programa de Pós-Graduação em Psicologia",
+        10
+      ],
+      [
+        "Programa de Pós-Graduação em Psicologia (ID: 77448)",
+        4
+      ],
+      [
+        "TCC Ciências Econômicas",
+        3
+      ],
+      [
+        "Programa de Pós-Graduação em Engenharia e Gestão do Conhecimento",
+        2
+      ],
+      [
+        "TCC Administração",
+        2
+      ],
+      [
+        "Programa de Pós-Graduação em Educação Física",
+        1
+      ],
+      [
+        "Programa de Pós-Graduação em Inglês: Estudos Linguísticos e Literários",
+        1
+      ],
+      [
+        "Programa de Pós-Graduação em Saúde Mental e Atenção Psicossocial (Mestrado Profissional)",
+        1
+      ],
+      [
+        "Programa de Pós-Graduação em Saúde Pública",
+        1
+      ],
+      [
+        "TCC Jornalismo",
+        1
+      ]
+    ],
+    "macrotemas": [
+      [
+        "Sentidos do Trabalho",
+        7
+      ],
+      [
+        "Design Digital",
+        2
+      ],
+      [
+        "Validação de Instrumentos",
+        2
+      ],
+      [
+        "Desigualdade Socioeconômica",
+        2
+      ],
+      [
+        "Saúde Pública Bucal",
+        1
+      ],
+      [
+        "Clínica Médica Hospitalar",
+        1
+      ],
+      [
+        "Lazer e Inatividade Laboral",
+        1
+      ],
+      [
+        "Transformação Digital Mídia",
+        1
+      ]
+    ],
+    "serieAnual": [
+      [
+        "2007",
+        1
+      ],
+      [
+        "2015",
+        1
+      ],
+      [
+        "2016",
+        5
+      ],
+      [
+        "2018",
+        5
+      ],
+      [
+        "2019",
+        4
+      ],
+      [
+        "2021",
+        3
+      ],
+      [
+        "2022",
+        1
+      ],
+      [
+        "2023",
+        2
+      ],
+      [
+        "2024",
+        1
+      ],
+      [
+        "2025",
+        2
+      ],
+      [
+        "2026",
+        1
+      ]
+    ]
+  },
+  "Q14_temaInexistente": {
+    "registros": 0,
+    "trabalhosDistintos": 0,
+    "semResumoUtilizavel": 0,
+    "alcancaveisPelaBuscaAtual": 0,
+    "somenteNoResumo": 0,
+    "colecoes": [],
+    "macrotemas": [],
+    "serieAnual": []
+  },
+  "Q23_anoParcial": {
+    "serieRecente": [
+      [
+        "2023",
+        4697
+      ],
+      [
+        "2024",
+        4125
+      ],
+      [
+        "2025",
+        3742
+      ],
+      [
+        "2026",
+        531
+      ]
+    ],
+    "sustentabilidadeEm2026": 25
+  },
+  "Q24_grafiasDeOrientador": {
+    "grafiasDistintas": 9527,
+    "grafiasDistintasPos": 3258,
+    "colidemAoNormalizar": 56
+  },
+  "Q25_tituloRepetido": {
+    "titulo": "Doenças: construção e realidade na formção dos médicos. Objeto Fronteira como instrumento de interação entre diferentes estilos de pensamento",
+    "registros": 3,
+    "colecoes": [
+      "Programa de Pós-Graduação em Educação (ID: 75514)",
+      "Programa de Pós-Graduação em Direito",
+      "Programa de Pós-Graduação em Educação"
+    ],
+    "titulosRepetidosNoAcervo": 6740
+  }
+}

@@ -1,0 +1,57 @@
+[
+  {
+    "id": "Q01",
+    "pergunta": "Quantos trabalhos tem o programa de Engenharia e Gestão do Conhecimento, e de que níveis?",
+    "sql": "select nivel_academico, count(*) as registros, min(ano) as ano_min, max(ano) as ano_max,\n       count(*) filter (where not resumo_utilizavel) as registros_sem_resumo\nfrom registros where colecao ilike '%engenharia e gest_o do conhecimento%'\ngroup by nivel_academico order by registros desc"
+  },
+  {
+    "id": "Q02",
+    "pergunta": "Como a produção do EGC evoluiu ano a ano?",
+    "sql": "select ano, sum(registros) as registros from colecoes_por_ano\nwhere colecao ilike '%engenharia e gest_o do conhecimento%' group by ano order by ano"
+  },
+  {
+    "id": "Q03",
+    "pergunta": "Quem mais orientou na pós-graduação?",
+    "sql": "select nome, count(*) as registros_orientados from registro_pessoas\nwhere papel = 'Orientador' and nivel_academico in ('Dissertação (Mestrado)', 'Tese (Doutorado)', 'Outros')\ngroup by nome order by registros_orientados desc, nome limit 5"
+  },
+  {
+    "id": "Q04",
+    "pergunta": "Qual o tamanho do acervo?",
+    "sql": "select a.registros, a.registros_com_resumo, a.registros_sem_resumo,\n       (select json_agg(json_build_array(nivel_academico, n) order by n desc)\n          from (select nivel_academico, count(*) as n from registros group by nivel_academico) x) as niveis\nfrom acervo a"
+  },
+  {
+    "id": "Q05",
+    "pergunta": "Quantos trabalhos a Patricia de Sá Freire tem, e em quais papéis?",
+    "sql": "select nome, grafias, obras_como_autor, obras_orientadas, obras_coorientadas from pessoas\nwhere nome_tokens @> tokens_de_nome('patricia de sa freire')"
+  },
+  {
+    "id": "Q08",
+    "pergunta": "Educação infantil aparece mais como palavra-chave ou como macrotema?",
+    "sql": "select (select count(distinct registro_id) from registro_palavras_chave where termo = 'educacao infantil') as registros_palavra_chave,\n       (select count(*) from registros where sem_acento(macrotema) = 'educacao infantil') as registros_macrotema"
+  },
+  {
+    "id": "Q09",
+    "pergunta": "Quais os macrotemas mais frequentes?",
+    "sql": "select macrotema, registros from macrotemas order by registros desc, macrotema limit 8"
+  },
+  {
+    "id": "Q23",
+    "pergunta": "Quantos trabalhos houve nos últimos anos?",
+    "sql": "select ano, sum(registros) as registros from colecoes_por_ano\nwhere ano >= (select ano_em_coleta - 3 from acervo) group by ano order by ano"
+  },
+  {
+    "id": "X01",
+    "pergunta": "Quem orientou a Patricia de Sá Freire?",
+    "sql": "select o.orientador, o.papel, o.obras, o.primeiro_ano, o.niveis from orientacoes o\njoin pessoas p on p.pessoa_id = o.orientando_id\nwhere p.nome_tokens @> tokens_de_nome('patricia de sa freire') order by o.obras desc limit 20"
+  },
+  {
+    "id": "X02",
+    "pergunta": "Quem mais orienta trabalhos com a palavra-chave inovação?",
+    "sql": "select nome, sum(obras) as obras_orientadas from pessoa_palavras_chave\nwhere papel = 'Orientador' and termo like '%' || sem_acento('inovação') || '%'\ngroup by nome order by obras_orientadas desc limit 10"
+  },
+  {
+    "id": "X03",
+    "pergunta": "Quem são as pessoas que mais fazem ponte na rede do PPGEGC?",
+    "sql": "select rotulo as nome, tipo, intermediacao, ranking_entre_pessoas from rede\nwhere escopo = 'colecao' and colecao ilike '%engenharia e gest_o do conhecimento%' and tipo in ('Autor', 'Orientador')\norder by intermediacao desc limit 10"
+  }
+]

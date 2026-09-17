@@ -1,0 +1,1296 @@
+{
+  "instrucoes": "Para cada obra, decisao (\"pertence\", \"nao_pertence\" ou \"duvida\") e justificativa: a obra trata do tema da consulta? Tema que não é tema (lugar, método, termo genérico) pode ser descartado inteiro em \"descartado\" com o motivo. Assine em responsavel e assinadoEm e rode npm run afericao:amostra-cega.",
+  "regra": "ADR 003, R6",
+  "sementeSorteio": "7b1cbeb9",
+  "bases": {
+    "base_consolidada_ufsc": "7b1cbeb9dea18b2d60abd671958b8371cdf13e1efe17af2dd4e5764bc500edcc",
+    "base_tcc_ufsc": "e36c0d0ae50c2b510c9160c9555abd423b0ab0f09d3d759c08e1b97703dd9282"
+  },
+  "geradoEm": "2026-09-16T22:12:45.703Z",
+  "responsavel": null,
+  "assinadoEm": null,
+  "temas": [
+    {
+      "consulta": "avaliacao educacional (ensino superior)",
+      "estrato": "pequena",
+      "sementeObras": 4,
+      "consultaExpandida": "'sair' & ( 'articul' | 'superior' | 'instituiçã' | 'suport' | 'orient' | 'ensin' | 'defin' )",
+      "respostaMs": 959,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "amar os nao-amados: experimentos literarios em encontros com outros-que-humanos",
+          "titulo": "Amar os não-amados: experimentos literários em encontros com outros-que-humanos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "historia da ciencia na educacao cientifica",
+          "titulo": "História da ciência na educação científica",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "comparacao entre diferentes classificacoes de incapacidade funcional para predicao de longevidade em idosos",
+          "titulo": "Comparação entre diferentes classificações de incapacidade funcional para predição de longevidade em idosos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "entre o sair e o permanecer: dilemas e desejos de jovens estudantes rurais",
+          "titulo": "Entre o sair e o permanecer: dilemas e desejos de jovens estudantes rurais",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "uma proposta educacional na construcao do elo todo x partes enunciado por blaise pascal",
+          "titulo": "Uma proposta educacional na construção do elo todo X partes enunciado por Blaise Pascal",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "webmuseus e o ensino de arte: possibilidades a partir do museu casa de portinari",
+          "titulo": "Webmuseus e o Ensino de Arte: Possibilidades a partir do Museu Casa de Portinari",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "elaboracao de um planejamento estrategico para a papelaria arco iris",
+          "titulo": "Elaboração de um planejamento estratégico para a Papelaria arco íris",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "resiliencia e criatividade no trabalho de designers em industrias criativas",
+          "titulo": "Resiliência e criatividade no trabalho de designers em indústrias criativas",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "contributo a reconstrucao da liberdade privada",
+          "titulo": "Contributo a reconstrução da liberdade privada",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "vozes das pobrezas desde o leste rural de cuba",
+          "titulo": "Vozes das pobrezas desde o leste rural de Cuba",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "avaliacao de jogos voltados para a disseminacao do conhecimento",
+          "titulo": "Avaliação de jogos voltados para a disseminação do conhecimento",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "organizacao dos espacos no contexto da escolarizacao de nove anos/ca/ufsc: pelo direito de viver a infancia",
+          "titulo": "Organização dos espaços no contexto da escolarização de nove anos/CA/UFSC: pelo direito de viver a infância",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "entorno de la practica y empoderamiento de enfermeros en un hospital en chile",
+          "titulo": "Entorno de la practica y empoderamiento de enfermeros en un hospital en Chile",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "analise de contratos psicologicos como ferramenta de gestao de pessoas em um centro de ensino da universidade federal de santa catarina",
+          "titulo": "Análise de contratos psicológicos como ferramenta de gestão de pessoas em um centro de ensino da Universidade Federal de Santa Catarina",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "feiras catarinenses de matematica: contribuicoes para inclusao escolar de um grupo de alunos com deficit intelectual",
+          "titulo": "Feiras catarinenses de matemática: contribuições para inclusão escolar de um grupo de alunos com déficit intelectual",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "eficacia organizacional: categorias e criterios para orientacao e avaliacao dos cursos de graduacao",
+          "titulo": "Eficácia organizacional: categorias e critérios para orientação e avaliação dos cursos de graduação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "aplicacao de modelos de mistura de longa duracao em dados de reincidencia ao crime",
+          "titulo": "Aplicação de modelos de mistura de longa duração em dados de reincidência ao crime",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "jogos de tabuleiro como possibilidade pedagogica nas aulas de educacao fisica escolar",
+          "titulo": "Jogos de tabuleiro como possibilidade pedagógica nas aulas de Educação Física Escolar",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "ciclo de violencia contra a mulher: atendimento de enfermeiros na atencao primaria em saude em florianopolis-sc",
+          "titulo": "Ciclo de violência contra a mulher: Atendimento de enfermeiros na atenção primária em saúde em Florianópolis-SC",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "comportamentos que constituem o trabalho de um gestor de curso de graduacao",
+          "titulo": "Comportamentos que constituem o trabalho de um gestor de curso de graduação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "estudantes indigenas na universidade: (des)caminhos para a permanencia no ensino superior",
+          "titulo": "Estudantes indígenas na universidade: (des)caminhos para a permanência no ensino superior",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "diversidade linguistica: as multiplas linguagens nas esferas escolares",
+          "titulo": "Diversidade Linguística: as múltiplas linguagens nas esferas escolares",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "disciplina de libras como lingua adicional na educacao basica: professor surdo em perspectiva",
+          "titulo": "Disciplina de Libras como língua adicional na educação básica: professor surdo em perspectiva",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a extensao universitaria: indicadores de qualidade para avaliacao de sua pratica : estudo de caso em um centro universitario privado",
+          "titulo": "A extensão universitária: indicadores de qualidade para avaliação de sua prática : estudo de caso em um Centro Universitário Privado",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "intencao de sair e intencao de permanecer em organizacoes intensivas em conhecimento: um estudo com variaveis demograficas e atitudinais",
+          "titulo": "Intenção de sair e intenção de permanecer em organizações intensivas em conhecimento: um estudo com variáveis demográficas e atitudinais",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    },
+    {
+      "consulta": "metodos quantitativos",
+      "estrato": "pequena",
+      "sementeObras": 5,
+      "consultaExpandida": "'previsã' & ( 'quantit' | 'demand' | 'conjunt' )",
+      "respostaMs": 396,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "metodo de previsao de demanda aplicada ao planejamento da producao de industrias de alimentos",
+          "titulo": "Método de previsão de demanda aplicada ao planejamento da produção de industrias de alimentos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "aplicacao e comparacao de modelos estatisticos, de aprendizado de maquina, hibridos e fundacionais para previsao de demanda de agua em cidade no litoral do brasil",
+          "titulo": "Aplicação e comparação de modelos estatísticos, de aprendizado de máquina, híbridos e fundacionais para previsão de demanda de água em cidade no litoral do Brasil",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "previsao de demanda: uma analise em uma fabrica de trufas artesanais da grande florianopolis",
+          "titulo": "Previsão de demanda: uma análise em uma fábrica de trufas artesanais da Grande Florianópolis",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "inteligencia de mercado como fator de previsao da demanda e planejamento do processo logistico",
+          "titulo": "Inteligência de mercado como fator de previsão da demanda e planejamento do processo logístico",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "estudo de metodos de previsao de demanda com incorporacao de julgamentos",
+          "titulo": "Estudo de métodos de previsão de demanda com incorporação de julgamentos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "avaliacao do processo de previsao de demanda em uma grande industria: estudo de caso",
+          "titulo": "Avaliação do processo de previsão de demanda em uma grande indústria: Estudo de caso",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "analise de gerenciamento de estoques de produtos acabados utilizando metodos de previsao de demanda: estudo de caso em uma multinacional",
+          "titulo": "Análise de gerenciamento de estoques de produtos acabados utilizando métodos de previsão de demanda: estudo de caso em uma multinacional",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "um modelo para descricao e previsao da demanda dos consumidores industriais de energia eletrica",
+          "titulo": "Um modelo para descrição e previsão da demanda dos consumidores industriais de energia elétrica",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "uma aplicacao de redes neurais artificiais para previsao da demanda de passageiros no transporte publico da cidade de joinville",
+          "titulo": "Uma aplicação de redes neurais artificiais para previsão da demanda de passageiros no transporte público da cidade de Joinville",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "previsao de demanda com o uso de modelos auto regressivos e clusterizacao de series temporais: um estudo de caso de uma empresa de varejo",
+          "titulo": "Previsão de demanda com o uso de modelos auto regressivos e clusterização de séries temporais: um estudo de caso de uma empresa de varejo",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "modelo de previsao de demanda com o uso de aprendizado supervisionado de maquina: um estudo de caso em uma empresa de varejo",
+          "titulo": "Modelo de previsão de demanda com o uso de aprendizado supervisionado de máquina: um estudo de caso em uma empresa de varejo",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "previsao de demanda de produtos novos: uma abordagem hibrida baseada em inteligencia artificial explicavel",
+          "titulo": "Previsão de demanda de produtos novos: uma abordagem híbrida baseada em inteligência artificial explicável",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "modelo de previsao da demanda para as industrias atuantes no setor de infra-estrutura brasileiro dos segmentos de energia eletrica e telecomunicacoes",
+          "titulo": "Modelo de previsão da demanda para as indústrias atuantes no setor de infra-estrutura brasileiro dos segmentos de energia elétrica e telecomunicações",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "utilizacao de modelos de suavizacao exponencial para previsao de demanda com graficos de controle combinados shewhart-cusum",
+          "titulo": "Utilização de modelos de suavização exponencial para previsão de demanda com gráficos de controle combinados Shewhart-CUSUM",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "um modelo de previsao de demanda no varejo do setor de saude e bem-estar",
+          "titulo": "Um modelo de previsão de demanda no varejo do setor de saúde e bem-estar",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "uma analise de modelos de suavizacao exponencial e sua aplicabilidade a previsao de demanda na otica da administracao",
+          "titulo": "Uma análise de modelos de suavização exponencial e sua aplicabilidade à previsão de demanda na ótica da administração",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "modelos de previsao da demanda:uma aplicacao no transporte rodoviario interestadual de passageiros por onibus na regiao sul do brasil",
+          "titulo": "Modelos de previsão da demanda:uma aplicação no transporte rodoviário interestadual de passageiros por ônibus na região Sul do Brasil",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "analise e previsao de demanda em ambiente simulado.",
+          "titulo": "Análise e previsão de demanda em ambiente simulado.",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "aplicacoes de modelos matematicos para previsao de demanda para uma empresa de confeccao do estado de santa catarina",
+          "titulo": "Aplicações de modelos matemáticos para previsão de demanda para uma empresa de confecção do Estado de Santa Catarina",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "analise comparativa entre metodos estatisticos tradicionais e baseados em inteligencia artificial no problema de previsao de demanda",
+          "titulo": "Análise comparativa entre métodos estatísticos tradicionais e baseados em inteligência artificial no problema de previsão de demanda",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "previsao de demanda em uma empresa do ramo de revestimentos ceramicos: uma avaliacao de tecnicas quantitativas e estrategias top-down e bottom-up",
+          "titulo": "Previsão de demanda em uma empresa do ramo de revestimentos cerâmicos: uma avaliação de técnicas quantitativas e estratégias top-down e bottom-up",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "modelo para a previsao de demanda internacional de carne de frango produzida no brasil",
+          "titulo": "Modelo para a previsão de demanda internacional de carne de frango produzida no Brasil",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "desenvolvimento de um sistema de previsao de demanda de exames de teledermatologia",
+          "titulo": "Desenvolvimento de um sistema de previsão de demanda de exames de teledermatologia",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "comparacao de metodos de aprendizado de maquina para previsao de demanda no transporte publico urbano",
+          "titulo": "Comparação de métodos de Aprendizado de Máquina para previsão de demanda no transporte público urbano",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "previsao de demanda em series temporais intermitentes mediante a utilizacao do metodo de croston",
+          "titulo": "Previsão de demanda em séries temporais intermitentes mediante a utilização do Método de Croston",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    },
+    {
+      "consulta": "migracao de povos",
+      "estrato": "pequena",
+      "sementeObras": 4,
+      "consultaExpandida": "'exploitation' & ( 'amer' | 'imigr' | 'regions' | 'labor' | 'contributions' | 'relationships' | 'object' )",
+      "respostaMs": 308,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "confluir da infancia no tempo da urbanizacao: um mergulho no rio da memoria",
+          "titulo": "Confluir da infância no tempo da urbanização: um mergulho no rio da memória",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "uma critica autogestionaria ao espaco urbano capitalista",
+          "titulo": "Uma Crítica Autogestionária ao Espaço Urbano Capitalista",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "havana em metamorfose: negros esclavos e colonos asiaticos, 1845-1876",
+          "titulo": "Havana em metamorfose: negros esclavos e colonos asiáticos, 1845-1876",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "diagnostico da fiscalizacao ambiental afeta a fauna silvestre nativa no estado de santa catarina",
+          "titulo": "Diagnóstico da fiscalização ambiental afeta à fauna silvestre nativa no Estado de Santa Catarina",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a liberdade do contrato: o trabalho africano na legislacao do imperio portugues, 1850-1910",
+          "titulo": "A liberdade do contrato: o trabalho africano na legislação do império Português, 1850-1910",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "os sinais da escravidao na identidade do trabalhador: a legislacao neoescravista da caderneta policial de trabalho e a resistencia dos trabalhadores do comercio no rio de janeiro da 1ª republica (df, anos 20)",
+          "titulo": "Os sinais da escravidão na identidade do trabalhador: a legislação neoescravista da caderneta policial de trabalho e a resistência dos trabalhadores do comércio no Rio de Janeiro da 1ª República (DF, anos 20)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "coronavirus e desigualdade de classe na educacao infantil: a experiencia do centro de educacao infantil da comunidade jardim solemar",
+          "titulo": "Coronavírus e desigualdade de classe na educação infantil: a experiência do centro de educação infantil da comunidade Jardim Solemar",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "educacao ambiental: abordagens teoricas e estudos de caso no campeche (florianopolis-sc) a luz do pensamento complexo e do direito ecologico",
+          "titulo": "Educação ambiental: abordagens teóricas e estudos de caso no Campeche (Florianópolis-SC) à luz do pensamento complexo e do direito ecológico",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "escravizados, imigrantes e nacionais: a forca de trabalho em transicao em santa catarina (1850-1889)",
+          "titulo": "Escravizados, imigrantes e nacionais: a força de trabalho em transição em Santa Catarina (1850-1889)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "relacoes entre capital social, capacidade absortiva e desempenho individual no setor publico",
+          "titulo": "Relações entre capital social, capacidade absortiva e desempenho individual no setor público",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "competencias socioemocionais e o nexo psicofisico do projeto de aprendizagem ao longo de toda a vida",
+          "titulo": "Competências socioemocionais e o nexo psicofísico do projeto de aprendizagem ao longo de toda a vida",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "tratamento de esgoto urbano em reator hibrido operado em baleladas sequenciais (rhbs) submetido a variacoes de cargas",
+          "titulo": "Tratamento de esgoto urbano em reator híbrido operado em baleladas sequenciais (RHBS) submetido a variações de cargas",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "imigracao e controle de excedentes: o estado brasileiro frente ao fluxo imigratorio venezuelano",
+          "titulo": "Imigração e controle de excedentes: o  Estado brasileiro frente ao fluxo imigratório venezuelano",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "blumenau: acumulacoes originarias",
+          "titulo": "Blumenau: acumulações originárias",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "o trabalho infantil no ambito da politica de assistencia social no brasil: um estudo dos estados do rio grande do norte e santa catarina",
+          "titulo": "O trabalho infantil no âmbito da política de assistência social no Brasil: um estudo dos estados do Rio Grande do Norte e Santa Catarina",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "criancas refugiadas e migrantes na fronteira norte do brasil: a educacao como espaco de protecao",
+          "titulo": "Crianças refugiadas e migrantes na fronteira norte do Brasil: a educação como espaço de proteção",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "\"para vir a ser a mais florente de toda a america portuguesa\": leituras do mundo natural, geografias coloniais e projecoes nos sertoes - capitania do ceara grande (1760-1799)",
+          "titulo": "\"Para vir a ser a mais florente de toda a América Portuguesa\": leituras do mundo natural, geografias coloniais e projeções nos sertões - Capitania do Ceará Grande (1760-1799)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "agroecologia, campesinato e questao agraria: a permanencia das lutas como tessitura do futuro-presente",
+          "titulo": "Agroecologia, campesinato e questão agrária: a permanência das lutas como tessitura do futuro-presente",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "religiosidades em colecoes de livros didaticos de historia: historia, sociedade e cidadania (2013) e nova historia integrada (2015)",
+          "titulo": "Religiosidades em coleções de livros didáticos de história: história, sociedade e cidadania (2013) e nova história integrada (2015)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "teoria e pratica do direito do trabalho no brasil: a questao do onus da prova e a superexploracao",
+          "titulo": "Teoria e Prática do Direito do Trabalho no Brasil: a Questão do Ônus da Prova e a Superexploração",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "uma experiencia etnografica de fronteira: exploracao sexual comercial de criancas e jovens na triplice fronteira entre argentina, brasil e paraguai",
+          "titulo": "Uma experiência etnográfica de fronteira: exploração sexual comercial de crianças e jovens na tríplice fronteira entre Argentina, Brasil e Paraguai",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "\"frutos do suor\": relacoes de exploracao, producao e dependencia do trabalho domestico na corte imperial (1822-1888)",
+          "titulo": "\"Frutos do suor\": relações de exploração, produção e dependência do trabalho doméstico na corte imperial (1822-1888)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "rotas do desejo: trafico de mulheres e prostituicao como estrategia migratoria no el pais e na folha de sao paulo (1997 - 2007)",
+          "titulo": "Rotas do desejo: tráfico de mulheres e prostituição como estratégia migratória no El País e na Folha de São Paulo (1997 - 2007)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "do cemiterio ao museu: o corpo exposto de cruz e sousa",
+          "titulo": "Do cemitério ao museu: o corpo exposto de Cruz e Sousa",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "flexibilidade e discurso da autonomia feminina no mercado de trabalho: reflexoes a partir da venda direta de cosmeticos",
+          "titulo": "Flexibilidade e discurso da autonomia feminina no mercado de trabalho: Reflexões a partir da venda direta de cosméticos",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    },
+    {
+      "consulta": "guia do conjunto de conhecimentos em gerenciamento de projetos (guia pmbok)",
+      "estrato": "pequena",
+      "sementeObras": 3,
+      "consultaExpandida": "'pmbok' & ( 'focal' | 'project' | 'constituíd' | 'institut' | 'instituiçã' | 'conduz' | 'gerenc' )",
+      "respostaMs": 335,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "monitoramento e controle de projetos de desenvolvimento de software para micro e pequenas empresa alinhado ao pmbok e cmmi",
+          "titulo": "Monitoramento e controle de projetos de desenvolvimento de software para micro e pequenas empresa alinhado ao PMBOK e CMMI",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "desenvolvimento de uma aplicacao para gestao de projetos educacionais",
+          "titulo": "Desenvolvimento de uma aplicação para gestão de projetos educacionais",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "procedimento de gestao de riscos financeiros em contratos de concessao de rodovias",
+          "titulo": "Procedimento de gestão de riscos financeiros em contratos de concessão de rodovias",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "aplicacao de uma estrutura pmo em projetos de engenharia de automacao",
+          "titulo": "Aplicação de uma Estrutura PMO em Projetos de Engenharia de Automação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "evolucao da ferramenta dotproject para o planejamento de comunicacao em gerencia de projetos",
+          "titulo": "EVOLUÇÃO DA FERRAMENTA DOTPROJECT PARA O PLANEJAMENTO DE COMUNICAÇÃO EM GERÊNCIA DE PROJETOS",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "escritorio de gerenciamento de projetos uma abordagem pratica para industria metal mecanica com solucoes de automacao",
+          "titulo": "Escritório de Gerenciamento de Projetos Uma Abordagem Prática para Indústria Metal Mecânica com Soluções de Automação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "evolucao da ferramenta dotproject para suporte ao encerramento de projetos",
+          "titulo": "Evolução da ferramenta dotProject para suporte ao encerramento de projetos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "ensino de gerenciamento de projetos de software mediado por ferramentas",
+          "titulo": "Ensino de gerenciamento de projetos de software mediado por ferramentas",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "diretrizes para o desenvolvimento da comunicacao no gerenciamento de projetos enxutos da construcao: uma perspectiva da linguagem acao",
+          "titulo": "Diretrizes para o desenvolvimento da comunicação no gerenciamento de projetos enxutos da construção: uma perspectiva da linguagem ação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "entre a teoria e a pratica: um estudo de caso sobre a metodologia de gerenciamento de projetos aplicada em uma empresa de servicos de pequeno porte",
+          "titulo": "Entre a teoria e a prática: um estudo de caso sobre a metodologia de Gerenciamento de Projetos aplicada em uma empresa de serviços de pequeno porte",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "um estudo comparativo entre metodologias para governanca em tecnologia da informacao",
+          "titulo": "Um Estudo Comparativo entre Metodologias para Governança em Tecnologia da Informação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "proposta de um modelo para o planejamento agil do projeto de produtos",
+          "titulo": "Proposta de um modelo para o planejamento ágil do projeto de produtos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "avaliacao de metodologias para gestao de projetos de eletronicos",
+          "titulo": "Avaliação de metodologias para gestão de projetos de eletrônicos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "estudo de caso: aplicacao de tecnicas e praticas de abordagem agil de gestao de projetos",
+          "titulo": "Estudo de caso: aplicação de técnicas e práticas de abordagem ágil de gestão de projetos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "evolucao da ferramenta de gerenciamento de projetos dotproject para suporte ao grupo de processo iniciacao",
+          "titulo": "Evolução da ferramenta de gerenciamento de projetos DOTPROJECT para suporte ao grupo de processo iniciação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "analise dos beneficios das praticas do guia pmbok na gestao eficiente de projetos desenvolvidos em bim: um estudo de caso de um empreendimento residencial de santa catarina",
+          "titulo": "Análise dos benefícios das práticas do Guia PMBOK na gestão eficiente de projetos desenvolvidos em BIM: Um estudo de caso de um empreendimento residencial de Santa Catarina",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "planejamento de tempo em projetos de desenvolvimento de software para micro e pequenas empresas alinhado ao pmbok e cmmi",
+          "titulo": "Planejamento de tempo em projetos de desenvolvimento de software para micro e pequenas empresas alinhado ao PMBOK e CMMI",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "evolucao de uma ferramenta para gerenciar projetos alinhado ao cmmi-dev e pmbok para planejamento de riscos",
+          "titulo": "EVOLUÇÃO DE UMA FERRAMENTA PARA GERENCIAR PROJETOS ALINHADO AO CMMI-DEV e PMBOK PARA PLANEJAMENTO DE RISCOS",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "requisitos para uma estrutura de gestao de projetos em uma agencia digital com base no guia pmbok®",
+          "titulo": "Requisitos para uma estrutura de gestão de projetos em uma agência digital com base no Guia PMBOK®",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "evolucao da ferramenta de gerenciamento de projetos dotproject para o planejamento de escopo",
+          "titulo": "EVOLUÇÃO DA FERRAMENTA DE GERENCIAMENTO DE PROJETOS DOTPROJECT PARA O PLANEJAMENTO DE ESCOPO",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "indicadores para reformulacao de projetos de produtos digitais: um estudo de caso do projeto ultimate fan da empresa great big events (gbe).",
+          "titulo": "Indicadores para reformulação de projetos de produtos digitais: Um estudo de caso do projeto Ultimate Fan da empresa Great Big Events (GBE).",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "gerenciamento de projetos aplicado ao planejamento do sistema eletrico de distribuicao: estudo de caso",
+          "titulo": "Gerenciamento de projetos aplicado ao planejamento do sistema elétrico de distribuição: estudo de caso",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "analise das praticas das 6ª e 7 ª edicoes do guia pmbok para o gerenciamento de projetos",
+          "titulo": "Análise das práticas das 6ª e 7 ª edições do guia PMBOK para o gerenciamento de projetos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "desdobramento de estrategias com eventos integradores em uma empresa de eletrodomesticos: aplicacao da metodologia fmea por meio da abordagem toyota kata",
+          "titulo": "Desdobramento de estratégias com eventos integradores em uma empresa de eletrodomésticos: aplicação da metodologia FMEA por meio da abordagem Toyota Kata",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    },
+    {
+      "consulta": "colecao",
+      "estrato": "grande",
+      "sementeObras": 72,
+      "consultaExpandida": "'coleçã' & 'estud'",
+      "respostaMs": 222,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "um imigrante entre dois mundos atraves da colecao de motome kamigouchi",
+          "titulo": "Um imigrante entre dois mundos através da coleção de Motome Kamigouchi",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "para ler a monica: reflexoes sobre quadrinhos, industria cultural e ensino de historia",
+          "titulo": "Para ler a Mônica: reflexões sobre quadrinhos, indústria cultural e ensino de história",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos i, capitulo 3: formacao de professores surdos: mais professores para a escola sonhada (miorando,tania micheline",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos I, capitulo 3: Formação de professores surdos: mais professores para a escola sonhada (MIORANDO,Tania Micheline",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "estabelecimento ex situ de uma colecao de germoplasma de bromelias da floresta ombrofila mista e floresta ombrofila densa",
+          "titulo": "Estabelecimento ex situ de uma coleção de germoplasma de bromélias da floresta ombrófila mista e floresta ombrófila densa",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "documentacao museologica na pratica: um estudo de caso na colecao de cultura popular do museu de arqueologia e etnologia da ufsc",
+          "titulo": "Documentação museológica na prática: um estudo de caso na Coleção de Cultura Popular do Museu de Arqueologia e Etnologia da UFSC",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "aspectos floristicos , parametros fitossociologicos e ecologicos nos campos de palmas, sc/pr, brasil",
+          "titulo": "Aspectos Florísticos , parâmetros fitossociológicos e ecológicos nos Campos de Palmas, SC/PR, Brasil",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "historia da africa nos livros didaticos: uma analise da colecao \"estudar historia: das origens do homem a era digital\"",
+          "titulo": "História da África nos livros didáticos: uma análise da coleção \"Estudar História: das origens do homem à era digital\"",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos i, capitulo 8: ao pe da letra nao! mitos que permeiam o ensino de literatura para os surdos (farias, sandra patricia)",
+          "titulo": "Tradução do artigo  da coleção Estudos Surdos I, capitulo 8: Ao pé da letra não! Mitos que permeiam o ensino de literatura para os surdos (FARIAS, Sandra Patricia)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos i, capitulo 2: integracao/inclusao na escola regular: um olhar do egresso surdo (machado, paulo cesar)",
+          "titulo": "Tradução do artigo  da coleção Estudos Surdos I, capitulo 2: Integração/inclusão na escola regular: um olhar do egresso surdo (MACHADO, Paulo Cesár)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iii, capitulo 6: pensando em traducao cultural a partir do sujeito nao-surdo (anater, gisele iandra pessini",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos III, capítulo 6: Pensando em tradução cultural a partir do sujeito não-surdo (ANATER, Gisele Iandra Pessini",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iii, capitulo 6: pensando em traducao cultural a partir do sujeito nao-surdo (anater, gisele iandra pessini)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos III, capítulo 6: Pensando em tradução cultural a partir do sujeito não-surdo (ANATER, Gisele Iandra Pessini)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iv, capitulo 11: traduzibilidade poetica na interface libras – portugues: aspectos linguisticos e tradutorios com base em “bandeira brasileira” de pimenta (1999) (souza, saulo xavier)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos IV, capítulo 11: Traduzibilidade poética na interface Libras – Português: aspectos linguísticos e tradutórios com base em “Bandeira Brasileira” de Pimenta (1999) (SOUZA, Saulo Xavier)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iii, capitulo 8: aspectos da traducao/encenacao na lingua de sinais brasileira para um ambiente virtual de ensino: praticas tradutorias do curso de letras libras (quadros, ronice muller de; souza, saulo xavier)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos III, capítulo 8: Aspectos da tradução/encenação na língua de sinais brasileira para um ambiente virtual de ensino: práticas tradutorias do curso de letras Libras (QUADROS, Ronice Müller de; SOUZA, Saulo Xavier)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos i, capitulo 5: ouvinte: o outro do ser surdo (perlin,gladis; quadros, ronice muller)",
+          "titulo": "Tradução do artigo  da coleção Estudos Surdos I, capitulo 5: Ouvinte: o outro do ser surdo (PERLIN,Gladis; QUADROS, Ronice Müller)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a experiencia do conto em caio fernando abreu",
+          "titulo": "A experiência do conto em Caio Fernando Abreu",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos i, capitulo 7: possiveis encontros entre cultura surda, ensino e linguistica (finau, rossana)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos I, capitulo 7: Possíveis encontros entre cultura surda, ensino e linguística (FINAU, Rossana)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "uso do fogo no sitio arqueologico abrigo do jon: um estudo das estruturas de combustao da area 2",
+          "titulo": "Uso do fogo no sítio arqueológico Abrigo do Jon: Um estudo das estruturas de combustão da Àrea 2",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iii, capitulo 5: espaco de confronto linguistico/cultural dos surdos na ufsc (schmitt, deonisio)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos III, capítulo 5: Espaço de confronto linguístico/cultural dos surdos na UFSC (Schmitt, Deonisio)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iii, capitulo 2: inclusao de surdos no ensino superior por meio do uso da tecnologia (silveira, carolina hessel e rezende, patricia luiza ferreira)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos III, capítulo 2: Inclusão de surdos no ensino superior por meio do uso da tecnologia (SILVEIRA, Carolina Hessel e REZENDE, Patrícia Luiza Ferreira)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos ii, capitulo 8: escrita das linguas de sinais (estelita, mariangela)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos II, capítulo 8: Escrita das línguas de sinais (ESTELITA, Mariângela)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iv, capitulo 6: aquisicao das linguas de sinais (quadros, ronice muller de)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos IV, capítulo 6: Aquisição das línguas de sinais (QUADROS, Ronice Müller de)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "metodos e acoes de conservacao preventiva: um estudo de caso da colecao dr. ruy olympio de oliveira do memorial do mpsc.",
+          "titulo": "Métodos e ações de conservação preventiva: um estudo de caso da coleção Dr. Ruy Olympio de Oliveira do Memorial do MPSC.",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "traducao do artigo da colecao estudos surdos iv, capitulo 15: relatos de experiencias: a educacao bilingue para surdos: relatos de experiencias e a realidade brasileira (stumpf, marianne rossi)",
+          "titulo": "Tradução do artigo da coleção Estudos Surdos IV, capítulo 15: Relatos de experiencias: a educação bilíngue para surdos: relatos de experiencias e a realidade brasileira (STUMPF, Marianne Rossi)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "estudo do acervo de acompanhamentos funerarios da colecao arqueologica pe joao alfredo rohr, sj: analise de dois contextos arqueologicos litoraneos em santa catarina",
+          "titulo": "Estudo do acervo de acompanhamentos funerários da Coleção Arqueológica Pe João Alfredo Rohr, SJ: análise de dois contextos arqueológicos litorâneos em Santa Catarina",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "aplicacao de funcoes arquivisticas em arquivos historicos: estudo de caso na colecao garibaldina (seculo xviii)",
+          "titulo": "Aplicação de funções arquivísticas em arquivos históricos: estudo de caso na Coleção Garibaldina (Século XVIII)",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    },
+    {
+      "consulta": "mulheres na literatura",
+      "estrato": "grande",
+      "sementeObras": 31,
+      "consultaExpandida": "'feminin' & ( 'mulh' | 'literatur' | 'context' | 'sobr' | 'estud' )",
+      "respostaMs": 1012,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "quem sao as mulheres em claudia? os sentidos no discurso da revista feminina ao longo de uma decada (2009-2019)",
+          "titulo": "Quem são as mulheres em Claudia? Os sentidos no discurso da revista feminina ao longo de uma década (2009-2019)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "representacoes sociais de adolescentes sobre drogas: um estudo sobre possiveis ancoragens e objetificacoes",
+          "titulo": "Representações sociais de adolescentes sobre drogas: um estudo sobre possíveis ancoragens e objetificações",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "percepcao de mulheres sobre as crencas culturais no puerperio: teoria transcultural de leininger",
+          "titulo": "Percepção de mulheres sobre as crenças culturais no puerpério: teoria transcultural de Leininger",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "empreendedorismo feminino: um estudo de caso com mulheres empreendedoras na grande florianopolis, sob a otica da economia feminista",
+          "titulo": "Empreendedorismo Feminino: um estudo de caso com mulheres empreendedoras na grande florianópolis, sob a ótica da economia feminista",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a mulher escarlate: uma exposicao sobre empoderamento da mulher em espacos urbanos atraves do pole dance",
+          "titulo": "A Mulher Escarlate: Uma exposição sobre empoderamento da mulher em espaços urbanos através do pole dance",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "atribuicoes das politicas de seguridade social as mulheres: uma discussao sobre o cuidado e a responsabilizacao feminina.",
+          "titulo": "Atribuições das políticas de seguridade social às mulheres: uma discussão sobre o cuidado e a responsabilização feminina.",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "marias dos evangelhos e marias do seculo xix: uma comparacao entre a construcao biblica e os estudos femininos da woman’s bible",
+          "titulo": "Marias dos evangelhos e Marias do Século XIX: uma comparação entre a construção bíblica e os estudos femininos da Woman’s Bible",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "evolucao da participacao das estudantes femininas no curso de ciencias contabeis da universidade federal de santa catarina",
+          "titulo": "Evolução da participação das estudantes femininas no curso de Ciências Contábeis da Universidade Federal de Santa Catarina",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "chiquinha gonzaga em discurso: narrativas sobre vida e obra de uma artista brasileira",
+          "titulo": "Chiquinha Gonzaga em discurso: narrativas sobre vida e obra de uma artista brasileira",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "uma verdadeira mulher em sua inteireza de mulher: o feminino em psicanalise por medeia e madeleine gide",
+          "titulo": "Uma verdadeira mulher em sua inteireza de mulher: o feminino em psicanálise por Medeia e Madeleine Gide",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a mulher no mercado de trabalho: um estudo de caso da participacao feminina em um orgao do servico publico catarinense",
+          "titulo": "A mulher no mercado de trabalho: um estudo de caso da participação feminina em um órgão do serviço público catarinense",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "metaforas sobre a mulher: uma visao linguistica e conceptual",
+          "titulo": "Metáforas sobre a mulher: uma visão linguística e conceptual",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "mujeres y ciudadania en cuba: reflexiones interseccionales desde la memoria",
+          "titulo": "Mujeres y ciudadanía en Cuba: reflexiones interseccionales desde la memoria",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "em texto e no contexto social: mulher e literatura afro-brasileiras",
+          "titulo": "Em texto e no contexto social: mulher e literatura afro-brasileiras",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a face feminina do hiv e sida: um estudo sobre as experiencias de mulheres enfectadas pelo hiv na cidade de maputo, mocambique",
+          "titulo": "A face feminina do HIV e SIDA: um estudo sobre as experiências de mulheres enfectadas pelo HIV na cidade de Maputo, Moçambique",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "o interesse feminino para atuacao profissional em financas: um estudo sobre concepcoes de diversidade de genero no setor financeiro",
+          "titulo": "O Interesse Feminino Para Atuação Profissional Em Finanças: um estudo sobre concepções de diversidade de gênero no setor financeiro",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a construcao social da noticia sobre violencia contra a mulher - a imagem da vitimacao feminina na folha de sao paulo, no ano de 1995 monografia",
+          "titulo": "A construção social da notícia sobre violência contra  a mulher - a imagem da vitimação feminina na folha de São Paulo, no ano de 1995 monografia",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "projeto \"mulheres livres\" no presidio feminino de florianopolis (sc): estudo de caso do modelo de ressocializacao/reintegracao da mulher presa por meio do metodo apac",
+          "titulo": "Projeto \"Mulheres Livres\" no presídio feminino de Florianópolis (SC): estudo de caso do modelo de ressocialização/reintegração da mulher presa por meio do método APAC",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "esposas do carcere: um estudo etnografico sobre as dimensoes de saude nas trajetorias de mulheres de homens privados de liberdade em um presidio no sul do brasil",
+          "titulo": "Esposas do cárcere: um estudo etnográfico sobre as dimensões de saúde nas trajetórias de mulheres de homens privados de liberdade em um presídio no sul do Brasil",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "o carater do patriarcado na ordem social do capital: um estudo sobre a relacao entre exploracao e dominacao da mulher trabalhadora na contemporaneidade",
+          "titulo": "O caráter do patriarcado na ordem social do capital: um estudo sobre a relação entre exploração e dominação da mulher trabalhadora na contemporaneidade",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "elas nas engenharias: construcao da carreira e identidade profissional de mulheres estudantes da ufsc",
+          "titulo": "Elas nas engenharias: construção da carreira e identidade profissional de mulheres estudantes da UFSC",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "mulheres e exilio: narrativas femininas sobre a ditadura civil-militar brasileira",
+          "titulo": "Mulheres e exílio: narrativas femininas sobre a ditadura civil-militar brasileira",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "mulheres no horror: reflexoes sobre as publicacoes de autoria feminina na revista weird tales (1923-1954)",
+          "titulo": "Mulheres no horror: reflexões sobre as publicações de autoria feminina na revista Weird Tales (1923-1954)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "startups catarinenses lideradas por mulheres: um estudo preliminar",
+          "titulo": "Startups Catarinenses Lideradas por Mulheres: Um Estudo Preliminar",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "sobre mulheres e policias: a construcao do policiamento feminino em sao paulo (1955-1964)",
+          "titulo": "Sobre mulheres e polícias: a construção do policiamento feminino em São Paulo (1955-1964)",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    },
+    {
+      "consulta": "propriedade industrial",
+      "estrato": "grande",
+      "sementeObras": 26,
+      "consultaExpandida": "'patent' & ( 'intelectual' | 'industrial' | 'institut' | 'proteçã' | 'propriedad' | 'juríd' )",
+      "respostaMs": 317,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "a propriedade intelectual e o setor farmaceutico em paises em desenvolvimento: um estudo no contexto do trips",
+          "titulo": "A PROPRIEDADE INTELECTUAL E O SETOR FARMACÊUTICO EM PAÍSES EM DESENVOLVIMENTO: UM ESTUDO NO CONTEXTO DO TRIPS",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a propriedade intelectual da biotecnologia em alimentos funcionais",
+          "titulo": "A propriedade intelectual da biotecnologia em alimentos funcionais",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "caracterizacao fisico-quimica e avaliacao da capacidade antioxidante da polpa e dos residuos de gravata (bromelia antiacantha bertol)",
+          "titulo": "Caracterização físico-química e avaliação da capacidade antioxidante da polpa e dos resíduos de gravatá (Bromelia antiacantha Bertol)",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "cultura organizacional e capacidade de inovacao com foco em propriedade intelectual: estudo de caso de distribuidora de energia eletrica do sul do brasil",
+          "titulo": "Cultura organizacional e capacidade de inovação com foco em propriedade intelectual: estudo de caso de distribuidora de energia elétrica do sul do Brasil",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "pesquisa desenvolvimento & inovacao: um modelo de avaliacao de propriedade industrial na fase de projeto",
+          "titulo": "Pesquisa desenvolvimento & inovação: um modelo de avaliação de propriedade industrial na fase de projeto",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a biotecnologia e o sistema internacional de patentes: a protecao do direito a saude e as doencas negligenciadas",
+          "titulo": "A Biotecnologia e o sistema internacional de patentes: a proteção do direito à saúde e as doenças negligenciadas",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "programa agentes locais de inovacao: proposicao de metodologia para inducao ao registro de propriedade industrial",
+          "titulo": "Programa Agentes Locais de Inovação: proposição de metodologia para indução ao registro de propriedade industrial",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a sobreposicao de direitos de propriedade intelectual no software : coexistencia entre direito de autor e patente na sociedade informacional",
+          "titulo": "A sobreposição de direitos de propriedade intelectual no software : coexistência entre direito de autor e patente na sociedade informacional",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "os impactos da propriedade intelectual do software sobre o desenvolvimento no contexto da sociedade da informacao",
+          "titulo": "Os impactos da propriedade intelectual do software sobre o desenvolvimento no contexto da sociedade da informação",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "aspectos gerais da propriedade industrial",
+          "titulo": "Aspectos gerais da propriedade industrial",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a cultura da propriedade intelectual em cursos de design nas instituicoes de ensino superior da grande florianopolis",
+          "titulo": "A cultura da Propriedade Intelectual em cursos de Design nas instituições de ensino superior da grande Florianópolis",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a protecao dos ativos de propriedade intelectual na industria da moda e os desafios advindos da modernizacao da producao: o uso nao licenciado de direitos na industria textil e de confeccoes",
+          "titulo": "A proteção dos ativos de propriedade intelectual na indústria da moda e os desafios advindos da modernização da produção: o uso não licenciado de direitos na indústria têxtil e de confecções",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "inovacao e propriedade intelectual em empresas que implementam estrategias de mercado baseadas em marcas verticais nativas do ambiente digital (dnvbs): uma analise de caso da empresa pantys",
+          "titulo": "Inovação e propriedade intelectual em empresas que implementam estratégias de mercado baseadas em Marcas Verticais Nativas do Ambiente Digital (DNVBs): uma análise de caso da empresa Pantys",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "protecao dos ativos da propriedade intelectual das startups catarinenses no processo de internacionalizacao",
+          "titulo": "Proteção dos ativos da propriedade intelectual das startups catarinenses no processo de internacionalização",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a sobreposicao de direitos de propriedade intelectual em biotecnologia: uma analise da cumulacao de direitos de propriedade industrial e cultivares sobre variedades vegetais geneticamente modificadas",
+          "titulo": "A sobreposição de direitos de propriedade intelectual em biotecnologia: uma análise da cumulação de direitos de propriedade industrial e cultivares sobre variedades vegetais geneticamente modificadas",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "protecao da propriedade intelectual pelas empresas na incubadora celta: a utilizacao de metodos formais e nao-formais",
+          "titulo": "Proteção da propriedade intelectual pelas empresas na Incubadora CELTA: a utilização de métodos formais e não-formais",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "o regime juridico de patentes como instrumento estrategico de fomento a inovacao e a competitividade para a agroindustria avicola catarinense",
+          "titulo": "O Regime jurídico de patentes como instrumento estratégico de fomento à inovação e a competitividade para a agroindústria avícola catarinense",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "propriedade intelectual e comercio internacional: desenho industrial e desenvolvimento",
+          "titulo": "Propriedade intelectual e comércio internacional: Desenho industrial e desenvolvimento",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "os tratados de livre comercio e o acordo trips: uma analise de protecao patentaria na area farmaceutica",
+          "titulo": "Os tratados de livre comércio e o acordo TRIPS: uma análise de proteção patentária na área farmacêutica",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "o nivel de prontidao tecnologica de propriedade industrial: uma proposta de software para enquadramento na escala trl",
+          "titulo": "O nível de prontidão tecnológica de propriedade industrial: uma proposta de software para enquadramento na escala TRL",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "as indicacoes geograficas como instrumento de protecao juridica internacional do conhecimento tradicional: harmonizando propostas de omc, onu e ompi",
+          "titulo": "As indicações geográficas como instrumento de proteção jurídica internacional do conhecimento tradicional: harmonizando propostas de OMC, ONU e OMPI",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "propriedade intelectual: avaliacao do registro de marcas e patentes perante as leis de inovacao brasileiras",
+          "titulo": "Propriedade Intelectual: avaliação do registro de marcas e patentes perante as leis de inovação brasileiras",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "diretrizes para a realizacao da transferencia de tecnologia de patentes nao analisadas pelo inpi",
+          "titulo": "Diretrizes para a realização da transferência de tecnologia de patentes não analisadas pelo INPI",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a possibilidade de uso do instituto juridico da licenca compulsoria como ferramenta de acesso a medicamentos e metodos diagnosticos patenteados relacionados a pandemia covid-19",
+          "titulo": "A possibilidade de uso do instituto jurídico da licença compulsória como ferramenta de acesso a medicamentos e métodos diagnósticos patenteados relacionados à pandemia COVID-19",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a licenca compulsoria como medida de efetiva concretizacao ao direito fundamental ao meio ambiente saudavel",
+          "titulo": "A licença compulsória como medida de efetiva concretização ao direito fundamental ao meio ambiente saudável",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    },
+    {
+      "consulta": "hemodialise",
+      "estrato": "grande",
+      "sementeObras": 72,
+      "consultaExpandida": "'hemodiális' & ( 'renal' | 'crônic' | 'pacient' | 'doenc' | 'introdu' | 'indivídu' | 'idad' )",
+      "respostaMs": 287,
+      "falha": null,
+      "descartado": null,
+      "obras": [
+        {
+          "id": "perfil fisico e emocional dos pacientes com insuficiencia renal cronica em hemodialise no hospital regional de ararangua-sc",
+          "titulo": "Perfil físico e emocional dos pacientes com Insuficiência Renal Crônica em hemodiálise no Hospital Regional de Araranguá-SC",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "representacoes sociais da doenca renal cronica e da hemodialise e sua relacao com a qualidade de vida",
+          "titulo": "Representações sociais da doença renal crônica e da hemodiálise e sua relação com a qualidade de vida",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "oficinas de cuidados para pacientes em hemodialise",
+          "titulo": "Oficinas de cuidados para pacientes em hemodiálise",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "reprodutibilidade do teste avd-glittre em individuos que fazem hemodialise",
+          "titulo": "Reprodutibilidade do teste AVD-Glittre em indivíduos que fazem hemodiálise",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "analise da variacao da hemoglobina media ao longo de 6 meses de uso da eritropoietina humana recombinante no tratamento da anemia em pacientes com falencia renal cronica em hemodialise.",
+          "titulo": "Análise da variação da hemoglobina média ao longo de 6 meses de uso da eritropoietina humana recombinante no tratamento da anemia em pacientes com falência renal crônica em hemodiálise.",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "efeitos da suplementacao de vitamina c em marcadores inflamatorios, estresse oxidativo e perfil lipidico de adultos e idosos com doenca renal cronica: uma revisao sistematica com metanalise",
+          "titulo": "Efeitos da suplementação de vitamina C em marcadores inflamatórios, estresse oxidativo e perfil lipídico de adultos e idosos com doença renal crônica: uma revisão sistemática com metanálise",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "mudanca nos habitos de vida do idoso com doenca renal cronica em tratamento hemodialitico",
+          "titulo": "Mudança nos hábitos de vida do idoso com doença renal crônica em tratamento hemodialítico",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "mulheres em hemodialise: mudancas decorrentes da doenca e do tratamento",
+          "titulo": "Mulheres em hemodiálise: mudanças decorrentes da doença e do tratamento",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "associacao entre diferentes modalidades terapeuticas e sintomas depressivos em pacientes com doenca renal cronica",
+          "titulo": "Associação entre diferentes modalidades terapêuticas e sintomas depressivos em pacientes com doença renal crônica",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "indicadores nutricionais e o risco de hospitalizacao em pacientes submetidos a hemodialise",
+          "titulo": "Indicadores nutricionais e o risco de hospitalização em pacientes submetidos à hemodiálise",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "conhecimento de individuos em hemodialise e familiares sobre o acidente vascular encefalico: estdo em uma populacao do sul do brasil",
+          "titulo": "Conhecimento de indivíduos em hemodiálise e familiares sobre o Acidente Vascular Encefálico: estdo em uma população do sul do Brasil",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "a qualidade de vida de pacientes renais cronicos em tratamento de hemodialise no brasil.",
+          "titulo": "A qualidade de vida de pacientes renais crônicos em tratamento de hemodiálise no Brasil.",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "alteracoes ecocardiograficas em pacientes renais cronicos em hemodialise no extremo sul catarinense",
+          "titulo": "Alterações ecocardiográficas em pacientes renais crônicos em hemodiálise no extremo sul catarinense",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "perfil clinico-epidemiologico dos pacientes com doenca renal cronica em hemodialise no extremo sul catarinense",
+          "titulo": "Perfil clínico-epidemiológico dos pacientes com doença renal crônica em hemodiálise no Extremo Sul Catarinense",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "sindrome cardiorrenal em pessoas com doenca renal cronica em tratamento hemodialitico: pesquisa de metodos mistos",
+          "titulo": "Síndrome cardiorrenal em pessoas com doença renal crônica em tratamento hemodialitico: pesquisa de métodos mistos",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "o efeito da suplementacao de proteinas do soro do leite e/ou da vitamina c em biomarcadores do estresse oxidativo e indicadores do estado nutricional em pacientes com doenca renal cronica em hemodialise: estudo piloto, randomizado e duplo-cego",
+          "titulo": "O efeito da suplementação de proteínas do soro do leite e/ou da vitamina C em biomarcadores do estresse oxidativo e indicadores do estado nutricional em pacientes com doença renal crônica em hemodiálise: estudo piloto, randomizado e duplo-cego",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "qualidade de vida de pacientes com doenca renal cronica",
+          "titulo": "Qualidade de vida de pacientes com doença  renal crônica",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "prevalencia de sarcopenia em pacientes que fazem hemodialise em ararangua-sc",
+          "titulo": "Prevalência de sarcopenia em pacientes que fazem hemodiálise em  Araranguá-SC",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "capacidade funcional e nivel de atividade fisica influenciam na doenca renal cronica e no tempo de hemodialise?",
+          "titulo": "CAPACIDADE FUNCIONAL E NÍVEL DE ATIVIDADE FÍSICA INFLUENCIAM NA DOENÇA RENAL CRÔNICA E NO TEMPO DE HEMODIÁLISE?",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "efeitos da suplementacao oral com oleo de linhaca e extrato seco de roma em marcadores de inflamacao, perfil lipidico e estado nutricional de individuos com doenca renal cronica em hemodialise: ensaio clinico randomizado, placebo-controlado e duplo-cego",
+          "titulo": "Efeitos da suplementação oral com óleo de linhaça e extrato seco de romã em marcadores de inflamação, perfil lipídico e estado nutricional de indivíduos com doença renal crônica em hemodiálise: ensaio clínico randomizado, placebo-controlado e duplo-cego",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "indicadores nutricionais comparados com a absorciometria por dupla emissao de raios x na avaliacao do estado nutricional de pacientes adultos e idosos em hemodialise",
+          "titulo": "Indicadores nutricionais comparados com a absorciometria por dupla emissão de raios X na avaliação do estado nutricional de pacientes adultos e idosos em hemodiálise",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "gerenciando as acoes de cuidado de enfermagem ao paciente submetido a hemodialise",
+          "titulo": "Gerenciando as ações de cuidado de enfermagem ao paciente submetido à hemodiálise",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "impactos clinicos e fatores prognosticos em pacientes com doenca renal cronica em hemodialise: uma analise retrospectiva",
+          "titulo": "Impactos clínicos e fatores prognósticos em pacientes com doença renal crônica em hemodiálise: uma análise retrospectiva",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "desempenho no teste avd-glittre se associa a performance funcional de pacientes que fazem hemodialise",
+          "titulo": "Desempenho no teste AVD-Glittre se associa à performance funcional de pacientes que fazem hemodiálise",
+          "decisao": null,
+          "justificativa": ""
+        },
+        {
+          "id": "avaliacao de biomarcadores de estresse oxidativo ao longo de um ano em pacientes com doenca renal cronica em hemodialise",
+          "titulo": "Avaliação de biomarcadores de estresse oxidativo ao longo de um ano em pacientes com doença renal crônica em hemodiálise",
+          "decisao": null,
+          "justificativa": ""
+        }
+      ]
+    }
+  ]
+}

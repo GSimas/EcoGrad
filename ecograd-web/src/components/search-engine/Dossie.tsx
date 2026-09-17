@@ -246,7 +246,7 @@ function ItensSemelhantes({ termo, tipo, dadosCompletos }: Pick<Props, 'termo' |
                           chave: 'Item',
                           rotulo: 'Item',
                           render: (l) => (
-                            <BotaoEntidade nome={String(l.Item)} onClick={() => navegarPara(tipo, String(l.Item))} />
+                            <BotaoEntidade tipo={tipo} nome={String(l.Item)} onClick={() => navegarPara(tipo, String(l.Item))} />
                           ),
                         },
                         {

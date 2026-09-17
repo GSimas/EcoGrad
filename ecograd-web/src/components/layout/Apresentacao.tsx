@@ -1,11 +1,17 @@
 import { ArrowRight, BookOpen, Github, Route } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { BuscaGlobal } from './BuscaGlobal';
+import { UFSCaoAcervo } from '@/components/chat/UFSCaoAcervo';
+import { GrupoOpcoes } from '@/components/ui/Tabs';
+import { useSessionField } from '@/hooks/useSessionField';
 import { Janela } from './Janela';
 import { Aparencia } from './Aparencia';
 import { CHIP } from './atalhos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { navigatePage } from '@/services/navigation';
+
+/** A busca é o padrão; conversar é o caminho para pergunta em vez de item. */
+const MODOS = ['Buscar', 'Conversar'] as const;
 
 const PASSOS: [titulo: string, texto: string][] = [
   ['1. Defina o recorte', 'Busque documentos, pessoas, temas ou coleções inteiras na apresentação. Compare nomes completos, identificadores, períodos e tipos antes de carregar.'],
@@ -14,6 +20,7 @@ const PASSOS: [titulo: string, texto: string][] = [
 ];
 
 export function Apresentacao() {
+  const [modo, setModo] = useSessionField<typeof MODOS[number]>('inicio.modo', 'Buscar');
   const carregada = useEcoGradStore((s) => s.dadosCarregados);
   const rota = useEcoGradStore((s) => s.rota);
   // Enquanto uma coleção é carregada, a tela inteira fica inerte: sair daqui no
@@ -26,7 +33,13 @@ export function Apresentacao() {
         <h1 className="mt-6 text-4xl font-bold tracking-tight lg:text-5xl">EcoGrad</h1>
         <p className="mt-2 text-lg text-slate-300">Ecologia do Conhecimento · UFSC</p>
         <p className="mt-5 max-w-2xl leading-relaxed text-slate-300">Encontre trabalhos para ler, explore pesquisadores e investigue temas na produção acadêmica da UFSC. Pesquise qualquer item do acervo ou escolha as coleções que quer analisar.</p>
-        <BuscaGlobal />
+
+        {/* Dois caminhos para o mesmo acervo: escolher itens ou perguntar. A busca
+            segue sendo o padrão — é determinística e instantânea. */}
+        <div className="mt-6 w-full max-w-md self-center sm:w-auto">
+          <GrupoOpcoes opcoes={MODOS} valor={modo} onChange={setModo} />
+        </div>
+        <div className="w-full">{modo === 'Conversar' ? <UFSCaoAcervo /> : <BuscaGlobal />}</div>
         {carregada && <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <button type="button" className="btn btn-primary px-6 py-3 disabled:opacity-60" disabled={carregando} onClick={() => navigatePage(rota)}>Continuar análise atual <ArrowRight size={16} /></button>
         </div>}
@@ -42,7 +55,7 @@ export function Apresentacao() {
             <section className="space-y-3 border-t border-eco-border pt-5">
               <h3 className="text-base font-semibold text-eco-accent">O que os dados permitem saber</h3>
               <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama CAPES é uma consulta institucional independente; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
-              <p className="text-sm leading-relaxed text-slate-300">O Consultor IA fica no botão do canto inferior direito e usa a chave de API do provedor que você escolher. Ele recebe contexto limitado da análise. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
+              <p className="text-sm leading-relaxed text-slate-300">O UFSCão, consultor de IA, responde sobre o acervo inteiro em Conversar, na tela inicial, e sobre as coleções carregadas no botão do canto inferior direito. Nos dois casos usa a chave de API do provedor que você escolher. Ele é uma inteligência artificial generativa: recebe contexto limitado da análise e pode errar, inclusive inventando trabalhos e nomes. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
             </section>
           </div>
         </Janela>

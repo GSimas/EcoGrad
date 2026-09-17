@@ -109,7 +109,11 @@ export function Sidebar() {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-      <div className="min-w-0 flex-1"><p className="text-sm font-bold text-eco-accent">EcoGrad</p><p className="truncate text-xs text-slate-400">{PAGE_LABELS[page]}</p></div>
+      {/* Mesma marca da lateral do desktop: no celular ela é o único caminho de volta à apresentação. */}
+      <button type="button" onClick={() => navigatePage('inicio')} className="eco-brand-home flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left" aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
+        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-8 w-8 shrink-0 object-contain" />
+        <span className="min-w-0 flex-1"><span className="block text-sm font-bold text-eco-accent">EcoGrad</span><span className="block truncate text-xs text-slate-400">{PAGE_LABELS[page]}</span></span>
+      </button>
       <AcessosAjuda compacto />
     </header>
   </>;

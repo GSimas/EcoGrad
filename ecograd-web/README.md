@@ -27,7 +27,7 @@ A aplicação sobe em <http://localhost:5173>.
 
 > **`npm run dev` sozinho não executa as Netlify Functions.** O Panorama CAPES, a síntese da IA,
 > e a extração ontológica ficam indisponíveis (a interface avisa e continua funcionando).
-> O Consultor IA não depende delas: usa a chave de API do próprio usuário (BYOK), direto do
+> O UFSCão (consultor de IA) não depende delas: usa a chave de API do próprio usuário (BYOK), direto do
 > navegador. Para a aplicação completa, use o comando abaixo.
 
 ### Aplicação completa (frontend + funções)
@@ -111,7 +111,7 @@ ecograd-web/
    atalho para voltar).
 2. **Seleção de coleções** — escolha dos PPGs e cursos, com o Panorama CAPES
    sempre visível.
-3. **Análise** — Dashboard, Motor de Busca, Foresight e Memética. O Consultor IA fica em um botão
+3. **Análise** — Dashboard, Motor de Busca, Foresight e Memética. O UFSCão, consultor de IA, fica em um botão
    flutuante e usa a chave de API do próprio usuário (OpenAI, Anthropic, Google, OpenRouter e outros).
 
 O painel lateral recolhe para uma faixa de ícones (o estado fica salvo na sessão).
