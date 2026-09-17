@@ -31,7 +31,9 @@
     "report:build": "node scripts/report-build.mjs",
     "afericao:amostra-cega": "node --max-old-space-size=4096 scripts/afericao-amostra-cega.mjs",
     "indice:enriquecer": "esbuild scripts/indice-enriquecer.ts --bundle --platform=node --format=esm --packages=external --outfile=node_modules/.cache/indice-enriquecer.mjs && node --max-old-space-size=8192 node_modules/.cache/indice-enriquecer.mjs",
-    "afericao:consultar": "node scripts/afericao-consultar.mjs"
+    "afericao:consultar": "node scripts/afericao-consultar.mjs",
+    "indice:embeddings": "node --max-old-space-size=4096 scripts/indice-embeddings.mjs",
+    "afericao:vetor": "node scripts/afericao-vetor.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

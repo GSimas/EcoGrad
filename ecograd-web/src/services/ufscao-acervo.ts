@@ -8,6 +8,25 @@ import { escreverSintese } from './sintese-acervo';
 
 export type Etapa = 'planejando' | 'consultando' | 'escrevendo';
 
+/**
+ * Vetor da pergunta pela função Netlify, com a chave do projeto (decisão E3).
+ * Falhar aqui não derruba a resposta: a busca volta a ser só por termos, e a
+ * tela diz isso.
+ */
+export async function vetorDaPergunta(texto: string, signal: AbortSignal): Promise<number[] | null> {
+  try {
+    const r = await fetch('/.netlify/functions/embedding-consulta', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ texto }),
+      signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
+    });
+    if (!r.ok) return null;
+    const { vetor } = await r.json() as { vetor?: number[] };
+    return Array.isArray(vetor) && vetor.length === 768 ? vetor : null;
+  } catch {
+    return null;
+  }
+}
+
 export interface RespostaAcervo {
   id: number;
   pergunta: string;
@@ -19,6 +38,8 @@ export interface RespostaAcervo {
   texto: string;
   /** Preenchido quando o modelo não devolveu plano legível e a pergunta virou busca de tema. */
   planoImprovisado?: boolean;
+  /** A busca de tema tentou usar significado e não conseguiu: ficou só nos termos. */
+  semSignificado?: boolean;
 }
 
 /** O dicionário muda só com o esquema: uma leitura por sessão. */
@@ -33,6 +54,7 @@ const lerDicionario = () => (dicionario ??= dicionarioDoIndice().then(dicionario
 export async function perguntarAoAcervo(
   config: ConfigIA, pergunta: string, turnos: readonly Turno[],
   aoMudarEtapa: (etapa: Etapa) => void, aoEscrever: (texto: string) => void, signal: AbortSignal,
+  obterVetor: (texto: string, signal: AbortSignal) => Promise<number[] | null> = vetorDaPergunta,
 ): Promise<RespostaAcervo> {
   aoMudarEtapa('planejando');
   const dic = await lerDicionario();
@@ -67,9 +89,22 @@ export async function perguntarAoAcervo(
 
   let panorama: Panorama | null = null;
   let erroPanorama: string | null = null;
+  let semSignificado = false;
   if (plano.grupos && (plano.tipo === 'tema' || plano.tipo === 'misto')) {
     try {
-      panorama = await panoramaTematico(plano.grupos, { colecao: plano.colecao, ano_min: plano.ano_min, ano_max: plano.ano_max });
+      // Os grupos dão o assunto mesmo em pergunta de seguimento ("e depois de 2020?").
+      const vetor = await obterVetor(`${plano.grupos.map((g) => g.join(', ')).join('; ')} — ${pergunta}`, signal);
+      semSignificado = !vetor;
+      const filtros = { colecao: plano.colecao, ano_min: plano.ano_min, ano_max: plano.ano_max };
+      try {
+        panorama = await panoramaTematico(plano.grupos, filtros, vetor);
+      } catch (e) {
+        // Tema amplo demais para contar dentro do limite do banco: sem os termos,
+        // a função só procura por significado, que é rápido. A resposta fica
+        // sem números e diz por quê, em vez de sumir.
+        if (!vetor) throw e;
+        panorama = { ...(await panoramaTematico([], filtros, vetor)), amplo_demais: true };
+      }
     } catch (e) {
       erroPanorama = e instanceof Error ? e.message : String(e);
     }
@@ -79,5 +114,5 @@ export async function perguntarAoAcervo(
   aoMudarEtapa('escrevendo');
   const resposta = promptResposta(pergunta, plano, dados, erroSql, panorama, erroPanorama, turnos);
   const texto = await escreverSintese(config, resposta.sistema, resposta.mensagem, aoEscrever, signal);
-  return { id: Date.now(), pergunta, plano, dados, erroSql, panorama, erroPanorama, texto, planoImprovisado };
+  return { id: Date.now(), pergunta, plano, dados, erroSql, panorama, erroPanorama, texto, planoImprovisado, semSignificado };
 }

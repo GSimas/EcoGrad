@@ -158,8 +158,11 @@ export const dicionarioDoIndice = () =>
  * passar dos 3 segundos com o cache do banco frio; a segunda tentativa costuma
  * achar o cache quente, então repete uma vez antes de desistir.
  */
-export async function panoramaTematico(grupos: string[][], filtros: { colecao?: string; ano_min?: number; ano_max?: number } = {}, amostra = 20) {
-  const corpo = { grupos, amostra, colecao_filtro: filtros.colecao ?? null, ano_min: filtros.ano_min ?? null, ano_max: filtros.ano_max ?? null };
+export async function panoramaTematico(grupos: string[][], filtros: { colecao?: string; ano_min?: number; ano_max?: number } = {}, vetor: number[] | null = null, amostra = 20) {
+  const corpo = {
+    grupos, amostra, colecao_filtro: filtros.colecao ?? null, ano_min: filtros.ano_min ?? null, ano_max: filtros.ano_max ?? null,
+    vetor: vetor ? `[${vetor.join(',')}]` : null,
+  };
   try {
     return await rpc<import('./ufscao-acervo').Panorama>('panorama_tematico', corpo);
   } catch {

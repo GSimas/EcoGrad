@@ -34,9 +34,9 @@ O ADR 001 já tinha as peças certas — índice derivado, contagem só em SQL, 
 
 | Fase | Entrega | Depende de |
 | --- | --- | --- |
-| **A0** | Unificação conservadora, perfis, orientações, métricas de rede; views comentadas e função `consultar` somente leitura para NL2SQL | carga do índice |
-| **A** | UFSCão na tela inicial: reescrita da consulta pelo modelo, candidatos por FTS, panorama SQL, amostra representativa, citações para o Motor de Busca | A0 |
-| **B** | pgvector com embeddings Gemini, fusão RRF e diversidade por MMR na amostra | A |
+| **A0** *(feita)* | Unificação conservadora, perfis, orientações, métricas de rede; views comentadas e função `consultar` somente leitura para NL2SQL | carga do índice |
+| **A** *(feita)* | UFSCão na tela inicial: reescrita da consulta pelo modelo, candidatos por FTS, panorama SQL, amostra representativa, citações para o Motor de Busca | A0 |
+| **B** | pgvector com embeddings Gemini e fusão RRF na amostra *(feita em 16/09/2026: vetor 79/100 em Q11 contra 63/83 do texto; ver [aferição](AFERICAO-ETAPA-0.md#a-busca-por-significado-medida-fase-b-do-adr-004). MMR não entrou: a cota por coleção já espalha a amostra)* | A |
 | **C** | "Aprofundar" sobre o índice | A |
 
 ## Continua valendo

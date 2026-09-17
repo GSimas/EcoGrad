@@ -36,11 +36,19 @@ export interface LinhaDicionario { visao: string; coluna: string; tipo: string; 
 export interface ObraAmostra {
   documento_id: string; titulo: string; ano: number | null; colecao: string; nivel: string | null; url: string | null;
   aderencia: number; autores: string[] | null; orientador: string | null; palavras_chave: string[] | null; trecho: string | null;
+  /** Por onde a obra entrou: termos da busca, significado (vetor) ou os dois. */
+  origem?: 'texto' | 'significado' | 'ambos';
+  similaridade?: number | null;
 }
 
 export interface Panorama {
   consulta: string | null;
   palavras_chave_casadas?: string[] | null;
+  busca_por_significado?: boolean;
+  /** Obras da amostra candidata achadas só por significado: nunca entram nas contagens (D2). */
+  obras_so_por_significado?: number;
+  /** A contagem pelos termos estourou o tempo; a amostra veio só por significado. */
+  amplo_demais?: boolean;
   obras: number;
   registros: number;
   obras_sem_resumo?: number;
@@ -172,10 +180,11 @@ export interface Fonte {
   ano: number | null;
   colecao: string;
   url: string | null;
+  origem?: ObraAmostra['origem'];
 }
 
 export const fontesDaAmostra = (panorama: Panorama | null): Fonte[] =>
-  (panorama?.amostra ?? []).map((o, i) => ({ numero: i + 1, documentoId: o.documento_id, titulo: o.titulo, ano: o.ano, colecao: o.colecao, url: o.url }));
+  (panorama?.amostra ?? []).map((o, i) => ({ numero: i + 1, documentoId: o.documento_id, titulo: o.titulo, ano: o.ano, colecao: o.colecao, url: o.url, origem: o.origem }));
 
 const lista = (pares: Array<[string | number, number]> | null | undefined, n = 10) =>
   (pares ?? []).slice(0, n).map(([k, v]) => `${k}: ${v}`).join('; ') || 'nenhum';
@@ -193,16 +202,36 @@ function blocoDados(dados: Dados | null, erroSql: string | null) {
 function blocoPanorama(p: Panorama | null, plano: Plano, erro: string | null) {
   if (erro) return `PANORAMA DO TEMA: a busca falhou (${erro}). O tema pode ser amplo demais: sugira restringir por programa ou período.`;
   if (!p) return '';
-  if (!p.obras) return `PANORAMA DO TEMA: nenhuma obra encontrada para ${JSON.stringify(plano.grupos)}${plano.colecao ? ` na coleção "${plano.colecao}"` : ''}.`;
+  const semAmostra = !(p.amostra ?? []).length;
+  if (!p.obras && semAmostra) return `PANORAMA DO TEMA: nenhuma obra encontrada para ${JSON.stringify(plano.grupos)}${plano.colecao ? ` na coleção "${plano.colecao}"` : ''}${p.busca_por_significado ? ', nem pelos termos nem por significado' : ''}.`;
   const amostra = (p.amostra ?? []).map((o, i) => [
-    `[${i + 1}] ${o.titulo} (${o.ano ?? 'sem ano'}) — ${o.colecao} · ${o.nivel ?? 'nível não informado'}`,
+    `[${i + 1}] ${o.titulo} (${o.ano ?? 'sem ano'}) — ${o.colecao} · ${o.nivel ?? 'nível não informado'}${o.origem === 'significado' ? ' · ACHADA SÓ POR SIGNIFICADO (não usa os termos da busca)' : ''}`,
     `    Autoria: ${(o.autores ?? []).join('; ') || 'não informada'} · Orientação: ${o.orientador || 'não informada'}`,
     `    Palavras-chave: ${(o.palavras_chave ?? []).slice(0, 8).join('; ') || 'não informadas'}`,
     `    Trecho do resumo: ${o.trecho ? o.trecho.replace(/\s+/g, ' ').slice(0, MAX_CARACTERES_TRECHO) : 'sem resumo utilizável'}`,
   ].join('\n')).join('\n');
+  if (p.amplo_demais) {
+    return [
+      'PANORAMA DO TEMA: o tema é amplo demais para contar as obras dentro do limite de tempo do banco. NÃO dê nenhum número de obras. As obras abaixo vieram só da busca por significado, como exemplos. Diga isso e sugira restringir por programa, período ou um subtema.',
+      '',
+      `AMOSTRA POR SIGNIFICADO (${(p.amostra ?? []).length} obras mais próximas; cite como [n]):`,
+      amostra,
+    ].join('\n');
+  }
+  if (!p.obras) {
+    return [
+      'PANORAMA DO TEMA: nenhuma obra usa os termos da busca. As obras abaixo vieram SÓ da busca por significado, que não tem total: não dê número de obras sobre o tema, diga que são aproximações e que o acervo não usa esse vocabulário.',
+      '',
+      `AMOSTRA POR SIGNIFICADO (${(p.amostra ?? []).length} obras mais próximas; cite como [n]):`,
+      amostra,
+    ].join('\n');
+  }
+  const extras = p.busca_por_significado && p.obras_so_por_significado
+    ? `\n- Além delas, ${p.obras_so_por_significado} obras próximas em significado não usam os termos; algumas estão na amostra, marcadas. Elas NÃO entram em nenhuma contagem.`
+    : '';
   return [
-    `PANORAMA DO TEMA (apurado sobre TODAS as obras que casaram com a busca; números exatos):`,
-    `- Obras encontradas: ${p.obras} (${p.registros} registros); sem resumo utilizável: ${p.obras_sem_resumo ?? 0}`,
+    `PANORAMA DO TEMA (apurado sobre TODAS as obras que casaram com os termos da busca; números exatos):`,
+    `- Obras encontradas: ${p.obras} (${p.registros} registros); sem resumo utilizável: ${p.obras_sem_resumo ?? 0}${extras}`,
     `- Por coleção (top 10): ${lista(p.por_colecao)}`,
     `- Por nível: ${lista(p.por_nivel)}`,
     `- Por ano: ${lista(p.por_ano, 60)}`,
@@ -223,6 +252,7 @@ REGRAS
 - Use SOMENTE o CONTEXTO. Todo número vem de DADOS ou do PANORAMA, com a unidade: obras (trabalhos distintos) ou registros (catalogações).
 - Cada afirmação sobre um trabalho da AMOSTRA leva a citação [n] logo depois. Colchetes com número servem SÓ para obras da AMOSTRA: sem AMOSTRA no contexto, não use [n] nenhum, nem para numerar linhas de DADOS. Nunca invente título, pessoa, ano ou vínculo.
 - A amostra é parte do total: descreva tendências com o PANORAMA e use a amostra como exemplos, sem dizer que ela é o conjunto.
+- Obra marcada "ACHADA SÓ POR SIGNIFICADO" não usa os termos da busca: pode ser exemplo valioso de vocabulário diferente, mas confira pelo trecho se trata mesmo do tema e nunca a some às contagens.
 - O último ano do acervo está em coleta: não chame seus números de queda nem de projeção.
 - Pessoas foram unificadas automaticamente a partir das grafias do acervo, sem revisão humana; macrotema é classificação automática da base, não categoria oficial; o último ano do acervo ainda está em coleta.
 - Não faça juízo de qualidade ("melhor", "mais relevante") nem informe vínculo atual, vaga ou disponibilidade de orientador: o acervo só mostra orientação histórica.

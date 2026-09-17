@@ -241,6 +241,24 @@ Dois fatos já saem do sorteio, antes de qualquer juízo sobre as obras, e nenhu
 
 A precisão só existe quando a triagem estiver assinada. Nenhuma correção do tesauro deve entrar antes dela: mudar a função agora trocaria o sistema medido no meio da medição.
 
+## A busca por significado, medida (fase B do ADR 004)
+
+O ADR 003 reposicionou a pergunta do vetor — *ele alcança o tema quando não existe apoio léxico?* — e subiu a régua para 79% de revocação e 76% de precisão (R2). Com os 85.567 vetores carregados (`gemini-embedding-2`, 768 dimensões, cerca de US$ 8 de custo único), `npm run afericao:vetor` mede os três métodos contra a mesma triagem assinada, com k = 25:
+
+| Método | Q10 "empreendedorismo feminino" | Q11 "mulheres empreendedoras" | Sobreposição Q10 × Q11 |
+| --- | --- | --- | --- |
+| Texto (`buscar_texto`, R3) | 79% / 76% | 63% / 83% | 64% |
+| **Vetor** | 79% / **95%** | **79% / 100%** | **96%** |
+| Híbrido (RRF) | **83%** / 87% | 75% / 82% | 80% |
+
+Revocação / precisão; precisão sobre as obras recuperadas que foram triadas, como em `afericao-executar`.
+
+1. **O vetor passa a porta onde o tesauro falhava.** Em Q11 a revocação sobe de 63% para 79% sem perder precisão, e as duas paráfrases passam a devolver quase o mesmo recorte (96%, contra 64%). Era o defeito que o ADR 001 descreveu e que o FTS com tesauro não removia.
+2. **O híbrido é o que vai para a tela**, e não o vetor puro, por D2: similaridade não tem total. `panorama_tematico` conta só o que casou com os termos e usa a fusão para escolher a amostra, com a origem de cada obra declarada.
+3. **Limite declarado, o mesmo de R6.** É um único tema com gabarito humano, e o top 25 do vetor tem 5 ou 6 obras que a triagem nunca viu — a precisão delas não está medida. A amostra cega continua sendo o teste de generalização.
+
+A escala de similaridade é comprimida: as obras que pertencem a Q10 ficaram entre 0,70 e 0,81, e um tema sem nada no acervo ("bolo de chocolate") não passa de 0,66, mas "blockchain quântico" acha criptografia pós-quântica a 0,74. O limiar de 0,70 corta ruído e não prova ausência — por isso amostra achada só por significado vai ao modelo marcada como aproximação, e sem nenhuma contagem.
+
 ## O que falta para fechar a Etapa 0
 
 - **Triagem de Q12 e Q13** (psicologia positiva): 82 obras pendentes, sem responsável. Adiada por decisão de 16/09/2026 para seguir com Q10 e Q11 primeiro. Enquanto não for feita, psicologia positiva não tem gabarito pontuável e **Q15 fica sem denominador** — o que também adia a evidência empírica que sustenta a necessidade da Etapa 3.

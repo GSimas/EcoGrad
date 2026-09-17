@@ -965,22 +965,60 @@ begin
 end;
 $$;
 
+-- ============================================================================
+-- Busca por significado (ADR 004, fase B).
+--
+-- Um vetor por obra, calculado na carga por `npm run indice:embeddings`
+-- (gemini-embedding-2, 768 dimensões, normalizado). É índice como o resto: se a
+-- tabela sumir, a busca volta a ser só léxica e nada mais quebra.
+-- ============================================================================
+create extension if not exists vector with schema extensions;
+
+create table if not exists documento_embedding (
+  documento_id text primary key references documento(id) on delete cascade,
+  embedding extensions.halfvec(768) not null,
+  modelo text not null,
+  texto_sha256 text not null
+);
+comment on table documento_embedding is 'Vetor de cada obra (gemini-embedding-2, 768 dimensões, normalizado), sobre "title: <título> | text: <resumo>". Derivado e reconstruível: a busca por significado nunca responde quantos (D2).';
+alter table documento_embedding enable row level security;
+create policy leitura_publica on documento_embedding for select to anon, authenticated using (true);
+-- O HNSW é criado pela carga, depois do COPY: construir durante a inserção custa várias vezes mais.
+-- create index documento_embedding_hnsw_idx on documento_embedding using hnsw (embedding extensions.halfvec_cosine_ops);
+
 -- Obra candidata é a que casa os grupos no título e resumo (FTS) ou nas
 -- palavras-chave: "gestão do conhecimento" está no texto de 483 obras e nas
 -- palavras-chave de 1.119, e só a união reproduz o gabarito de Q06.
 --
--- Amostra: cada coleção tem cota proporcional à sua fatia das obras encontradas,
--- e dentro da cota vão as de maior aderência. É o que impede a amostra de ser
--- só o programa que mais escreve sobre o tema.
+-- Com `vetor` (a pergunta pelo mesmo modelo dos documentos), entram também as
+-- obras mais próximas em significado acima de `similaridade_minima` — o caso que
+-- o ADR 003 deixou aberto: tema escrito sem nenhuma das palavras da pergunta.
+-- O limiar de 0,70 vem da medição de 16/09/2026: as obras triadas como
+-- pertencentes a empreendedorismo feminino ficaram entre 0,70 e 0,81, e um tema
+-- sem nada no acervo ("bolo de chocolate") não passa de 0,66. A escala é
+-- comprimida, então o limiar corta ruído, mas não prova ausência: por isso a
+-- amostra só por significado vai ao modelo marcada como aproximação.
+--
+-- **Os números do panorama são só da busca léxica.** Vizinho por similaridade
+-- não tem total (D2): as 40 obras mais próximas existem para qualquer
+-- pergunta, inclusive as sem resposta. O vetor entra na amostra, com a origem
+-- declarada em cada obra, e nunca em contagem.
+--
+-- Amostra: fusão RRF das duas ordens (aderência léxica e similaridade), com
+-- cota por coleção proporcional à fatia de cada uma no conjunto.
+drop function if exists panorama_tematico(jsonb, int, text, int, int);
+drop function if exists panorama_tematico(jsonb, int, text, int, int, text, real);
 create or replace function panorama_tematico(grupos jsonb, amostra int default 20, colecao_filtro text default null,
-                                             ano_min int default null, ano_max int default null)
+                                             ano_min int default null, ano_max int default null,
+                                             vetor text default null, similaridade_minima real default 0.70)
 returns json
 language sql stable
-set search_path = public
+set search_path = public, extensions
 set work_mem = '32MB'
 as $$
   with parametros as materialized (
-    select consulta_por_grupos(grupos) as q, least(greatest(coalesce(amostra, 20), 5), 30) as n
+    select consulta_por_grupos(grupos) as q, least(greatest(coalesce(amostra, 20), 5), 30) as n,
+           case when vetor is null then null else vetor::extensions.halfvec(768) end as v
   ),
   termos as materialized (
     select g.ordem as grupo, sem_acento(left(t.termo, 80)) as termo
@@ -1009,31 +1047,59 @@ as $$
     select id, max(aderencia) + case when count(*) > 1 or bool_or(aderencia = 0) then 0.1 else 0 end as aderencia
     from candidatas group by id
   ),
-  obra as materialized (
+  -- Lateral para o HNSW receber o vetor como parâmetro: com junção comum, o
+  -- planejador calcula a distância para as 85 mil obras. São 40 vizinhos porque
+  -- é o `hnsw.ef_search` padrão, que a função não tem permissão de mudar — e
+  -- 40 bastam para disputar uma amostra de 20.
+  semanticas as materialized (
+    select s.documento_id, s.similaridade
+    from parametros p
+    cross join lateral (
+      select e.documento_id, 1 - (e.embedding <=> p.v) as similaridade
+      from documento_embedding e order by e.embedding <=> p.v limit 40
+    ) s
+    where p.v is not null and s.similaridade >= similaridade_minima
+  ),
+  com_registro as (
     select distinct on (r.documento_id) r.documento_id, r.id as registro_id, r.colecao, r.ano, r.nivel_academico,
-           r.macrotema, r.url, a.aderencia, r.resumo_utilizavel
-    from pontuadas a join registro r on r.documento_id = a.id
-    where (colecao_filtro is null or sem_acento(r.colecao) like '%' || sem_acento(colecao_filtro) || '%')
+           r.macrotema, r.url, r.resumo_utilizavel
+    from registro r
+    where r.documento_id in (select id from pontuadas union select documento_id from semanticas)
+      and (colecao_filtro is null or sem_acento(r.colecao) like '%' || sem_acento(colecao_filtro) || '%')
       and (ano_min is null or r.ano >= ano_min)
       and (ano_max is null or r.ano <= ano_max)
     order by r.documento_id, r.ano desc nulls last, r.id
   ),
+  obra as materialized (
+    select c.*, a.aderencia from com_registro c join pontuadas a on a.id = c.documento_id
+  ),
+  conjunto as materialized (
+    select c.*, a.aderencia, s.similaridade,
+           case when a.id is not null and s.documento_id is not null then 'ambos' when a.id is not null then 'texto' else 'significado' end as origem,
+           case when a.id is null then 0 else 1.0 / (60 + rank() over (partition by a.id is null order by a.aderencia desc)) end
+             + case when s.documento_id is null then 0 else 1.0 / (60 + rank() over (partition by s.documento_id is null order by s.similaridade desc)) end as fusao
+    from com_registro c
+    left join pontuadas a on a.id = c.documento_id
+    left join semanticas s on s.documento_id = c.documento_id
+  ),
   cotas as (
-    select colecao, count(*)::numeric / sum(count(*)) over () as fatia from obra group by colecao
+    select colecao, count(*)::numeric / sum(count(*)) over () as fatia from conjunto group by colecao
   ),
   escolhidas as (
     select o.* from (
-      select o.*, row_number() over (partition by o.colecao order by o.aderencia desc, o.documento_id) as posicao,
+      select o.*, row_number() over (partition by o.colecao order by o.fusao desc, o.documento_id) as posicao,
              ceil((select n from parametros) * c.fatia) as cota
-      from obra o join cotas c using (colecao)
+      from conjunto o join cotas c using (colecao)
     ) o
-    order by (posicao <= cota) desc, aderencia desc, documento_id
+    order by (posicao <= cota) desc, fusao desc, documento_id
     limit (select n from parametros)
   )
   select json_build_object(
     'consulta', (select q::text from parametros),
+    'busca_por_significado', (select v is not null from parametros),
     'palavras_chave_casadas', (select json_agg(termo) from (select distinct termo from termos_pc order by termo limit 40) x),
     'obras', (select count(*) from obra),
+    'obras_so_por_significado', (select count(*) from conjunto where origem = 'significado'),
     'registros', (select count(*) from registro r where r.documento_id in (select documento_id from obra)),
     'obras_sem_resumo', (select count(*) from obra where not resumo_utilizavel),
     'por_ano', (select json_agg(json_build_array(ano, obras) order by ano) from (select ano, count(*) obras from obra where ano is not null group by ano) x),
@@ -1047,14 +1113,17 @@ as $$
         group by 1 order by 2 desc, 1 limit 8) x),
     'amostra', (select json_agg(json_build_object(
         'documento_id', e.documento_id, 'titulo', d.titulo, 'ano', e.ano, 'colecao', e.colecao, 'nivel', e.nivel_academico,
-        'url', e.url, 'aderencia', round(e.aderencia::numeric, 4),
+        'url', e.url, 'aderencia', round(coalesce(e.aderencia, 0)::numeric, 4), 'similaridade', round(e.similaridade::numeric, 3),
+        'origem', e.origem,
         'autores', (select json_agg(p.nome_canonico) from registro_pessoa rp join pessoa p on p.id = rp.pessoa_id where rp.registro_id = e.registro_id and rp.papel = 'Autor'),
         'orientador', (select string_agg(p.nome_canonico, '; ') from registro_pessoa rp join pessoa p on p.id = rp.pessoa_id where rp.registro_id = e.registro_id and rp.papel = 'Orientador'),
         'palavras_chave', (select json_agg(k.termo) from registro_palavra_chave k where k.registro_id = e.registro_id),
-        'trecho', case when d.resumo_utilizavel then ts_headline('portuguese', d.resumo, coalesce((select q from parametros), plainto_tsquery('portuguese', '')),
-            'StartSel="", StopSel="", MaxFragments=2, MaxWords=45, MinWords=20, FragmentDelimiter=" … "') end
-      ) order by e.aderencia desc) from escolhidas e join documento d on d.id = e.documento_id)
+        'trecho', case when d.resumo_utilizavel then
+            case when e.origem = 'significado' or (select q from parametros) is null then left(d.resumo, 400)
+                 else ts_headline('portuguese', d.resumo, (select q from parametros),
+                   'StartSel="", StopSel="", MaxFragments=2, MaxWords=45, MinWords=20, FragmentDelimiter=" … "') end end
+      ) order by e.fusao desc) from escolhidas e join documento d on d.id = e.documento_id)
   );
 $$;
 
-grant execute on function consulta_por_grupos(jsonb), panorama_tematico(jsonb, int, text, int, int) to anon, authenticated;
+grant execute on function consulta_por_grupos(jsonb), panorama_tematico(jsonb, int, text, int, int, text, real) to anon, authenticated;

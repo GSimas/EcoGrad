@@ -197,7 +197,7 @@ function Turno({ resposta: r, indice }: { resposta: RespostaAcervo; indice: Indi
         <ol className="mt-2 space-y-1">
           {fontes.map((f) => <li key={f.numero} className="flex gap-1">
             <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirFonte(f)}>[{f.numero}] {f.titulo}</button>
-            <span className="shrink-0 text-slate-400">· {f.ano ?? 'sem ano'} · {f.colecao}</span>
+            <span className="shrink-0 text-slate-400">· {f.ano ?? 'sem ano'} · {f.colecao}{f.origem === 'significado' ? ' · achada por significado' : ''}</span>
             {f.url && <a href={f.url} target="_blank" rel="noopener noreferrer" className="shrink-0" title="Fonte original, em nova aba">↗<span className="sr-only"> (abre a fonte original)</span></a>}
           </li>)}
         </ol>
@@ -216,7 +216,10 @@ function ComoApurei({ resposta: r }: { resposta: RespostaAcervo }) {
         {r.planoImprovisado && <p>O modelo não devolveu um plano legível; a pergunta inteira foi buscada como tema.</p>}
         {r.plano.grupos && <p>Busca de tema: {r.plano.grupos.map((g) => `(${g.join(' ou ')})`).join(' e ')}
           {r.plano.colecao ? ` · coleção "${r.plano.colecao}"` : ''}{r.plano.ano_min ? ` · desde ${r.plano.ano_min}` : ''}{r.plano.ano_max ? ` · até ${r.plano.ano_max}` : ''}.
-          {r.panorama && ` ${r.panorama.obras.toLocaleString('pt-BR')} obras encontradas no título, resumo ou palavras-chave; ${(r.panorama.amostra ?? []).length} foram lidas, com cota por coleção.`}</p>}
+          {r.panorama && ` ${r.panorama.obras.toLocaleString('pt-BR')} obras encontradas no título, resumo ou palavras-chave; ${(r.panorama.amostra ?? []).length} foram lidas, com cota por coleção.`}
+          {r.panorama?.busca_por_significado && ` A busca por significado acrescentou ${r.panorama.obras_so_por_significado ?? 0} obras próximas que não usam esses termos; elas podem estar na amostra, mas não entram nas contagens.`}
+          {r.semSignificado && ' A busca por significado não respondeu, e a amostra ficou só com os termos.'}
+          {r.panorama?.amplo_demais && ' O tema é amplo demais para contar as obras dentro do limite do banco: a amostra veio só por significado, e a resposta não traz números.'}</p>}
         {r.erroPanorama && <p className="erro">A busca do tema falhou: {r.erroPanorama}</p>}
         {r.dados && <>
           <p>Consulta executada no índice, somente leitura ({r.dados.linhas.length} linhas{r.dados.truncado ? ', truncado' : ''}):</p>

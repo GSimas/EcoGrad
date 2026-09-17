@@ -51,6 +51,24 @@ test('o contexto da resposta traz panorama, amostra numerada e erros declarados'
   assert.match(amplo.mensagem, /amplo demais/);
 });
 
+test('obra achada so por significado e marcada, e sem termos casados nao ha contagem', () => {
+  const comVetor: Panorama = {
+    ...panorama, busca_por_significado: true, obras_so_por_significado: 7,
+    amostra: [{ ...panorama.amostra![0], origem: 'ambos' }, { ...panorama.amostra![1], origem: 'significado' }],
+  };
+  const { mensagem } = promptResposta('tema?', { tipo: 'tema', grupos: [['x']] }, null, null, comVetor, null);
+  assert.match(mensagem, /7 obras próximas em significado não usam os termos[\s\S]*NÃO entram em nenhuma contagem/);
+  assert.doesNotMatch(mensagem, /\[1\] Mulheres empreendedoras \(2020\)[^\n]*SIGNIFICADO/);
+  assert.match(mensagem, /\[2\] Gênero e negócios \(2018\)[^\n]*ACHADA SÓ POR SIGNIFICADO/);
+
+  const soVetor = promptResposta('tema?', { tipo: 'tema', grupos: [['x']] }, null, null, { ...comVetor, obras: 0, registros: 0 }, null).mensagem;
+  assert.match(soVetor, /nenhuma obra usa os termos da busca[\s\S]*não dê número de obras/);
+  assert.doesNotMatch(soVetor, /Obras encontradas:/);
+  assert.equal(fontesDaAmostra(comVetor)[1].origem, 'significado');
+  const amplo = promptResposta('educação?', { tipo: 'tema', grupos: [['educação']] }, null, null, { ...comVetor, obras: 0, amplo_demais: true }, null).mensagem;
+  assert.match(amplo, /amplo demais para contar[\s\S]*NÃO dê nenhum número/);
+});
+
 test('o planejamento leva dicionario, exemplos e so os ultimos turnos da conversa', () => {
   const dic = dicionarioCompacto([
     { visao: 'pessoas', descricao_visao: 'Uma linha por pessoa', coluna: 'obras_orientadas', tipo: 'integer', descricao: 'Trabalhos orientados' },
