@@ -43,6 +43,27 @@ const cliente = new Client({ connectionString: url, ssl: { rejectUnauthorized: f
 const problemas = [];
 const limpo = (v) => String(v ?? '').replace(/postgresql:\/\/[^\s]+/g, 'postgresql://…');
 
+/**
+ * Onde a conexão está tentando chegar, sem a senha.
+ *
+ * Existe porque "password authentication failed for user X" não diz se o X veio
+ * da string que se pretendia usar. O Supabase oferece duas conexões — a direta
+ * (`postgres@db.<ref>.supabase.co`) e o pooler em sessão
+ * (`postgres.<ref>@...pooler...`) —, e de fora do log é impossível saber qual
+ * está no segredo. Adivinhar custou três execuções; isto responde na primeira.
+ *
+ * A senha nunca é impressa, nem o comprimento dela: só host, porta, banco e
+ * usuário, que são os três campos que distinguem uma conexão da outra.
+ */
+function paraOndeAponta(u) {
+  try {
+    const { hostname, port, username, pathname } = new URL(u);
+    return `host=${hostname} porta=${port || '5432'} banco=${pathname.slice(1) || '?'} usuário=${decodeURIComponent(username) || '(vazio)'}`;
+  } catch {
+    return 'a string de conexão não é uma URL válida (senha com caractere especial precisa de codificação: @ vira %40)';
+  }
+}
+
 try {
   await cliente.connect();
 
@@ -122,6 +143,14 @@ try {
   }
 } catch (erro) {
   console.error('Falha ao conferir:', limpo(erro?.message ?? erro));
+  // Erro de autenticação ou de rede quase nunca é do banco: é da string. Dizer
+  // para onde ela aponta transforma três tentativas às cegas numa correção.
+  console.error(`  conexão tentada: ${paraOndeAponta(url)}`);
+  if (String(erro?.message ?? '').includes('password authentication failed')) {
+    console.error('  Se o usuário acima for "postgres", o segredo tem a conexão DIRETA.');
+    console.error('  A rotina precisa do Session pooler: usuário "postgres.<ref>", host "...pooler.supabase.com".');
+    console.error('  Se já for "postgres.<ref>", então a string está certa e a senha é que não confere.');
+  }
   process.exit(1);
 } finally {
   await cliente.end().catch(() => {});
