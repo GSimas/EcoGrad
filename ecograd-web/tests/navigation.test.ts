@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { useEcoGradStore as store } from '../src/stores/useEcoGradStore';
 import { initializeNavigation, navigateBack, navigateForward, navigatePage, navigateVisit, registerPosition, useNavigation, type NavigationPort } from '../src/services/navigation';
-import { captureContext, applyContext, HISTORY_COUNT, HISTORY_KEY, HISTORY_TTL, pageUrl, parsePage, readHistory, trimHistory, type Visit } from '../src/lib/navigation';
+import { captureContext, applyContext, HISTORY_COUNT, HISTORY_KEY, HISTORY_TTL, pageUrl, parsePage, readHistory, ROTA_PADRAO, ROTAS_VISIVEIS, rotaVisivel, statePage, trimHistory, type Visit } from '../src/lib/navigation';
+import { OBJETIVOS, objetivoPorId } from '../src/lib/objetivos';
 
 function browser(hash = '') {
   const entries = [{ key: undefined as unknown, hash }];
@@ -259,4 +260,25 @@ test('table query, chart view and network camera survive traversal without rewin
     const parsed=readHistory(b.data.get(HISTORY_KEY)??null);
     assert.ok(parsed.some((v)=>v.context.ui['rede.orbita.camera']));
   } finally {b.stop();}
+});
+
+test('so as paginas visiveis chegam ao menu, aos objetivos e a restauracao da sessao', () => {
+  // O EcoGrad hoje oferece Dashboard e Motor de Busca; Foresight e Memética
+  // continuam no código, e voltam tirando-as de `ROTAS_VISIVEIS`.
+  assert.deepEqual([...ROTAS_VISIVEIS], ['dashboard', 'busca']);
+  assert.equal(rotaVisivel('dashboard'), true);
+  assert.equal(rotaVisivel('foresight'), false);
+  assert.equal(rotaVisivel('memetica'), false);
+
+  // Nenhum objetivo oferecido pode levar a uma página que não abre.
+  assert.ok(OBJETIVOS.length > 0);
+  for (const o of OBJETIVOS) assert.ok(rotaVisivel(o.rota), `objetivo "${o.id}" aponta para ${o.rota}`);
+  // Id desconhecido continua caindo num objetivo utilizável.
+  assert.ok(rotaVisivel(objetivoPorId('nao-existe').rota));
+
+  // Sessão salva numa página escondida abre no Dashboard, e não numa tela sem menu.
+  const base = { apresentacaoVista: true, dadosCarregados: true } as Parameters<typeof statePage>[0];
+  assert.equal(statePage({ ...base, rota: 'busca' }), 'busca');
+  assert.equal(statePage({ ...base, rota: 'foresight' }), ROTA_PADRAO);
+  assert.equal(statePage({ ...base, rota: 'memetica' }), ROTA_PADRAO);
 });
