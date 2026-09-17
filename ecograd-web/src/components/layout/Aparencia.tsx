@@ -1,8 +1,11 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { AArrowDown, AArrowUp, Accessibility, ALargeSmall, Activity, BookType, Contrast, Monitor, Moon, Settings, Snail, Sun, Type, type LucideIcon } from 'lucide-react';
 import { Janela } from './Janela';
 import { CHIP } from './atalhos';
+import { ConfiguracaoIA } from '@/components/chat/ConsultorIA';
+import { Expander } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils';
+import { lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';
 import { useAparencia, type Contraste, type Fonte, type Movimento, type Tamanho, type Tema } from '@/services/aparencia';
 
 interface Opcao<T> { valor: T; rotulo: string; icone: LucideIcon }
@@ -58,10 +61,36 @@ function Grupo<T extends string>({ titulo, ajuda, opcoes, valor, onChange }: {
   </fieldset>;
 }
 
+/**
+ * Provedor de IA do UFSCão, aqui dentro das Configurações.
+ *
+ * É a mesma chave das duas superfícies — a conversa da tela inicial e o botão
+ * flutuante leem `lerConfigIA()`, e não há duas configurações a manter. Quem
+ * chegou por uma tela e quer trocar de modelo já está procurando em
+ * Configurações; antes disso, o único caminho era abrir o chat.
+ */
+function ProvedorDeIA() {
+  const [config, setConfig] = useState(lerConfigIA);
+  const configurado = !!config && !validarConfigIA(config);
+  const resumo = configurado && config
+    ? `${provedorPorId(config.provedor).nome} · ${config.modelo}`
+    : 'nenhum provedor configurado';
+  return <fieldset className="space-y-1.5">
+    <legend className="text-xs font-medium uppercase tracking-wide text-slate-400">UFSCão · provedor de IA</legend>
+    <Expander titulo={configurado ? `Provedor: ${resumo}` : 'Configurar provedor e chave de API'} persistir={false}>
+      <ConfiguracaoIA inicial={config} onSalvo={setConfig} onEsquecer={() => setConfig(lerConfigIA())} />
+    </Expander>
+    <p className="text-[.7rem] leading-snug text-slate-400">
+      Vale para as duas conversas: a da tela inicial, sobre o acervo inteiro, e a do botão flutuante, sobre as coleções carregadas.
+      A chave fica neste navegador e vai direto ao provedor; o EcoGrad não a recebe.
+    </p>
+  </fieldset>;
+}
+
 /** `chip`: mesma estética dos atalhos do rodapé da apresentação. */
 export function Aparencia({ compacto = false, chip = false, desabilitado = false }: { compacto?: boolean; chip?: boolean; desabilitado?: boolean }) {
   const { tema, fonte, tamanho, movimento, contraste, reduzir, claro, erro, definir } = useAparencia();
-  return <Janela titulo="Configurações" descricao="Ajuste a leitura sem alterar sua análise ou interromper atividades."
+  return <Janela titulo="Configurações" descricao="Ajuste a leitura e o provedor de IA, sem alterar sua análise ou interromper atividades."
     trigger={<button type="button" className={chip ? CHIP : 'btn'} disabled={desabilitado} aria-label="Configurações" title="Configurações"><Settings size={chip ? 14 : 18} className="shrink-0" />{!compacto && 'Configurações'}</button>}>
     <div className="space-y-4">
       <Grupo titulo="Tema" opcoes={TEMAS} valor={tema} onChange={(v) => definir({ tema: v })} />
@@ -75,6 +104,7 @@ export function Aparencia({ compacto = false, chip = false, desabilitado = false
         ajuda="Reduzido: gráficos não animam, redes ficam pausadas e o fundo para num quadro fixo. Câmera e recorte temporal seguem nos controles manuais." />
       <p role="status" className="info">Tema {claro ? 'claro' : 'escuro'} · {contraste === 'alto' ? 'alto contraste' : 'contraste padrão'} · {reduzir ? 'movimento reduzido' : 'movimento conforme os controles'}. {erro ? 'Ajustes ativos nesta página.' : 'Preferências salvas neste navegador.'}</p>
       {erro && <p role="alert" className="aviso">O navegador não permitiu salvar as preferências. Os ajustes continuam ativos até recarregar.</p>}
+      <ProvedorDeIA />
     </div>
   </Janela>;
 }
