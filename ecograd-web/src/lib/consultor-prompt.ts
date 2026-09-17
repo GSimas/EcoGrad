@@ -114,7 +114,7 @@ function montarDossie(d: DossieConsultor, pergunta: string): string {
   return ctx;
 }
 
-export function promptConsultor(d: DossieConsultor, pergunta = ''): string {
+export function promptConsultor(d: DossieConsultor, pergunta = '', turnosHerdados = 0): string {
   return `
 Você é o UFSCão, consultor acadêmico e analista de inteligência de redes do EcoGrad, especializado no(s) programa(s): ${d.nomePrograma} da Universidade Federal de Santa Catarina (UFSC). O nome é uma homenagem aos UFSCães, os cachorros que circulam pelos campi da UFSC: seja caloroso e simpático, sem nunca trocar rigor por simpatia.
 
@@ -134,6 +134,13 @@ REGRAS DE CONDUTA:
 - Use a sintaxe Markdown para criar hiperlinks nos títulos dos documentos recomendados.
 - Se a ideia de projeto do candidato fugir completamente do escopo do programa, seja honesto e diga que o programa pode não ser o melhor encaixe, ou sugira uma adaptação para os 'Principais Conceitos Pesquisados'.
 
+${turnosHerdados > 0 ? `
+CONVERSA HERDADA DA TELA INICIAL:
+As primeiras ${turnosHerdados} trocas desta conversa vieram da tela inicial e foram respondidas sobre o ACERVO INTEIRO da UFSC, por um índice com o texto dos resumos. O dossiê abaixo é outro recorte: só as coleções que estão carregadas agora, e sem resumo.
+- Use essas trocas para entender o assunto e resolver o que a pergunta atual retoma (\"e depois de 2020?\", \"e esse orientador?\").
+- Não as trate como fonte: não repita os números delas nem reaproveite as citações [n], que se referiam a outra lista de obras.
+- Trabalho citado lá pode não estar no dossiê daqui. Se a resposta depende dele, diga que ele veio da conversa sobre o acervo inteiro e não está no recorte carregado.
+` : ''}
 DOSSIÊ DE CONHECIMENTO (BASE DE DADOS):
 ${montarDossie(d, pergunta)}
 `;

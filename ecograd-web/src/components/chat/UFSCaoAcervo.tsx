@@ -1,28 +1,28 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Eraser, Layers, Send, Settings, Square, User } from 'lucide-react';
 import { ConfiguracaoIA, RetratoUFSCao } from '@/components/chat/ConsultorIA';
 import { ConversaAcervo } from '@/components/layout/ConversaAcervo';
 import { Aviso, Expander } from '@/components/ui/primitives';
-import { carregarIndiceBusca, itemDoAcervo, type IndiceBusca, type ResultadoBusca } from '@/lib/busca-global';
+import { carregarIndiceBusca, type IndiceBusca } from '@/lib/busca-global';
 import { estadoDoIndice, indiceConfigurado } from '@/lib/indice-remoto';
 import { markdownParaHtml } from '@/lib/markdown';
-import { dicionarioDeItens, realcarMencoes, type Mencao } from '@/lib/mencoes';
+import {
+  CorpoDaResposta, FontesDaResposta, fontesDaResposta,
+} from '@/components/chat/RespostaDoAcervo';
 import { lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';
 import { LOTES_SIMULTANEOS } from '@/lib/chat-sintese';
 import {
-  TETO_APROFUNDAR, citacoesInvalidas, fontesDaAmostra, realcarCitacoes,
-  type Aprofundamento, type Fonte, type Turno as TurnoDaConversa,
+  CHAVE_CONVERSA_ACERVO, TETO_APROFUNDAR,
+  type Aprofundamento, type Turno as TurnoDaConversa,
 } from '@/lib/ufscao-acervo';
 import { baixarArquivo, formatarDuracao, formatarNumero } from '@/lib/utils';
-import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
 import {
   aprofundarTema, perguntarAoAcervo, prepararAprofundamento,
   type Etapa, type PreparoAprofundamento, type RespostaAcervo,
 } from '@/services/ufscao-acervo';
 import type { ConfigIA } from '@/lib/provedores-ia';
 import { useSessionField } from '@/hooks/useSessionField';
-import type { TipoBusca } from '@/types';
 
 const EXEMPLOS = [
   'Como os trabalhos da UFSC estão tratando empreendedorismo feminino?',
@@ -36,38 +36,6 @@ const ETAPAS: Record<Etapa, string> = {
   escrevendo: 'O UFSCão está escrevendo',
 };
 
-const PAPEIS: TipoBusca[] = ['Autor', 'Orientador', 'Co-orientador'];
-const CAMPOS_DE_PESSOA = new Set(['nome', 'orientador', 'orientando', 'rotulo']);
-
-/** Pessoas e títulos que o banco devolveu nesta resposta: só eles viram botão. */
-function itensDaResposta(r: RespostaAcervo): Mencao[] {
-  const itens: Mencao[] = [];
-  const pessoa = (nome: unknown) => { if (typeof nome === 'string' && nome.includes(',')) itens.push({ tipo: 'Pessoa', nome }); };
-  for (const [nome] of r.panorama?.principais_orientadores ?? []) pessoa(nome);
-  for (const o of r.panorama?.amostra ?? []) {
-    (o.autores ?? []).forEach(pessoa);
-    (o.orientador ?? '').split('; ').forEach(pessoa);
-  }
-  for (const linha of r.dados?.linhas ?? []) {
-    for (const [campo, valor] of Object.entries(linha)) if (CAMPOS_DE_PESSOA.has(campo)) pessoa(valor);
-  }
-  return itens;
-}
-
-/**
- * Abre no Motor de Busca o que a resposta citou. Sem base carregada, o item é
- * achado no catálogo global e as coleções dele são carregadas — o mesmo caminho
- * da busca da tela inicial.
- */
-function abrirNoMotor(indice: IndiceBusca | undefined, tipo: 'Documento' | 'Pessoa', nome: string, url?: string | null) {
-  const itens: ResultadoBusca[] = indice
-    ? (tipo === 'Documento' ? [itemDoAcervo(indice, 'Documento', nome)] : PAPEIS.map((p) => itemDoAcervo(indice, p, nome)))
-      .filter((i): i is ResultadoBusca => !!i)
-    : [];
-  if (itens.length) { abrirEscolhaDoAcervo({ itens, colecoes: [] }); return; }
-  if (url) window.open(url, '_blank', 'noopener,noreferrer');
-}
-
 /**
  * UFSCão na tela inicial, sobre o acervo inteiro (ADR 004, fase A). O modelo do
  * usuário planeja, o índice apura e o modelo escreve citando a amostra; cada
@@ -75,7 +43,7 @@ function abrirNoMotor(indice: IndiceBusca | undefined, tipo: 'Documento' | 'Pess
  * respostas determinísticas do catálogo, como pede a decisão D1.
  */
 export function UFSCaoAcervo() {
-  const [conversa, setConversa] = useSessionField<RespostaAcervo[]>('ufscao.acervo.conversa', []);
+  const [conversa, setConversa] = useSessionField<RespostaAcervo[]>(CHAVE_CONVERSA_ACERVO, []);
   const [entrada, setEntrada] = useState('');
   const [perguntaAtual, setPerguntaAtual] = useState('');
   const [etapa, setEtapa] = useState<Etapa | null>(null);
@@ -190,36 +158,12 @@ function Turno({ resposta: r, indice, config, ocupado, turnos, aoAprofundar }: {
   turnos: TurnoDaConversa[];
   aoAprofundar: (a: Aprofundamento) => void;
 }) {
-  const fontes = useMemo(() => fontesDaAmostra(r.panorama), [r.panorama]);
-  const dic = useMemo(() => dicionarioDeItens(itensDaResposta(r)), [r]);
-  const html = useMemo(() => realcarMencoes(realcarCitacoes(markdownParaHtml(r.texto), fontes), dic), [r.texto, fontes, dic]);
-  const invalidas = useMemo(() => citacoesInvalidas(r.texto, fontes.length), [r.texto, fontes.length]);
-  const abrirFonte = (f: Fonte) => abrirNoMotor(indice, 'Documento', f.titulo, f.url);
-
-  const clique = (e: MouseEvent<HTMLDivElement>) => {
-    const alvo = (e.target as HTMLElement).closest<HTMLElement>('[data-fonte],[data-mencao]');
-    if (!alvo) return;
-    const { fonte, mencao, nome } = alvo.dataset;
-    if (fonte) { const f = fontes.find((x) => x.numero === Number(fonte)); if (f) abrirFonte(f); }
-    else if (mencao === 'Pessoa' && nome) abrirNoMotor(indice, 'Pessoa', nome);
-  };
-
+  const fontes = useMemo(() => fontesDaResposta(r), [r]);
   return <div className="space-y-2">
     <Balao papel="user">{r.pergunta}</Balao>
     <Balao papel="assistant">
-      {/* O HTML vem de `markdownParaHtml`, que escapa o texto do modelo antes de marcar. */}
-      <div className="markdown" onClick={clique} dangerouslySetInnerHTML={{ __html: html }} />
-      {invalidas.length > 0 && <p className="erro mt-2 text-xs">A resposta cita {invalidas.map((n) => `[${n}]`).join(', ')}, que não existe entre as fontes consultadas. Desconsidere essas citações.</p>}
-      {fontes.length > 0 && <details className="mt-3 text-xs">
-        <summary className="cursor-pointer text-slate-300">Fontes consultadas ({fontes.length} de {r.panorama?.obras.toLocaleString('pt-BR')} obras encontradas)</summary>
-        <ol className="mt-2 space-y-1">
-          {fontes.map((f) => <li key={f.numero} className="flex gap-1">
-            <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirFonte(f)}>[{f.numero}] {f.titulo}</button>
-            <span className="shrink-0 text-slate-400">· {f.ano ?? 'sem ano'} · {f.colecao}{f.origem === 'significado' ? ' · achada por significado' : ''}</span>
-            {f.url && <a href={f.url} target="_blank" rel="noopener noreferrer" className="shrink-0" title="Fonte original, em nova aba">↗<span className="sr-only"> (abre a fonte original)</span></a>}
-          </li>)}
-        </ol>
-      </details>}
+      <CorpoDaResposta resposta={r} fontes={fontes} indice={indice} />
+      <FontesDaResposta fontes={fontes} total={r.panorama?.obras} rotulo="Fontes consultadas" indice={indice} />
       <ComoApurei resposta={r} />
       <Aprofundar resposta={r} indice={indice} config={config} ocupado={ocupado} turnos={turnos} aoAprofundar={aoAprofundar} />
     </Balao>
@@ -332,31 +276,17 @@ function Aprofundar({ resposta: r, indice, config, ocupado, turnos, aoAprofundar
 }
 
 function RespostaAprofundada({ aprofundamento: a, indice }: { aprofundamento: Aprofundamento; indice: IndiceBusca | undefined }) {
-  const html = useMemo(() => realcarCitacoes(markdownParaHtml(a.texto), a.fontes), [a.texto, a.fontes]);
-  const invalidas = useMemo(() => citacoesInvalidas(a.texto, a.fontes.length), [a.texto, a.fontes.length]);
-  const abrir = (e: MouseEvent<HTMLDivElement>) => {
-    const alvo = (e.target as HTMLElement).closest<HTMLElement>('[data-fonte]');
-    const f = alvo ? a.fontes.find((x) => x.numero === Number(alvo.dataset.fonte)) : undefined;
-    if (f) abrirNoMotor(indice, 'Documento', f.titulo, f.url);
-  };
+  // A aprofundada cita outra lista que a leitura padrão, e não tem panorama
+  // próprio: os números dela estão em `leitura`, logo acima do texto.
+  const resposta = useMemo(() => ({ pergunta: '', texto: a.texto, panorama: null, dados: null }), [a.texto]);
   const parcial = a.leitura.lidas < a.leitura.comResumo;
   return <div className="space-y-2">
     <p className="uppercase tracking-wide text-slate-400">
       Resposta aprofundada · {formatarNumero(a.leitura.lidas)} resumos lidos
       {parcial ? ` dos ${formatarNumero(a.leitura.comResumo)} do tema` : ` de ${formatarNumero(a.leitura.obras)} obras`}
     </p>
-    {/* O HTML vem de `markdownParaHtml`, que escapa o texto do modelo antes de marcar. */}
-    <div className="markdown" onClick={abrir} dangerouslySetInnerHTML={{ __html: html }} />
-    {invalidas.length > 0 && <p className="erro">A resposta cita {invalidas.map((n) => `[${n}]`).join(', ')}, que não existe entre as obras lidas. Desconsidere essas citações.</p>}
-    <details>
-      <summary className="cursor-pointer text-slate-300">Obras lidas ({formatarNumero(a.fontes.length)})</summary>
-      <ol className="mt-2 space-y-1">
-        {a.fontes.map((f) => <li key={f.numero} className="flex gap-1">
-          <button type="button" className="text-left text-eco-accent underline" onClick={() => abrirNoMotor(indice, 'Documento', f.titulo, f.url)}>[{f.numero}] {f.titulo}</button>
-          <span className="shrink-0 text-slate-400">· {f.ano ?? 'sem ano'} · {f.colecao}</span>
-        </li>)}
-      </ol>
-    </details>
+    <CorpoDaResposta resposta={resposta} fontes={a.fontes} indice={indice} />
+    <FontesDaResposta fontes={a.fontes} rotulo="Obras lidas" indice={indice} />
   </div>;
 }
 

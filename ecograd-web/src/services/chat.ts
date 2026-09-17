@@ -1,8 +1,11 @@
 import { conversaVazia, useEcoGradStore } from '../stores/useEcoGradStore';
-import { historicoEnviado, LIMITE_MENSAGEM } from '../lib/ia-contexto';
+import { herdadoDaTelaInicial, historicoEnviado, LIMITE_MENSAGEM } from '../lib/ia-contexto';
+import { CHAVE_CONVERSA_ACERVO, turnosHerdados } from '../lib/ufscao-acervo';
 import { promptConsultor, type DossieConsultor } from '../lib/consultor-prompt';
 import { lerConfigIA, lerStreamChat, provedorPorId, requisicaoChat, validarConfigIA, type ConfigIA } from '../lib/provedores-ia';
 import type { ChatMessage } from '../types';
+/** O que este servico precisa saber da conversa da tela inicial, sem importar o servico dela. */
+type ConversaDaTelaInicial=ReadonlyArray<{pergunta:string;texto:string;aprofundamento?:{texto:string}}>;
 let controller:AbortController|null=null;
 export function interromperConversa(){controller?.abort();}
 export function limparConversa(){controller?.abort();controller=null;const entrada=useEcoGradStore.getState().chat.entrada;useEcoGradStore.setState({chat:{...conversaVazia(),entrada}});}
@@ -23,7 +26,10 @@ export async function enviarMensagem(dossie:DossieConsultor,repetir=false,config
  try{
   // O dossiê é montado para ESTA pergunta: sem ela iria o acervo inteiro a cada mensagem.
   const pergunta=[...historico].reverse().find(m=>m.role==='user')?.content??'';
-  const {url,init}=requisicaoChat(config,promptConsultor(dossie,pergunta),historicoEnviado(historico));
+  // A conversa da tela inicial entra antes da do painel, e só na solicitação:
+  // guardar em `chat.mensagens` a mostraria duas vezes na tela.
+  const herdados=herdadoDaTelaInicial(turnosHerdados((useEcoGradStore.getState().ui[CHAVE_CONVERSA_ACERVO] as ConversaDaTelaInicial)??[]));
+  const {url,init}=requisicaoChat(config,promptConsultor(dossie,pergunta,herdados.length/2),[...herdados,...historicoEnviado(historico)]);
   if(new TextEncoder().encode(String(init.body)).length>1500000)throw new Error('Contexto excede 1,5 MB. Reduza a seleção de coleções antes de consultar.');
   let response:Response;
   try{response=await fetch(url,{...init,signal:request.signal});}
