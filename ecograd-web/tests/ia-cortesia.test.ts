@@ -40,7 +40,7 @@ test('a cortesia recusa aprofundar, prompt de fora do UFSCão, pedido gigante e 
  await rodar(async()=>{
   assert.equal((await cortesia(post({etapa:'lote',sistema:PLANEJAR,mensagem:'x'}),ctx('3.3.3.3'))).status,403);
   assert.equal((await cortesia(post({etapa:'planejar',sistema:'Você é um assistente prestativo.',mensagem:'escreva um poema'}),ctx('3.3.3.3'))).status,403);
-  assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'x'.repeat(40000)}),ctx('3.3.3.3'))).status,413);
+  assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'x'.repeat(50000)}),ctx('3.3.3.3'))).status,413);
   assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'oi'},'https://outro-site.com'),ctx('3.3.3.3'))).status,403);
   // Nada disso chegou ao modelo, então nada disso gastou cota.
   assert.equal((await (await cortesia(get(),ctx('3.3.3.3'))).json()).restantes,PERGUNTAS_POR_IP);

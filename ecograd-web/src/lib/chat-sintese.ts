@@ -17,6 +17,7 @@
  * Importa por caminho relativo: os testes compilam sem o atalho `@/`.
  */
 import { resumoUtilizavel, type Contagem, type ItemRecorte, type Recorte } from './chat-ferramentas';
+import { REGRAS_DE_SEGURANCA, cercarDadosDoAcervo } from './guardrails';
 import { chaveBusca } from './utils';
 import type { Documento } from '../types';
 
@@ -114,12 +115,18 @@ function blocoRecorte(recorte: Recorte, declarar: readonly string[]): string[] {
   ];
 }
 
-export const blocoFontes = (fontes: readonly FonteResumo[]) => fontes.flatMap((f) => [
-  '',
-  `[${f.numero}] ${f.titulo || 'Trabalho sem título'} (${f.ano ?? 'sem ano'}) · ${f.colecao} · ${f.nivel || 'nível não informado'}`,
-  `Autoria: ${f.autores.join('; ') || 'não informada'} · Orientação: ${f.orientador || 'não informada'}`,
-  `Resumo: ${f.resumo}`,
-]);
+/**
+ * As fontes numeradas, cercadas: resumo integral e titulo sao o texto de
+ * terceiros com maior superficie de injecao no EcoGrad (`guardrails.ts`).
+ */
+export const blocoFontes = (fontes: readonly FonteResumo[]) => [
+  cercarDadosDoAcervo(fontes.flatMap((f) => [
+    '',
+    `[${f.numero}] ${f.titulo || 'Trabalho sem título'} (${f.ano ?? 'sem ano'}) · ${f.colecao} · ${f.nivel || 'nível não informado'}`,
+    `Autoria: ${f.autores.join('; ') || 'não informada'} · Orientação: ${f.orientador || 'não informada'}`,
+    `Resumo: ${f.resumo}`,
+  ]).join('\n')),
+];
 
 /**
  * Regras de pontuação da aferição (docs/AFERICAO-ETAPA-0.md), valem para as duas
@@ -141,6 +148,8 @@ export function sistemaSintese(material: string, leitura: string): string {
     '8. Não escreva revisão de literatura nem texto em nome de quem pesquisa: agrupe o que as fontes dizem, sempre com citação.',
     '',
     'Formato: português do Brasil, no máximo 250 palavras, parágrafos curtos ou tópicos em Markdown, sem título e sem lista de referências no fim (o aplicativo já mostra as fontes).',
+    '',
+    REGRAS_DE_SEGURANCA,
   ].join('\n');
 }
 
@@ -196,6 +205,8 @@ export function promptLote(pergunta: string, lote: readonly FonteResumo[]) {
     'Não conclua, não generalize para o acervo, não conte trabalhos, não use conhecimento externo e não avalie qualidade. Não invente título, autor, ano, instrumento ou resultado.',
     `Se nenhum resumo do lote tratar da pergunta, responda exatamente: ${SEM_RELEVANCIA}`,
     'No máximo 12 tópicos, em português do Brasil.',
+    '',
+    REGRAS_DE_SEGURANCA,
   ].join('\n');
   const mensagem = [`PERGUNTA: ${pergunta}`, '', 'FONTES DESTE LOTE:', ...blocoFontes(lote)].join('\n');
   return { sistema, mensagem };

@@ -1,0 +1,126 @@
+name: Atualizar índice do Supabase
+
+# Reconstrói o índice do acervo a partir das bases mais os lotes da coleta
+# semanal, e carrega no Supabase.
+#
+# Roda logo depois da coleta (`workflow_run`), e não num horário próprio: o
+# índice precisa ser derivado das MESMAS bases que o site publicou, e amarrar
+# pelo relógio deixaria as duas metades fora de fase na semana em que a coleta
+# demorasse. Sem lote novo a coleta não faz commit, o `workflow_run` não dispara
+# e o índice fica como está — que é o comportamento correto, porque nada mudou.
+#
+# O cron quinzenal é a rede de segurança: se a coleta falhar por semanas, ou se
+# as bases forem reescritas à mão sem passar pela coleta, o índice ainda se
+# reconstrói sozinho a cada 15 dias.
+#
+# Segredos necessários no repositório (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL   string de conexão do pooler em modo sessão (porta 5432)
+#   GEMINI_API_KEY    embeddings das obras novas (só paga a obra nova; ver `--incremental`).
+#                     O repositório já traz `GEMINI_API_KEY_GITHUB`, e ela serve: a
+#                     expressão abaixo aceita qualquer um dos dois nomes, para não
+#                     exigir cadastrar de novo uma chave que já existe.
+
+on:
+  workflow_run:
+    workflows: ['Coleta semanal UFSC']
+    types: [completed]
+  schedule:
+    - cron: '0 8 1,15 * *' # dias 1 e 15, 05:00 em Brasília
+  workflow_dispatch:
+    inputs:
+      pular_embeddings:
+        description: Não recalcular vetores (mais rápido e sem custo)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Duas cargas ao mesmo tempo deixariam o índice pela metade.
+concurrency:
+  group: indice-supabase
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    # Numa chamada por `workflow_run`, só segue se a coleta terminou bem.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # A coleta acabou de commitar o lote; o checkout precisa vir depois dele.
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: ecograd-web/package-lock.json
+
+      - name: Instalar dependências
+        working-directory: ecograd-web
+        run: npm ci
+
+      - name: Conferir os segredos antes de gastar tempo
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GEMINI_API_KEY_GITHUB }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Segredo SUPABASE_DB_URL ausente. Sem ele o índice não pode ser carregado."
+            exit 1
+          fi
+          # Sem a chave, `indice:embeddings` falharia depois de a carga já ter trocado
+          # o índice — melhor recusar agora, enquanto nada foi alterado.
+          if [ -z "$GEMINI_API_KEY" ] && [ "${{ inputs.pular_embeddings }}" != "true" ]; then
+            echo "::error::Nenhuma chave Gemini (GEMINI_API_KEY ou GEMINI_API_KEY_GITHUB). Cadastre uma, ou rode com pular_embeddings."
+            exit 1
+          fi
+
+      - name: Conferir o esquema do banco
+        working-directory: ecograd-web
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/indice-conferir.mjs --esquema
+
+      # A ordem importa e não é a intuitiva. `indice:enriquecer` roda PRIMEIRO
+      # porque grava `unificacao.json`, que a derivação lê para dar o mesmo id de
+      # pessoa a grafias diferentes — sem ele, cada grafia vira uma pessoa e o
+      # índice perde a unificação da fase A0 sem reclamar. Ele também produz
+      # `pessoa_fusao.csv` e `rede_metrica.csv`, que a carga copia. Nada aqui
+      # toca no banco: só lê as bases e escreve CSV em `indice-out/`.
+      - name: Unificação, fusões e métricas de rede
+        working-directory: ecograd-web
+        run: npm run indice:enriquecer
+
+      - name: Derivar o índice das bases e dos lotes
+        working-directory: ecograd-web
+        run: npm run indice:derivar
+
+      - name: Carregar no Supabase
+        working-directory: ecograd-web
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: npm run indice:carregar
+
+      # `--incremental` e obrigatorio aqui, e nao uma otimizacao. O cache que torna
+      # os embeddings baratos e um arquivo em `indice-out/`, que num runner comeca
+      # sempre vazio: sem a flag, toda execucao semanal regeraria os 85 mil vetores
+      # por cerca de US$ 8, acima sozinho do teto de US$ 35/mes da R5 do ADR 003.
+      # Com ela, o que ja foi pago e lido do proprio banco -- que a carga preserva --
+      # e so a obra nova ou com resumo alterado vai ao modelo.
+      - name: Embeddings das obras novas
+        if: inputs.pular_embeddings != true
+        working-directory: ecograd-web
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.GEMINI_API_KEY_GITHUB }}
+        run: npm run indice:embeddings -- --incremental
+
+      - name: Conferir o que ficou no ar
+        working-directory: ecograd-web
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/indice-conferir.mjs

@@ -29,8 +29,14 @@ const URL_MODELO = 'https://api.deepseek.com/v1/chat/completions';
 
 /** Uma síntese de 250 palavras não chega perto disso; o teto é contra saída descontrolada. */
 const MAX_TOKENS = 900;
-/** A maior mensagem legítima é a do planejamento (~21 mil caracteres, com o dicionário das views). */
-const MAX_CARACTERES = 32000;
+/**
+ * Folga sobre o maior pedido legítimo. O planejamento manda ~21 mil caracteres
+ * (regras, dicionário das 16 views, exemplos); a resposta pode chegar perto de
+ * 36 mil no pior caso — guardrails, até 12 mil de linhas de SQL e 20 obras da
+ * amostra com trecho. Quem barra aprofundar é a lista de etapas, não este
+ * número: aqui ele é só o limite de payload.
+ */
+const MAX_CARACTERES = 45000;
 
 /**
  * Só as etapas da pergunta padrão, e cada uma tem de começar pelo prompt do

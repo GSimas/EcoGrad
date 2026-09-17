@@ -1,8 +1,12 @@
+import { useQuery } from '@tanstack/react-query';
+import { AberturaEmCurso, ConversaHerdada } from '@/components/chat/RespostaDoAcervo';
+import { carregarIndiceBusca } from '@/lib/busca-global';
 import { historicoEnviado, LIMITE_MENSAGEM } from '@/lib/ia-contexto';
+import { CHAVE_CONVERSA_ACERVO, turnosHerdados } from '@/lib/ufscao-acervo';
 import { baixarArquivo } from '@/lib/utils';
 import { enviarMensagem, interromperConversa, limparConversa } from '@/services/chat';
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
-import { Dog, Eraser, KeyRound, Send, Settings, Square, User, X } from 'lucide-react';
+import { Dog, Eraser, Eye, EyeOff, KeyRound, Send, Settings, Square, User, X } from 'lucide-react';
 import { Confirmacao, Janela } from '@/components/layout/Janela';
 import { MAX_CATALOGO, MAX_DOCENTES } from '@/lib/consultor-prompt';
 import { Aviso, Expander } from '@/components/ui/primitives';
@@ -108,6 +112,12 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
   const [limpando, setLimpando] = useState(false);
   const [retrato, setRetrato] = useState(false);
   const listaRef = useRef<HTMLDivElement>(null);
+  // O catálogo global resolve as citações da conversa herdada da tela inicial,
+  // que apontam para obras do acervo inteiro e não para os `docs` carregados.
+  const catalogo = useQuery({ queryKey: ['indice-busca'], queryFn: ({ signal }) => carregarIndiceBusca(signal), staleTime: Infinity, gcTime: Infinity, retry: 1 });
+  // Quantos turnos da tela inicial vão junto: o painel promete o que envia, e
+  // a conversa herdada mudou essa conta.
+  const herdados = turnosHerdados((useEcoGradStore.getState().ui[CHAVE_CONVERSA_ACERVO] as Array<{ pergunta: string; texto: string }> | undefined) ?? []).length;
 
   // Acompanha a resposta só quando o leitor já está perto do fim da conversa.
   useEffect(() => {
@@ -187,12 +197,15 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
         <Expander titulo="Contexto enviado ao UFSCão">
           <div className="space-y-2 text-sm text-slate-300">
             <p>Ao enviar, {provedor} recebe até 20 mensagens recentes, incluindo sua pergunta atual, limitadas a 24.000 caracteres. Mensagens mais antigas continuam nesta sessão, mas podem ficar fora da solicitação. A mensagem atual admite até {LIMITE_MENSAGEM} caracteres.</p>
+            {herdados > 0 && <p>Vão também {herdados === 1 ? 'a última troca' : `as ${herdados} últimas trocas`} da conversa da tela inicial, que respondeu sobre o acervo inteiro — é o que faz a pergunta de seguimento ser entendida aqui. O prompt declara ao modelo que aquelas respostas cobrem outro recorte e que os números e as citações delas não valem para esta.</p>}
             <p>Catálogo: até {MAX_CATALOGO} trabalhos por pergunta, e não os {docs.length.toLocaleString('pt-BR')} registros carregados. Entram primeiro os que casam com a sua pergunta; o que sobra da cota vira amostra espaçada do restante, para o modelo ainda enxergar o conjunto. De cada um vão título, primeiro autor, orientador, macrotema, até quatro palavras-chave e URL — nunca resumo ou texto integral, notas CAPES, arquivos importados nem rascunhos não enviados.</p>
             <p>Inclui também perfis de até {MAX_DOCENTES} orientadores, escolhidos pela mesma pergunta entre os {dossie.docentes.length.toLocaleString('pt-BR')} da seleção, mais 10 nomes por grau, 10 por intermediação e 20 conceitos por grau. Centralidade não mede qualidade nem confirma vínculo docente atual. O catálogo pode conter TCCs e registros sobrepostos.</p>
             <p>Próxima solicitação: até {historicoEnviado([...mensagens, ...(parcial ? [{ role: 'assistant' as const, content: `[Resposta parcial interrompida] ${parcial}` }] : []), ...(entrada.trim() ? [{ role: 'user' as const, content: entrada.trim() }] : [])]).length} mensagens. A seleção do catálogo não é aleatória ou representativa.</p>
             <p>A conversa vai direto do navegador para {provedor}, com a sua chave; o EcoGrad não recebe nem armazena a solicitação. Repetir não duplica a pergunta e conserva o parcial anterior. Interromper encerra a leitura; o provedor pode concluir uma solicitação já recebida.</p>
           </div>
         </Expander>
+        <ConversaHerdada indice={catalogo.data} />
+        <AberturaEmCurso />
         {contextoAnterior && <Aviso tipo="aviso">Esta conversa pertence a uma análise anterior e foi mantida para consulta. Copie os trechos que desejar antes de iniciar outra conversa.</Aviso>}
         {mensagens.length === 0 && !parcial && (
           <Aviso>O UFSCão farejou o acervo e está pronto: descreva sua ideia de projeto, pergunte sobre o perfil dos professores ou peça indicações de teses alinhadas com seu interesse de pesquisa.</Aviso>
@@ -253,6 +266,10 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
 
 export function ConfiguracaoIA({ inicial, onSalvo, onEsquecer }: { inicial: ConfigSalva | null; onSalvo: (c: ConfigSalva) => void; onEsquecer: () => void }) {
   const id = useId();
+  // Chave de API se digita errado com facilidade e o erro só aparece na primeira
+  // pergunta, longe daqui. Ver o que foi colado é a checagem mais barata; começa
+  // escondida porque a tela pode estar sendo projetada.
+  const [chaveVisivel, setChaveVisivel] = useState(false);
   const [rascunho, setRascunho] = useState<ConfigSalva>(() => inicial ?? { provedor: PROVEDORES[0].id, modelo: PROVEDORES[0].modelo, baseUrl: PROVEDORES[0].baseUrl, chave: '', lembrar: false });
   const [erro, setErro] = useState<string | null>(null);
   const provedor = provedorPorId(rascunho.provedor);
@@ -284,7 +301,16 @@ export function ConfiguracaoIA({ inicial, onSalvo, onEsquecer }: { inicial: Conf
     </div>
     <div className="space-y-1">
       <label htmlFor={id + '-chave'}>Chave de API</label>
-      <input id={id + '-chave'} className="input" type="password" spellCheck={false} autoComplete="off" value={rascunho.chave} onChange={(e) => alterar({ chave: e.target.value })} />
+      <div className="flex items-center gap-2">
+        <input id={id + '-chave'} className="input min-w-0 flex-1" type={chaveVisivel ? 'text' : 'password'} spellCheck={false} autoComplete="off"
+          value={rascunho.chave} onChange={(e) => alterar({ chave: e.target.value })} />
+        <button type="button" className="btn h-11 w-11 shrink-0 px-0" onClick={() => setChaveVisivel((v) => !v)}
+          aria-pressed={chaveVisivel} aria-controls={id + '-chave'}
+          aria-label={chaveVisivel ? 'Esconder a chave de API' : 'Mostrar a chave de API'}
+          title={chaveVisivel ? 'Esconder a chave' : 'Mostrar a chave'}>
+          {chaveVisivel ? <EyeOff size={16} /> : <Eye size={16} />}
+        </button>
+      </div>
       {provedor.chaves && <a className="inline-block min-h-11 py-2 text-xs text-eco-accent underline" href={provedor.chaves} target="_blank" rel="noopener noreferrer">Obter chave em {provedor.nome} ↗<span className="sr-only"> (nova aba)</span></a>}
     </div>
     <label className="flex items-start gap-2">

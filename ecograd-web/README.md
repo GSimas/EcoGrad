@@ -63,6 +63,20 @@ GEMINI_API_KEY=...
 | `npm run test:all` | Regressão funcional, contratos, persistência, IA simulada e aparência |
 | `npm run report:build` | Mede os arquivos JS iniciais, chunks adiados e bases do último build |
 
+**Índice do acervo** (Postgres + pgvector). O que ele é, por que existe e os números medidos estão
+no [README da raiz](../README.md#️-o-índice-do-acervo); os comandos são estes:
+
+| Comando | O que faz |
+| --- | --- |
+| `npm run indice:derivar` | Gera os arquivos do índice a partir das bases |
+| `npm run indice:carregar` | Carrega por `COPY` (porta 5432) |
+| `npm run indice:carregar:https` | Carrega por HTTPS, onde a 5432 está bloqueada |
+| `npm run indice:enriquecer` | Perfis, orientações e métricas de rede no índice |
+| `npm run indice:embeddings` | Vetores das obras (custo único, ~US$ 8) |
+| `npm run afericao` | Conjunto de aferição contra os gabaritos |
+| `npm run afericao:vetor` | Compara texto, vetor e híbrido |
+| `npm run afericao:amostra-cega` | Sorteia temas para medir generalização |
+
 ---
 
 ## Arquitetura
@@ -223,7 +237,18 @@ em revisão até a aplicação explícita à análise.
 
 ## Segurança
 
-- Nenhuma chave de API chega ao navegador: Gemini é acessado pelas funções.
+- Nenhuma chave secreta chega ao navegador: Gemini é acessado pelas funções. As duas
+  `VITE_INDICE_*` são exceção **declarada** — a chave do índice é a publicável (`anon`), com RLS
+  somente leitura e nenhuma tabela de escrita alcançável, e o prefixo `VITE_` diz que ela vai ao
+  bundle de propósito.
+- A chave de API do modelo é do usuário (BYOK): fica no navegador dele e vai direto ao provedor,
+  sem passar pelo EcoGrad.
+- **Guardrails do UFSCão** em [`src/lib/guardrails.ts`](src/lib/guardrails.ts), compartilhados
+  pelas duas telas: texto vindo do acervo chega cercado por marcadores que ele não consegue
+  fechar, e as regras mandam tratá-lo como dado — defesa contra instrução escondida em resumo ou
+  título. Cobrem também escopo, conteúdo nocivo e o que pode ser dito sobre as pessoas do acervo.
+- O SQL que o modelo escreve roda como `consulta_leitor`: só `SELECT`, uma instrução por vez, com
+  teto de 4.000 caracteres, de tempo e de linhas.
 - `neo4j-query` retorna HTTP 410 com `NEO4J_DISABLED`, sem ler credenciais ou conectar a banco. O frontend usa arquivos JSON por coleção.
 - As respostas da IA passam por `markdownParaHtml`, que escapa o HTML antes de aplicar as
   marcações; links são restritos a `http(s)` e abrem com `target="_blank" rel="noopener noreferrer"`.

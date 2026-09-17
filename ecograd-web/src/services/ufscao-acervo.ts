@@ -84,6 +84,8 @@ export async function perguntarAoAcervo(
   config: ConfigIA, pergunta: string, turnos: readonly Turno[],
   aoMudarEtapa: (etapa: Etapa) => void, aoEscrever: (texto: string) => void, signal: AbortSignal,
   obterVetor: (texto: string, signal: AbortSignal) => Promise<number[] | null> = vetorDaPergunta,
+  /** O índice foi gerado de bases anteriores às publicadas: a resposta precisa declarar (D1). */
+  indiceAtrasado = false,
 ): Promise<RespostaAcervo> {
   aoMudarEtapa('planejando');
   const dic = await lerDicionario();
@@ -141,7 +143,7 @@ export async function perguntarAoAcervo(
   signal.throwIfAborted();
 
   aoMudarEtapa('escrevendo');
-  const resposta = promptResposta(pergunta, plano, dados, erroSql, panorama, erroPanorama, turnos);
+  const resposta = promptResposta(pergunta, plano, dados, erroSql, panorama, erroPanorama, turnos, indiceAtrasado);
   const texto = await escreverSintese(config, resposta.sistema, resposta.mensagem, aoEscrever, signal, 'responder');
   return { id: Date.now(), pergunta, plano, dados, erroSql, panorama, erroPanorama, texto, planoImprovisado, semSignificado };
 }
