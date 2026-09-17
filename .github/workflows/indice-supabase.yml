@@ -79,6 +79,22 @@ jobs:
             exit 1
           fi
 
+      - name: Conferir o esquema do banco
+        working-directory: ecograd-web
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/indice-conferir.mjs --esquema
+
+      # A ordem importa e não é a intuitiva. `indice:enriquecer` roda PRIMEIRO
+      # porque grava `unificacao.json`, que a derivação lê para dar o mesmo id de
+      # pessoa a grafias diferentes — sem ele, cada grafia vira uma pessoa e o
+      # índice perde a unificação da fase A0 sem reclamar. Ele também produz
+      # `pessoa_fusao.csv` e `rede_metrica.csv`, que a carga copia. Nada aqui
+      # toca no banco: só lê as bases e escreve CSV em `indice-out/`.
+      - name: Unificação, fusões e métricas de rede
+        working-directory: ecograd-web
+        run: npm run indice:enriquecer
+
       - name: Derivar o índice das bases e dos lotes
         working-directory: ecograd-web
         run: npm run indice:derivar
@@ -88,12 +104,6 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: npm run indice:carregar
-
-      - name: Perfis, orientações e métricas de rede
-        working-directory: ecograd-web
-        env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: npm run indice:enriquecer
 
       # Incremental: cada vetor é guardado com o sha256 do texto que o gerou, e
       # obra sem resumo alterado não é reenviada. Uma semana de coleta custa

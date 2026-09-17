@@ -16,6 +16,18 @@
  */
 import { Client } from 'pg';
 
+/**
+ * `--esquema` confere só se o banco aceita o que a carga vai mandar, e sai. Roda
+ * antes de derivar: descobrir no meio do COPY que falta uma coluna custa os três
+ * minutos da derivação, e a mensagem do Postgres (42703) não diz o que fazer.
+ */
+const soEsquema = process.argv.includes('--esquema');
+
+/** Colunas que a carga escreve e que entraram depois da primeira versão do índice. */
+const COLUNAS_ESPERADAS = [
+  ['indice_meta', 'sha256_lotes', "alter table indice_meta add column sha256_lotes text not null default ''"],
+];
+
 const url = process.env.SUPABASE_DB_URL;
 if (!url) {
   console.error('Defina SUPABASE_DB_URL.');
@@ -33,6 +45,25 @@ const limpo = (v) => String(v ?? '').replace(/postgresql:\/\/[^\s]+/g, 'postgres
 
 try {
   await cliente.connect();
+
+  const faltando = [];
+  for (const [tabela, coluna, remedio] of COLUNAS_ESPERADAS) {
+    const { rows } = await cliente.query(
+      'select 1 from information_schema.columns where table_name = $1 and column_name = $2',
+      [tabela, coluna],
+    );
+    if (!rows.length) faltando.push(`${tabela}.${coluna} não existe. Aplique:  ${remedio}`);
+  }
+  if (faltando.length) {
+    console.error('O esquema do banco está atrás do que a carga escreve:');
+    for (const f of faltando) console.error(`  - ${f}`);
+    process.exit(1);
+  }
+  if (soEsquema) {
+    console.log('Esquema compatível com a carga.');
+    await cliente.end();
+    process.exit(0);
+  }
 
   const { rows: [meta] } = await cliente.query(
     'select base_version, sha256_lotes, gerado_em, registros, documentos from indice_meta',
