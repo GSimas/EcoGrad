@@ -223,8 +223,14 @@ cair abaixo de 90% ou se `panorama_tematico` e `obras_do_tema` discordarem. Numa
 falhar alto é melhor do que servir meio acervo em silêncio.
 
 **Segredos necessários no repositório:** `SUPABASE_DB_URL` (pooler em modo sessão, porta 5432) e
-`GEMINI_API_KEY`. Os embeddings são incrementais — cada vetor guarda o sha256 do texto que o gerou,
-então uma semana de coleta custa centavos.
+`GEMINI_API_KEY`.
+
+**Por que os embeddings não custam US$ 8 por semana.** `documento_embedding` referencia `documento`
+com `on delete cascade`, e a recarga do índice levaria os 85 mil vetores junto — obrigando a
+recalcular tudo a cada execução. Duas coisas evitam isso: a carga **preserva** os vetores dentro da
+própria transação, devolvendo os que ainda têm obra correspondente; e `indice:embeddings
+--incremental` lê do **banco** o que já foi pago, em vez do cache local, que num runner começa
+sempre vazio. Só obra nova ou com resumo alterado vai ao modelo.
 
 > **Runner e qualidade do resumo.** Em runner hospedado do GitHub, a coleta fica fora da RedeUFSC: o
 > DSpace pede verificação anti-robô e ela cai no Oasisbr/IBICT, **sem resumo**. Como o resumo é o que
