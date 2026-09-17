@@ -1,4 +1,4 @@
-import { lerStreamChat, provedorPorId, requisicaoChat, type ConfigIA } from '@/lib/provedores-ia';
+import { lerStreamChat, provedorPorId, requisicaoChat, type ConfigIA, type EtapaIA } from '@/lib/provedores-ia';
 
 /** Uma síntese de 250 palavras não chega perto disso; passar daqui é resposta descontrolada. */
 const MAX_CARACTERES = 20000;
@@ -7,10 +7,13 @@ const MAX_CARACTERES = 20000;
  * Envia a síntese citada ao provedor do usuário (BYOK, decisão D10 do ADR 001):
  * a requisição sai do navegador direto para o provedor, como no UFSCão, e
  * não passa pelos servidores do EcoGrad. `onTexto` recebe o texto acumulado.
+ *
+ * A exceção é a cortesia, que passa pela função do site com a chave do projeto;
+ * `etapa` é o que ela confere para só aceitar prompts do UFSCão.
  */
-export async function escreverSintese(config: ConfigIA, sistema: string, mensagem: string, onTexto: (acumulado: string) => void, signal: AbortSignal): Promise<string> {
+export async function escreverSintese(config: ConfigIA, sistema: string, mensagem: string, onTexto: (acumulado: string) => void, signal: AbortSignal, etapa?: EtapaIA): Promise<string> {
   const provedor = provedorPorId(config.provedor);
-  const { url, init } = requisicaoChat(config, sistema, [{ role: 'user', content: mensagem }]);
+  const { url, init } = requisicaoChat(config, sistema, [{ role: 'user', content: mensagem }], etapa);
   let response: Response;
   try {
     response = await fetch(url, { ...init, signal });
@@ -21,6 +24,9 @@ export async function escreverSintese(config: ConfigIA, sistema: string, mensage
   if (!response.ok || !response.body) {
     const corpo = await response.json().catch(() => null);
     const detalhe = Array.isArray(corpo) ? corpo[0] : corpo;
+    // A cortesia devolve `{error: "texto"}`, e a frase dela já é a que o usuário
+    // precisa ler ("suas 10 perguntas acabaram"): não vale embrulhar em jargão.
+    if (typeof detalhe?.error === 'string') throw new Error(detalhe.error);
     throw new Error(`${provedor.nome}: ${detalhe?.error?.message || `resposta indisponível (HTTP ${response.status})`}`);
   }
   let acumulado = '';
