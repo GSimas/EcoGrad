@@ -36,7 +36,15 @@ if (!url) {
 
 /** Abaixo disto o acervo está claramente truncado, não apenas menor. */
 const MINIMO_REGISTROS = 50000;
-/** Quanto do que tem resumo precisa ter vetor para a busca por significado valer. */
+/**
+ * Quanto do acervo precisa ter vetor para a busca por significado valer.
+ *
+ * O denominador é o acervo inteiro, não só quem tem resumo: `indice:embeddings`
+ * vetoriza toda obra, caindo no título quando não há resumo — um título também
+ * situa a obra no espaço semântico, pior do que um resumo mas melhor do que nada.
+ * Dividir por `com_resumo` deu 115,3% na primeira execução da rotina: passou na
+ * checagem, e não queria dizer nada.
+ */
 const COBERTURA_VETOR_MINIMA = 0.9;
 
 const cliente = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
@@ -120,10 +128,15 @@ try {
   if (Number(c.termos) === 0) problemas.push('termo_perfil vazio: `indice:enriquecer` não rodou ou falhou');
   if (Number(c.rede) === 0) problemas.push('rede_metrica vazia: `indice:enriquecer` não rodou ou falhou');
 
-  const cobertura = Number(c.com_resumo) ? Number(c.vetores) / Number(c.com_resumo) : 0;
+  const cobertura = Number(c.documentos) ? Number(c.vetores) / Number(c.documentos) : 0;
   console.log(`  cobertura de vetor   ${(cobertura * 100).toFixed(1)}%`);
   if (cobertura < COBERTURA_VETOR_MINIMA) {
-    problemas.push(`só ${(cobertura * 100).toFixed(1)}% das obras com resumo têm vetor: a busca por significado fica cega no resto`);
+    problemas.push(`só ${(cobertura * 100).toFixed(1)}% das obras têm vetor: a busca por significado fica cega no resto`);
+  }
+  // Vetor a mais é vetor órfão: a chave estrangeira impede que sobreviva a uma
+  // carga limpa, mas a carga incremental escreve sem apagar e pode deixar resto.
+  if (Number(c.vetores) > Number(c.documentos)) {
+    problemas.push(`${c.vetores} vetores para ${c.documentos} obras: há vetor sem obra correspondente`);
   }
 
   // Contar não basta: as funções que a tela chama precisam responder.
@@ -150,6 +163,8 @@ try {
     console.error('  Se o usuário acima for "postgres", o segredo tem a conexão DIRETA.');
     console.error('  A rotina precisa do Session pooler: usuário "postgres.<ref>", host "...pooler.supabase.com".');
     console.error('  Se já for "postgres.<ref>", então a string está certa e a senha é que não confere.');
+    console.error('  Trocou a senha agora? O pooler leva alguns minutos para recebê-la.');
+    console.error('  Espere e repita esta execução antes de trocar a senha de novo.');
   }
   process.exit(1);
 } finally {
