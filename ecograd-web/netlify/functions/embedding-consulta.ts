@@ -12,6 +12,7 @@
  */
 import type { Context } from '@netlify/functions';
 import { erro, json, lerChaveGemini } from './lib/gemini';
+import { origemAceita } from './lib/origem';
 
 const MODELO = 'gemini-embedding-2';
 const DIMENSOES = 768;
@@ -31,14 +32,6 @@ function permitida(ip: string) {
   chamadas.set(ip, recentes);
   if (chamadas.size > 5000) chamadas.clear();
   return true;
-}
-
-function origemAceita(req: Request) {
-  const origem = req.headers.get('origin');
-  if (!origem) return false;
-  const host = new URL(origem).host;
-  const extras = (process.env.EMBEDDING_ORIGENS ?? '').split(',').map((o) => o.trim()).filter(Boolean);
-  return host === new URL(req.url).host || /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host) || extras.includes(origem);
 }
 
 export default async (req: Request, context: Context): Promise<Response> => {

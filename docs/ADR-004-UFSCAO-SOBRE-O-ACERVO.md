@@ -28,6 +28,8 @@ O ADR 001 já tinha as peças certas — índice derivado, contagem só em SQL, 
 
 **E7 — Medição vira regressão, não porta.** As conferências automáticas e a amostra cega rodam a cada fase; nenhuma fase espera triagem assinada.
 
+**E9 — Cortesia de 10 perguntas por IP, vitalícia.** Quem chega sem chave conversa com o UFSCão dez vezes, pela função `ia-cortesia`, com `DEEPSEEK_API_KEY` do projeto no `deepseek-flash`; depois disso, traz a própria chave. É a segunda exceção declarada à D10 do ADR 001, e a primeira que escreve texto. Três travas, porque protegem coisas diferentes: a cota por IP dá justiça, o **teto global do projeto** (`CORTESIA_TETO_PERGUNTAS`) é o que garante o orçamento, e os caps de etapa, tamanho e saída limitam o estrago de quem usar o endpoint como proxy de LLM. IP não é identidade — NAT de campus e CGNAT põem muita gente num IP só, e trocar de IP leva trinta segundos —, por isso a conta do mês nunca depende dele. Aprofundar fica fora: lê até 400 resumos, dezenas de perguntas em custo, e continua na chave de quem pede. O thinking mode do `deepseek-flash`, ligado por padrão, é desligado no corpo do pedido: o raciocínio é cobrado como saída.
+
 **E8 — Fora do caminho crítico:** extração ontológica do acervo (Etapa 3) e curadoria humana das fusões. Continuam valendo, sem bloquear.
 
 ## Fases
@@ -52,4 +54,5 @@ D1 (índice derivado e reconstruível), D2 (contagem só em SQL, nunca por simil
 - Embedding com chave do projeto é custo e superfície de abuso novos. Limite por origem e teto de orçamento são pré-requisito da fase B, não melhoria posterior.
 - NL2SQL erra em silêncio. Só views preparadas, SQL e resultado visíveis na resposta, e os gabaritos exatos da Etapa 2 como teste antes de ir para a tela.
 - O índice cresce: rede e perfis somam centenas de milhares de linhas, e o disco do projeto passa a ser restrição a acompanhar.
+- A cortesia (E9) põe custo variável do projeto numa tela pública. Medido no prompt real: ~9.600 tokens de entrada e ~470 de saída por pergunta, em duas chamadas — cerca de US$ 0,001 fora do pico da DeepSeek, que no horário de Brasília é madrugada, e US$ 0,0034 no pico. Com US$ 10 no mês, dá de 3 mil a 10 mil perguntas, ou de 300 a mil pessoas usando a cota inteira. O teto em perguntas é a calibragem: sobe ou desce conforme o gasto real no painel, sem novo deploy. Sem Netlify Blobs a contagem não se sustenta entre instâncias, e a cortesia prefere não abrir a virar cheque em branco.
 - Aprofundar (fase C) é uma ordem de grandeza mais caro que a leitura padrão, e o teto de 400 obras é escolha de produto, não limite do banco: é onde a conta deixa de ser razoável para quem paga. Tema maior que isso é lido só nas obras de maior aderência, e a resposta declara que a leitura não foi do tema inteiro. Só o conjunto léxico entra: dizer "li todas as obras do tema" sobre um conjunto que inclui vizinhos por similaridade seria falso, pela D2.

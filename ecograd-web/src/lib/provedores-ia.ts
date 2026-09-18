@@ -1,5 +1,8 @@
 import type { ChatMessage } from '../types';
 
+/** Etapa da pergunta do UFSCão, usada só pela cortesia para conferir o prompt. */
+export type EtapaIA = 'planejar' | 'corrigir' | 'responder';
+
 export type FormatoApi = 'openai' | 'anthropic' | 'google';
 export interface Provedor { id: string; nome: string; formato: FormatoApi; baseUrl: string; modelo: string; chaves: string }
 export interface ConfigIA { provedor: string; modelo: string; baseUrl: string; chave: string }
@@ -16,12 +19,25 @@ export const PROVEDORES: readonly Provedor[] = [
   { id: 'xai', nome: 'xAI (Grok)', formato: 'openai', baseUrl: 'https://api.x.ai/v1', modelo: 'grok-4', chaves: 'https://console.x.ai' },
   { id: 'personalizado', nome: 'Outro compatível com OpenAI', formato: 'openai', baseUrl: '', modelo: '', chaves: '' },
 ];
-export const provedorPorId = (id: string) => PROVEDORES.find((p) => p.id === id) ?? PROVEDORES[PROVEDORES.length - 1];
+
+/**
+ * UFSCão de cortesia: as primeiras perguntas saem pela função do próprio site,
+ * com a chave do projeto, para quem ainda não tem provedor. Fica fora de
+ * `PROVEDORES` porque não é escolha do seletor — é o botão "experimentar".
+ */
+export const CORTESIA: Provedor = { id: 'ecograd', nome: 'UFSCão de cortesia', formato: 'openai', baseUrl: '/.netlify/functions/ia-cortesia', modelo: 'deepseek-flash', chaves: '' };
+export const ehCortesia = (c: { provedor: string } | null | undefined) => c?.provedor === CORTESIA.id;
+export const configCortesia = (): ConfigIA => ({ provedor: CORTESIA.id, modelo: CORTESIA.modelo, baseUrl: CORTESIA.baseUrl, chave: '' });
+
+export const provedorPorId = (id: string) => (id === CORTESIA.id ? CORTESIA : PROVEDORES.find((p) => p.id === id) ?? PROVEDORES[PROVEDORES.length - 1]);
 
 // Modelos que aceitam o fallback automático do servidor quando o classificador recusa a solicitação.
 const FALLBACK_ANTHROPIC = new Set(['claude-opus-5', 'claude-fable-5-1']);
 
 export function validarConfigIA(c: ConfigIA): string | null {
+  // A cortesia não tem chave nem URL do usuário para validar: quem decide se
+  // ainda há perguntas é a função, a cada pedido.
+  if (ehCortesia(c)) return null;
   if (!c.chave.trim()) return 'Informe a chave de API do provedor.';
   if (!c.modelo.trim()) return 'Informe o modelo.';
   let url: URL;
@@ -32,11 +48,14 @@ export function validarConfigIA(c: ConfigIA): string | null {
 }
 
 /** Monta a chamada direta do navegador ao provedor: a chave nunca passa pelos servidores do EcoGrad. */
-export function requisicaoChat(c: ConfigIA, sistema: string, mensagens: readonly ChatMessage[]): { url: string; init: RequestInit } {
+export function requisicaoChat(c: ConfigIA, sistema: string, mensagens: readonly ChatMessage[], etapa?: EtapaIA): { url: string; init: RequestInit } {
   const base = c.baseUrl.trim().replace(/\/+$/, '');
   const modelo = c.modelo.trim(), chave = c.chave.trim();
   const post = (headers: Record<string, string>, body: unknown): RequestInit => ({ method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(body) });
   const { formato } = provedorPorId(c.provedor);
+  // A cortesia não recebe modelo nem parâmetros do navegador: a função escolhe,
+  // e a etapa diz qual prompt do UFSCão ela deve aceitar.
+  if (ehCortesia(c)) return { url: CORTESIA.baseUrl, init: post({}, { etapa, sistema, mensagem: mensagens.map((m) => m.content).join('\n\n') }) };
   if (formato === 'anthropic') {
     const fallback = FALLBACK_ANTHROPIC.has(modelo);
     return {

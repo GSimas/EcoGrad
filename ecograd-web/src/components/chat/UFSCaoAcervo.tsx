@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Eraser, Layers, Send, Settings, Square, User } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eraser, Gift, Layers, Send, Settings, Square, User } from 'lucide-react';
 import { ConfiguracaoIA, RetratoUFSCao } from '@/components/chat/ConsultorIA';
 import { ConversaAcervo } from '@/components/layout/ConversaAcervo';
 import { Aviso, Expander } from '@/components/ui/primitives';
@@ -10,7 +10,7 @@ import { markdownParaHtml } from '@/lib/markdown';
 import {
   AberturaEmCurso, CorpoDaResposta, FontesDaResposta, fontesDaResposta,
 } from '@/components/chat/RespostaDoAcervo';
-import { lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';
+import { configCortesia, ehCortesia, lerConfigIA, provedorPorId, salvarConfigIA, validarConfigIA } from '@/lib/provedores-ia';
 import { LOTES_SIMULTANEOS } from '@/lib/chat-sintese';
 import {
   CHAVE_CONVERSA_ACERVO, TETO_APROFUNDAR,
@@ -18,7 +18,7 @@ import {
 } from '@/lib/ufscao-acervo';
 import { baixarArquivo, formatarDuracao, formatarNumero } from '@/lib/utils';
 import {
-  aprofundarTema, perguntarAoAcervo, prepararAprofundamento,
+  aprofundarTema, cotaCortesia, perguntarAoAcervo, prepararAprofundamento,
   type Etapa, type PreparoAprofundamento, type RespostaAcervo,
 } from '@/services/ufscao-acervo';
 import type { ConfigIA } from '@/lib/provedores-ia';
@@ -49,6 +49,12 @@ export function UFSCaoAcervo() {
   const [semIA, setSemIA] = useSessionField('ufscao.acervo.semIA', false);
   const controle = useRef<AbortController | null>(null);
 
+  const clienteQuery = useQueryClient();
+  // Quantas perguntas de cortesia restam para este IP. Consultar não gasta cota,
+  // e sem resposta da função a tela só não oferece a cortesia.
+  const cota = useQuery({ queryKey: ['cortesia'], queryFn: ({ signal }) => cotaCortesia(signal), staleTime: 60 * 1000, retry: 0 });
+  const cortesia = ehCortesia(config);
+  const podeExperimentar = !!cota.data?.disponivel && cota.data.restantes > 0;
   const estado = useQuery({ queryKey: ['indice-estado'], queryFn: estadoDoIndice, enabled: indiceConfigurado(), staleTime: 5 * 60 * 1000, retry: 0 });
   const catalogo = useQuery({ queryKey: ['indice-busca'], queryFn: ({ signal }) => carregarIndiceBusca(signal), staleTime: Infinity, gcTime: Infinity, retry: 1 });
 
@@ -72,6 +78,7 @@ export function UFSCaoAcervo() {
         undefined, estado.data?.atualizado === false);
       setConversa((c) => [...c, resposta]);
       setParcial('');
+      if (cortesia) void clienteQuery.invalidateQueries({ queryKey: ['cortesia'] });
     } catch (e) {
       setEntrada(pergunta);
       setErro(request.signal.aborted ? 'Resposta interrompida por você. A pergunta voltou para a caixa de texto.' : `${e instanceof Error ? e.message : 'Não consegui responder.'} A pergunta voltou para a caixa de texto.`);
@@ -81,7 +88,9 @@ export function UFSCaoAcervo() {
     }
   };
 
-  const provedor = config ? `${provedorPorId(config.provedor).nome} · ${config.modelo}` : '';
+  const provedor = !config ? ''
+    : cortesia ? `Cortesia do EcoGrad${cota.data ? ` · restam ${cota.data.restantes} de ${cota.data.total} perguntas` : ''}`
+    : `${provedorPorId(config.provedor).nome} · ${config.modelo}`;
 
   return <div className="mt-6 space-y-4 text-left">
     <div className="flex items-center gap-2">
@@ -95,7 +104,13 @@ export function UFSCaoAcervo() {
     </div>
 
     {(!configurado || configurando) ? <div className="card space-y-3">
-      <ConfiguracaoIA inicial={config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
+      {!configurado && podeExperimentar && <div className="info space-y-2">
+        <p><strong>Experimente sem chave.</strong> As primeiras {cota.data?.total ?? 10} perguntas são por conta do EcoGrad, para você conhecer o UFSCão — restam {cota.data?.restantes}. Depois delas, configure seu provedor abaixo e continue sem limite.</p>
+        <button type="button" className="btn btn-primary text-xs" onClick={() => { const c = { ...configCortesia(), lembrar: false }; salvarConfigIA(c); setConfig(c); setConfigurando(false); }}>
+          <Gift size={14} className="shrink-0" aria-hidden /> Conversar agora, sem chave
+        </button>
+      </div>}
+      <ConfiguracaoIA inicial={cortesia ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
       {!configurado && <p className="text-xs text-slate-400">Sem chave de API, dá para <button type="button" className="underline" onClick={() => setSemIA(true)}>responder pelo catálogo, sem IA</button>: contagens e listas, sem texto escrito.</p>}
     </div> : <>
       {estado.data?.atualizado === false && <Aviso tipo="aviso">
@@ -103,7 +118,9 @@ export function UFSCaoAcervo() {
       </Aviso>}
       {conversa.length === 0 && <Aviso tipo="aviso">
         <p><strong>O UFSCão é uma inteligência artificial</strong> e pode errar. Ele consulta o índice do acervo inteiro, escreve com o modelo do provedor que você configurou e cita as obras em que se baseou. Confira as fontes antes de usar a resposta.</p>
-        <p className="mt-2">A pergunta e os dados apurados vão direto do seu navegador para o provedor, com a sua chave; o EcoGrad não guarda a conversa.</p>
+        <p className="mt-2">{cortesia
+          ? `Estas ${cota.data?.total ?? 10} perguntas são por conta do EcoGrad, que paga o modelo e conta quantas você usou. Depois delas, é só configurar seu provedor. O EcoGrad não guarda a conversa.`
+          : 'A pergunta e os dados apurados vão direto do seu navegador para o provedor, com a sua chave; o EcoGrad não guarda a conversa.'}</p>
       </Aviso>}
 
       {conversa.map((r, i) => <Turno key={r.id} resposta={r} indice={catalogo.data} config={config}
@@ -118,7 +135,10 @@ export function UFSCaoAcervo() {
           : <p className="eco-farejando text-sm text-slate-400" role="status"><RetratoUFSCao tamanho={22} /><span>{ETAPAS[etapa]}</span>
             <span aria-hidden className="flex items-center gap-1"><span className="ponto" /><span className="ponto" /><span className="ponto" /></span></p>}
       </>}
-      {erro && <Aviso tipo="erro"><p role="status">{erro}</p></Aviso>}
+      {erro && <Aviso tipo="erro">
+        <p role="status">{erro}</p>
+        {cortesia && <button type="button" className="btn mt-2 text-xs" onClick={() => setConfigurando(true)}><Settings size={14} className="shrink-0" aria-hidden /> Configurar meu provedor de IA</button>}
+      </Aviso>}
       <AberturaEmCurso />
 
       <form className="flex items-end gap-2" onSubmit={(e: FormEvent) => { e.preventDefault(); void enviar(entrada); }}>
@@ -190,6 +210,7 @@ function Aprofundar({ resposta: r, indice, config, ocupado, turnos, aoAprofundar
 
   const feito = r.aprofundamento;
   const p = r.panorama;
+  const cortesia = ehCortesia(config);
   // Só vale aprofundar o que o banco contou e a leitura padrão não cobriu: tema
   // amplo demais não tem total, e aí não há conjunto para ler inteiro.
   const cabe = !!r.plano?.grupos && !!p && !p.amplo_demais && p.obras > (p.amostra ?? []).length;
@@ -227,7 +248,10 @@ function Aprofundar({ resposta: r, indice, config, ocupado, turnos, aoAprofundar
   });
 
   return <div className="mt-3 space-y-2 border-t border-eco-border pt-3 text-xs">
-    {!feito && estado === 'ocioso' && !preparo && <button type="button" className="btn text-xs" disabled={ocupado} onClick={propor}>
+    {/* Aprofundar lê até 400 resumos numa tacada: é dezenas de perguntas em custo,
+        e por isso fica fora da cortesia — quem quiser, traz a própria chave. */}
+    {!feito && cortesia && <p className="text-slate-400">Ler todos os resumos do tema é muito mais caro que uma pergunta: configure seu provedor de IA para aprofundar.</p>}
+    {!feito && !cortesia && estado === 'ocioso' && !preparo && <button type="button" className="btn text-xs" disabled={ocupado} onClick={propor}>
       <Layers size={14} className="shrink-0" aria-hidden /> Aprofundar: ler todos os resumos do tema
     </button>}
 

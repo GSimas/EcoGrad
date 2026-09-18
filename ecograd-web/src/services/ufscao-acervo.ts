@@ -30,6 +30,30 @@ export async function vetorDaPergunta(texto: string, signal: AbortSignal): Promi
   }
 }
 
+export interface CotaCortesia {
+  /** A cortesia está ligada neste ambiente e o teto do projeto ainda não estourou. */
+  disponivel: boolean;
+  restantes: number;
+  total: number;
+}
+
+/**
+ * Quantas perguntas de cortesia restam para este IP. Consultar não gasta cota.
+ * Se a função não responder, a tela simplesmente não oferece a cortesia.
+ */
+export async function cotaCortesia(signal?: AbortSignal): Promise<CotaCortesia | null> {
+  try {
+    const r = await fetch('/.netlify/functions/ia-cortesia', {
+      signal: AbortSignal.any([signal ?? new AbortController().signal, AbortSignal.timeout(5000)]),
+    });
+    if (!r.ok) return null;
+    const c = await r.json() as CotaCortesia;
+    return typeof c?.restantes === 'number' ? c : null;
+  } catch {
+    return null;
+  }
+}
+
 export interface RespostaAcervo {
   id: number;
   pergunta: string;
@@ -66,7 +90,7 @@ export async function perguntarAoAcervo(
   aoMudarEtapa('planejando');
   const dic = await lerDicionario();
   const { sistema, mensagem } = promptPlanejamento(dic, pergunta, turnos);
-  let bruto = await escreverSintese(config, sistema, mensagem, () => {}, signal);
+  let bruto = await escreverSintese(config, sistema, mensagem, () => {}, signal, 'planejar');
   let plano = lerPlano(bruto);
   // Sem plano legível, a pergunta inteira vira um conceito: é a busca mais
   // literal possível, e a resposta ainda sai do banco em vez da imaginação.
@@ -83,7 +107,7 @@ export async function perguntarAoAcervo(
       // Uma correção só: o erro do Postgres costuma bastar ao modelo, e insistir
       // mais gastaria a chave do usuário num SQL que não vai sair.
       const primeiroErro = e instanceof Error ? e.message : String(e);
-      bruto = await escreverSintese(config, sistema, `${mensagem}\n\n${promptCorrecaoSql(plano.sql, primeiroErro)}`, () => {}, signal);
+      bruto = await escreverSintese(config, sistema, `${mensagem}\n\n${promptCorrecaoSql(plano.sql, primeiroErro)}`, () => {}, signal, 'corrigir');
       const corrigido = lerPlano(bruto);
       if (corrigido?.sql) {
         try {
@@ -120,7 +144,7 @@ export async function perguntarAoAcervo(
 
   aoMudarEtapa('escrevendo');
   const resposta = promptResposta(pergunta, plano, dados, erroSql, panorama, erroPanorama, turnos, indiceAtrasado);
-  const texto = await escreverSintese(config, resposta.sistema, resposta.mensagem, aoEscrever, signal);
+  const texto = await escreverSintese(config, resposta.sistema, resposta.mensagem, aoEscrever, signal, 'responder');
   return { id: Date.now(), pergunta, plano, dados, erroSql, panorama, erroPanorama, texto, planoImprovisado, semSignificado };
 }
 
