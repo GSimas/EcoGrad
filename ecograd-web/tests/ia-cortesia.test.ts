@@ -40,6 +40,17 @@ test('a cota vitalícia por IP para exatamente na décima pergunta e não trava 
  });
 });
 
+test('pergunta que morre antes de escrever nao gasta a vaga',async()=>{
+ await rodar(async()=>{
+  // Foi o que aconteceu em producao com a trava de formato quebrada: o
+  // planejamento passava, a resposta batia na trava, e a vaga sumia.
+  for(let i=0;i<3;i++) assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:`tentativa ${i}`}),ctx('7.7.7.7'))).status,200);
+  assert.equal((await (await cortesia(get(),ctx('7.7.7.7'))).json()).restantes,PERGUNTAS_POR_IP,'planejar sozinho nao cobra');
+  await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'dados'}),ctx('7.7.7.7'));
+  assert.equal((await (await cortesia(get(),ctx('7.7.7.7'))).json()).restantes,PERGUNTAS_POR_IP-1,'a vaga sai quando a resposta comeca');
+ });
+});
+
 test('a cortesia recusa aprofundar, prompt de fora do UFSCão, pedido gigante e origem estranha',async()=>{
  await rodar(async()=>{
   assert.equal((await cortesia(post({etapa:'lote',sistema:PLANEJAR,mensagem:'x'}),ctx('3.3.3.3'))).status,403);
@@ -65,8 +76,10 @@ test('o teto do projeto fecha a cortesia para todo mundo, inclusive para IP que 
  const teto=process.env.CORTESIA_TETO_PERGUNTAS;process.env.CORTESIA_TETO_PERGUNTAS='2';
  try{
   await rodar(async()=>{
-   assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'a'}),ctx('5.5.5.1'))).status,200);
-   assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'b'}),ctx('5.5.5.2'))).status,200);
+   // Duas perguntas inteiras de IPs diferentes enchem o teto: quem cobra e a
+   // etapa de escrever, entao e ela que precisa rodar.
+   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'a'}),ctx('5.5.5.1'))).status,200);
+   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'b'}),ctx('5.5.5.2'))).status,200);
    const fechado=await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'c'}),ctx('5.5.5.3'));
    assert.equal(fechado.status,503);
    assert.match((await fechado.json()).error,/cota de cortesia do EcoGrad se esgotou/);

@@ -24,7 +24,7 @@ export const tetoPerguntas = () => Number(process.env.CORTESIA_TETO_PERGUNTAS ??
 export const CHAVE_GLOBAL = 'total';
 
 export interface Cota {
-  /** Perguntas: conta uma vez por pergunta, no planejamento. */
+  /** Perguntas: conta uma vez por pergunta, na etapa de escrever a resposta. */
   p: number;
   /** Chamadas ao modelo: teto separado, para nenhuma etapa virar torneira. */
   c: number;
