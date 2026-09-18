@@ -2,7 +2,7 @@ import { conversaVazia, useEcoGradStore } from '../stores/useEcoGradStore';
 import { herdadoDaTelaInicial, historicoEnviado, LIMITE_MENSAGEM } from '../lib/ia-contexto';
 import { CHAVE_CONVERSA_ACERVO, turnosHerdados } from '../lib/ufscao-acervo';
 import { promptConsultor, type DossieConsultor } from '../lib/consultor-prompt';
-import { lerConfigIA, lerStreamChat, provedorPorId, requisicaoChat, validarConfigIA, type ConfigIA } from '../lib/provedores-ia';
+import { ehCortesia, lerConfigIA, lerStreamChat, provedorPorId, requisicaoChat, validarConfigIA, type ConfigIA } from '../lib/provedores-ia';
 import type { ChatMessage } from '../types';
 /** O que este servico precisa saber da conversa da tela inicial, sem importar o servico dela. */
 type ConversaDaTelaInicial=ReadonlyArray<{pergunta:string;texto:string;aprofundamento?:{texto:string}}>;
@@ -17,6 +17,11 @@ export async function enviarMensagem(dossie:DossieConsultor,repetir=false,config
  if(repetir&&(!chat.tentativa||chat.tentativa.contexto!==analysisId))return;
  const invalida=config?validarConfigIA(config):'Configure um provedor e sua chave de API para conversar.';
  if(!config||invalida){setChat({erro:invalida});return;}
+ // A cortesia foi medida para a conversa sobre o acervo, que manda panorama e
+ // amostra. Aqui vai o dossie das colecoes carregadas, que chega a 1,5 MB e
+ // varia com a selecao: pagar por ele com a chave do projeto nao tem teto que
+ // se sustente. A funcao ja recusaria; recusar aqui evita gastar a pergunta.
+ if(ehCortesia(config)){setChat({erro:'As perguntas de cortesia valem para a conversa sobre o acervo, na tela inicial. Para conversar sobre as coleções carregadas, configure seu provedor de IA.'});return;}
  const provedor=provedorPorId(config.provedor);
  const request=new AbortController();controller=request;
  const historico:ChatMessage[]=repetir?chat.tentativa!.historico:[...chat.mensagens,...(chat.parcial?[{role:'assistant' as const,content:`[Resposta parcial interrompida] ${chat.parcial}`}]:[]),{role:'user',content:chat.entrada.trim()}];

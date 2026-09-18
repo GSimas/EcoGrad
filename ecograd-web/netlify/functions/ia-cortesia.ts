@@ -99,13 +99,15 @@ export default async (req: Request, context: Context): Promise<Response> => {
   if (!sistema.startsWith(ETAPAS[etapa])) return erro('Pedido fora do formato do UFSCão.', 403);
   if (sistema.length + mensagem.length > MAX_CARACTERES) return erro('Pedido grande demais para a cortesia.', 413);
 
-  const pergunta = etapa === 'planejar';
+  // A vaga é cobrada na etapa de escrever, não na de planejar: chegar aqui
+  // significa que a resposta está saindo. Quem morre antes — erro do provedor,
+  // tempo esgotado, SQL que não sai — não perde a pergunta por algo que não
+  // recebeu. Quem barra antes de gastar é a checagem no planejamento, e o teto
+  // de chamadas continua impedindo qualquer etapa de virar torneira.
+  const pergunta = etapa === 'responder';
   const [meu, total] = await Promise.all([lerCota(id), lerCota(CHAVE_GLOBAL)]);
   if (total.p >= tetoPerguntas()) return erro(SEM_TETO, 503);
-  // O teto de perguntas vale ao começar uma: a décima pergunta ainda precisa
-  // consultar e responder, e recusar no meio deixaria a última sem resposta. O
-  // teto de chamadas é que impede qualquer etapa de virar torneira.
-  if (pergunta && meu.p >= PERGUNTAS_POR_IP) return erro(ESGOTADA, 429);
+  if (etapa === 'planejar' && meu.p >= PERGUNTAS_POR_IP) return erro(ESGOTADA, 429);
   if (meu.c >= PERGUNTAS_POR_IP * CHAMADAS_POR_PERGUNTA) return erro(ESGOTADA, 429);
 
   let r: Response;
