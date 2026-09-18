@@ -17,7 +17,7 @@ import { abrirRegistro } from '@/services/abrir-item';
 import type { Documento, TipoBusca } from '@/types';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
-import { esquecerChaveIA, lerConfigIA, PROVEDORES, provedorPorId, salvarConfigIA, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
+import { ehCortesia, esquecerChaveIA, lerConfigIA, PROVEDORES, provedorPorId, salvarConfigIA, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
 import type { DossieConsultor } from '@/lib/consultor-prompt';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useAparencia } from '@/services/aparencia';
@@ -107,7 +107,7 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
   const contextoAnterior = !!contexto && contexto !== analysisId;
   const setEntrada = (entrada: string) => useEcoGradStore.getState().setChat({ entrada });
   const [config, setConfig] = useState(lerConfigIA);
-  const configurado = !!config && !validarConfigIA(config);
+  const configurado = !!config && !validarConfigIA(config) && !ehCortesia(config);
   const [configurando, setConfigurando] = useState(!configurado);
   const [limpando, setLimpando] = useState(false);
   const [retrato, setRetrato] = useState(false);
@@ -182,7 +182,8 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
 
     {configurando ? (
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <ConfiguracaoIA inicial={config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
+        {ehCortesia(config) && <Aviso tipo="aviso">As perguntas de cortesia valem para a conversa sobre o acervo, na tela inicial. Aqui o UFSCão lê o dossiê das coleções que você carregou, que é bem maior: para isso, configure seu provedor de IA.</Aviso>}
+        <ConfiguracaoIA inicial={ehCortesia(config) ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
       </div>
     ) : <>
       <div ref={listaRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
