@@ -3,9 +3,13 @@ import {test} from 'node:test';
 import cortesia from '../netlify/functions/ia-cortesia';
 import {PERGUNTAS_POR_IP, esquecerTudo} from '../netlify/functions/lib/cota-cortesia';
 import type {Context} from '@netlify/functions';
+import {PERSONA_UFSCAO} from '../src/lib/guardrails';
+import {promptPlanejamento, promptResposta} from '../src/lib/ufscao-acervo';
+import type {Panorama} from '../src/lib/ufscao-acervo';
 
 const PLANEJAR='Você planeja como responder perguntas sobre o acervo do EcoGrad: teses e TCCs.';
-const RESPONDER='Você escreve a síntese de uma resposta do EcoGrad sobre o acervo.';
+// A resposta do UFSCao comeca pela persona: a fixture usa a de verdade, nao uma parecida.
+const RESPONDER=`${PERSONA_UFSCAO}\n\nREGRAS DA RESPOSTA`;
 const ctx=(ip:string)=>({ip} as Context);
 const post=(body:unknown,origem='http://localhost:8888')=>new Request('http://localhost:8888/.netlify/functions/ia-cortesia',{method:'POST',body:JSON.stringify(body),headers:{'Content-Type':'application/json',origin:origem}});
 const get=()=>new Request('http://localhost:8888/.netlify/functions/ia-cortesia',{headers:{origin:'http://localhost:8888'}});
@@ -69,4 +73,23 @@ test('o teto do projeto fecha a cortesia para todo mundo, inclusive para IP que 
    assert.equal((await (await cortesia(get(),ctx('5.5.5.3'))).json()).disponivel,false);
   });
  }finally{if(teto===undefined)delete process.env.CORTESIA_TETO_PERGUNTAS;else process.env.CORTESIA_TETO_PERGUNTAS=teto;}
+});
+
+/**
+ * A trava de prefixo olha o prompt do app, e o prompt do app muda. Este teste
+ * monta os dois de verdade e exige que a cortesia os aceite: reescrever uma
+ * abertura passa a quebrar aqui, e nao na cara de quem esta perguntando.
+ *
+ * Foi assim que "Pedido fora do formato do UFSCao" apareceu em producao: a
+ * resposta comeca pela persona, nao pela abertura de `sistemaSintese`.
+ */
+test('os prompts reais do UFSCao passam pela trava de formato da cortesia',async()=>{
+ const panorama:Panorama={consulta:'x',obras:3,registros:4,amostra:[],por_ano:[[2020,2]],por_colecao:[['PPGEGC',3]],por_nivel:null,por_macrotema:null,principais_orientadores:null};
+ const planejar=promptPlanejamento('### visao — teste\n- coluna (text)','neoaprendizagem e governança de conhecimento',[]);
+ const responder=promptResposta('neoaprendizagem e governança de conhecimento',{tipo:'tema',grupos:[['neoaprendizagem']]},null,null,panorama,null,[]);
+ await rodar(async(corpos)=>{
+  assert.equal((await cortesia(post({etapa:'planejar',sistema:planejar.sistema,mensagem:planejar.mensagem}),ctx('6.6.6.6'))).status,200,'o prompt de planejamento deveria passar');
+  assert.equal((await cortesia(post({etapa:'responder',sistema:responder.sistema,mensagem:responder.mensagem}),ctx('6.6.6.6'))).status,200,'o prompt de resposta deveria passar');
+  assert.equal(corpos.length,2);
+ });
 });
