@@ -19,6 +19,7 @@
 import type { Context } from '@netlify/functions';
 import { erro, json } from './lib/gemini';
 import { origemAceita } from './lib/origem';
+import { PERSONA_UFSCAO } from '../../src/lib/guardrails';
 import {
   CHAMADAS_POR_PERGUNTA, CHAVE_GLOBAL, PERGUNTAS_POR_IP,
   duravel, idDoIp, lerCota, somarCota, tetoPerguntas,
@@ -38,16 +39,24 @@ const MAX_TOKENS = 900;
  */
 const MAX_CARACTERES = 45000;
 
+/** Abertura de `promptPlanejamento`. Copiada, e `ia-cortesia.test.ts` monta o prompt real e confere. */
+const ABERTURA_PLANEJAMENTO = 'Você planeja como responder perguntas sobre o acervo do EcoGrad';
+
 /**
  * Só as etapas da pergunta padrão, e cada uma tem de começar pelo prompt do
  * app. Não é barreira contra quem insiste — é o que impede o endpoint de virar
  * um assistente genérico de graça. Aprofundar fica de fora de propósito: lê até
  * 400 resumos, ~US$ 0,05 num clique, e continua na chave de quem pede.
+ *
+ * A resposta confere contra a persona de verdade, importada de `guardrails.ts`
+ * (modulo sem nenhum import, entao nada mais entra no pacote da funcao). Fixar
+ * a frase a mao ja custou caro uma vez: `promptResposta` comeca pela persona, e
+ * nao pela abertura de `sistemaSintese`, que so o aprofundar usa.
  */
 const ETAPAS: Record<string, string> = {
-  planejar: 'Você planeja como responder perguntas sobre o acervo do EcoGrad',
-  corrigir: 'Você planeja como responder perguntas sobre o acervo do EcoGrad',
-  responder: 'Você escreve a síntese de uma resposta do EcoGrad',
+  planejar: ABERTURA_PLANEJAMENTO,
+  corrigir: ABERTURA_PLANEJAMENTO,
+  responder: PERSONA_UFSCAO,
 };
 
 const ESGOTADA = `Suas ${PERGUNTAS_POR_IP} perguntas de cortesia acabaram. Configure seu provedor de IA para continuar conversando com o UFSCão.`;
