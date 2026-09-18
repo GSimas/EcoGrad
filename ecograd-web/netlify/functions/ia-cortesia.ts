@@ -57,7 +57,11 @@ const ETAPAS: Record<string, string> = {
   planejar: ABERTURA_PLANEJAMENTO,
   corrigir: ABERTURA_PLANEJAMENTO,
   responder: PERSONA_UFSCAO,
+  conversar: PERSONA_UFSCAO,
 };
+
+/** Etapas que consomem uma vaga: a que escreve em cada tela. */
+const COBRAM = new Set(['responder', 'conversar']);
 
 const ESGOTADA = `Suas ${PERGUNTAS_POR_IP} perguntas de cortesia acabaram. Configure seu provedor de IA para continuar conversando com o UFSCão.`;
 const SEM_TETO = 'A cota de cortesia do EcoGrad se esgotou. Configure seu provedor de IA para conversar com o UFSCão.';
@@ -88,23 +92,31 @@ export default async (req: Request, context: Context): Promise<Response> => {
   // isso a cortesia é um cheque em branco, então ela simplesmente não abre.
   if (!await duravel()) return erro('A cortesia está indisponível agora.', 503);
 
-  let corpo: { etapa?: unknown; sistema?: unknown; mensagem?: unknown };
+  let corpo: { etapa?: unknown; sistema?: unknown; mensagens?: unknown };
   try { corpo = await req.json() as typeof corpo; } catch { return erro('Corpo inválido (JSON esperado).', 400); }
 
-  const { etapa, sistema, mensagem } = corpo;
+  const { etapa, sistema, mensagens } = corpo;
   if (typeof etapa !== 'string' || !(etapa in ETAPAS)) {
     return erro('A cortesia responde perguntas do UFSCão. Aprofundar a leitura exige seu provedor de IA.', 403);
   }
-  if (typeof sistema !== 'string' || typeof mensagem !== 'string' || !mensagem.trim()) return erro('Informe `sistema` e `mensagem`.', 400);
-  if (!sistema.startsWith(ETAPAS[etapa])) return erro('Pedido fora do formato do UFSCão.', 403);
-  if (sistema.length + mensagem.length > MAX_CARACTERES) return erro('Pedido grande demais para a cortesia.', 413);
+  if (typeof sistema !== 'string') return erro('Informe `sistema`.', 400);
+  const turnos = (Array.isArray(mensagens) ? mensagens : []).filter((m): m is { role: string; content: string } =>
+    !!m && typeof m === 'object' && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string');
+  if (!turnos.length || !turnos.some((m) => m.content.trim())) return erro('Informe `mensagens`.', 400);
+  // `trimStart` porque `promptConsultor` abre com uma quebra de linha antes da
+  // persona. Espaço em branco na frente nunca foi o que a trava quer barrar.
+  if (!sistema.trimStart().startsWith(ETAPAS[etapa])) return erro('Pedido fora do formato do UFSCão.', 403);
+  const tamanho = sistema.length + turnos.reduce((n, m) => n + m.content.length, 0);
+  if (tamanho > MAX_CARACTERES) {
+    return erro('Este pedido é grande demais para a cortesia. Carregue menos coleções, ou configure seu provedor de IA para conversar sem esse limite.', 413);
+  }
 
   // A vaga é cobrada na etapa de escrever, não na de planejar: chegar aqui
   // significa que a resposta está saindo. Quem morre antes — erro do provedor,
   // tempo esgotado, SQL que não sai — não perde a pergunta por algo que não
   // recebeu. Quem barra antes de gastar é a checagem no planejamento, e o teto
   // de chamadas continua impedindo qualquer etapa de virar torneira.
-  const pergunta = etapa === 'responder';
+  const pergunta = COBRAM.has(etapa);
   const [meu, total] = await Promise.all([lerCota(id), lerCota(CHAVE_GLOBAL)]);
   if (total.p >= tetoPerguntas()) return erro(SEM_TETO, 503);
   if (etapa === 'planejar' && meu.p >= PERGUNTAS_POR_IP) return erro(ESGOTADA, 429);
@@ -123,7 +135,7 @@ export default async (req: Request, context: Context): Promise<Response> => {
         // O thinking vem ligado por padrão no deepseek-flash, com esforço alto, e
         // o raciocínio é cobrado como saída: desligar é o que mantém a conta de pé.
         thinking: { type: 'disabled' },
-        messages: [{ role: 'system', content: sistema }, { role: 'user', content: mensagem }],
+        messages: [{ role: 'system', content: sistema }, ...turnos],
       }),
       signal: AbortSignal.any([req.signal, AbortSignal.timeout(55000)]),
     });

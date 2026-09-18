@@ -2,7 +2,7 @@ import { conversaVazia, useEcoGradStore } from '../stores/useEcoGradStore';
 import { herdadoDaTelaInicial, historicoEnviado, LIMITE_MENSAGEM } from '../lib/ia-contexto';
 import { CHAVE_CONVERSA_ACERVO, turnosHerdados } from '../lib/ufscao-acervo';
 import { promptConsultor, type DossieConsultor } from '../lib/consultor-prompt';
-import { ehCortesia, lerConfigIA, lerStreamChat, provedorPorId, requisicaoChat, validarConfigIA, type ConfigIA } from '../lib/provedores-ia';
+import { lerConfigIA, lerStreamChat, provedorPorId, requisicaoChat, validarConfigIA, type ConfigIA } from '../lib/provedores-ia';
 import type { ChatMessage } from '../types';
 /** O que este servico precisa saber da conversa da tela inicial, sem importar o servico dela. */
 type ConversaDaTelaInicial=ReadonlyArray<{pergunta:string;texto:string;aprofundamento?:{texto:string}}>;
@@ -17,11 +17,6 @@ export async function enviarMensagem(dossie:DossieConsultor,repetir=false,config
  if(repetir&&(!chat.tentativa||chat.tentativa.contexto!==analysisId))return;
  const invalida=config?validarConfigIA(config):'Configure um provedor e sua chave de API para conversar.';
  if(!config||invalida){setChat({erro:invalida});return;}
- // A cortesia foi medida para a conversa sobre o acervo, que manda panorama e
- // amostra. Aqui vai o dossie das colecoes carregadas, que chega a 1,5 MB e
- // varia com a selecao: pagar por ele com a chave do projeto nao tem teto que
- // se sustente. A funcao ja recusaria; recusar aqui evita gastar a pergunta.
- if(ehCortesia(config)){setChat({erro:'As perguntas de cortesia valem para a conversa sobre o acervo, na tela inicial. Para conversar sobre as coleções carregadas, configure seu provedor de IA.'});return;}
  const provedor=provedorPorId(config.provedor);
  const request=new AbortController();controller=request;
  const historico:ChatMessage[]=repetir?chat.tentativa!.historico:[...chat.mensagens,...(chat.parcial?[{role:'assistant' as const,content:`[Resposta parcial interrompida] ${chat.parcial}`}]:[]),{role:'user',content:chat.entrada.trim()}];
@@ -34,12 +29,12 @@ export async function enviarMensagem(dossie:DossieConsultor,repetir=false,config
   // A conversa da tela inicial entra antes da do painel, e só na solicitação:
   // guardar em `chat.mensagens` a mostraria duas vezes na tela.
   const herdados=herdadoDaTelaInicial(turnosHerdados((useEcoGradStore.getState().ui[CHAVE_CONVERSA_ACERVO] as ConversaDaTelaInicial)??[]));
-  const {url,init}=requisicaoChat(config,promptConsultor(dossie,pergunta,herdados.length/2),[...herdados,...historicoEnviado(historico)]);
+  const {url,init}=requisicaoChat(config,promptConsultor(dossie,pergunta,herdados.length/2),[...herdados,...historicoEnviado(historico)],'conversar');
   if(new TextEncoder().encode(String(init.body)).length>1500000)throw new Error('Contexto excede 1,5 MB. Reduza a seleção de coleções antes de consultar.');
   let response:Response;
   try{response=await fetch(url,{...init,signal:request.signal});}
   catch(e){if(request.signal.aborted)throw e;throw new Error(`Não foi possível conectar a ${provedor.nome}. Verifique a URL, a rede ou se o provedor aceita chamadas diretas do navegador (CORS).`);}
-  if(!response.ok||!response.body){const e=await response.json().catch(()=>null);const d=Array.isArray(e)?e[0]:e;throw new Error(`${provedor.nome}: ${d?.error?.message||`resposta indisponível (HTTP ${response.status})`}`);}
+  if(!response.ok||!response.body){const e=await response.json().catch(()=>null);const d=Array.isArray(e)?e[0]:e;if(typeof d?.error==='string')throw new Error(d.error);throw new Error(`${provedor.nome}: ${d?.error?.message||`resposta indisponível (HTTP ${response.status})`}`);}
   await lerStreamChat(response.body,provedor.formato,(texto)=>{acumulado+=texto;atualizar({parcial:acumulado});if(acumulado.length>100000)throw new Error('Resposta excedeu 100 mil caracteres. O texto parcial foi preservado.');},request.signal);
   if(!acumulado.trim())throw new Error('A IA encerrou sem retornar texto.');
   atualizar({mensagens:[...historico,{role:'assistant',content:acumulado}],parcial:'',tentativa:undefined});

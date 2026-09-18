@@ -107,7 +107,7 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
   const contextoAnterior = !!contexto && contexto !== analysisId;
   const setEntrada = (entrada: string) => useEcoGradStore.getState().setChat({ entrada });
   const [config, setConfig] = useState(lerConfigIA);
-  const configurado = !!config && !validarConfigIA(config) && !ehCortesia(config);
+  const configurado = !!config && !validarConfigIA(config);
   const [configurando, setConfigurando] = useState(!configurado);
   const [limpando, setLimpando] = useState(false);
   const [retrato, setRetrato] = useState(false);
@@ -173,7 +173,7 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
       </button>
       <div className="min-w-0 flex-1">
         <h2 className="text-base font-semibold">UFSCão <span className="font-normal text-slate-400">· Consultor de IA</span></h2>
-        <p className="truncate text-xs text-slate-400">{configurado ? `${provedor} · ${config.modelo}` : 'Configure seu provedor para começar'}</p>
+        <p className="truncate text-xs text-slate-400">{!configurado ? 'Configure seu provedor para começar' : ehCortesia(config) ? 'Cortesia do EcoGrad' : `${provedor} · ${config.modelo}`}</p>
       </div>
       {temConversa && !configurando && <button type="button" className="btn h-11 w-11 shrink-0 px-0" aria-label="Limpar conversa" title="Limpar conversa" onClick={() => setLimpando(true)}><Eraser size={18} /></button>}
       {configurado && <button type="button" className="btn h-11 w-11 shrink-0 px-0" aria-pressed={configurando} aria-label="Provedor e chave de API" title="Provedor e chave de API" onClick={() => setConfigurando((v) => !v)}><Settings size={18} /></button>}
@@ -182,7 +182,6 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
 
     {configurando ? (
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        {ehCortesia(config) && <Aviso tipo="aviso">As perguntas de cortesia valem para a conversa sobre o acervo, na tela inicial. Aqui o UFSCão lê o dossiê das coleções que você carregou, que é bem maior: para isso, configure seu provedor de IA.</Aviso>}
         <ConfiguracaoIA inicial={ehCortesia(config) ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
       </div>
     ) : <>
