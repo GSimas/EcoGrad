@@ -1,7 +1,7 @@
 import type { ChatMessage } from '../types';
 
 /** Etapa da pergunta do UFSCão, usada só pela cortesia para conferir o prompt. */
-export type EtapaIA = 'planejar' | 'corrigir' | 'responder';
+export type EtapaIA = 'planejar' | 'corrigir' | 'responder' | 'conversar';
 
 export type FormatoApi = 'openai' | 'anthropic' | 'google';
 export interface Provedor { id: string; nome: string; formato: FormatoApi; baseUrl: string; modelo: string; chaves: string }
@@ -55,7 +55,10 @@ export function requisicaoChat(c: ConfigIA, sistema: string, mensagens: readonly
   const { formato } = provedorPorId(c.provedor);
   // A cortesia não recebe modelo nem parâmetros do navegador: a função escolhe,
   // e a etapa diz qual prompt do UFSCão ela deve aceitar.
-  if (ehCortesia(c)) return { url: CORTESIA.baseUrl, init: post({}, { etapa, sistema, mensagem: mensagens.map((m) => m.content).join('\n\n') }) };
+  // As mensagens vão com os papéis: a conversa do painel é de vários turnos, e
+  // achatar tudo num texto só faria a fala do UFSCão voltar como se fosse do
+  // usuário.
+  if (ehCortesia(c)) return { url: CORTESIA.baseUrl, init: post({}, { etapa, sistema, mensagens }) };
   if (formato === 'anthropic') {
     const fallback = FALLBACK_ANTHROPIC.has(modelo);
     return {

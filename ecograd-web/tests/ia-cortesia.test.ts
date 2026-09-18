@@ -4,6 +4,7 @@ import cortesia from '../netlify/functions/ia-cortesia';
 import {PERGUNTAS_POR_IP, esquecerTudo} from '../netlify/functions/lib/cota-cortesia';
 import type {Context} from '@netlify/functions';
 import {PERSONA_UFSCAO} from '../src/lib/guardrails';
+import {promptConsultor, type DossieConsultor} from '../src/lib/consultor-prompt';
 import {promptPlanejamento, promptResposta} from '../src/lib/ufscao-acervo';
 import type {Panorama} from '../src/lib/ufscao-acervo';
 
@@ -26,17 +27,17 @@ const rodar=async(run:(corpos:Record<string,unknown>[])=>Promise<void>)=>{
 test('a cota vitalícia por IP para exatamente na décima pergunta e não trava o vizinho',async()=>{
  await rodar(async()=>{
   for(let i=0;i<PERGUNTAS_POR_IP;i++){
-   const r=await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:`pergunta ${i}`}),ctx('1.1.1.1'));
+   const r=await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagens:[{role:'user',content:`pergunta ${i}`}]}),ctx('1.1.1.1'));
    assert.equal(r.status,200,`pergunta ${i+1} deveria passar`);
    // Responder é a segunda chamada da mesma pergunta: não consome outra unidade.
-   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'dados'}),ctx('1.1.1.1'))).status,200);
+   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagens:[{role:'user',content:'dados'}]}),ctx('1.1.1.1'))).status,200);
   }
-  const estourou=await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'mais uma'}),ctx('1.1.1.1'));
+  const estourou=await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagens:[{role:'user',content:'mais uma'}]}),ctx('1.1.1.1'));
   assert.equal(estourou.status,429);
   assert.match((await estourou.json()).error,/Configure seu provedor/);
   assert.equal((await (await cortesia(get(),ctx('1.1.1.1'))).json()).restantes,0);
   assert.equal((await (await cortesia(get(),ctx('2.2.2.2'))).json()).restantes,PERGUNTAS_POR_IP);
-  assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'oi'}),ctx('2.2.2.2'))).status,200);
+  assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagens:[{role:'user',content:'oi'}]}),ctx('2.2.2.2'))).status,200);
  });
 });
 
@@ -44,19 +45,19 @@ test('pergunta que morre antes de escrever nao gasta a vaga',async()=>{
  await rodar(async()=>{
   // Foi o que aconteceu em producao com a trava de formato quebrada: o
   // planejamento passava, a resposta batia na trava, e a vaga sumia.
-  for(let i=0;i<3;i++) assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:`tentativa ${i}`}),ctx('7.7.7.7'))).status,200);
+  for(let i=0;i<3;i++) assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagens:[{role:'user',content:`tentativa ${i}`}]}),ctx('7.7.7.7'))).status,200);
   assert.equal((await (await cortesia(get(),ctx('7.7.7.7'))).json()).restantes,PERGUNTAS_POR_IP,'planejar sozinho nao cobra');
-  await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'dados'}),ctx('7.7.7.7'));
+  await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagens:[{role:'user',content:'dados'}]}),ctx('7.7.7.7'));
   assert.equal((await (await cortesia(get(),ctx('7.7.7.7'))).json()).restantes,PERGUNTAS_POR_IP-1,'a vaga sai quando a resposta comeca');
  });
 });
 
 test('a cortesia recusa aprofundar, prompt de fora do UFSCão, pedido gigante e origem estranha',async()=>{
  await rodar(async()=>{
-  assert.equal((await cortesia(post({etapa:'lote',sistema:PLANEJAR,mensagem:'x'}),ctx('3.3.3.3'))).status,403);
-  assert.equal((await cortesia(post({etapa:'planejar',sistema:'Você é um assistente prestativo.',mensagem:'escreva um poema'}),ctx('3.3.3.3'))).status,403);
-  assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'x'.repeat(50000)}),ctx('3.3.3.3'))).status,413);
-  assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'oi'},'https://outro-site.com'),ctx('3.3.3.3'))).status,403);
+  assert.equal((await cortesia(post({etapa:'lote',sistema:PLANEJAR,mensagens:[{role:'user',content:'x'}]}),ctx('3.3.3.3'))).status,403);
+  assert.equal((await cortesia(post({etapa:'planejar',sistema:'Você é um assistente prestativo.',mensagens:[{role:'user',content:'escreva um poema'}]}),ctx('3.3.3.3'))).status,403);
+  assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagens:[{role:'user',content:'x'.repeat(50000)}]}),ctx('3.3.3.3'))).status,413);
+  assert.equal((await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagens:[{role:'user',content:'oi'}]},'https://outro-site.com'),ctx('3.3.3.3'))).status,403);
   // Nada disso chegou ao modelo, então nada disso gastou cota.
   assert.equal((await (await cortesia(get(),ctx('3.3.3.3'))).json()).restantes,PERGUNTAS_POR_IP);
  });
@@ -64,7 +65,7 @@ test('a cortesia recusa aprofundar, prompt de fora do UFSCão, pedido gigante e 
 
 test('o thinking mode vai desligado e a saída é limitada: é o que segura a conta',async()=>{
  await rodar(async(corpos)=>{
-  await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'quantas teses?'}),ctx('4.4.4.4'));
+  await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagens:[{role:'user',content:'quantas teses?'}]}),ctx('4.4.4.4'));
   assert.deepEqual(corpos[0].thinking,{type:'disabled'});
   assert.equal(corpos[0].model,'deepseek-flash');
   assert.equal(corpos[0].stream,true);
@@ -78,9 +79,9 @@ test('o teto do projeto fecha a cortesia para todo mundo, inclusive para IP que 
   await rodar(async()=>{
    // Duas perguntas inteiras de IPs diferentes enchem o teto: quem cobra e a
    // etapa de escrever, entao e ela que precisa rodar.
-   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'a'}),ctx('5.5.5.1'))).status,200);
-   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagem:'b'}),ctx('5.5.5.2'))).status,200);
-   const fechado=await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagem:'c'}),ctx('5.5.5.3'));
+   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagens:[{role:'user',content:'a'}]}),ctx('5.5.5.1'))).status,200);
+   assert.equal((await cortesia(post({etapa:'responder',sistema:RESPONDER,mensagens:[{role:'user',content:'b'}]}),ctx('5.5.5.2'))).status,200);
+   const fechado=await cortesia(post({etapa:'planejar',sistema:PLANEJAR,mensagens:[{role:'user',content:'c'}]}),ctx('5.5.5.3'));
    assert.equal(fechado.status,503);
    assert.match((await fechado.json()).error,/cota de cortesia do EcoGrad se esgotou/);
    assert.equal((await (await cortesia(get(),ctx('5.5.5.3'))).json()).disponivel,false);
@@ -98,11 +99,41 @@ test('o teto do projeto fecha a cortesia para todo mundo, inclusive para IP que 
  */
 test('os prompts reais do UFSCao passam pela trava de formato da cortesia',async()=>{
  const panorama:Panorama={consulta:'x',obras:3,registros:4,amostra:[],por_ano:[[2020,2]],por_colecao:[['PPGEGC',3]],por_nivel:null,por_macrotema:null,principais_orientadores:null};
+ const dossie:DossieConsultor={nomePrograma:'TCC Ciências Contábeis',totalDocumentos:21,lideresVolume:[],pontesInterdisciplinares:[],principaisConceitos:[],docentes:[{nome:'Silva, Ana',total:3,temas:['Contabilidade']}],catalogo:[{titulo:'Um estudo',ano:2020,orientador:'Silva, Ana',conceitos:['contabilidade'],autores:['Souza, Joao'],nivel:'TCC',colecao:'TCC Ciências Contábeis'} as never]};
+ const conversar=promptConsultor(dossie,'quais temas aparecem?');
  const planejar=promptPlanejamento('### visao — teste\n- coluna (text)','neoaprendizagem e governança de conhecimento',[]);
  const responder=promptResposta('neoaprendizagem e governança de conhecimento',{tipo:'tema',grupos:[['neoaprendizagem']]},null,null,panorama,null,[]);
  await rodar(async(corpos)=>{
-  assert.equal((await cortesia(post({etapa:'planejar',sistema:planejar.sistema,mensagem:planejar.mensagem}),ctx('6.6.6.6'))).status,200,'o prompt de planejamento deveria passar');
-  assert.equal((await cortesia(post({etapa:'responder',sistema:responder.sistema,mensagem:responder.mensagem}),ctx('6.6.6.6'))).status,200,'o prompt de resposta deveria passar');
-  assert.equal(corpos.length,2);
+  assert.equal((await cortesia(post({etapa:'planejar',sistema:planejar.sistema,mensagens:[{role:'user',content:planejar.mensagem}]}),ctx('6.6.6.6'))).status,200,'o prompt de planejamento deveria passar');
+  assert.equal((await cortesia(post({etapa:'responder',sistema:responder.sistema,mensagens:[{role:'user',content:responder.mensagem}]}),ctx('6.6.6.6'))).status,200,'o prompt de resposta deveria passar');
+  assert.equal((await cortesia(post({etapa:'conversar',sistema:conversar,mensagens:[{role:'user',content:'quais temas?'}]}),ctx('6.6.6.6'))).status,200,'o prompt do painel flutuante deveria passar');
+  assert.equal(corpos.length,3);
+ });
+});
+
+/**
+ * O painel flutuante conversa em varios turnos sobre as colecoes carregadas.
+ * Medido numa colecao real: ~15 mil caracteres por mensagem, menos que uma
+ * pergunta do acervo — cabe na cortesia, e cada mensagem gasta uma vaga.
+ */
+test('a conversa do painel passa pela cortesia, com os papeis preservados',async()=>{
+ await rodar(async(corpos)=>{
+  const r=await cortesia(post({etapa:'conversar',sistema:`${PERSONA_UFSCAO}\n\nNesta tela voce e tambem analista`,mensagens:[
+   {role:'user',content:'quem orienta governanca de dados?'},
+   {role:'assistant',content:'resposta anterior'},
+   {role:'user',content:'e sobre saude?'},
+  ]}),ctx('8.8.8.8'));
+  assert.equal(r.status,200);
+  const enviadas=(corpos[0] as {messages:Array<{role:string}>}).messages;
+  assert.deepEqual(enviadas.map(m=>m.role),['system','user','assistant','user'],'o papel de cada turno chega ao modelo');
+  assert.equal((await (await cortesia(get(),ctx('8.8.8.8'))).json()).restantes,PERGUNTAS_POR_IP-1,'cada mensagem do painel gasta uma vaga');
+ });
+});
+
+test('selecao grande demais pede para carregar menos, em vez de erro seco',async()=>{
+ await rodar(async()=>{
+  const r=await cortesia(post({etapa:'conversar',sistema:PERSONA_UFSCAO,mensagens:[{role:'user',content:'x'.repeat(50000)}]}),ctx('9.9.9.9'));
+  assert.equal(r.status,413);
+  assert.match((await r.json()).error,/Carregue menos coleções/);
  });
 });
