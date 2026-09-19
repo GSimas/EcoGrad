@@ -8,23 +8,12 @@ import { useSessionField } from '@/hooks/useSessionField';
 import { Tabela, type LeituraDados } from './Tabela';
 import { baixarGraficoECharts, ehExportavel, type FormatoImagem } from '@/lib/exportar-imagem';
 import { ImageDown } from 'lucide-react';
+import { TEMA_GRAFICO } from '@/lib/tema-grafico';
 
-/** Tokens visuais compartilhados por todos os gráficos (tema escuro do EcoGrad). */
-export const TEMA_GRAFICO = {
-  texto: '#CBD5E1',
-  eixo: '#475569',
-  grade: '#1E293B',
-  fundoTooltip: '#161B22',
-  paleta: ['#F39C12', '#3498DB', '#2ECC71', '#E74C3C', '#9B59B6', '#1ABC9C', '#E67E22', '#F1C40F'],
-};
-
-/** Cores semânticas dos quadrantes do Radar (idênticas ao Plotly do Streamlit). */
-export const CORES_QUADRANTE: Record<string, string> = {
-  '↗ Tendência': '#2ECC71',
-  '↖ Sinal Fraco': '#F1C40F',
-  '↘ Mainstream': '#3498DB',
-  '↙ Base/Declínio': '#E74C3C',
-};
+// Os tokens moram em `lib/tema-grafico`, para que os construtores de opção
+// puros possam usá-los sem depender de um componente. Reexportados aqui
+// porque metade da aplicação já os importa deste módulo.
+export { TEMA_GRAFICO, CORES_QUADRANTE } from '@/lib/tema-grafico';
 
 export function Grafico({
   option,

@@ -1,20 +1,10 @@
 import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
 import { Aviso, Card } from '@/components/ui/primitives';
-import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
-import { calcularCoberturaTemporal, SEM_ANO } from '@/lib/cobertura-temporal';
+import { Grafico } from '@/components/ui/Chart';
+import { calcularCoberturaTemporal, opcaoCoberturaTemporal, SEM_ANO } from '@/lib/cobertura-temporal';
 import type { Documento } from '@/types';
 
-/**
- * Escala de cobertura: vermelho (lacuna) → âmbar → verde (completo). São as
- * mesmas famílias de cor já usadas nos quadrantes do Foresight, então a leitura
- * "vermelho é problema" já está estabelecida na ferramenta.
- *
- * A escala é redundante de propósito: o percentual é impresso dentro de cada
- * célula e repetido no tooltip e na tabela. Quem não distingue vermelho de
- * verde lê o número, não a cor.
- */
-const ESCALA_COBERTURA = ['#E74C3C', '#E67E22', '#F1C40F', '#9BC53D', '#2ECC71'];
 
 /** Largura mínima por coluna de ano, para as células não virarem tiras. */
 const LARGURA_POR_ANO = 46;
@@ -32,131 +22,7 @@ interface Props {
 export function CoberturaTemporal({ docs }: Props) {
   const cobertura = useMemo(() => calcularCoberturaTemporal(docs), [docs]);
 
-  const option = useMemo<EChartsOption>(() => {
-    // O eixo Y do ECharts cresce de baixo para cima; invertendo a lista, os
-    // campos aparecem na mesma ordem em que estão declarados.
-    const rotulosCampos = cobertura.campos.map((c) => c.rotulo).reverse();
-    const indiceAno = new Map(cobertura.anos.map((a, i) => [a, i]));
-    const indiceCampo = new Map(rotulosCampos.map((c, i) => [c, i]));
-
-    const dados = cobertura.celulas.map((c) => [
-      indiceAno.get(c.ano) ?? 0,
-      indiceCampo.get(c.campo) ?? 0,
-      // Sem registros no ano não existe percentual: `null` deixa a célula vazia
-      // em vez de pintá-la de vermelho como se fosse lacuna de metadado.
-      c.total === 0 ? null : Math.round(c.percentual),
-      c.preenchidos,
-      c.total,
-    ]);
-
-    const eixoAnos = {
-      type: 'category' as const,
-      data: cobertura.anos,
-      axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-      axisTick: { show: false },
-      splitArea: { show: false },
-    };
-
-    return {
-      tooltip: {
-        formatter: (params: unknown) => {
-          const p = params as { seriesIndex: number; data: unknown };
-          if (p.seriesIndex === 1) {
-            const d = p.data as [string, number];
-            return `${d[0]}\n${d[1]} ${d[1] === 1 ? 'registro' : 'registros'}`;
-          }
-          const d = p.data as [number, number, number | null, number, number];
-          const ano = cobertura.anos[d[0]];
-          const campo = [...indiceCampo.entries()].find(([, i]) => i === d[1])?.[0] ?? '';
-          if (d[2] === null) return `${ano}\n${campo}\nNenhum registro neste ano`;
-          return `${ano}\n${campo}\n${d[3]} de ${d[4]} ${d[4] === 1 ? 'registro' : 'registros'} (${d[2]}%)`;
-        },
-      },
-      // Dois grids empilhados sobre o mesmo eixo de anos: em cima a cobertura,
-      // embaixo o volume. Um percentual alto num ano de 2 registros não vale o
-      // mesmo que num ano de 200, e separar as duas leituras é o que permite
-      // ver isso sem misturar escalas no mesmo mapa de cor.
-      grid: [
-        { left: 130, right: 24, top: 16, height: 26 * cobertura.campos.length },
-        { left: 130, right: 24, top: 26 * cobertura.campos.length + 56, height: 64 },
-      ],
-      xAxis: [
-        { ...eixoAnos, gridIndex: 0, axisLabel: { show: false } },
-        {
-          ...eixoAnos,
-          gridIndex: 1,
-          axisLabel: { color: TEMA_GRAFICO.texto, fontSize: 10, rotate: 45, interval: 0 },
-        },
-      ],
-      yAxis: [
-        {
-          type: 'category',
-          data: rotulosCampos,
-          gridIndex: 0,
-          axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-          axisTick: { show: false },
-          axisLabel: { color: TEMA_GRAFICO.texto, fontSize: 11 },
-        },
-        {
-          type: 'value',
-          gridIndex: 1,
-          name: 'Registros',
-          nameTextStyle: { color: TEMA_GRAFICO.texto, fontSize: 10 },
-          minInterval: 1,
-          axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } },
-          axisLabel: { color: TEMA_GRAFICO.texto, fontSize: 10 },
-          splitLine: { lineStyle: { color: TEMA_GRAFICO.grade } },
-        },
-      ],
-      visualMap: [{
-        type: 'continuous',
-        min: 0,
-        max: 100,
-        seriesIndex: 0,
-        // Obrigatório: cada linha de dado carrega [x, y, percentual, preenchidos,
-        // total] para alimentar o tooltip, e o ECharts mapeia a cor pela ÚLTIMA
-        // dimensão quando nenhuma é indicada. Sem isto, a cor sairia do volume
-        // de registros — justamente a confusão que este gráfico existe para
-        // desfazer — e todas as células marcariam 100% em cores diferentes.
-        dimension: 2,
-        calculable: false,
-        orient: 'horizontal',
-        left: 'center',
-        bottom: 0,
-        itemHeight: 90,
-        itemWidth: 10,
-        text: ['100% preenchido', '0%'],
-        textStyle: { color: TEMA_GRAFICO.texto, fontSize: 10 },
-        inRange: { color: ESCALA_COBERTURA },
-      }],
-      series: [
-        {
-          type: 'heatmap',
-          xAxisIndex: 0,
-          yAxisIndex: 0,
-          data: dados,
-          label: {
-            show: true,
-            fontSize: 9,
-            color: '#0E1117',
-            formatter: (p: unknown) => {
-              const v = (p as { data: [number, number, number | null] }).data[2];
-              return v === null ? '' : String(v);
-            },
-          },
-          itemStyle: { borderColor: TEMA_GRAFICO.grade, borderWidth: 1 },
-        },
-        {
-          type: 'bar',
-          xAxisIndex: 1,
-          yAxisIndex: 1,
-          data: cobertura.totaisPorAno.map((t) => [t.ano, t.total]),
-          itemStyle: { color: TEMA_GRAFICO.paleta[1] },
-          barMaxWidth: 28,
-        },
-      ],
-    };
-  }, [cobertura]);
+  const option = useMemo<EChartsOption>(() => opcaoCoberturaTemporal(cobertura), [cobertura]);
 
   if (cobertura.anos.length === 0) {
     return <Aviso>Nenhum registro no recorte, então não há cobertura de metadados para mapear.</Aviso>;

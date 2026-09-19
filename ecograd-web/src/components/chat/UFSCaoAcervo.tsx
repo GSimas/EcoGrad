@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eraser, Gift, Layers, Send, Settings, Square, User } from 'lucide-react';
-import { ConfiguracaoIA, RetratoUFSCao } from '@/components/chat/ConsultorIA';
+import { Eraser, Layers, Send, Settings, Square, User } from 'lucide-react';
+import { ConfiguracaoIA, JanelaRetratoUFSCao, OfertaDeCortesia, RetratoUFSCao } from '@/components/chat/ConsultorIA';
 import { ConversaAcervo } from '@/components/layout/ConversaAcervo';
 import { Aviso, Expander } from '@/components/ui/primitives';
 import { carregarIndiceBusca, type IndiceBusca } from '@/lib/busca-global';
@@ -10,7 +10,7 @@ import { markdownParaHtml } from '@/lib/markdown';
 import {
   AberturaEmCurso, CorpoDaResposta, FontesDaResposta, fontesDaResposta,
 } from '@/components/chat/RespostaDoAcervo';
-import { configCortesia, ehCortesia, lerConfigIA, provedorPorId, salvarConfigIA, validarConfigIA } from '@/lib/provedores-ia';
+import { ehCortesia, lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';
 import { LOTES_SIMULTANEOS } from '@/lib/chat-sintese';
 import {
   CHAVE_CONVERSA_ACERVO, TETO_APROFUNDAR,
@@ -47,6 +47,7 @@ export function UFSCaoAcervo() {
   const configurado = !!config && !validarConfigIA(config);
   const [configurando, setConfigurando] = useState(false);
   const [semIA, setSemIA] = useSessionField('ufscao.acervo.semIA', false);
+  const [retrato, setRetrato] = useState(false);
   const controle = useRef<AbortController | null>(null);
 
   const clienteQuery = useQueryClient();
@@ -54,7 +55,6 @@ export function UFSCaoAcervo() {
   // e sem resposta da função a tela só não oferece a cortesia.
   const cota = useQuery({ queryKey: ['cortesia'], queryFn: ({ signal }) => cotaCortesia(signal), staleTime: 60 * 1000, retry: 0 });
   const cortesia = ehCortesia(config);
-  const podeExperimentar = !!cota.data?.disponivel && cota.data.restantes > 0;
   const estado = useQuery({ queryKey: ['indice-estado'], queryFn: estadoDoIndice, enabled: indiceConfigurado(), staleTime: 5 * 60 * 1000, retry: 0 });
   const catalogo = useQuery({ queryKey: ['indice-busca'], queryFn: ({ signal }) => carregarIndiceBusca(signal), staleTime: Infinity, gcTime: Infinity, retry: 1 });
 
@@ -94,7 +94,9 @@ export function UFSCaoAcervo() {
 
   return <div className="mt-6 space-y-4 text-left">
     <div className="flex items-center gap-2">
-      <RetratoUFSCao tamanho={36} />
+      <button type="button" className="eco-retrato shrink-0 rounded-full" aria-label="Ver o retrato do UFSCão" title="Ver o retrato do UFSCão" onClick={() => setRetrato(true)}>
+        <RetratoUFSCao tamanho={36} className="text-eco-accent" />
+      </button>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">UFSCão <span className="font-normal text-slate-400">· sobre o acervo inteiro</span></p>
         <p className="truncate text-xs text-slate-400">{configurado ? provedor : 'Configure seu provedor de IA para conversar'}</p>
@@ -104,12 +106,7 @@ export function UFSCaoAcervo() {
     </div>
 
     {(!configurado || configurando) ? <div className="card space-y-3">
-      {!configurado && podeExperimentar && <div className="info space-y-2">
-        <p><strong>Experimente sem chave.</strong> As primeiras {cota.data?.total ?? 10} perguntas são por conta do EcoGrad, para você conhecer o UFSCão — restam {cota.data?.restantes}. Depois delas, configure seu provedor abaixo e continue sem limite.</p>
-        <button type="button" className="btn btn-primary text-xs" onClick={() => { const c = { ...configCortesia(), lembrar: false }; salvarConfigIA(c); setConfig(c); setConfigurando(false); }}>
-          <Gift size={14} className="shrink-0" aria-hidden /> Conversar agora, sem chave
-        </button>
-      </div>}
+      {!configurado && <OfertaDeCortesia onAceitar={(c) => { setConfig(c); setConfigurando(false); }} />}
       <ConfiguracaoIA inicial={cortesia ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
       {!configurado && <p className="text-xs text-slate-400">Sem chave de API, dá para <button type="button" className="underline" onClick={() => setSemIA(true)}>responder pelo catálogo, sem IA</button>: contagens e listas, sem texto escrito.</p>}
     </div> : <>
@@ -124,15 +121,22 @@ export function UFSCaoAcervo() {
       </Aviso>}
 
       {conversa.map((r, i) => <Turno key={r.id} resposta={r} indice={catalogo.data} config={config}
-        ocupado={!!etapa}
+        ocupado={!!etapa} aoAbrirRetrato={() => setRetrato(true)}
         turnos={conversa.slice(0, i).map((a) => ({ pergunta: a.pergunta, plano: a.plano, resposta: a.texto }))}
         aoAprofundar={(aprofundamento) => setConversa((c) => c.map((x) => (x.id === r.id ? { ...x, aprofundamento } : x)))} />)}
 
       {etapa && <>
         <Balao papel="user">{perguntaAtual}</Balao>
         {parcial
-          ? <Balao papel="assistant"><div className="markdown" dangerouslySetInnerHTML={{ __html: markdownParaHtml(`${parcial}▌`) }} /></Balao>
-          : <p className="eco-farejando text-sm text-slate-400" role="status"><RetratoUFSCao tamanho={22} /><span>{ETAPAS[etapa]}</span>
+          ? <Balao papel="assistant" aoAbrirRetrato={() => setRetrato(true)}><div className="markdown" dangerouslySetInnerHTML={{ __html: markdownParaHtml(`${parcial}▌`) }} /></Balao>
+          /* O `role="status"` fica no texto, e não no parágrafo inteiro: dentro
+             da região viva, o rótulo do botão do retrato seria lido junto da
+             etapa a cada troca. O botão continua no fluxo de foco. */
+          : <p className="eco-farejando text-sm text-slate-400">
+            <button type="button" className="eco-retrato shrink-0 rounded-full" aria-label="Ver o retrato do UFSCão" title="Ver o retrato do UFSCão" onClick={() => setRetrato(true)}>
+              <RetratoUFSCao tamanho={22} />
+            </button>
+            <span role="status">{ETAPAS[etapa]}</span>
             <span aria-hidden className="flex items-center gap-1"><span className="ponto" /><span className="ponto" /><span className="ponto" /></span></p>}
       </>}
       {erro && <Aviso tipo="erro">
@@ -152,31 +156,38 @@ export function UFSCaoAcervo() {
       </form>
       {conversa.length > 0 && !etapa && <button type="button" className="btn text-xs" onClick={() => baixarArquivo(JSON.stringify(conversa, null, 2), 'ecograd-ufscao-acervo.json')}>Exportar conversa</button>}
     </>}
+    {/* Fora do ramo acima: o retrato do cabeçalho abre mesmo com o formulário
+        de chave aberto, como no painel flutuante. */}
+    <JanelaRetratoUFSCao aberta={retrato} onOpenChange={setRetrato} />
   </div>;
 }
 
-function Balao({ papel, children }: { papel: 'user' | 'assistant'; children: ReactNode }) {
+function Balao({ papel, children, aoAbrirRetrato }: { papel: 'user' | 'assistant'; children: ReactNode; aoAbrirRetrato?: () => void }) {
   const usuario = papel === 'user';
   return <div className={`flex gap-2 ${usuario ? 'flex-row-reverse' : ''}`}>
     {usuario
       ? <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-eco-action text-black"><User size={14} /></span>
-      : <span className="h-7 w-7 shrink-0"><RetratoUFSCao tamanho={28} /></span>}
+      : <button type="button" className="eco-retrato flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-eco-border text-eco-accent"
+        aria-label="Ver o retrato do UFSCão" title="Ver o retrato do UFSCão" onClick={aoAbrirRetrato}>
+        <RetratoUFSCao tamanho={28} />
+      </button>}
     <div className={`min-w-0 flex-1 break-words rounded-xl border border-eco-border px-3 py-2 text-sm ${usuario ? 'bg-eco-accent/10' : 'bg-eco-panel/70'}`}>{children}</div>
   </div>;
 }
 
-function Turno({ resposta: r, indice, config, ocupado, turnos, aoAprofundar }: {
+function Turno({ resposta: r, indice, config, ocupado, turnos, aoAprofundar, aoAbrirRetrato }: {
   resposta: RespostaAcervo;
   indice: IndiceBusca | undefined;
   config: ConfigIA | null;
   ocupado: boolean;
   turnos: TurnoDaConversa[];
   aoAprofundar: (a: Aprofundamento) => void;
+  aoAbrirRetrato: () => void;
 }) {
   const fontes = useMemo(() => fontesDaResposta(r), [r]);
   return <div className="space-y-2">
     <Balao papel="user">{r.pergunta}</Balao>
-    <Balao papel="assistant">
+    <Balao papel="assistant" aoAbrirRetrato={aoAbrirRetrato}>
       <CorpoDaResposta resposta={r} fontes={fontes} indice={indice} />
       <FontesDaResposta fontes={fontes} total={r.panorama?.obras} rotulo="Fontes consultadas" indice={indice} />
       <ComoApurei resposta={r} />

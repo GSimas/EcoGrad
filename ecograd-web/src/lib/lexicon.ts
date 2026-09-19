@@ -7,18 +7,21 @@ import { STOPWORDS_NUVEM_PT } from './stopwords';
 
 export type FonteNuvem = 'Conceitos (Palavras-chave)' | 'Resumos (Abstracts)' | 'Títulos';
 
+export const FONTES_NUVEM: readonly FonteNuvem[] = ['Conceitos (Palavras-chave)', 'Títulos', 'Resumos (Abstracts)'];
+
+/** Só o que é fonte de verdade sobrevive: a seleção volta da sessão como `unknown`. */
+export function fontesValidas(valor: unknown): FonteNuvem[] {
+  if (!Array.isArray(valor)) return [];
+  return FONTES_NUVEM.filter((f) => valor.includes(f));
+}
+
 export interface PalavraFreq {
   name: string;
   value: number;
 }
 
-export function obterFrequenciasTexto(
-  docs: readonly Documento[],
-  fonte: FonteNuvem,
-  topN = 100,
-): PalavraFreq[] {
-  const contagem = new Map<string, number>();
-
+/** Contagem de uma fonte isolada, como no Python. */
+function contarFonte(docs: readonly Documento[], fonte: FonteNuvem, contagem: Map<string, number>): void {
   if (fonte === 'Conceitos (Palavras-chave)') {
     for (const d of docs) {
       for (const pk of d.palavras_chave) {
@@ -26,18 +29,38 @@ export function obterFrequenciasTexto(
         contagem.set(pk, (contagem.get(pk) ?? 0) + 1);
       }
     }
-  } else {
-    const textos = fonte === 'Resumos (Abstracts)'
-      ? docs.map((d) => d.resumo).filter(Boolean)
-      : docs.map((d) => d.titulo).filter(Boolean);
-
-    // Equivalente a re.sub(r'[^\w\s]', '', texto.lower()) e split()
-    const textoCompleto = textos.join(' ').toLowerCase().replace(/[^\p{L}\p{N}_\s]/gu, '');
-    for (const palavra of textoCompleto.split(/\s+/)) {
-      if (palavra.length <= 2 || STOPWORDS_NUVEM_PT.has(palavra)) continue;
-      contagem.set(palavra, (contagem.get(palavra) ?? 0) + 1);
-    }
+    return;
   }
+
+  const textos = fonte === 'Resumos (Abstracts)'
+    ? docs.map((d) => d.resumo).filter(Boolean)
+    : docs.map((d) => d.titulo).filter(Boolean);
+
+  // Equivalente a re.sub(r'[^\w\s]', '', texto.lower()) e split()
+  const textoCompleto = textos.join(' ').toLowerCase().replace(/[^\p{L}\p{N}_\s]/gu, '');
+  for (const palavra of textoCompleto.split(/\s+/)) {
+    if (palavra.length <= 2 || STOPWORDS_NUVEM_PT.has(palavra)) continue;
+    contagem.set(palavra, (contagem.get(palavra) ?? 0) + 1);
+  }
+}
+
+/**
+ * Frequências das fontes escolhidas, somadas num único ranking.
+ *
+ * Cada fonte é contada como no Python (`obter_frequencias_texto`, backend.py:1303);
+ * combinar várias é adição do EcoGrad, e mistura unidades de propósito: uma
+ * palavra-chave conta como expressão inteira ("mudanças climáticas" = 1), e
+ * títulos e resumos contam palavra a palavra. Um termo presente em duas fontes
+ * soma as duas contagens. Por isso o corte em `topN` é aplicado só no fim,
+ * sobre o ranking já somado, e a interface declara a mistura quando ela ocorre.
+ */
+export function obterFrequenciasTexto(
+  docs: readonly Documento[],
+  fontes: readonly FonteNuvem[],
+  topN = 100,
+): PalavraFreq[] {
+  const contagem = new Map<string, number>();
+  for (const fonte of fontes) contarFonte(docs, fonte, contagem);
 
   return [...contagem.entries()]
     .map(([name, value]) => ({ name, value }))

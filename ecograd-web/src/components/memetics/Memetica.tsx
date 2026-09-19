@@ -3,7 +3,8 @@ import { TrabalhosDoTermo } from '@/components/results/TrabalhosDoTermo';
 import { periodoTexto, resumoRegistros } from '@/lib/resultados';
 import { useMemo, useRef } from 'react';
 import { Dna } from 'lucide-react';
-import { Aviso, Card, Expander, Kpi, Tabela } from '@/components/ui/primitives';
+import { AnalisesOcultas, Aviso, Card, Expander, Kpi, Tabela } from '@/components/ui/primitives';
+import type { AnaliseOculta } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { CatalogoOntologia } from './CatalogoOntologia';
@@ -52,6 +53,23 @@ export function Memetica() {
   const taxaMortalidade = totalMemes > 0 ? (metricas.mortalidade / totalMemes) * 100 : 0;
 
   const topVivos = useMemo(() => metricas.memesVivos.slice(0, 20), [metricas]);
+
+  // Uma rosca de fatia única desenha 100% e não compara nada; os dois números
+  // já estão nos KPIs acima dela. O gráfico de intervalos precisa de termos em
+  // pelo menos dois títulos com ano válido — sem eles não há ponto a plotar.
+  const roscaDegenerada = metricas.mortalidade === 0 || metricas.sobreviventes === 0;
+  const ocultas: AnaliseOculta[] = [
+    ...(roscaDegenerada && totalMemes > 0 ? [{
+      nome: 'Distribuição por títulos associados',
+      motivo: metricas.sobreviventes === 0
+        ? 'todos os termos aparecem em um único título'
+        : 'nenhum termo aparece em um único título',
+    }] : []),
+    ...(metricas.longevidade.length === 0 ? [{
+      nome: 'Intervalos de ocorrência dos termos',
+      motivo: 'nenhum termo aparece em dois títulos com ano válido, então não há intervalo a medir',
+    }] : []),
+  ];
 
   return (
     <div className="space-y-6">
@@ -109,7 +127,7 @@ export function Memetica() {
               />
             </div>
 
-            <Card>
+            {!roscaDegenerada && <Card>
               <h3 className="mb-2 text-sm font-semibold">Distribuição por títulos associados</h3>
               <Grafico
                 leitura={{ titulo:'Distribuição das replicações', descricao:'Setores: termos com exatamente um título e grupo complementar. Títulos ausentes, quando existentes, são informados na cobertura e incluídos no grupo complementar pelo algoritmo original. As cores identificam categorias; as contagens completas estão na tabela.', linhas:[{grupo:grupoOutros,total:metricas.sobreviventes},{grupo:'Um título',total:metricas.mortalidade}], colunas:[{chave:'grupo',rotulo:'Categoria'},{chave:'total',rotulo:'Termos (n)'}], contexto }}
@@ -133,9 +151,10 @@ export function Memetica() {
                   ],
                 }}
               />
-            </Card>
+            </Card>}
 
-            <GraficoLongevidade longevidade={metricas.longevidade} onSelecionar={selecionarTermo} />
+            {metricas.longevidade.length > 0 && <GraficoLongevidade longevidade={metricas.longevidade} onSelecionar={selecionarTermo} />}
+            <AnalisesOcultas itens={ocultas} />
 
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="space-y-2">

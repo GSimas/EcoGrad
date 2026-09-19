@@ -1,12 +1,13 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useMemo } from 'react';
-import { Cloud, Link2, Orbit, TrendingUp } from 'lucide-react';
-import { Aviso, BotaoEntidade, Card, Expander, Tabela } from '@/components/ui/primitives';
+import { Check, Cloud, Link2, Orbit, TrendingUp } from 'lucide-react';
+import { AnalisesOcultas, Aviso, BotaoEntidade, Card, Expander, Tabela } from '@/components/ui/primitives';
+import { relevanciaDossie } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
-import { Tabs } from '@/components/ui/Tabs';
+import { Tabs, type AbaDef } from '@/components/ui/Tabs';
 import { TabelaQL } from './TabelaQL';
 import { OrbitaGrafo } from './OrbitaGrafo';
-import { evolucaoAnual, obterFrequenciasTexto, type FonteNuvem } from '@/lib/lexicon';
+import { evolucaoAnual, fontesValidas, obterFrequenciasTexto, FONTES_NUVEM, type FonteNuvem } from '@/lib/lexicon';
 import { gerarTabelaQLCruzado } from '@/lib/ql';
 import { calcularSimilaresRede } from '@/lib/similarity';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -23,7 +24,6 @@ interface Props {
   snaGlobal: SnaGlobal | null;
 }
 
-const FONTES_NUVEM: FonteNuvem[] = ['Conceitos (Palavras-chave)', 'Títulos', 'Resumos (Abstracts)'];
 
 /**
  * Os gráficos ficam à vista, logo acima dos trabalhos associados; indicadores e
@@ -49,10 +49,22 @@ function GraficosDossie({
   snaGlobal,
 }: Props) {
   const [cumulativo, setCumulativo] = useSessionField('dossie.cumulativo', false);
-  const [fonteNuvem, setFonteNuvem] = useSessionField<FonteNuvem>('dossie.nuvem', 'Conceitos (Palavras-chave)');
+  // Chave nova de propósito: a antiga guardava uma fonte só, em string, e
+  // voltaria da sessão como um valor que não é lista. `fontesValidas` ainda
+  // filtra o que chega, porque a sessão restaura `ui` sem validar item a item.
+  const [fontesSalvas, setFontesNuvem] = useSessionField<FonteNuvem[]>('dossie.nuvem.fontes', ['Conceitos (Palavras-chave)']);
+  const fontesNuvem = useMemo(() => fontesValidas(fontesSalvas), [fontesSalvas]);
+  // Atualização funcional, e não a lista deste render: dois cliques no mesmo
+  // tick (teclado repetido, duplo toque) partiriam os dois da mesma lista
+  // antiga e o segundo desfaria o primeiro.
+  const alternarFonte = (f: FonteNuvem) => setFontesNuvem((atuais) => {
+    const lista = fontesValidas(atuais);
+    return lista.includes(f) ? lista.filter((x) => x !== f) : [...lista, f];
+  });
+  const todasAsFontes = fontesNuvem.length === FONTES_NUVEM.length;
 
   const serie = useMemo(() => evolucaoAnual(docsAlvo, cumulativo), [docsAlvo, cumulativo]);
-  const nuvem = useMemo(() => obterFrequenciasTexto(docsAlvo, fonteNuvem), [docsAlvo, fonteNuvem]);
+  const nuvem = useMemo(() => obterFrequenciasTexto(docsAlvo, fontesNuvem), [docsAlvo, fontesNuvem]);
 
   const tabelaQL = useMemo(() => {
     if (tipo === 'Orientador' || tipo === 'Co-orientador') {
@@ -67,10 +79,12 @@ function GraficosDossie({
     return [];
   }, [tipo, docsAlvo, dadosCompletos]);
 
-  return (
-    <section aria-label="Gráficos do dossiê"><Tabs
-      abas={[
-        {
+  // A série cumulativa não muda quantos anos existem, só o valor de cada um.
+  const { mostrar, ocultas } = relevanciaDossie({ tipo, docsAlvo, anosNaSerie: serie.length, linhasQL: tabelaQL.length });
+  const abas: AbaDef[] = [];
+
+  if (mostrar.has('evolucao')) {
+    abas.push({
           valor: 'evolucao',
           rotulo: <><TrendingUp size={15} aria-hidden /> Evolução Histórica</>,
           conteudo: (
@@ -115,34 +129,64 @@ function GraficosDossie({
               </Card>
             </div>
           ),
-        },
-        {
+    });
+  }
+
+  if (mostrar.has('lexicometria')) {
+    abas.push({
           valor: 'lexicometria',
           rotulo: <><Cloud size={15} aria-hidden /> Lexicometria</>,
           conteudo: (
             <div className="space-y-3">
-              <div className="flex flex-wrap gap-1 rounded-lg border border-eco-border bg-eco-panel/60 p-1">
-                {FONTES_NUVEM.map((f) => (
+              <div className="space-y-1.5">
+                <p id="rotulo-fontes-nuvem" className="text-xs uppercase tracking-wide text-slate-400">Fontes do texto</p>
+                <div role="group" aria-labelledby="rotulo-fontes-nuvem" className="flex flex-wrap gap-1 rounded-lg border border-eco-border bg-eco-panel/60 p-1">
                   <button
-                    key={f}
                     type="button"
-                    onClick={() => setFonteNuvem(f)}
-                    className={`rounded-md px-3 py-1.5 text-sm transition ${
-                      f === fonteNuvem ? 'bg-eco-action text-black' : 'text-slate-400 hover:bg-white/5'
+                    aria-pressed={todasAsFontes}
+                    onClick={() => setFontesNuvem([...FONTES_NUVEM])}
+                    className={`inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
+                      todasAsFontes ? 'bg-eco-action text-black' : 'text-slate-400 hover:bg-white/5'
                     }`}
                   >
-                    {f}
+                    <Check size={13} aria-hidden className={todasAsFontes ? '' : 'opacity-0'} />
+                    Todos
                   </button>
-                ))}
+                  {FONTES_NUVEM.map((f) => {
+                    const ativo = fontesNuvem.includes(f);
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        aria-pressed={ativo}
+                        onClick={() => alternarFonte(f)}
+                        className={`inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
+                          ativo ? 'bg-eco-action text-black' : 'text-slate-400 hover:bg-white/5'
+                        }`}
+                      >
+                        <Check size={13} aria-hidden className={ativo ? '' : 'opacity-0'} />
+                        {f}
+                      </button>
+                    );
+                  })}
+                </div>
+                {fontesNuvem.length > 1 && <p className="text-xs text-slate-400">
+                  Fontes somadas. Palavras-chave contam a expressão inteira; títulos e resumos contam palavra a palavra. Um termo presente em mais de uma fonte soma as contagens.
+                </p>}
               </div>
               <Card>
-                {nuvem.length === 0 ? (
+                {fontesNuvem.length === 0 ? (
+                  <div className="space-y-2 py-8 text-center text-sm text-slate-300">
+                    <p>Nenhuma fonte selecionada, então não há texto a contar.</p>
+                    <button type="button" className="btn" onClick={() => setFontesNuvem([...FONTES_NUVEM])}>Usar todas as fontes</button>
+                  </div>
+                ) : nuvem.length === 0 ? (
                   <p className="py-8 text-center text-sm text-slate-500">
-                    Sem texto suficiente para gerar a nuvem.
+                    Sem texto suficiente para gerar a nuvem {fontesNuvem.length === 1 ? 'nesta fonte' : 'nestas fontes'}.
                   </p>
                 ) : (
                   <Grafico
-                    leitura={{ titulo: 'Frequências da nuvem de palavras', descricao: 'Tamanho da palavra: frequência no texto selecionado (ocorrências). Cor e rotação são decorativas. Leia todos os termos e valores na tabela.', linhas: nuvem.map((l) => ({...l})), colunas: [{chave:'name',rotulo:'Termo completo'}, {chave:'value',rotulo:'Ocorrências (n)'}], contexto: {fonte:fonteNuvem} }}
+                    leitura={{ titulo: 'Frequências da nuvem de palavras', descricao: `Tamanho da palavra: frequência nas fontes selecionadas (ocorrências). Cor e rotação são decorativas. Leia todos os termos e valores na tabela.${fontesNuvem.length > 1 ? ' As fontes são somadas e misturam unidades: palavras-chave contam a expressão inteira, títulos e resumos contam palavra a palavra.' : ''}`, linhas: nuvem.map((l) => ({...l})), colunas: [{chave:'name',rotulo:'Termo completo'}, {chave:'value',rotulo:'Ocorrências (n)'}], contexto: {fontes:fontesNuvem} }}
                     altura={420}
                     option={{
                       tooltip: { show: true },
@@ -172,24 +216,40 @@ function GraficosDossie({
               </Card>
             </div>
           ),
-        },
-        {
+    });
+  }
+
+  if (mostrar.has('orbita')) {
+    abas.push({
           valor: 'orbita',
           rotulo: <><Orbit size={15} aria-hidden /> Órbita de Relacionamentos</>,
           conteudo: <OrbitaAba termo={termo} dadosCompletos={dadosCompletos} snaGlobal={snaGlobal} />,
-        },
-        {
+    });
+  }
+
+  if (mostrar.has('perfil')) {
+    abas.push({
           valor: 'perfil',
           rotulo: 'Frequências e relações (QL)',
-          conteudo: tabelaQL.length ? <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></> : <p className="text-sm text-slate-300">QL cruzado não se aplica a este tipo de entidade. Consulte os trabalhos e relações do dossiê ou as outras análises.</p>,
-        },
-        {
+          conteudo: <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></>,
+    });
+  }
+
+  if (mostrar.has('similares')) {
+    abas.push({
           valor: 'similares',
           rotulo: <><Link2 size={15} aria-hidden /> Itens Semelhantes</>,
           conteudo: <ItensSemelhantes termo={termo} tipo={tipo} dadosCompletos={dadosCompletos} />,
-        },
-      ]}
-    /></section>
+    });
+  }
+
+  return (
+    <section aria-label="Gráficos do dossiê" className="space-y-3">
+      {abas.length > 0
+        ? <Tabs chaveSessao="dossie" abas={abas} />
+        : <Aviso>Nenhuma das análises gráficas descreve este item. Os metadados, os trabalhos e as relações continuam abaixo.</Aviso>}
+      <AnalisesOcultas itens={ocultas} />
+    </section>
   );
 }
 
@@ -229,12 +289,15 @@ function ItensSemelhantes({ termo, tipo, dadosCompletos }: Pick<Props, 'termo' |
                 Recomendação topológica por <strong>Índice de Jaccard</strong>: mede a sobreposição
                 do &quot;DNA acadêmico&quot; (vizinhança na rede) entre entidades do mesmo tipo.
               </Aviso>
-              {Object.keys(similares).length === 0 ? (
+              {/* Contar grupos não serve: um documento sem semelhantes devolve
+                  Teses e Dissertações vazias, duas chaves que renderizariam
+                  duas tabelas vazias no lugar desta mensagem. */}
+              {Object.values(similares).every((itens) => itens.length === 0) ? (
                 <p className="py-6 text-center text-sm text-slate-500">
                   Nenhum item semelhante encontrado para esta entidade.
                 </p>
               ) : (
-                Object.entries(similares).map(([grupo, itens]) => (
+                Object.entries(similares).filter(([, itens]) => itens.length > 0).map(([grupo, itens]) => (
                   <div key={grupo} className="space-y-2">
                     <p className="text-sm font-medium text-slate-200">{grupo}</p>
                     <Tabela

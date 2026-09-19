@@ -5,7 +5,8 @@ import { useSessionField } from '@/hooks/useSessionField';
 import { TrabalhosDoTermo } from '@/components/results/TrabalhosDoTermo';
 import { useMemo } from 'react';
 import { Radar as RadarIcon, RefreshCw } from 'lucide-react';
-import { Aviso, Card, Expander } from '@/components/ui/primitives';
+import { AnalisesOcultas, Aviso, Card, Expander, Tabela } from '@/components/ui/primitives';
+import type { AnaliseOculta } from '@/lib/relevancia';
 import { CORES_QUADRANTE, Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { GridSearch } from './GridSearch';
@@ -62,6 +63,17 @@ export function RadarForesight() {
   const contextoRadar = { coberturaTemporal: cobertura, segmentacaoEfetiva: efetivo, interpretacaoCategorias: LEITURA_QUADRANTE, dimensao: tipo, janelaRecenteAnos: janelaRecente, metodoCorte, percentilCorte, bootstrap: bootstrap ? {reamostragens: 100, fracao: 0.85} : false, cortes: {x:segmentado.xMid,y:segmentado.yMid} };
   const colunasRadar = [{chave:'Termo',rotulo:'Termo completo'}, {chave:'Quadrante',rotulo:'Categoria original do modelo'}, {chave:'Total',rotulo:'Ocorrências totais (n)'}, {chave:'Aparições Recentes',rotulo:'Ocorrências recentes (n)'}, {chave:'Tração (%)',rotulo:'Tração (%)'}, {chave:'Momentum (Burst)',rotulo:'Momentum (índice)'}, {chave:'Novidade (Estrutural * IDF)',rotulo:'Novidade (índice)'}, {chave:'Bet. Robusto?',rotulo:'Betweenness robusto'},{chave:'Bet. IQR',rotulo:'Betweenness: intervalo interquartil'},{chave:'cluster_id',rotulo:'Cluster K-Means (identificador)'}];
   const executarBootstrap = () => { calcularBootstrap(docs, tipo, 100, 0.85); };
+
+  /**
+   * Quadrantes sobre dois ou três termos são ruído: o K-Means nem roda com
+   * menos de 4 pontos (cai para o percentil 65), e as linhas divisórias
+   * separariam uma amostra que não tem distribuição. Os índices em si
+   * continuam válidos — por isso a tabela fica no lugar do dispersograma.
+   */
+  const amostraPequena = segmentado.linhas.length > 0 && base.length < 4;
+  const ocultasRadar: AnaliseOculta[] = amostraPequena
+    ? [{ nome: 'Dispersograma de quadrantes', motivo: `${base.length} ${base.length === 1 ? 'termo' : 'termos'} na dimensão, insuficientes para segmentar em quadrantes` }]
+    : [];
 
   const porQuadrante = useMemo(() => {
     const mapa = new Map<Quadrante, ForesightRow[]>();
@@ -168,6 +180,17 @@ export function RadarForesight() {
         </Aviso>
       ) : (
         <>
+          {amostraPequena ? <Card className="space-y-3">
+            <Tabela
+              titulo="Índices do Radar de Foresight"
+              descricao="Momentum e novidade de cada termo, sem segmentação em quadrantes. São descrições do recorte, não previsões garantidas."
+              contexto={contextoRadar}
+              altura="max-h-96"
+              onAbrir={(l)=>abrirTermo(String(l.Termo))}
+              linhas={[...segmentado.linhas].sort((a,b)=>b['Novidade (Estrutural * IDF)']-a['Novidade (Estrutural * IDF)']).map((l)=>({...l})) as unknown as Array<Record<string, unknown>>}
+              colunas={colunasRadar.filter((c)=>c.chave!=='Quadrante'&&c.chave!=='cluster_id')}
+            />
+          </Card> : <>
           <Card>
             <Grafico
               leitura={{ titulo:'Pontos do Radar de Foresight', descricao:'X: momentum temporal (índice). Y: novidade estrutural, Betweenness × IDF (índice). Cor: quadrante; tamanho: volume total. Linhas tracejadas: cortes por percentil ou referências dos centroides no K-Means. São descrições do recorte, não previsões garantidas. A tabela permite abrir cada termo por teclado.' + ` Cortes: momentum ${valorNumericoTabela(segmentado.xMid)}; novidade ${valorNumericoTabela(segmentado.yMid)}.`, linhas:[...segmentado.linhas].sort((a,b)=>b['Novidade (Estrutural * IDF)']-a['Novidade (Estrutural * IDF)']).map((l)=>({...l})), colunas:colunasRadar, contexto:contextoRadar, onAbrir:(l)=>abrirTermo(String(l.Termo)) }}
@@ -256,7 +279,9 @@ export function RadarForesight() {
               </Card>
             ))}
           </div>
+          </>}
 
+          <AnalisesOcultas itens={ocultasRadar} />
           <TrabalhosDoTermo termo={termoVisual} tipoForesight={tipo} onFechar={()=>setTermoVisual(null)} />
 
         </>

@@ -6,7 +6,7 @@ import { CHAVE_CONVERSA_ACERVO, turnosHerdados } from '@/lib/ufscao-acervo';
 import { baixarArquivo } from '@/lib/utils';
 import { enviarMensagem, interromperConversa, limparConversa } from '@/services/chat';
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
-import { Dog, Eraser, Eye, EyeOff, KeyRound, Send, Settings, Square, User, X } from 'lucide-react';
+import { Dog, Eraser, Eye, EyeOff, Gift, KeyRound, Send, Settings, Square, User, X } from 'lucide-react';
 import { Confirmacao, Janela } from '@/components/layout/Janela';
 import { MAX_CATALOGO, MAX_DOCENTES } from '@/lib/consultor-prompt';
 import { Aviso, Expander } from '@/components/ui/primitives';
@@ -17,7 +17,8 @@ import { abrirRegistro } from '@/services/abrir-item';
 import type { Documento, TipoBusca } from '@/types';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
-import { ehCortesia, esquecerChaveIA, lerConfigIA, PROVEDORES, provedorPorId, salvarConfigIA, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
+import { configCortesia, ehCortesia, esquecerChaveIA, lerConfigIA, PROVEDORES, provedorPorId, salvarConfigIA, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
+import { cotaCortesia } from '@/services/ufscao-acervo';
 import type { DossieConsultor } from '@/lib/consultor-prompt';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useAparencia } from '@/services/aparencia';
@@ -54,6 +55,20 @@ export function RetratoUFSCao({ tamanho, className }: { tamanho: number; classNa
   return <img src={RETRATO_AVATAR} alt="" aria-hidden width={tamanho} height={tamanho}
     className={`shrink-0 rounded-full object-cover ${className ?? ''}`} style={{ width: tamanho, height: tamanho }}
     onError={() => setFalhou(true)} />;
+}
+
+/**
+ * Ampliação do retrato, com a descrição do mascote.
+ *
+ * O mesmo diálogo serve o painel flutuante e a conversa da tela inicial: a arte
+ * em tamanho cheio e o texto que a explica ficam num lugar só, em vez de duas
+ * cópias que divergem quando uma delas muda.
+ */
+export function JanelaRetratoUFSCao({ aberta, onOpenChange }: { aberta: boolean; onOpenChange: (v: boolean) => void }) {
+  return <Janela aberta={aberta} onOpenChange={onOpenChange} titulo="UFSCão"
+    descricao="O mascote do consultor de IA do EcoGrad, em homenagem aos cães que circulam pelos campi da UFSC.">
+    <img src={RETRATO} alt="Ilustração do UFSCão: um cão caramelo sorridente, de coleira e bandana azuis da UFSC, com medalha do brasão da universidade." className="mx-auto max-h-[60dvh] w-auto object-contain" />
+  </Janela>;
 }
 
 /**
@@ -181,7 +196,8 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
     </header>
 
     {configurando ? (
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        {!configurado && <OfertaDeCortesia onAceitar={(c) => { setConfig(c); setConfigurando(false); }} />}
         <ConfiguracaoIA inicial={ehCortesia(config) ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
       </div>
     ) : <>
@@ -216,9 +232,14 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
         {!!parciaisAnteriores?.length && <Expander titulo="Textos parciais de tentativas anteriores">{parciaisAnteriores.map((texto, i) => <Balao key={i} papel="assistant" conteudo={texto} dic={mencoes} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />)}</Expander>}
         {mensagens.map((m, i) => <Balao key={i} papel={m.role} conteudo={m.content} dic={m.role === 'assistant' ? mencoes : undefined} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />)}
         {parcial && <Balao papel="assistant" conteudo={streaming ? `${parcial}▌` : `[Resposta parcial interrompida] ${parcial}`} dic={mencoes} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />}
-        {streaming && !parcial && <p className="eco-farejando text-sm text-slate-400" role="status">
-          <RetratoUFSCao tamanho={22} />
-          <span>O UFSCão está farejando o dossiê</span>
+        {/* O `role="status"` fica no texto, e não no parágrafo inteiro: dentro da
+            região viva, o rótulo do botão do retrato seria lido junto da etapa a
+            cada troca. O botão continua no fluxo de foco, fora do anúncio. */}
+        {streaming && !parcial && <p className="eco-farejando text-sm text-slate-400">
+          <button type="button" className="eco-retrato shrink-0 rounded-full" aria-label="Ver o retrato do UFSCão" title="Ver o retrato do UFSCão" onClick={() => setRetrato(true)}>
+            <RetratoUFSCao tamanho={22} />
+          </button>
+          <span role="status">O UFSCão está farejando o dossiê</span>
           <span aria-hidden className="flex items-center gap-1"><span className="ponto" /><span className="ponto" /><span className="ponto" /></span>
         </p>}
         {erro && <Aviso tipo="erro"><p role="status">{erro}</p></Aviso>}
@@ -257,11 +278,39 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
     </>}
     {/* Fora do ramo acima: o retrato fica no cabeçalho, que aparece também
         enquanto o formulário de chave está aberto. */}
-    <Janela aberta={retrato} onOpenChange={setRetrato} titulo="UFSCão"
-      descricao="O mascote do consultor de IA do EcoGrad, em homenagem aos cães que circulam pelos campi da UFSC.">
-      <img src={RETRATO} alt="Ilustração do UFSCão: um cão caramelo sorridente, de coleira e bandana azuis da UFSC, com medalha do brasão da universidade." className="mx-auto max-h-[60dvh] w-auto object-contain" />
-    </Janela>
+    <JanelaRetratoUFSCao aberta={retrato} onOpenChange={setRetrato} />
   </>;
+}
+
+/**
+ * Oferta de cortesia: as primeiras perguntas por conta do EcoGrad.
+ *
+ * Vive aqui, e não só na tela inicial, porque quem chega direto ao painel
+ * flutuante — sem passar pela apresentação — encontrava apenas o formulário de
+ * chave, sem saber que podia experimentar antes de configurar provedor nenhum.
+ * A chave de cortesia é a mesma das duas superfícies (`lerConfigIA`), então
+ * aceitar aqui vale lá e vice-versa.
+ */
+export function OfertaDeCortesia({ onAceitar }: { onAceitar: (c: ConfigSalva) => void }) {
+  // Consultar a cota não gasta cota; sem resposta da função, a oferta some.
+  const cota = useQuery({ queryKey: ['cortesia'], queryFn: ({ signal }) => cotaCortesia(signal), staleTime: 60 * 1000, retry: 0 });
+  if (!cota.data?.disponivel || cota.data.restantes <= 0) return null;
+  return (
+    <div className="info space-y-2">
+      <p>
+        <strong>Experimente sem chave.</strong> As primeiras {cota.data.total ?? 10} perguntas são por conta do
+        EcoGrad, para você conhecer o UFSCão — restam {cota.data.restantes}. Depois delas, configure seu provedor
+        abaixo e continue sem limite.
+      </p>
+      <button type="button" className="btn btn-primary text-xs" onClick={() => {
+        const c = { ...configCortesia(), lembrar: false };
+        salvarConfigIA(c);
+        onAceitar(c);
+      }}>
+        <Gift size={14} className="shrink-0" aria-hidden /> Conversar agora, sem chave
+      </button>
+    </div>
+  );
 }
 
 export function ConfiguracaoIA({ inicial, onSalvo, onEsquecer }: { inicial: ConfigSalva | null; onSalvo: (c: ConfigSalva) => void; onEsquecer: () => void }) {

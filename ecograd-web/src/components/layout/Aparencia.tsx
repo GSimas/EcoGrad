@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
-import { AArrowDown, AArrowUp, Accessibility, ALargeSmall, Activity, BookType, Contrast, Monitor, Moon, Settings, Snail, Sun, Type, type LucideIcon } from 'lucide-react';
+import { AArrowDown, AArrowUp, Accessibility, ALargeSmall, Activity, BookType, Compass, Contrast, Monitor, Moon, Settings, Snail, Sun, Type, type LucideIcon } from 'lucide-react';
 import { Janela } from './Janela';
+import { esquecerTour } from './TourGuiado';
 import { CHIP } from './atalhos';
 import { ConfiguracaoIA } from '@/components/chat/ConsultorIA';
 import { Expander } from '@/components/ui/primitives';
@@ -91,7 +92,7 @@ function ProvedorDeIA() {
 export function Aparencia({ compacto = false, chip = false, desabilitado = false }: { compacto?: boolean; chip?: boolean; desabilitado?: boolean }) {
   const { tema, fonte, tamanho, movimento, contraste, reduzir, claro, erro, definir } = useAparencia();
   return <Janela titulo="Configurações" descricao="Ajuste a leitura e o provedor de IA, sem alterar sua análise ou interromper atividades."
-    trigger={<button type="button" className={chip ? CHIP : 'btn'} disabled={desabilitado} aria-label="Configurações" title="Configurações"><Settings size={chip ? 14 : 18} className="shrink-0" />{!compacto && 'Configurações'}</button>}>
+    trigger={<button type="button" className={chip ? cn(CHIP, compacto && 'w-11 justify-center px-0') : 'btn'} disabled={desabilitado} aria-label="Configurações" title="Configurações"><Settings size={chip ? 14 : 18} className="shrink-0" />{!compacto && 'Configurações'}</button>}>
     <div className="space-y-4">
       <Grupo titulo="Tema" opcoes={TEMAS} valor={tema} onChange={(v) => definir({ tema: v })} />
       <Grupo titulo="Fonte" opcoes={FONTES} valor={fonte} onChange={(v) => definir({ fonte: v })}
@@ -105,6 +106,16 @@ export function Aparencia({ compacto = false, chip = false, desabilitado = false
       <p role="status" className="info">Tema {claro ? 'claro' : 'escuro'} · {contraste === 'alto' ? 'alto contraste' : 'contraste padrão'} · {reduzir ? 'movimento reduzido' : 'movimento conforme os controles'}. {erro ? 'Ajustes ativos nesta página.' : 'Preferências salvas neste navegador.'}</p>
       {erro && <p role="alert" className="aviso">O navegador não permitiu salvar as preferências. Os ajustes continuam ativos até recarregar.</p>}
       <ProvedorDeIA />
+      <fieldset className="space-y-1.5">
+        <legend className="text-xs font-medium uppercase tracking-wide text-slate-400">Tour guiado</legend>
+        <button type="button" className="btn" onClick={() => { esquecerTour(); definir({}); }}>
+          <Compass size={15} className="shrink-0" aria-hidden /> Mostrar o convite do tour de novo
+        </button>
+        <p className="text-[.7rem] leading-snug text-slate-400">
+          O convite do tour aparece uma vez na apresentação e some depois de aceito ou dispensado. Isto o traz de
+          volta na próxima vez que você abrir a tela inicial.
+        </p>
+      </fieldset>
     </div>
   </Janela>;
 }

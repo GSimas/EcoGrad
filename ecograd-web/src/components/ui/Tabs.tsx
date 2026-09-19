@@ -16,14 +16,21 @@ export function Tabs({
   valor,
   onValorChange,
   className,
+  chaveSessao,
 }: {
   abas: readonly AbaDef[];
   padrao?: string;
   valor?: string;
   onValorChange?: (v: string) => void;
   className?: string;
+  /**
+   * Identidade estável do grupo de abas. Sem ela a chave vem da lista de
+   * valores, e um grupo que oculta abas conforme o recorte trocaria de chave a
+   * cada item — perdendo a aba escolhida ao navegar entre dossiês.
+   */
+  chaveSessao?: string;
 }) {
-  const [saved, setSaved] = useSessionField('tabs.' + abas.map((a) => a.valor).join('|'), padrao ?? abas[0]?.valor);
+  const [saved, setSaved] = useSessionField('tabs.' + (chaveSessao ?? abas.map((a) => a.valor).join('|')), padrao ?? abas[0]?.valor);
   return (
     <TabsPrimitive.Root
       defaultValue={padrao ?? abas[0]?.valor}

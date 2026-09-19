@@ -4,6 +4,7 @@ import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { ChevronDown, Info, ChevronRight } from 'lucide-react';
 import { cn, formatarNumero } from '@/lib/utils';
 import { classeDoTipo } from '@/lib/tipos-cor';
+import type { AnaliseOculta } from '@/lib/relevancia';
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={cn('card', className)}>{children}</div>;
@@ -159,5 +160,23 @@ export function Carregando({ texto }: { texto: string }) {
       <span className="h-4 w-4 animate-spin rounded-full border-2 border-eco-border border-t-eco-accent" />
       {texto}
     </div>
+  );
+}
+
+/**
+ * Nota das análises ocultas.
+ *
+ * Esconder um gráfico degenerado (uma barra só, uma fatia de 100%, uma nuvem em
+ * que tudo vale 1) limpa a tela, mas em silêncio parece defeito. A nota diz o
+ * que sumiu e por quê, no mesmo tom das demais ressalvas da ferramenta.
+ */
+export function AnalisesOcultas({ itens }: { itens: readonly AnaliseOculta[] }) {
+  if (itens.length === 0) return null;
+  return (
+    <p className="text-xs leading-relaxed text-slate-400">
+      Análises ocultas neste recorte, por não descreverem nada que já não esteja acima:{' '}
+      {itens.map((i) => `${i.nome} (${i.motivo})`).join('; ')}. Ocultar é decisão de exibição:
+      nenhum registro foi excluído dos cálculos.
+    </p>
   );
 }

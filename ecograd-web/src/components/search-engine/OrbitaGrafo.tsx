@@ -130,9 +130,14 @@ export function OrbitaGrafo({
     [grafo, termoFoco, profundidade, anoLimite, metodoTamanho, snaGlobal],
   );
 
+  // Com um ano só (ou nenhum) não há evolução a reproduzir: o player e o
+  // slider ficariam travados num ponto, sugerindo um recorte que não existe.
+  const temLinhaDoTempo = anos.length > 1;
+
   return (
     <div className="space-y-3">
       <Card className="grid gap-4 sm:flex sm:flex-wrap sm:items-end">
+        {temLinhaDoTempo ? <>
         <div className="flex items-center gap-2">
           <button type="button" className="btn" disabled={reduzir} title={reduzir ? "Movimento reduzido: ajuste o ano manualmente" : undefined} onClick={() => setTocando((v) => !v)}>
             {tocando ? <Pause size={14} /> : <Play size={14} />}
@@ -164,6 +169,9 @@ export function OrbitaGrafo({
             className="accent-eco-accent"
           />
         </label>
+        </> : <p className="text-xs text-slate-400">
+          Recorte temporal indisponível: os registros da rede estão todos em {anos.length === 1 ? `${anos[0]}` : 'anos não informados'}, então não há evolução a percorrer.
+        </p>}
 
         <label className="flex flex-col gap-1 text-xs text-slate-400">
           Profundidade

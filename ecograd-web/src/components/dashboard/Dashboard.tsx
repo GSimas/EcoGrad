@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { Kpi, Expander } from '@/components/ui/primitives';
+import { AnalisesOcultas, Kpi, Expander } from '@/components/ui/primitives';
+import type { AnaliseOculta } from '@/lib/relevancia';
 import { Destaques } from './Destaques';
 import { FichaTecnica } from './FichaTecnica';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
@@ -25,6 +26,24 @@ export function Dashboard() {
   const nomes = useMemo(() => [...new Set([...ppg, ...tcc, ...docs.map((d) => d.programa_origem)])].sort(), [docs, ppg, tcc]);
   const cobertura = useMemo(() => resumoRegistros(docs), [docs]);
   const docsPpg = useMemo(() => docs.filter((d) => ppg.includes(d.programa_origem) && !tcc.includes(d.programa_origem)), [docs, ppg, tcc]);
+
+  /**
+   * Colunas que o mapa de cobertura teria. Com uma só, o heatmap vira uma
+   * tira e o gráfico de volume, uma barra: os números já estão na cobertura
+   * em texto, logo acima. Um único ano não permite intervalo contínuo, então
+   * `resumoRegistros` basta para decidir sem refazer o cálculo do mapa.
+   */
+  const colunasCobertura = cobertura.anos + (cobertura.semAno > 0 ? 1 : 0);
+  const ocultas: AnaliseOculta[] = [
+    ...(colunasCobertura > 1 ? [] : [{
+      nome: 'Cobertura de metadados por ano',
+      motivo: colunasCobertura === 0 ? 'não há registros a mapear' : 'os registros cabem em uma única coluna do mapa',
+    }]),
+    ...(nomes.length > 1 ? [] : [{
+      nome: 'Comparar coleções',
+      motivo: 'há uma só coleção no recorte, sem par a comparar',
+    }]),
+  ];
 
   return (
     <div className="space-y-8">
@@ -94,10 +113,11 @@ export function Dashboard() {
       </div>
 
       {/* Cobertura, comparação e fontes fecham a página: descrevem a base, não o recorte em exploração. */}
-      <Expander titulo="Cobertura de metadados por ano" aberto>
+      {colunasCobertura > 1 && <Expander titulo="Cobertura de metadados por ano" aberto>
         <CoberturaTemporal docs={docs} />
-      </Expander>
+      </Expander>}
       {nomes.length > 1 && <ComparacaoColecoes docs={docs} nomes={nomes} tcc={tcc} ppg={ppg} />}
+      <AnalisesOcultas itens={ocultas} />
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Fontes e contexto institucional</h2>
         {tcc.length > 0 && <p className="text-sm text-slate-300">O catálogo de TCCs inclui graduação ou especialização; há {tcc.length} {tcc.length === 1 ? 'coleção selecionada' : 'coleções selecionadas'}. Essas coleções não recebem nota de programa CAPES. Tipos inconsistentes ou “Outros” são mantidos como registrados na base.</p>}

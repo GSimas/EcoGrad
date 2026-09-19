@@ -2,7 +2,8 @@ import { useSessionField } from '@/hooks/useSessionField';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Filter, Landmark } from 'lucide-react';
-import { Aviso, Card, Carregando, Expander, Kpi, Tabela } from '@/components/ui/primitives';
+import { AnalisesOcultas, Aviso, Card, Carregando, Expander, Kpi, Tabela } from '@/components/ui/primitives';
+import type { AnaliseOculta } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO, barrasHorizontais } from '@/components/ui/Chart';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { carregarCatalogoCapes, filtrarProgramasCapes, niveisPrograma, programaEmFuncionamento } from '@/lib/capes';
@@ -62,6 +63,19 @@ export function PanoramaCapes() {
     for (const p of filtrados) c.set(p.Nota || 'N/I', (c.get(p.Nota || 'N/I') ?? 0) + 1);
     return [...c.entries()].sort((x, y) => x[0].localeCompare(y[0]));
   }, [filtrados]);
+
+  // Uma barra ou uma fatia de 100% não distribui nada: o número já está no KPI
+  // correspondente e na tabela completa, logo abaixo.
+  const ocultasCapes: AnaliseOculta[] = [
+    ...(porGrandeArea.length > 1 || filtrados.length === 0 ? [] : [{
+      nome: 'Programas por grande área',
+      motivo: `todos os programas filtrados estão em ${porGrandeArea[0]?.[0] ?? 'uma grande área'}`,
+    }]),
+    ...(porNota.length > 1 || filtrados.length === 0 ? [] : [{
+      nome: 'Programas por conceito CAPES',
+      motivo: `todos os programas filtrados têm o conceito ${porNota[0]?.[0] ?? 'único'}`,
+    }]),
+  ];
 
   if (isLoading) return <Carregando texto="Carregando catálogo da CAPES..." />;
 
@@ -152,11 +166,11 @@ export function PanoramaCapes() {
       {filtrados.length === 0 ? (
         <Aviso>Nenhum programa corresponde à seleção atual. Selecione opções em todos os filtros ou use “Restaurar filtros”.</Aviso>
       ) : <>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className={`grid gap-4 ${porGrandeArea.length > 1 && porNota.length > 1 ? 'lg:grid-cols-3' : ''}`}>
+        {porGrandeArea.length > 1 && <Card className={porNota.length > 1 ? 'lg:col-span-2' : undefined}>
           <Grafico leitura={{ titulo: 'Programas por grande área', descricao: 'Barras: número de programas em funcionamento (n) por grande área, após os filtros. Códigos distintos contam separadamente.', linhas: porGrandeArea.map(([area,total])=>({area,total})), colunas:[{chave:'area',rotulo:'Grande área'},{chave:'total',rotulo:'Programas (n)'}], contexto }} option={barrasHorizontais(porGrandeArea, 'Distribuição por Grande Área', undefined, 'Programas (n)')} larguraMinima={460} altura={400} />
-        </Card>
-        <Card>
+        </Card>}
+        {porNota.length > 1 && <Card>
           <Grafico
             leitura={{ titulo: 'Programas por conceito CAPES', descricao: 'Setores: número de programas (n) por conceito oficial, após os filtros. Conceitos não numéricos são preservados.', linhas: porNota.map(([nota,total])=>({nota,total})), colunas:[{chave:'nota',rotulo:'Conceito CAPES'},{chave:'total',rotulo:'Programas (n)'}], contexto }}
             altura={400}
@@ -177,8 +191,9 @@ export function PanoramaCapes() {
               ],
             }}
           />
-        </Card>
+        </Card>}
       </div>
+      <AnalisesOcultas itens={ocultasCapes} />
 
       <Expander titulo={`Tabela Completa de Programas (${filtrados.length})`}>
         <Tabela

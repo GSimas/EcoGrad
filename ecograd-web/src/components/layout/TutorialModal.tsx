@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Dog,
   Check,
+  Compass,
   Dna,
   LayoutDashboard,
   Radar,
@@ -31,7 +32,7 @@ const PASSOS: Passo[] = [
 ];
 
 /** Tutorial passo a passo, aberto a partir da tela de apresentação. */
-export function TutorialModal({ children }: { children: ReactNode }) {
+export function TutorialModal({ children, aoFazerTour }: { children: ReactNode; aoFazerTour?: () => void }) {
   const [aberto, setAberto] = useState(false);
   const [salvo, setPasso] = useSessionField('tutorial.passo', 0);
   const passo = Number.isInteger(salvo) && salvo >= 0 && salvo < PASSOS.length ? salvo : 0;
@@ -77,6 +78,15 @@ export function TutorialModal({ children }: { children: ReactNode }) {
               <X size={18} />
             </Dialog.Close>
           </header>
+          {/* O texto longo continua sendo a leitura corrida; quem prefere ser
+              conduzido pelas telas reais sai daqui para o tour. */}
+          {aoFazerTour && <div className="flex flex-wrap items-center gap-3 border-b border-eco-border bg-eco-accent/5 p-3 text-sm sm:px-5">
+            <Compass size={17} className="shrink-0 text-eco-accent" aria-hidden />
+            <span className="min-w-0 flex-1 text-slate-300">Prefere ver na prática? O tour guiado percorre as telas reais em 2 minutos.</span>
+            <Dialog.Close asChild>
+              <button type="button" className="btn btn-primary" onClick={aoFazerTour}>Fazer o tour guiado</button>
+            </Dialog.Close>
+          </div>}
 
           <div key={passo} className="eco-step-content markdown flex-1 overflow-y-auto p-5 text-sm leading-relaxed text-slate-300">
             {atual.corpo}

@@ -6,7 +6,7 @@ import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { SelectBusca } from '@/components/ui/MultiSelect';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { construirRedeRadial, PAPEL_COORIENTADOR, type ModoRadial } from '@/lib/rede-radial';
+import { construirRedeRadial, opcaoRedeRadial, PAPEL_COORIENTADOR, type ModoRadial } from '@/lib/rede-radial';
 import { correspondeBusca, termosBusca } from '@/lib/utils';
 import type { Documento, TipoBusca } from '@/types';
 
@@ -77,105 +77,7 @@ export function RedeRadial({ docs }: Props) {
     return grupo === PAPEL_COORIENTADOR ? 'Co-orientador' : 'Orientador';
   };
 
-  const option = useMemo<EChartsOption>(() => {
-    const maiorGrau = Math.max(1, ...rede.nos.map((n) => n.grauPonderado));
-    const maiorPeso = Math.max(1, ...rede.arestas.map((a) => a.peso));
-    const indiceGrupo = new Map(rede.grupos.map((g, i) => [g, i]));
-
-    const destacando = focais.size > 0;
-    const vizinhos = new Set<string>();
-    for (const a of rede.arestas) {
-      if (focais.has(a.origem)) vizinhos.add(a.destino);
-      if (focais.has(a.destino)) vizinhos.add(a.origem);
-    }
-
-    return {
-      tooltip: {
-        formatter: (params: unknown) => {
-          const p = params as { dataType?: string; data?: Record<string, unknown> };
-          if (p.dataType === 'edge') {
-            const d = p.data as { source: string; target: string; value: number };
-            return `${d.source}\n${d.target}\n${d.value} ${d.value === 1 ? 'registro em comum' : 'registros em comum'}`;
-          }
-          const d = p.data as { name: string; grupo: string; ocorrencias: number; value: number };
-          return `${d.name}\n${d.grupo}\n${d.ocorrencias} ${d.ocorrencias === 1 ? 'registro' : 'registros'}\nGrau ponderado no desenho: ${d.value}`;
-        },
-      },
-      // Legenda desligada explicitamente, e não apenas omitida: o `Grafico`
-      // sempre injeta um componente `legend` para forçar `selectedMode: false`,
-      // e um `legend` sem `data` faz o ECharts preencher a lista sozinho a
-      // partir de `series.categories` e desenhá-la no topo, por cima dos
-      // rótulos do círculo. A legenda real é HTML, passada em `rodape` —
-      // fora do canvas ela não é sobreposta quando o usuário arrasta o
-      // diagrama, e os nomes dos macrotemas não saem cortados.
-      legend: { show: false },
-      series: [{
-        type: 'graph',
-        layout: 'circular',
-        // O círculo é desenhado dentro desta caixa. As margens dão espaço aos
-        // rótulos, que saem para fora do círculo e são longos (nomes
-        // completos). A legenda não entra nessa conta: ela é HTML, fora daqui.
-        left: '13%',
-        right: '13%',
-        top: 28,
-        bottom: 28,
-        // Sem rotação os rótulos se empilham; com ela o diagrama fica igual ao
-        // desenho radial clássico, com os nomes saindo do círculo.
-        circular: { rotateLabel: true },
-        categories: rede.grupos.map((g, i) => ({
-          name: g,
-          itemStyle: { color: TEMA_GRAFICO.paleta[i % TEMA_GRAFICO.paleta.length] },
-        })),
-        data: rede.nos.map((n) => ({
-          id: n.id,
-          name: n.id,
-          value: n.grauPonderado,
-          grupo: n.grupo,
-          ocorrencias: n.ocorrencias,
-          category: indiceGrupo.get(n.grupo) ?? 0,
-          symbolSize: 6 + 18 * Math.sqrt(n.grauPonderado / maiorGrau),
-          ...(!destacando ? {} : focais.has(n.id) ? {
-            itemStyle: { borderColor: TEMA_GRAFICO.texto, borderWidth: 2 },
-            label: { fontSize: 13, fontWeight: 'bold' as const },
-          } : vizinhos.has(n.id) ? {} : {
-            itemStyle: { opacity: 0.15 },
-            label: { color: 'rgba(148, 163, 184, 0.3)' },
-          }),
-        })),
-        links: rede.arestas.map((a) => ({
-          source: a.origem,
-          target: a.destino,
-          value: a.peso,
-          lineStyle: {
-            width: 0.6 + 3 * (a.peso / maiorPeso),
-            ...(!destacando ? {} : focais.has(a.origem) || focais.has(a.destino)
-              ? { opacity: 0.85, width: 1.5 + 3 * (a.peso / maiorPeso) }
-              : { opacity: 0.04 }),
-          },
-        })),
-        roam: true,
-        label: {
-          show: true,
-          position: 'right',
-          color: TEMA_GRAFICO.texto,
-          fontSize: 10,
-          formatter: (p: unknown) => {
-            const nome = (p as { name: string }).name;
-            return nome.length > 28 ? `${nome.slice(0, 28)}…` : nome;
-          },
-        },
-        // Rótulo de nó destacado nunca é escondido pela sobreposição.
-        labelLayout: (p: { dataIndex?: number }) => ({ hideOverlap: !focais.has(rede.nos[p.dataIndex ?? -1]?.id ?? '') }),
-        lineStyle: { color: 'source', curveness: 0.3, opacity: 0.22 },
-        emphasis: {
-          // Com um destaque fixo, o hover não isola outra vizinhança por cima dele.
-          focus: destacando ? 'none' : 'adjacency',
-          label: { show: true, fontSize: 12 },
-          lineStyle: { width: 3, opacity: 0.85 },
-        },
-      }],
-    };
-  }, [rede, focais]);
+  const option = useMemo<EChartsOption>(() => opcaoRedeRadial(rede, focais), [rede, focais]);
 
   const rotuloEntidade = modo === 'supervisao' ? 'Pessoa' : modo === 'macrotemas' ? 'Macrotema' : 'Palavra-chave';
   const rotuloGrupo = modo === 'supervisao' ? 'Papel' : modo === 'macrotemas' ? 'Grupo' : 'Macrotema dominante';
