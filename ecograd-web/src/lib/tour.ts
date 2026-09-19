@@ -12,6 +12,7 @@
  */
 
 export type AcaoTour = 'carregar' | 'abrirTema';
+export type PaginaDoTour = 'inicio' | 'dashboard' | 'busca';
 
 export interface PassoTour {
   id: string;
@@ -74,19 +75,13 @@ const PASSOS: readonly PassoTour[] = [
     id: 'destaques',
     alvo: '[aria-label="Destaques do Ecossistema"]',
     titulo: 'Quatro leituras do mesmo recorte',
-    texto: 'Top 10 ordena por volume. Volumes e Genealogia mostra quem orientou quem. Intermediação e proximidade descreve a posição de cada pessoa na rede — quem liga grupos, não quem é melhor. Diagrama radial desenha as ligações. Abas que não descreveriam nada aqui não aparecem.',
+    texto: 'Top 10 ordena por volume. Volumes e Genealogia mostra quem orientou quem. Intermediação e proximidade descreve a posição de cada pessoa na rede — quem liga grupos, não quem é melhor. Diagrama radial desenha as ligações. O que não descreveria nada neste recorte — uma rede sem ligação, uma série de um ano só — não aparece, e uma nota diz o que sumiu e por quê: ocultar é decisão de exibição, nenhum registro saiu dos cálculos.',
   },
   {
     id: 'verGrafico',
     alvo: '[aria-label^="Visualização de "]',
     titulo: 'Todo gráfico também é tabela',
     texto: 'Este par de botões troca entre o gráfico e os dados. A tabela mostra nomes completos, exporta e abre uma entidade pelo teclado; o gráfico baixa em JPG ou PNG. As barras são ocorrências no recorte carregado — frequência descreve o que foi coletado, não mede mérito.',
-  },
-  {
-    id: 'ocultas',
-    alvo: '[aria-label="Análises ocultas"]',
-    titulo: 'O que não aparece, e por quê',
-    texto: 'Quando uma análise não descreveria nada neste recorte — uma série com um ano só, uma rede sem ligação —, ela some e esta nota diz qual e por quê. Ocultar é decisão de exibição: nenhum registro saiu dos cálculos.',
   },
   {
     id: 'coberturaAno',
@@ -156,6 +151,27 @@ const PASSOS: readonly PassoTour[] = [
     texto: 'O relatório em PDF monta o que você escolher do Dashboard e do Motor de Busca, com os gráficos como imagem e as ressalvas junto. É gerado inteiro no seu navegador — nada do seu recorte sai daqui. Daqui em diante, siga as relações que interessarem e confira sempre nas fontes.',
   },
 ];
+
+/** Página em que cada passo acontece; ausente quer dizer "onde o usuário estiver". */
+const ROTAS: Record<string, PaginaDoTour> = {
+  busca: 'inicio', carregar: 'inicio',
+  indicadores: 'dashboard', cobertura: 'dashboard', destaques: 'dashboard',
+  verGrafico: 'dashboard', coberturaAno: 'dashboard', filtros: 'dashboard', tema: 'dashboard',
+  // A troca de item existe com ou sem dossiê aberto: quem pulou o passo do
+  // tema chega aqui pelo Dashboard, e a página da busca ainda faz sentido.
+  escolherItem: 'busca',
+};
+
+/**
+ * Página do passo, ou `null` para o que fica onde o usuário estiver.
+ *
+ * O dossiê e o histórico chegam pela ação dele; navegar por conta própria
+ * atropelaria o item que ele acabou de abrir. O Panorama e o relatório moram
+ * no painel lateral, presente em qualquer página.
+ */
+export function rotaDoPasso(passo: PassoTour): PaginaDoTour | null {
+  return ROTAS[passo.id] ?? null;
+}
 
 /**
  * Passos válidos para o estado atual.

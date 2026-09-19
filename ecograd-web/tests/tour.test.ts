@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  CHAVE_TOUR, escolherColecaoDemo, passosDoTour, proximoPasso, tamanhoLegivel, tourJaVisto,
-  TOTAL_PASSOS_COMPLETO, type ColecaoCandidata,
+  CHAVE_TOUR, escolherColecaoDemo, passosDoTour, proximoPasso, rotaDoPasso, tamanhoLegivel,
+  tourJaVisto, TOTAL_PASSOS_COMPLETO, type ColecaoCandidata,
 } from '../src/lib/tour';
 
 const colecao = (p: Partial<ColecaoCandidata> = {}): ColecaoCandidata => ({
@@ -119,4 +119,26 @@ test('todo passo que depende de uma ação vem depois dela no roteiro', () => {
     assert.ok(acao >= 0, `${passo.id} depende de uma ação que não existe`);
     assert.ok(acao < i, `${passo.id} vem antes da ação de que depende`);
   }
+});
+
+test('o roteiro avança pelas telas sem nunca voltar para uma que já deixou', () => {
+  // Ping-pong entre páginas seria desnorteante no Próximo e pior no Anterior:
+  // cada volta atrás remontaria uma tela inteira.
+  const ordem = ['inicio', 'dashboard', 'busca'];
+  let ate = 0;
+  for (const passo of passosDoTour({ temAnalise: false })) {
+    const rota = rotaDoPasso(passo);
+    if (rota === null) continue;
+    const pos = ordem.indexOf(rota);
+    assert.ok(pos >= 0, `${passo.id}: rota desconhecida ${rota}`);
+    assert.ok(pos >= ate, `${passo.id} volta para ${rota} depois de ${ordem[ate]}`);
+    ate = pos;
+  }
+});
+
+test('o primeiro passo de cada tela diz qual é, para o tour saber navegar', () => {
+  const passos = passosDoTour({ temAnalise: false });
+  // Um passo sem rota herda a tela de quem veio antes; o primeiro de todos não
+  // tem de quem herdar.
+  assert.notEqual(rotaDoPasso(passos[0]), null);
 });

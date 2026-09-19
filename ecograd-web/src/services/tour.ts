@@ -14,16 +14,21 @@ import type { Driver, DriveStep } from 'driver.js';
 import { navigatePage, suspenderRestauracaoDeRolagem, useNavigation } from '@/services/navigation';
 import { carregarDados } from '@/services/calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { passosDoTour, proximoPasso, type PassoTour } from '@/lib/tour';
+import { passosDoTour, proximoPasso, rotaDoPasso, type PassoTour } from '@/lib/tour';
 
 /**
- * Quanto esperar um alvo que ainda vai montar.
+ * Quanto esperar o alvo aparecer, por transição e não por passo.
  *
- * Curto de propósito: enquanto espera, a tela fica coberta e sem resposta. Se
- * em dois segundos e meio o alvo não montou, ele não vem — seguir em frente é
- * melhor do que parecer travado.
+ * Esperar só faz sentido quando a tela ainda vai mudar — troca de página, ou o
+ * passo logo depois de uma ação do usuário. Dentro da mesma página o alvo ou
+ * está lá, ou não existe naquele recorte: vários blocos são condicionais (a
+ * nota de análises ocultas, o mapa por ano, as análises do dossiê). Esperar
+ * por eles deixava o tour dois segundos e meio sem resposta antes de pular o
+ * passo em silêncio — que foi exatamente o relato: "não consigo avançar, e
+ * depois ele pula um passo".
  */
-const ESPERA_ALVO = 2500;
+const ESPERA_TELA_MUDANDO = 2500;
+const ESPERA_MESMA_TELA = 500;
 
 /**
  * Leva o alvo para a tela e insiste por meio segundo.
@@ -54,26 +59,6 @@ function garantirVisivel(elemento: Element | undefined) {
   tentar();
 }
 
-/** Página em que cada passo acontece. */
-const ROTAS: Record<string, 'inicio' | 'dashboard' | 'busca'> = {
-  busca: 'inicio', carregar: 'inicio',
-  indicadores: 'dashboard', cobertura: 'dashboard', destaques: 'dashboard',
-  verGrafico: 'dashboard', ocultas: 'dashboard', coberturaAno: 'dashboard',
-  filtros: 'dashboard', tema: 'dashboard',
-  // A troca de item existe com ou sem dossiê aberto: quem pulou o passo do
-  // tema chega aqui pelo Dashboard, e a página da busca ainda faz sentido.
-  escolherItem: 'busca',
-};
-/**
- * Página em que cada passo acontece, ou `null` para o passo que fica onde o
- * usuário estiver. O dossiê e o histórico chegam pela ação dele; navegar por
- * conta própria atropelaria o item que ele acabou de abrir. O Panorama e o
- * relatório moram no painel lateral, presente em qualquer página.
- */
-function rotaDoPasso(passo: PassoTour): 'inicio' | 'dashboard' | 'busca' | null {
-  return ROTAS[passo.id] ?? null;
-}
-
 /**
  * Resolve o alvo preferindo o que está visível.
  *
@@ -84,6 +69,7 @@ function rotaDoPasso(passo: PassoTour): 'inicio' | 'dashboard' | 'busca' | null 
  */
 const alvoVisivel = (seletor: string) => () =>
   [...document.querySelectorAll(seletor)].find((e) => e.getClientRects().length > 0) as Element;
+
 
 export interface OpcoesTour {
   /** Preferência de movimento reduzido do usuário. */
@@ -138,9 +124,14 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
    * quadros depois a página nova já está montada, e o alvo encontrado é o que
    * vai continuar existindo.
    */
-  const destacar = (indice: number, trocouPagina: boolean) => {
+  const destacar = (indice: number, telaVaiMudar: boolean) => {
+    // A espera é escolhida agora, e não quando o passo foi montado: só quem
+    // chama sabe se a tela está prestes a trocar. O Driver.js relê este campo
+    // do array a cada salto, então mexer nele aqui é o bastante.
+    const passo = passosDriver[indice];
+    if (passo) passo.waitForElement = telaVaiMudar ? ESPERA_TELA_MUDANDO : ESPERA_MESMA_TELA;
     const mover = () => { if (indice === 0) guia.drive(0); else guia.moveTo(indice); };
-    if (!trocouPagina) { mover(); return; }
+    if (!telaVaiMudar) { mover(); return; }
     requestAnimationFrame(() => requestAnimationFrame(mover));
   };
 
@@ -151,7 +142,10 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
   const avancar = (i: number, { pulou }: { pulou: boolean }) => {
     soltarEspera?.();
     const destino = proximoPasso(passos, i, { pulou });
-    destacar(destino, irPara(destino));
+    // Ação cumprida troca a página pelas mãos do usuário, sem passar por
+    // `irPara`: o destino ainda está montando, e precisa da espera longa.
+    const telaVaiMudar = irPara(destino) || (!pulou && !!passos[i].acao);
+    destacar(destino, telaVaiMudar);
   };
 
   const guia: Driver = driver({
@@ -182,7 +176,8 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
 
   const passoDriver = (passo: PassoTour, i: number): DriveStep => ({
     element: alvoVisivel(passo.alvo),
-    waitForElement: ESPERA_ALVO,
+    // Substituído a cada salto por `destacar`; este é só o valor de partida.
+    waitForElement: ESPERA_TELA_MUDANDO,
     // Alvo que nunca aparece não vira balão apontando para o nada.
     skipMissingElement: true,
     popover: {
@@ -240,8 +235,13 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
   const restabelecerRolagem = suspenderRestauracaoDeRolagem();
   const desligar = () => { document.removeEventListener('scroll', aoRolar, true); restabelecerRolagem(); };
 
-  guia.setSteps(passos.map(passoDriver));
-  destacar(0, irPara(0));
+  const passosDriver = passos.map(passoDriver);
+  guia.setSteps(passosDriver);
+  // O primeiro destaque sempre espera: a página pode estar montando, seja
+  // porque o tour navegou até ela, seja porque a coleção de exemplo acabou de
+  // ser carregada.
+  irPara(0);
+  destacar(0, true);
 
   return () => { desligar(); if (guia.isActive()) guia.destroy(); };
 }
