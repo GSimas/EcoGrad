@@ -54,7 +54,7 @@ export function Dashboard() {
 
       <RecorteAtivo />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div role="group" aria-label="Indicadores do recorte" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi rotulo="Registros carregados" valor={docs.length} detalhe="Não necessariamente trabalhos únicos" />
         <Kpi
           rotulo="Trabalhos únicos"

@@ -256,7 +256,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4" aria-label="Destaques do Ecossistema">
       <h3 className="flex items-center gap-2 text-lg font-semibold">
         <Trophy size={18} /> Destaques do Ecossistema
       </h3>

@@ -36,7 +36,9 @@ const ESPERA_ALVO = 2500;
  */
 function garantirVisivel(elemento: Element | undefined) {
   if (!elemento) return;
-  const ate = Date.now() + 1200;
+  // Dois segundos porque alguns blocos montam o gráfico tarde: o alvo entra na
+  // tela, o gráfico nasce acima dele e empurra tudo de novo.
+  const ate = Date.now() + 2000;
   const tentar = () => {
     const r = elemento.getBoundingClientRect();
     // Basta o topo aparecer na metade de cima: alvos mais altos que a janela
@@ -53,13 +55,35 @@ function garantirVisivel(elemento: Element | undefined) {
 }
 
 /** Página em que cada passo acontece. */
-function rotaDoPasso(passo: PassoTour): 'inicio' | 'dashboard' | null {
-  if (passo.id === 'busca' || passo.id === 'carregar') return 'inicio';
-  if (passo.id === 'cobertura' || passo.id === 'tema') return 'dashboard';
-  // O dossiê e o histórico chegam pela ação do usuário; navegar por conta
-  // própria aqui atropelaria o item que ele acabou de abrir.
-  return null;
+const ROTAS: Record<string, 'inicio' | 'dashboard' | 'busca'> = {
+  busca: 'inicio', carregar: 'inicio',
+  indicadores: 'dashboard', cobertura: 'dashboard', destaques: 'dashboard',
+  verGrafico: 'dashboard', ocultas: 'dashboard', coberturaAno: 'dashboard',
+  filtros: 'dashboard', tema: 'dashboard',
+  // A troca de item existe com ou sem dossiê aberto: quem pulou o passo do
+  // tema chega aqui pelo Dashboard, e a página da busca ainda faz sentido.
+  escolherItem: 'busca',
+};
+/**
+ * Página em que cada passo acontece, ou `null` para o passo que fica onde o
+ * usuário estiver. O dossiê e o histórico chegam pela ação dele; navegar por
+ * conta própria atropelaria o item que ele acabou de abrir. O Panorama e o
+ * relatório moram no painel lateral, presente em qualquer página.
+ */
+function rotaDoPasso(passo: PassoTour): 'inicio' | 'dashboard' | 'busca' | null {
+  return ROTAS[passo.id] ?? null;
 }
+
+/**
+ * Resolve o alvo preferindo o que está visível.
+ *
+ * Alguns atalhos existem duas vezes no DOM — no painel lateral do desktop e no
+ * cabeçalho do celular —, e só um dos dois está na tela. O Driver.js fica com
+ * o primeiro do documento, que no celular é o do painel escondido: recorte de
+ * tamanho zero. Nenhum visível devolve nada, e o passo é pulado.
+ */
+const alvoVisivel = (seletor: string) => () =>
+  [...document.querySelectorAll(seletor)].find((e) => e.getClientRects().length > 0) as Element;
 
 export interface OpcoesTour {
   /** Preferência de movimento reduzido do usuário. */
@@ -88,7 +112,11 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
     carregarDados(ehPpg ? [colecaoDemo.nome] : [], ehPpg ? [] : [colecaoDemo.nome], 'Tour guiado');
   }
 
-  const passos = passosDoTour({ temAnalise: tinhaAnalise || !!colecaoDemo });
+  const passos = passosDoTour({
+    temAnalise: tinhaAnalise || !!colecaoDemo,
+    // Mesmo limiar do `lg:` do Tailwind, que é onde o painel lateral vira gaveta.
+    estreito: window.innerWidth < 1024,
+  });
   /** Cancela a espera do passo de ação em curso, se houver. */
   let soltarEspera: (() => void) | null = null;
 
@@ -153,7 +181,7 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
   });
 
   const passoDriver = (passo: PassoTour, i: number): DriveStep => ({
-    element: passo.alvo,
+    element: alvoVisivel(passo.alvo),
     waitForElement: ESPERA_ALVO,
     // Alvo que nunca aparece não vira balão apontando para o nada.
     skipMissingElement: true,

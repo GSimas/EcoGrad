@@ -19,11 +19,13 @@ export function Trabalhos({ docs, sessionKey, titulo = 'Trabalhos para ler' }: {
   const abrir = (d: Documento) => { const s = useEcoGradStore.getState(); s.navegarDocumento(s.docs.indexOf(d)); };
   return <section className="space-y-4" aria-label={titulo}>
     <h2 className="text-xl font-semibold">{titulo}</h2>
+    <div role="group" aria-label="Filtros dos trabalhos" className="space-y-4">
     <div className="grid gap-3 md:grid-cols-2">
       <label htmlFor={id} className="space-y-1 text-sm"><span>Buscar nestes trabalhos</span><input id={id} type="search" className="input" value={filtro.busca} onChange={(e) => alterar({ busca: e.target.value })} placeholder="Título, pessoa, palavra-chave ou resumo" /></label>
       <div className="space-y-1 text-sm"><label htmlFor={id + '-colecao'}>Coleção dos trabalhos</label><Select id={id + '-colecao'} valor={filtro.colecao} onChange={(v) => alterar({ colecao: v })} opcoes={[{ valor: '', rotulo: 'Todas as coleções deste conjunto' }, ...(filtro.colecao && !nomes.includes(filtro.colecao) ? [{ valor: filtro.colecao, rotulo: `${filtro.colecao} (fora deste conjunto)` }] : []), ...nomes.filter(Boolean).map((n) => ({ valor: n, rotulo: n }))]} /></div>
     </div>
     <div className="flex flex-wrap items-center gap-3"><label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" checked={filtro.comResumo} onChange={(e) => alterar({ comResumo: e.target.checked })} /> Somente com resumo</label><button type="button" className="btn" onClick={() => alterar({ busca: '', colecao: '', comResumo: false })}>Limpar filtros dos trabalhos</button></div>
+    </div>
     <p className="text-xs text-slate-400" role="status">{result.length} de {docs.length} registros · anos mais recentes primeiro; sem ano ao final. Os filtros desta lista não alteram os cálculos.</p>
     {!result.length ? <p className="rounded-lg border border-eco-border p-4 text-sm">Nenhum trabalho neste filtro. Limpe os filtros para voltar ao conjunto disponível.</p> : <ol className="grid gap-3 md:grid-cols-2 lg:grid-cols-3" start={paginaAtual * 6 + 1}>{result.slice(paginaAtual * 6, paginaAtual * 6 + 6).map((d, i) => <li key={paginaAtual * 6 + i} className="card flex h-full flex-col gap-2">
       <button type="button" className="line-clamp-3 min-h-11 text-left text-sm font-semibold leading-snug text-eco-accent underline-offset-4 hover:underline" onClick={() => abrir(d)}>{d.titulo || 'Trabalho sem título'}</button>

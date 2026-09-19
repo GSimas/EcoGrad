@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Search } from 'lucide-react';
-import { Aviso, Card } from '@/components/ui/primitives';
+import { Aviso } from '@/components/ui/primitives';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { SelectBusca } from '@/components/ui/MultiSelect';
 import { Dossie } from './Dossie';
@@ -57,7 +57,9 @@ export function MotorBusca() {
         </p>
       </header>
 
-      <Card className="space-y-4">
+      {/* `div` e não `Card`: o marco de busca precisa de papel e nome, e é o
+          alvo do tour para a troca de item. */}
+      <div role="search" aria-label="Escolha do item" className="card space-y-4">
         <GrupoOpcoes
           rotulo="Procurar por"
           opcoes={CATEGORIAS.map((c) => c.rotulo)}
@@ -85,7 +87,7 @@ export function MotorBusca() {
             navegarPara(item?.tipo ?? buscaTipo, item?.nome ?? null);
           }}
         />
-      </Card>
+      </div>
 
       {buscaTermo === null && (
         <Aviso>

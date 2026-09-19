@@ -15,10 +15,24 @@ test('com análise aberta o tour pula o recorte, que substituiria o trabalho em 
   const semAnalise = passosDoTour({ temAnalise: false });
   assert.equal(semAnalise.length, TOTAL_PASSOS_COMPLETO);
   // Os dois passos que carregam dados só existem para quem chega sem nada.
-  assert.deepEqual(comAnalise.map((p) => p.id), ['cobertura', 'tema', 'dossie', 'historico']);
+  assert.deepEqual(semAnalise.filter((p) => !comAnalise.includes(p)).map((p) => p.id), ['busca', 'carregar']);
   assert.equal(comAnalise.some((p) => p.acao === 'carregar'), false);
   // O passo de abrir um tema sobrevive nos dois: ele não é destrutivo.
   assert.equal(comAnalise.some((p) => p.acao === 'abrirTema'), true);
+});
+
+test('no celular o passo do relatório sai, porque o alvo dele mora na gaveta fechada', () => {
+  const largo = passosDoTour({ temAnalise: true });
+  const estreito = passosDoTour({ temAnalise: true, estreito: true });
+  assert.deepEqual(largo.filter((p) => !estreito.includes(p)).map((p) => p.id), ['relatorio']);
+});
+
+test('o roteiro cobre as duas telas de análise, e não só o Dashboard', () => {
+  const ids = passosDoTour({ temAnalise: false }).map((p) => p.id);
+  for (const esperado of ['indicadores', 'destaques', 'verGrafico', 'coberturaAno', 'filtros', 'analises', 'escolherItem']) {
+    assert.ok(ids.includes(esperado), `faltou o passo ${esperado}`);
+  }
+  assert.equal(new Set(ids).size, ids.length, 'há passos com id repetido');
 });
 
 test('todo passo tem alvo por rótulo de acessibilidade, nunca por classe de estilo', () => {
@@ -82,8 +96,11 @@ test('pular um passo de ação descarta o passo que dependia dela', () => {
   const tema = passos.findIndex((p) => p.id === 'tema');
   // Cumprida a ação, o dossiê existe na tela e é o próximo.
   assert.equal(passos[proximoPasso(passos, tema, { pulou: false })].id, 'dossie');
-  // Pulada, o dossiê nunca foi aberto: apontar para ele travaria o tour.
-  assert.equal(passos[proximoPasso(passos, tema, { pulou: true })].id, 'historico');
+  // Pulada, o dossiê nunca foi aberto: apontar para ele travaria o tour. O
+  // destino é o primeiro passo que ainda tem alvo sem aquela ação.
+  const depoisDePular = passos[proximoPasso(passos, tema, { pulou: true })];
+  assert.equal(depoisDePular.dependeDe, undefined);
+  assert.equal(passos.slice(tema + 1, passos.indexOf(depoisDePular)).every((p) => p.dependeDe === 'abrirTema'), true);
 });
 
 test('pular um passo narrado não descarta nada, e o fim do roteiro é o fim', () => {

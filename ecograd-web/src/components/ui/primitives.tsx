@@ -173,7 +173,7 @@ export function Carregando({ texto }: { texto: string }) {
 export function AnalisesOcultas({ itens }: { itens: readonly AnaliseOculta[] }) {
   if (itens.length === 0) return null;
   return (
-    <p className="text-xs leading-relaxed text-slate-400">
+    <p role="note" aria-label="Análises ocultas" className="text-xs leading-relaxed text-slate-400">
       Análises ocultas neste recorte, por não descreverem nada que já não esteja acima:{' '}
       {itens.map((i) => `${i.nome} (${i.motivo})`).join('; ')}. Ocultar é decisão de exibição:
       nenhum registro foi excluído dos cálculos.
