@@ -745,6 +745,24 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
    balão acompanha claro, escuro e alto contraste sem regra extra. A seta é
    pintada por `border-*-color` no arquivo da biblioteca, e por isso cada lado
    precisa ser sobrescrito separadamente. */
+/* O recorte do Driver.js é só um furo no véu escuro: em cima de um tema já
+   escuro ele mal aparece. O anel na cor de destaque é o que de fato mostra
+   onde olhar — e o brilho separa o bloco em foco do resto da página. */
+.driver-active-element {
+  border-radius: .75rem;
+  outline: 2px solid rgb(var(--eco-accent));
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px rgb(var(--eco-accent) / .22), 0 0 32px rgb(var(--eco-accent) / .35);
+}
+/* Quem pediu menos movimento não recebe o pulso, só o anel. */
+@media (prefers-reduced-motion: no-preference) {
+  .driver-active-element { animation: eco-tour-pulso 1.8s ease-in-out infinite; }
+}
+@keyframes eco-tour-pulso {
+  0%, 100% { box-shadow: 0 0 0 4px rgb(var(--eco-accent) / .18), 0 0 26px rgb(var(--eco-accent) / .28); }
+  50% { box-shadow: 0 0 0 7px rgb(var(--eco-accent) / .10), 0 0 40px rgb(var(--eco-accent) / .45); }
+}
+
 .driver-popover.eco-tour {
   max-width: 22rem;
   border: 1px solid rgb(var(--eco-border));

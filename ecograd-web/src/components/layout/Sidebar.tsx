@@ -5,6 +5,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { BookOpen, Dna, Landmark, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Radar, Search, X } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { AtalhosEcoGrad } from './AtalhosEcoGrad';
+import { OfertaDeExemplo, useTourGuiado } from './TourGuiado';
 import { ExportarRelatorio } from './ExportarRelatorio';
 import { FundoDinamico } from './FundoDinamico';
 import { Janela } from './Janela';
@@ -38,7 +39,7 @@ export function AcessosAjuda({ compacto = false }: { compacto?: boolean }) {
   </>;
 }
 
-function Navegacao({ compacto, aoNavegar }: { compacto: boolean; aoNavegar?: () => void }) {
+function Navegacao({ compacto, aoNavegar, tour }: { compacto: boolean; aoNavegar?: () => void; tour: ReturnType<typeof useTourGuiado> }) {
   const state = useEcoGradStore();
   const page = useNavigation((s) => s.page);
   // A badge lista todas as coleções; o limite de altura evita empurrar a navegação para fora da tela.
@@ -76,11 +77,16 @@ function Navegacao({ compacto, aoNavegar }: { compacto: boolean; aoNavegar?: () 
     {/* Chips do rodapé da apresentação, aqui só com o ícone: a lateral é estreita
         e os três nomes ocupariam duas linhas. Créditos e repositório ficam no
         "Sobre" e no rodapé da apresentação, sem repetição aqui. */}
-    <AtalhosEcoGrad somenteIcone empilhado={compacto} className="mt-auto border-t border-eco-border pt-3" />
+    <AtalhosEcoGrad somenteIcone empilhado={compacto} className="mt-auto border-t border-eco-border pt-3"
+      aoFazerTour={() => { aoNavegar?.(); tour.comecar(); }} />
   </>;
 }
 
 export function Sidebar() {
+  // O tour vive aqui, e não dentro de `Navegacao`: no celular a gaveta se
+  // fecha ao começar o tour, e um tour preso ao componente que fecha morreria
+  // no mesmo instante. A barra lateral fica montada o tempo todo.
+  const tour = useTourGuiado();
   const recolhida = useEcoGradStore((s) => s.sidebarRecolhida);
   const alternar = useEcoGradStore((s) => s.alternarSidebar);
   const page = useNavigation((s) => s.page);
@@ -105,7 +111,7 @@ export function Sidebar() {
       <button type="button" className="btn min-h-11" onClick={alternar} aria-expanded={!recolhida} aria-label={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'} title={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'}>
         {recolhida ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}
       </button>
-        <Navegacao compacto={recolhida} />
+        <Navegacao compacto={recolhida} tour={tour} />
       </div>
     </aside>
     <header className="flex shrink-0 items-center gap-2 border-b border-eco-border bg-eco-panel px-2 py-2 lg:hidden">
@@ -116,7 +122,7 @@ export function Sidebar() {
             onCloseAutoFocus={(event) => { if (navegou.current) { event.preventDefault(); navegou.current = false; document.getElementById('conteudo-principal')?.focus(); } }}>
             <div className="flex items-center justify-between gap-2"><Dialog.Title className="font-semibold text-eco-accent">Menu EcoGrad</Dialog.Title><Dialog.Close className="btn h-11 w-11 px-0" aria-label="Fechar menu de navegação"><X size={20} /></Dialog.Close></div>
             <Dialog.Description className="sr-only">Navegue pela análise, edite as coleções ou abra a ajuda e os dados CAPES.</Dialog.Description>
-            <Navegacao compacto={false} aoNavegar={() => { navegou.current = true; setMenu(false); }} />
+            <Navegacao compacto={false} tour={tour} aoNavegar={() => { navegou.current = true; setMenu(false); }} />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
@@ -127,5 +133,6 @@ export function Sidebar() {
       </button>
       <AcessosAjuda compacto />
     </header>
+    <OfertaDeExemplo tour={tour} />
   </>;
 }

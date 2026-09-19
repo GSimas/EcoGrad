@@ -15,6 +15,23 @@ export interface NavigationPort {
 export const useNavigation = create<{ page: Page; current: string; visits: Visit[]; restore: Position | null; revision: number; notice: string; storageError: string }>(() => ({ page: 'inicio', current: '', visits: [], restore: null, revision: 0, notice: '', storageError: '' }));
 let readPosition: () => Position = () => ({ top: 0 });
 export function registerPosition(reader: () => Position) { readPosition = reader; return () => { readPosition = () => ({ top: 0 }); }; }
+
+/**
+ * Suspende a restauração de rolagem enquanto alguém mais precisa mandar nela.
+ *
+ * Depois de cada navegação o `useNavigationPosition` segura o topo por um
+ * segundo e meio, refazendo a rolagem a cada mudança de layout, e só desiste
+ * diante de um gesto de verdade — roda, toque, tecla. O tour guiado precisa
+ * rolar até o alvo nessa mesma janela, e sem isto perdia a disputa: o destaque
+ * ia parar fora da tela. Devolve a função que restabelece o comportamento.
+ */
+let restauracoesSuspensas = 0;
+export function suspenderRestauracaoDeRolagem(): () => void {
+  restauracoesSuspensas += 1;
+  let solto = false;
+  return () => { if (solto) return; solto = true; restauracoesSuspensas -= 1; };
+}
+export const restauracaoDeRolagemAtiva = () => restauracoesSuspensas === 0;
 let changePage: (page: Page) => void = () => {};
 let move: (delta: number) => void = () => {};
 export const navigatePage = (page: Page) => changePage(page);

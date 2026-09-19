@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { checkpointPosition, registerPosition, useNavigation } from '@/services/navigation';
+import { checkpointPosition, registerPosition, restauracaoDeRolagemAtiva, useNavigation } from '@/services/navigation';
 import type { Position } from '@/lib/navigation';
 const interactive = 'button, a, input, select, textarea, [role="tab"], summary';
 function focusDescription(root: HTMLElement): Position['focus'] {
@@ -24,7 +24,10 @@ export function useNavigationPosition() {
     let stopped = false;
     let frame = 0;
     const apply = () => {
-      if (stopped) return;
+      // `restauracaoDeRolagemAtiva` é a saída para quem conduz a rolagem de
+      // propósito — hoje, o tour guiado — e não teria como competir com este
+      // efeito, que insiste por um segundo e meio.
+      if (stopped || !restauracaoDeRolagemAtiva()) return;
       root.scrollTop = restore?.top ?? 0;
     };
     // Layout can grow once charts/fonts mount. Retry only while the reader has not interacted.

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  CHAVE_TOUR, escolherColecaoDemo, passosDoTour, tamanhoLegivel, tourJaVisto,
+  CHAVE_TOUR, escolherColecaoDemo, passosDoTour, proximoPasso, tamanhoLegivel, tourJaVisto,
   TOTAL_PASSOS_COMPLETO, type ColecaoCandidata,
 } from '../src/lib/tour';
 
@@ -23,7 +23,7 @@ test('com análise aberta o tour pula o recorte, que substituiria o trabalho em 
 
 test('todo passo tem alvo por rótulo de acessibilidade, nunca por classe de estilo', () => {
   for (const p of passosDoTour({ temAnalise: false })) {
-    assert.ok(p.alvo.includes('aria-label'), `${p.id}: ${p.alvo}`);
+    assert.ok(p.alvo.includes('aria-label') || p.alvo.includes('role='), `${p.id}: ${p.alvo}`);
     assert.equal(p.alvo.includes('.'), false, `${p.id} usa seletor de classe`);
     assert.ok(p.titulo.length > 0 && p.texto.length > 0, p.id);
   }
@@ -75,4 +75,31 @@ test('o tamanho do download é declarado em unidade legível', () => {
   assert.equal(tamanhoLegivel(35_000), '34 KiB');
   assert.equal(tamanhoLegivel(3_000_000), '2.9 MiB');
   assert.equal(tamanhoLegivel(undefined), 'tamanho não informado');
+});
+
+test('pular um passo de ação descarta o passo que dependia dela', () => {
+  const passos = passosDoTour({ temAnalise: true });
+  const tema = passos.findIndex((p) => p.id === 'tema');
+  // Cumprida a ação, o dossiê existe na tela e é o próximo.
+  assert.equal(passos[proximoPasso(passos, tema, { pulou: false })].id, 'dossie');
+  // Pulada, o dossiê nunca foi aberto: apontar para ele travaria o tour.
+  assert.equal(passos[proximoPasso(passos, tema, { pulou: true })].id, 'historico');
+});
+
+test('pular um passo narrado não descarta nada, e o fim do roteiro é o fim', () => {
+  const passos = passosDoTour({ temAnalise: true });
+  const cobertura = passos.findIndex((p) => p.id === 'cobertura');
+  assert.equal(proximoPasso(passos, cobertura, { pulou: true }), cobertura + 1);
+  // Passar do último devolve um índice fora do roteiro — o tour encerra.
+  assert.equal(proximoPasso(passos, passos.length - 1, { pulou: true }), passos.length);
+});
+
+test('todo passo que depende de uma ação vem depois dela no roteiro', () => {
+  const passos = passosDoTour({ temAnalise: false });
+  for (const [i, passo] of passos.entries()) {
+    if (!passo.dependeDe) continue;
+    const acao = passos.findIndex((p) => p.acao === passo.dependeDe);
+    assert.ok(acao >= 0, `${passo.id} depende de uma ação que não existe`);
+    assert.ok(acao < i, `${passo.id} vem antes da ação de que depende`);
+  }
 });

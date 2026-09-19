@@ -26,12 +26,20 @@ export interface PassoTour {
   acao?: AcaoTour;
   /** Passos do recorte só fazem sentido para quem ainda não carregou nada. */
   somenteSemAnalise?: boolean;
+  /**
+   * Passo que só tem alvo na tela depois de uma ação. Quem pula a ação pula
+   * junto o que dependia dela — ver `proximoPasso`.
+   */
+  dependeDe?: AcaoTour;
 }
 
 const PASSOS: readonly PassoTour[] = [
   {
     id: 'busca',
-    alvo: '[aria-label^="Título, autor, orientador"]',
+    // O bloco inteiro, e não só o campo: durante o tour apenas o que está
+    // dentro do recorte aceita clique, e escolher uma coleção exige a lista de
+    // sugestões, que aparece abaixo do campo.
+    alvo: '[role="search"]',
     titulo: 'Comece pelo recorte',
     texto: 'Tudo no EcoGrad descreve o recorte que você escolhe. Aqui você busca em todo o acervo — um documento, uma pessoa, um tema ou uma coleção inteira — e nada é baixado até você confirmar.',
     somenteSemAnalise: true,
@@ -59,7 +67,10 @@ const PASSOS: readonly PassoTour[] = [
   },
   {
     id: 'dossie',
-    alvo: '[aria-label="Trabalhos associados"]',
+    // O título, e não a seção inteira: a lista de trabalhos passa de mil pixels
+    // de altura, e um recorte maior que a tela não destaca coisa alguma.
+    alvo: '[aria-label="Trabalhos associados"] > h2',
+    dependeDe: 'abrirTema',
     titulo: 'O dossiê reúne a evidência',
     texto: 'Cada dossiê mostra os trabalhos associados, as pessoas e os temas ligados a eles, e as análises que fazem sentido para aquele item. Abra a fonte original antes de usar qualquer achado: o EcoGrad reorganiza metadados, não confere o texto dos trabalhos.',
   },
@@ -82,6 +93,21 @@ export function passosDoTour({ temAnalise }: { temAnalise: boolean }): PassoTour
 }
 
 export const TOTAL_PASSOS_COMPLETO = PASSOS.length;
+
+/**
+ * Índice do próximo passo depois de `i`.
+ *
+ * Pular um passo de ação deixa a tela exatamente onde estava, e o passo que só
+ * existe depois daquela ação não tem alvo nenhum para destacar: o tour ficaria
+ * parado esperando um elemento que ninguém vai montar. Quem pula a ação pula
+ * junto o que dependia dela.
+ */
+export function proximoPasso(passos: readonly PassoTour[], i: number, { pulou }: { pulou: boolean }): number {
+  const acao = passos[i]?.acao;
+  let n = i + 1;
+  if (pulou && acao) while (passos[n]?.dependeDe === acao) n += 1;
+  return n;
+}
 
 /** Marca de "já viu", no armazenamento que sobrevive ao fechar a aba. */
 export const CHAVE_TOUR = 'ecograd-tour-v1';

@@ -191,8 +191,11 @@ export function BuscaGlobal() {
                   ? 'Busque itens ou coleções. Carregar substitui a análise atual pela nova seleção.'
                   : 'Busque um documento, uma pessoa, um tema ou uma coleção inteira. Selecione quantos quiser e carregue de uma vez.';
 
+  // O marco de busca nomeia o bloco para leitores de tela e dá ao tour guiado
+  // um alvo que engloba campo, sugestões e o botão de carregar — durante o tour
+  // só o que está dentro do recorte aceita clique.
   return (
-    <div className="mt-7 w-full max-w-2xl text-left">
+    <div role="search" aria-label="Busca no acervo" className="mt-7 w-full max-w-2xl text-left">
       {/* Bandeja da seleção. A altura é fixa de propósito: reservar o espaço é o
           único jeito de, ao mesmo tempo, não empurrar a barra quando a seleção
           cresce e não cobrir nada da tela — um painel flutuante só troca um

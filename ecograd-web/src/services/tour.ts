@@ -11,13 +11,46 @@
  * tour não baixa nada.
  */
 import type { Driver, DriveStep } from 'driver.js';
-import { navigatePage, useNavigation } from '@/services/navigation';
+import { navigatePage, suspenderRestauracaoDeRolagem, useNavigation } from '@/services/navigation';
 import { carregarDados } from '@/services/calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { passosDoTour, type PassoTour } from '@/lib/tour';
+import { passosDoTour, proximoPasso, type PassoTour } from '@/lib/tour';
 
-/** Quanto esperar um alvo que ainda vai montar. */
-const ESPERA_ALVO = 6000;
+/**
+ * Quanto esperar um alvo que ainda vai montar.
+ *
+ * Curto de propósito: enquanto espera, a tela fica coberta e sem resposta. Se
+ * em dois segundos e meio o alvo não montou, ele não vem — seguir em frente é
+ * melhor do que parecer travado.
+ */
+const ESPERA_ALVO = 2500;
+
+/**
+ * Leva o alvo para a tela e insiste por meio segundo.
+ *
+ * Nesse intervalo ainda disputam a rolagem o fechamento da gaveta do celular
+ * (que devolve o foco ao conteúdo), o layout que cresce quando gráficos e
+ * fontes montam, e a própria troca de página. Uma rolagem só, no instante do
+ * destaque, é desfeita por qualquer um deles — e o destaque ia parar fora da
+ * tela, com o furo do overlay junto.
+ */
+function garantirVisivel(elemento: Element | undefined) {
+  if (!elemento) return;
+  const ate = Date.now() + 1200;
+  const tentar = () => {
+    const r = elemento.getBoundingClientRect();
+    // Basta o topo aparecer na metade de cima: alvos mais altos que a janela
+    // nunca caberiam inteiros, e exigir isso seria insistir para sempre.
+    if ((r.top >= 0 && r.top < window.innerHeight * 0.6) || Date.now() > ate) return;
+    const cabe = r.height < window.innerHeight * 0.7;
+    // Sempre instantâneo. Rolagem suave aqui é animação em curso: a conferida
+    // seguinte lê uma posição que ainda está mudando, corrige por cima, e as
+    // duas somadas passam do alvo.
+    elemento.scrollIntoView({ block: cabe ? 'center' : 'nearest', behavior: 'auto' });
+    setTimeout(tentar, 120);
+  };
+  tentar();
+}
 
 /** Página em que cada passo acontece. */
 function rotaDoPasso(passo: PassoTour): 'inicio' | 'dashboard' | null {
@@ -59,19 +92,56 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
   /** Cancela a espera do passo de ação em curso, se houver. */
   let soltarEspera: (() => void) | null = null;
 
-  const irPara = (indice: number) => {
+  /** Navega para a página do passo. Devolve se a página de fato mudou. */
+  const irPara = (indice: number): boolean => {
     const rota = passos[indice] && rotaDoPasso(passos[indice]);
-    if (rota) navigatePage(rota);
+    if (!rota || useNavigation.getState().page === rota) return false;
+    navigatePage(rota);
+    return true;
+  };
+
+  /**
+   * Destaca o passo `indice`, esperando a troca de página quando houver uma.
+   *
+   * No mesmo tique da navegação o DOM ainda é o da página anterior — e vários
+   * blocos (a cobertura, por exemplo) existem nas duas. O Driver.js encontrava
+   * o alvo da página velha, destacava, e o React desmontava aquele nó em
+   * seguida: sobrava um recorte de tamanho zero e uma tela toda escura. Dois
+   * quadros depois a página nova já está montada, e o alvo encontrado é o que
+   * vai continuar existindo.
+   */
+  const destacar = (indice: number, trocouPagina: boolean) => {
+    const mover = () => { if (indice === 0) guia.drive(0); else guia.moveTo(indice); };
+    if (!trocouPagina) { mover(); return; }
+    requestAnimationFrame(() => requestAnimationFrame(mover));
+  };
+
+  /**
+   * Sai do passo `i`. `pulou` distingue quem cumpriu a ação de quem desistiu
+   * dela: só o segundo precisa descartar os passos que dependiam do resultado.
+   */
+  const avancar = (i: number, { pulou }: { pulou: boolean }) => {
+    soltarEspera?.();
+    const destino = proximoPasso(passos, i, { pulou });
+    destacar(destino, irPara(destino));
   };
 
   const guia: Driver = driver({
     animate: !reduzir,
-    smoothScroll: !reduzir,
-    overlayColor: '#0E1117',
-    overlayOpacity: 0.72,
+    // Quem leva o alvo à tela é `garantirVisivel`, instantâneo: duas rolagens
+    // animadas ao mesmo tempo brigam e passam do ponto.
+    smoothScroll: false,
+    // Preto, e não o fundo do tema: um véu da mesma cor da página não escurece
+    // nada, e o recorte do passo fica invisível justamente no tema escuro.
+    overlayColor: '#000000',
+    overlayOpacity: 0.75,
     stagePadding: 8,
     stageRadius: 10,
     allowClose: true,
+    // Clique no véu não encerra: durante um passo de ação é fácil errar o alvo
+    // por alguns pixels, e perder o tour inteiro por causa disso é castigo
+    // demais. Para sair há o × e o Esc.
+    overlayClickBehavior: () => {},
     showProgress: true,
     progressText: 'Passo {{current}} de {{total}}',
     prevBtnText: 'Anterior',
@@ -79,7 +149,7 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
     // Nos passos de ação o usuário precisa clicar no alvo; nos narrados, poder
     // clicar também não atrapalha e bloquear seria só frustrante.
     disableActiveInteraction: false,
-    onDestroyed: () => { soltarEspera?.(); aoTerminar?.(); },
+    onDestroyed: () => { soltarEspera?.(); desligar(); aoTerminar?.(); },
   });
 
   const passoDriver = (passo: PassoTour, i: number): DriveStep => ({
@@ -92,10 +162,16 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
       description: passo.texto,
       // O botão do passo de ação é a saída de emergência: ele nunca trava.
       nextBtnText: passo.acao ? 'Pular este passo' : i === passos.length - 1 ? 'Concluir' : 'Próximo',
-      onNextClick: () => { soltarEspera?.(); irPara(i + 1); guia.moveNext(); },
-      onPrevClick: () => { soltarEspera?.(); irPara(i - 1); guia.movePrevious(); },
+      onNextClick: () => { avancar(i, { pulou: true }); },
+      onPrevClick: () => { soltarEspera?.(); destacar(i - 1, irPara(i - 1)); },
     },
-    onHighlighted: () => {
+    onHighlighted: (elemento) => {
+      // O Driver.js rola até o alvo quando começa a destacá-lo, mas aqui quem
+      // manda na rolagem é o app: ao abrir uma página nova ele devolve
+      // `#conteudo-principal` ao topo — depois. O alvo ficava fora da tela com
+      // o furo do overlay junto, e sobrava uma tela inteira escura e sem
+      // clique. Rolar no fim do destaque é o que sobrevive a esse reset.
+      garantirVisivel(elemento);
       if (!passo.acao) return;
       // Passo de ação: o avanço vem do estado, não do botão. A store é a fonte
       // — esperar por um clique no DOM erraria quando a ação acontece por
@@ -106,30 +182,38 @@ export async function iniciarTour({ reduzir, colecaoDemo, aoTerminar }: OpcoesTo
       // preenchido — e, pior, pode clicar justamente no tema que já estava
       // aberto: o termo não muda, e um teste sobre ele deixaria o tour parado
       // para sempre. Sair do Dashboard para a busca é o que sempre acontece.
-      const avancar = () => {
-        soltarEspera?.();
-        irPara(i + 1);
-        guia.moveNext();
-      };
+      const feito = () => avancar(i, { pulou: false });
       if (passo.acao === 'carregar') {
-        if (useEcoGradStore.getState().dadosCarregados) { avancar(); return; }
+        if (useEcoGradStore.getState().dadosCarregados) { feito(); return; }
         const parar = useEcoGradStore.subscribe(() => {
-          if (useEcoGradStore.getState().dadosCarregados) avancar();
+          if (useEcoGradStore.getState().dadosCarregados) feito();
         });
         soltarEspera = () => { parar(); soltarEspera = null; };
         return;
       }
       const abriuDossie = () => useNavigation.getState().page === 'busca'
         && useEcoGradStore.getState().buscaTermo !== null;
-      const parar = useNavigation.subscribe(() => { if (abriuDossie()) avancar(); });
+      const parar = useNavigation.subscribe(() => { if (abriuDossie()) feito(); });
       soltarEspera = () => { parar(); soltarEspera = null; };
     },
     onDeselected: () => { soltarEspera?.(); },
   });
 
-  guia.setSteps(passos.map(passoDriver));
-  irPara(0);
-  guia.drive(0);
+  // O conteúdo do EcoGrad rola dentro de `#conteudo-principal`, não na janela.
+  // O Driver.js só escuta `scroll` em `window` — e evento de rolagem não
+  // borbulha, então ele nunca fica sabendo. O recorte congelava na posição de
+  // antes da rolagem: o furo do overlay ia parar fora da tela, a página inteira
+  // ficava coberta e o alvo, impossível de clicar. Na fase de captura o evento
+  // chega de qualquer elemento que role.
+  const aoRolar = () => { if (guia.isActive()) guia.refresh(); };
+  document.addEventListener('scroll', aoRolar, true);
+  // Enquanto o tour conduz, quem decide a rolagem é ele (ver
+  // `suspenderRestauracaoDeRolagem`).
+  const restabelecerRolagem = suspenderRestauracaoDeRolagem();
+  const desligar = () => { document.removeEventListener('scroll', aoRolar, true); restabelecerRolagem(); };
 
-  return () => { if (guia.isActive()) guia.destroy(); };
+  guia.setSteps(passos.map(passoDriver));
+  destacar(0, irPara(0));
+
+  return () => { desligar(); if (guia.isActive()) guia.destroy(); };
 }
