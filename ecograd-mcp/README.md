@@ -74,5 +74,5 @@ rede.
 ## Sob o capô
 
 Não há servidor no meio: o cliente fala direto com o PostgREST do índice, que é uma API HTTP pública
-documentada em [`docs/API.md`](https://github.com/GSimas/Ecology-Graph/blob/main/docs/API.md). Tudo o
+documentada em [`docs/API.md`](https://github.com/GSimas/EcoGrad/blob/main/docs/API.md). Tudo o
 que este pacote faz, um `curl` também faz.
