@@ -38,6 +38,7 @@ A raiz guarda o que alimenta e valida essa aplicação:
 | [`coleta/`](coleta/) | Coleta semanal do Repositório Institucional, executada pelo GitHub Actions |
 | `base_*.json.gz`, `programas_ufsc.json`, `mapa_colecoes_tcc.json` | Bases copiadas para `ecograd-web/public/data/` no `sync:data` |
 | `base_ppgegc.json` | Base de referência da comparação de paridade |
+| [`ecograd-mcp/`](ecograd-mcp/) | Servidor MCP do acervo, publicado no npm — o índice como ferramenta de assistente |
 
 A versão web é uma migração de um app Streamlit. Toda a matemática de redes complexas, foresight
 e memética foi **transcrita e verificada numericamente** contra o `backend.py` original — veja
@@ -202,6 +203,18 @@ npm run indice:embeddings       # vetores das obras (custo único, ~US$ 8)
 `indice/schema.sql` é a definição canônica: aplicá-lo num Postgres vazio e rodar os comandos acima
 reconstrói o índice do zero. Não há migração incremental de propósito — divergência silenciosa
 entre base e índice é o modo de falha que o projeto quer evitar, e reconstruir custa minutos.
+
+### Usar o índice de fora
+
+O índice **já é uma API pública**: o PostgREST do Supabase expõe cada função com `grant … to anon`
+em `/rest/v1/rpc/<função>`, e a chave publicável é pública por desenho — é a mesma que o navegador
+recebe ao abrir o site. Não há serviço próprio no meio, nem custo além do banco que já existe.
+
+- [`docs/API.md`](docs/API.md) — endereço, chave, cada endpoint com argumentos e retorno, as views
+  consultáveis por SQL e os limites de uso.
+- [`ecograd-mcp/`](ecograd-mcp/) — os mesmos endpoints como servidor MCP, para usar o acervo dentro
+  de um assistente: `claude mcp add ecograd -- npx -y ecograd-mcp`. Roda na máquina de quem usa, por
+  stdio, sem nada para hospedar.
 
 ### Atualização automática
 

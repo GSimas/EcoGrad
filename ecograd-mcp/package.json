@@ -1,0 +1,44 @@
+{
+  "name": "ecograd-mcp",
+  "version": "0.1.0",
+  "description": "Servidor MCP do acervo acadêmico da UFSC indexado pelo EcoGrad: panorama temático, leitura completa de temas e SQL somente leitura sobre 92 mil registros.",
+  "type": "module",
+  "bin": {
+    "ecograd-mcp": "index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "indice.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ufsc",
+    "cientometria",
+    "teses",
+    "dissertacoes",
+    "ecograd"
+  ],
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GSimas/EcoGrad.git",
+    "directory": "ecograd-mcp"
+  },
+  "homepage": "https://github.com/GSimas/EcoGrad/tree/main/ecograd-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/GSimas/EcoGrad/issues"
+  }
+}
