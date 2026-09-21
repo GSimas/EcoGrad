@@ -19,6 +19,12 @@ class RegrasDeColeta(unittest.TestCase):
         self.assertIsNone(c.classificar_nivel(['Artigo']))
         self.assertIsNone(c.classificar_nivel(['Síntese de hipóteses']))
 
+    def test_campos_vazios_do_oai_nao_derrubam_a_coleta(self):
+        meta = c.limpar_meta({'type': [None, 'Tese (Doutorado)'], 'title': [None], 'creator': ['ana']})
+        self.assertEqual(meta, {'type': ['Tese (Doutorado)'], 'title': [], 'creator': ['ana']})
+        self.assertEqual(c.classificar_nivel(meta['type']), c.TESE)
+        self.assertEqual(c.limpar_meta(None), {})
+
     def test_handle_de_identificador_oai_e_urls(self):
         self.assertEqual(c.handle_de('oai:repositorio.ufsc.br:123456789/272918'), '123456789/272918')
         self.assertEqual(c.handle_de('https://repositorio.ufsc.br/xmlui/handle/123456789/130473'), '123456789/130473')

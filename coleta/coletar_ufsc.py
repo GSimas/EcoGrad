@@ -154,6 +154,11 @@ def diagnosticar_dspace():
     return motivo_bloqueio(r.status_code, r.text)
 
 
+def limpar_meta(meta):
+    """O Sickle devolve None para elemento Dublin Core vazio (ex.: <dc:type/>); descarta esses valores."""
+    return {k: [v for v in vs if v] for k, vs in (meta or {}).items()}
+
+
 def registro_dspace(meta, colecao, nivel, handle):
     contrib = [normalizar_nome(c) for c in meta.get('contributor', []) if 'ufsc' not in c.lower() and 'universidade' not in c.lower()]
     descricoes = meta.get('description', [])
@@ -204,7 +209,7 @@ def coletar_dspace(desde, catalogo):
             if item.header.deleted:
                 removidos.add(handle)
                 continue
-            meta = item.metadata or {}
+            meta = limpar_meta(item.metadata)
             if not (meta.get('title') or [''])[0].strip():
                 continue
             for tipo, registro in registros_do_item(meta, item.header.setSpecs, nomes_sets, catalogo, handle):
