@@ -198,11 +198,12 @@ def coletar_dspace(desde, catalogo):
     # ponytail: o Sickle não tem prazo total por página; o timeout-minutes do job é o teto.
     oai = Sickle(OAI, max_retries=3, timeout=(15, 60), headers=AGENTE)
     nomes_sets = {s.setSpec: s.setName for s in oai.ListSets()}
-    lote, removidos, vistos = {'ppg': [], 'tcc': []}, set(), set()
+    lote, removidos, vistos, ultimo = {'ppg': [], 'tcc': []}, set(), set(), None
     try:
         for i, item in enumerate(oai.ListRecords(metadataPrefix='oai_dc', **{'from': desde}), 1):
             if i % 500 == 0:
                 print(f'  ...{i} itens lidos do DSpace', flush=True)
+            ultimo = max(ultimo or '', item.header.datestamp[:10])
             handle = handle_de(item.header.identifier)
             if not handle:
                 continue
@@ -218,7 +219,7 @@ def coletar_dspace(desde, catalogo):
                     lote[tipo].append(registro)
     except NoRecordsMatch:
         pass
-    return lote, removidos, Counter()
+    return lote, removidos, Counter(), ultimo
 
 
 # --- Oasisbr/IBICT (reserva)
@@ -391,7 +392,7 @@ def resumir(fonte, desde, lote, removidos, ignorados, novas, ultimo=None):
               *(f'  - {nivel}: {n}' for nivel, n in sorted(Counter(r['nivel_academico'] for r in registros).items())),
               f'- Removidos do repositório: {len(removidos)}',
               f'- Coleções novas: {len(novas)}', *(f'  - {tipo.upper()}: {nome}' for tipo, nome in novas),
-              *([f'- Depósito mais recente conhecido pelo Oasisbr: {ultimo}'] if ultimo else []),
+              *([f'- Item mais recente no índice da fonte: {ultimo} (a próxima coleta parte daqui)'] if ultimo else []),
               *(f'- Ignorados ({motivo}): {n}' for motivo, n in ignorados.items())]
     if fonte == 'oasisbr':
         linhas.append('- Aviso: o DSpace estava inacessível. Registros do Oasisbr vêm sem resumo e com a coleção deduzida '
@@ -431,9 +432,10 @@ def main(argv=None):
 
     if motivo is None:
         fonte, desde = 'dspace', args.desde or estado['dspace_desde']
-        lote, removidos, ignorados = coletar_dspace(desde, catalogo)
-        ultimo = None
-        estado['dspace_desde'] = estado['oasisbr_desde'] = agora.date().isoformat()
+        lote, removidos, ignorados, ultimo = coletar_dspace(desde, catalogo)
+        # O índice OAI da UFSC é reconstruído com atraso e o datestamp é o da última alteração do item, não o da
+        # indexação: avançar até hoje pularia para sempre o que ainda não estava no índice. Avança só até o que ele já tem.
+        estado['dspace_desde'] = estado['oasisbr_desde'] = max(desde, ultimo or desde)
     elif args.fonte == 'dspace':
         print(f'::error::Coleta pelo DSpace impossível: {motivo}.', file=sys.stderr)
         return 1
