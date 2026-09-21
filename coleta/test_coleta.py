@@ -25,6 +25,17 @@ class RegrasDeColeta(unittest.TestCase):
         self.assertEqual(c.classificar_nivel(meta['type']), c.TESE)
         self.assertEqual(c.limpar_meta(None), {})
 
+    def test_colecao_deposito_de_teses_usa_o_programa_da_nota_de_defesa(self):
+        catalogo = c.Catalogo({'Programa de Pós-Graduação em Arquitetura e Urbanismo': 'col_1_10'}, [])
+        nomes = {'col_1_99': 'Teses e dissertações não defendidas na UFSC'}
+        nota = 'Tese (doutorado) - Universidade Federal de Santa Catarina, Centro Tecnológico, Programa de Pós-Graduação em Arquitetura e Urbanismo, Florianópolis, 2025.'
+        meta = {'title': ['Erechim'], 'type': ['Tese (Doutorado)'], 'description': ['Resumo longo sobre urbanismo.', nota]}
+        itens = c.registros_do_item(meta, ['col_1_99'], nomes, catalogo, '1/5')
+        self.assertEqual([(t, r['programa_origem']) for t, r in itens], [('ppg', 'Programa de Pós-Graduação em Arquitetura e Urbanismo')])
+        sem_programa = dict(meta, description=['Dissertação (mestrado) - Universidade Federal de Santa Catarina, Centro Tecnológico.'])
+        self.assertEqual(c.registros_do_item(sem_programa, ['col_1_99'], nomes, catalogo, '1/6'), [])
+        self.assertEqual(catalogo.novas, [])
+
     def test_handle_de_identificador_oai_e_urls(self):
         self.assertEqual(c.handle_de('oai:repositorio.ufsc.br:123456789/272918'), '123456789/272918')
         self.assertEqual(c.handle_de('https://repositorio.ufsc.br/xmlui/handle/123456789/130473'), '123456789/130473')

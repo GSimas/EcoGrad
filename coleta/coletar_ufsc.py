@@ -105,6 +105,8 @@ class Catalogo:
         if not tipo or not nome_set or not spec.startswith('col_'):
             return None
         nome = nome_set.strip()
+        if tipo == 'ppg' and chave(nome).startswith('teses e dissertacoes'):
+            return 'ppg', None  # coleção-depósito, não programa: quem chama tira o programa da nota de defesa
         if tipo == 'tcc':
             nome = nome if nome.upper().startswith('TCC') else f'TCC {nome}'
             nome = f'{nome} ({spec})' if nome in self.tcc.values() else nome
@@ -185,6 +187,11 @@ def registros_do_item(meta, specs, nomes_sets, catalogo, handle):
         if not colecao:
             continue
         tipo, nome = colecao
+        if nome is None:
+            notas = [d for d in meta.get('description', []) if re.match(r'\s*(tese|disserta)', d, re.I)]
+            nome = catalogo.colecao_pela_nota(' '.join(notas), 'ppg') if notas else None
+            if not nome:
+                continue
         nivel = classificar_nivel(tipos, colecao_tcc=nome) if tipo == 'tcc' else classificar_nivel(tipos)
         if tipo == 'ppg' and nivel not in (TESE, DISSERTACAO):
             continue
