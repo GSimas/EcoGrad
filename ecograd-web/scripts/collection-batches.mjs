@@ -1,3 +1,7 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { gunzipSync } from 'node:zlib';
+
 export const BATCH_SCHEMA = 1;
 /** Semanal: `coletas/2026-09-14T060000Z.json.gz`; a ordem do nome é a ordem de aplicação. */
 export const BATCH_FILE = /^\d{4}-\d{2}-\d{2}T\d{6}Z\.json\.gz$/;
@@ -21,4 +25,12 @@ export function aplicarColetas(bases, lotes) {
     tcc = [...tcc.filter(manter), ...lote.tcc];
   }
   return { ppg, tcc };
+}
+
+/** Os lotes de `<raizRepo>/coletas`, na ordem de aplicação, prontos para `aplicarColetas`. */
+export function lotesDoRepositorio(raizRepo) {
+  const pasta = join(raizRepo, 'coletas');
+  if (!existsSync(pasta)) return [];
+  return readdirSync(pasta).filter((n) => BATCH_FILE.test(n)).sort()
+    .map((n) => JSON.parse(gunzipSync(readFileSync(join(pasta, n))).toString('utf8')));
 }

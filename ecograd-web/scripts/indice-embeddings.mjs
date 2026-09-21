@@ -38,6 +38,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import { from as copyFrom } from 'pg-copy-streams';
 import { identidadeObra } from './afericao-padroes.mjs';
+import { aplicarColetas, lotesDoRepositorio } from './collection-batches.mjs';
 
 const aqui = dirname(fileURLToPath(import.meta.url));
 const raizApp = resolve(aqui, '..');
@@ -66,9 +67,11 @@ function ler(nome) {
   return JSON.parse(gunzipSync(readFileSync(caminho)).toString('utf8'));
 }
 
-// A mesma obra de `indice-derivar`: identidade do título, resumo mais longo.
+// A mesma obra de `indice-derivar`: bases mais lotes da coleta, identidade do título, resumo mais longo.
+// Sem os lotes, obra renomeada ou removida pela coleta ganharia vetor sem existir em `documento`.
+const acervo = aplicarColetas({ ppg: ler('base_consolidada_ufsc.json.gz'), tcc: ler('base_tcc_ufsc.json.gz') }, lotesDoRepositorio(raizRepo));
 const obras = new Map();
-for (const d of [...ler('base_consolidada_ufsc.json.gz'), ...ler('base_tcc_ufsc.json.gz')]) {
+for (const d of [...acervo.ppg, ...acervo.tcc]) {
   const id = identidadeObra(d.titulo);
   if (!id) continue;
   const resumo = String(d.resumo ?? '').trim();

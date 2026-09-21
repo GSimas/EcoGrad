@@ -25,16 +25,17 @@ import { normalizarDocumentos } from '../src/lib/data-loader';
 import { aplicarUnificacao, unificacaoConservadora } from '../src/lib/unificacao';
 import { calcularSnaGlobal } from '../src/lib/sna-engine';
 import type { Documento } from '../src/types';
+import { aplicarColetas, lotesDoRepositorio } from './collection-batches.mjs';
 
 const raizApp = resolve(process.cwd());
 const raizRepo = resolve(raizApp, '..');
 const destino = join(raizApp, 'indice-out');
 mkdirSync(destino, { recursive: true });
 
-function ler(nome: string): Documento[] {
+function ler(nome: string): unknown[] {
   const caminho = [join(raizRepo, nome), join(raizApp, 'public', 'data', nome)].find(existsSync);
   if (!caminho) throw new Error(`Base ausente: ${nome}`);
-  return normalizarDocumentos(JSON.parse(gunzipSync(readFileSync(caminho)).toString('utf8')));
+  return JSON.parse(gunzipSync(readFileSync(caminho)).toString('utf8'));
 }
 
 const campo = (v: unknown) => (v === null || v === undefined || v === '' || (typeof v === 'number' && !Number.isFinite(v)) ? '\\N' : `"${String(v).replace(/"/g, '""')}"`);
@@ -53,7 +54,9 @@ function escritor(nome: string) {
 
 const inicio = Date.now();
 const segundos = () => `${((Date.now() - inicio) / 1000).toFixed(0)} s`;
-const brutos = [...ler('base_consolidada_ufsc.json.gz'), ...ler('base_tcc_ufsc.json.gz')];
+// O mesmo acervo de `indice-derivar`: bases mais lotes da coleta semanal.
+const acervo = aplicarColetas({ ppg: ler('base_consolidada_ufsc.json.gz'), tcc: ler('base_tcc_ufsc.json.gz') }, lotesDoRepositorio(raizRepo));
+const brutos: Documento[] = normalizarDocumentos([...acervo.ppg, ...acervo.tcc]);
 
 // ---------------------------------------------------------------- unificação
 const ocorrencias = function* () {
