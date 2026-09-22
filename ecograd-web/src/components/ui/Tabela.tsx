@@ -24,8 +24,10 @@ export interface LeituraDados<T extends Record<string, unknown> = Record<string,
   rotuloAbrir?: (linha: T) => string;
 }
 export function Tabela<T extends Record<string, unknown>>({
-  colunas, linhas, titulo, descricao, contexto, onAbrir, rotuloAbrir, altura = 'max-h-96', vazio = 'Sem dados para exibir.',
-}: LeituraDados<T> & { altura?: string; vazio?: string }) {
+  colunas, linhas, titulo, descricao, contexto, onAbrir, rotuloAbrir, altura = 'max-h-96', vazio = 'Sem dados para exibir.', aninhada = false,
+}: LeituraDados<T> & { altura?: string; vazio?: string;
+  /** Dentro de uma região que já tem este nome — o Grafico. Evita duas regiões homônimas. */
+  aninhada?: boolean }) {
   const id = useId();
   const [consulta, setConsulta] = useSessionField<ConsultaTabela>('tabela.' + titulo, consultaInicial);
   const chaves = colunas.map((c) => c.chave);
@@ -51,7 +53,10 @@ export function Tabela<T extends Record<string, unknown>>({
     const nome = 'ecograd-' + titulo.normalize('NFD').replace(/\p{Mn}/gu, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
     baixarArquivo(formato === 'csv' ? csvComContexto(pacote) : JSON.stringify(pacote, (_, v) => typeof v === 'number' && !Number.isFinite(v) ? String(v) : v, 2), nome + '.' + formato, formato === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8');
   };
-  return <section className="min-w-0 space-y-3" aria-label={titulo}>
+  // Duas regiões aninhadas com o mesmo nome fazem quem navega por landmarks ouvir
+  // o rótulo repetido, sem saber qual escolher.
+  const Raiz = aninhada ? 'div' : 'section';
+  return <Raiz className="min-w-0 space-y-3" aria-label={aninhada ? undefined : titulo}>
     {descricao && <p className="text-xs leading-relaxed text-slate-300">{descricao}</p>}
     <div className="flex flex-wrap items-end gap-2">
       <label htmlFor={id} className="min-w-0 flex-1 basis-56 text-sm"><span>Buscar em {titulo}</span><input className="input mt-1" id={id} type="search" value={consulta.busca} onChange={(e) => alterar({ busca: e.target.value })} /></label>
@@ -94,5 +99,5 @@ export function Tabela<T extends Record<string, unknown>>({
     {filtradas.length > 25 && <nav aria-label={`Paginação de ${titulo}`} className="flex flex-wrap items-center gap-2"><button className="btn" disabled={pagina === 0} onClick={() => alterar({ pagina: pagina - 1 })}>Anterior</button><span className="text-sm">Página {pagina + 1} de {Math.ceil(filtradas.length / 25)}</span><button className="btn" disabled={(pagina + 1) * 25 >= filtradas.length} onClick={() => alterar({ pagina: pagina + 1 })}>Próxima</button></nav>}
     <div className="flex flex-wrap gap-2"><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('csv')} aria-label={`Exportar ${titulo} em CSV com contexto`}>CSV com contexto</button><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('json')} aria-label={`Exportar ${titulo} em JSON com contexto`}>JSON com contexto</button></div>
     <p className="text-xs text-slate-400">Exporta todas as linhas filtradas, com nomes completos, recorte, unidades dos cabeçalhos e parâmetros. JSON conserva os valores; CSV protege textos que poderiam ser interpretados como fórmulas.</p>
-  </section>;
+  </Raiz>;
 }

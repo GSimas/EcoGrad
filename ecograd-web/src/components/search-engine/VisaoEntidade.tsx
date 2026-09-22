@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { classeDoTipo } from '@/lib/tipos-cor';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BotaoEntidade, Card, Kpi, Tabela } from '@/components/ui/primitives';
+import { BotaoEntidade, Card, Kpi, Tabela, TextoDoAcervo } from '@/components/ui/primitives';
 import { Trabalhos, FonteTrabalho } from '@/components/results/Trabalhos';
 import { Relacoes } from '@/components/results/Relacoes';
 import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
@@ -55,7 +55,7 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
         <div className="flex flex-wrap gap-2"><FonteTrabalho doc={doc} /></div>
         <p className="break-words text-xs text-slate-400">Fonte informada no registro: {doc.url || 'ausente'}. O acesso ao texto completo depende do repositório.</p>
       </Card>
-      <Card className="space-y-3"><h3 className="text-lg font-semibold">Resumo</h3><p className="whitespace-pre-line break-words text-sm leading-relaxed text-slate-200">{doc.resumo.trim() || 'Resumo não disponível no recorte local. Consulte a fonte original, quando houver link.'}</p></Card>
+      <Card className="space-y-3"><h3 className="text-lg font-semibold">Resumo</h3><TextoDoAcervo texto={doc.resumo} className="whitespace-pre-line break-words text-sm leading-relaxed text-slate-200" vazio="Resumo não disponível no recorte local. Consulte a fonte original, quando houver link." /></Card>
       <Card className="space-y-5">
         <header className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-eco-accent/15 text-eco-accent"><UsersRound size={20} aria-hidden="true" /></span>

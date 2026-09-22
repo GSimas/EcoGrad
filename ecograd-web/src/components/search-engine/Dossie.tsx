@@ -89,7 +89,8 @@ function GraficosDossie({
           rotulo: <><TrendingUp size={15} aria-hidden /> Evolução Histórica</>,
           conteudo: (
             <div className="space-y-3">
-              <label className="flex items-center gap-2 text-sm text-slate-300">
+              {/* `min-h-11`: mesmo alvo de 44px dos demais controles do EcoGrad. */}
+              <label className="flex min-h-11 items-center gap-2 text-sm text-slate-300">
                 <input
                   type="checkbox"
                   checked={cumulativo}

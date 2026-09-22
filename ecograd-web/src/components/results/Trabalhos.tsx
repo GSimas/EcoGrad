@@ -1,4 +1,5 @@
 import { Select } from '@/components/ui/Select';
+import { TextoDoAcervo } from '@/components/ui/primitives';
 import { useId, useMemo } from 'react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { fonteSegura, filtrarTrabalhos, type FiltroTrabalhos } from '@/lib/resultados';
@@ -37,7 +38,7 @@ export function Trabalhos({ docs, sessionKey, titulo = 'Trabalhos para ler' }: {
       <button type="button" className="line-clamp-3 min-h-11 text-left text-sm font-semibold leading-snug text-eco-accent underline-offset-4 hover:underline" onClick={() => abrir(d)}>{d.titulo || 'Trabalho sem título'}</button>
       <p className="text-[11px] leading-relaxed text-slate-300">{d.ano ?? 'Ano não informado'} · {d.nivel_academico || 'Tipo não informado'} · {d.programa_origem || 'Origem não informada'}</p>
       <p className="line-clamp-2 text-xs text-slate-300">{d.autores.join('; ') || 'Autoria não informada'}</p>
-      <p className="line-clamp-4 text-xs leading-relaxed text-slate-400">{d.resumo.trim() || 'Resumo não disponível no recorte local.'}</p>
+      <TextoDoAcervo texto={d.resumo} className="line-clamp-4 text-xs leading-relaxed text-slate-400" vazio="Resumo não disponível no recorte local." />
       <div className="mt-auto flex flex-wrap gap-2 pt-1"><button type="button" className="btn" onClick={() => abrir(d)} aria-label={`Ler resumo e detalhes: ${d.titulo}`}>Ler resumo e detalhes</button><FonteTrabalho doc={d} /></div>
     </li>)}</ol>}
     {result.length > 6 && <nav className="flex flex-wrap items-center gap-3" aria-label={`Páginas de ${titulo}`}><button className="btn" type="button" disabled={paginaAtual === 0} onClick={() => setPagina(paginaAtual - 1)}>Trabalhos anteriores</button><span className="text-sm">Página {paginaAtual + 1} de {Math.ceil(result.length / 6)}</span><button className="btn" type="button" disabled={(paginaAtual + 1) * 6 >= result.length} onClick={() => setPagina(paginaAtual + 1)}>Próximos trabalhos</button></nav>}

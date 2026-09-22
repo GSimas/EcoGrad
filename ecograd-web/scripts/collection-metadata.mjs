@@ -1,4 +1,8 @@
-import { STOPWORDS_NUVEM } from './stopwords-nuvem.mjs';
+import { readFileSync } from 'node:fs';
+
+/** Mesmas listas que o app usa (`src/lib/stopwords.ts`); ver o porquê do JSON lá. */
+const listas = JSON.parse(readFileSync(new URL('../src/data/stopwords-nuvem.json', import.meta.url), 'utf8'));
+const STOPWORDS_NUVEM = new Set([...listas.pt, ...listas.en, ...listas.es, ...listas.academicas]);
 
 /** Read-only preview of the exact records used by data-loader; no scientific transformation. */
 export const COVERAGE_SCHEMA = 5;

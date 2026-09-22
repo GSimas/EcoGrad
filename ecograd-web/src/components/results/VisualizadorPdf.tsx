@@ -36,6 +36,7 @@ export function VerPdf({ doc }: { doc: Documento }) {
       <Dialog.Portal>
         <Dialog.Overlay className="eco-dialog-overlay fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" />
         <Dialog.Content
+          aria-modal="true"
           className="eco-dialog-content fixed left-1/2 top-1/2 z-50 flex h-[92dvh] w-[min(64rem,96vw)]
             -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl
             border border-eco-border bg-eco-panel shadow-2xl shadow-black/60 focus:outline-none"
