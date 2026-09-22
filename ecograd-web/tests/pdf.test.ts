@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { handleDoRegistro, pdfsDoTrabalho, podeEmbutirPdf, tamanhoLegivel, urlDoPdf } from '../src/lib/pdf';
+import { handleDoRegistro, LIMIAR_EXIBICAO, pdfsDoTrabalho, podeEmbutirPdf, tamanhoLegivel, urlDoPdf } from '../src/lib/pdf';
 import { normalizarDocumentos } from '../src/lib/data-loader';
 import type { Documento } from '../src/types';
 
@@ -47,6 +47,26 @@ test('sem arquivos, ou com arquivo que não monta endereço, não sobra nada par
   assert.deepEqual(pdfsDoTrabalho(doc()), []);
   assert.deepEqual(pdfsDoTrabalho(doc({ arquivos: [] })), []);
   assert.deepEqual(pdfsDoTrabalho(doc({ url: '', arquivos: [{ n: 'a.pdf', s: 1 }] })), []);
+});
+
+test('acima de 8 MiB o repositório manda baixar, e a interface precisa saber antes do clique', () => {
+  // Limiar medido contra o repositório: 7,76 MB abre embutido, 9,33 MB baixa.
+  const [pequeno] = pdfsDoTrabalho(doc({ arquivos: [{ n: 'a.pdf', s: 1, b: LIMIAR_EXIBICAO - 1 }] }));
+  const [grande] = pdfsDoTrabalho(doc({ arquivos: [{ n: 'b.pdf', s: 1, b: LIMIAR_EXIBICAO }] }));
+  const [semTamanho] = pdfsDoTrabalho(doc({ arquivos: [{ n: 'c.pdf', s: 1 }] }));
+  assert.equal(pequeno.exibivel, true);
+  assert.equal(grande.exibivel, false);
+  // Sem tamanho, o palpite otimista custa um quadro branco; o pessimista
+  // esconderia um PDF que abriria.
+  assert.equal(semTamanho.exibivel, true);
+});
+
+test('sequência negativa sai da URL em vez de virar ?sequence=-1', () => {
+  // O REST devolve `sequenceId: -1` para bitstream sem sequência; o nome resolve sozinho.
+  assert.equal(
+    urlDoPdf(doc(), { n: 'PEGC0856-D.pdf', s: -1 }),
+    'https://repositorio.ufsc.br/bitstream/handle/123456789/272516/PEGC0856-D.pdf',
+  );
 });
 
 test('o tamanho só aparece quando o repositório o informou', () => {

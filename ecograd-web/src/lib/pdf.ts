@@ -37,11 +37,24 @@ export function handleDoRegistro(url: string): string | null {
   return HANDLE.exec(alvo.pathname)?.[1] ?? null;
 }
 
+/**
+ * Acima disto o repositório manda `Content-Disposition: attachment`, e o navegador
+ * baixa o arquivo em vez de exibi-lo — dentro de um iframe isso é uma tela branca.
+ *
+ * São 8 MiB, o valor de `webui.content_disposition_threshold` do DSpace, medido
+ * contra o próprio repositório: 7,76 MB ainda abre embutido, 9,33 MB já baixa. É
+ * configuração do servidor deles; daqui só dá para prever, não mudar.
+ */
+export const LIMIAR_EXIBICAO = 8 * 1024 * 1024;
+
 /** Endereço do PDF no repositório, ou `null` quando o registro não permite montá-lo. */
 export function urlDoPdf(doc: Documento, arquivo: ArquivoPdf): string | null {
   const handle = handleDoRegistro(doc.url);
   if (!handle || !arquivo.n.trim() || !Number.isInteger(arquivo.s)) return null;
-  return `https://${HOST_REPOSITORIO}/bitstream/handle/${handle}/${encodeURIComponent(arquivo.n)}?sequence=${arquivo.s}`;
+  // O REST devolve `sequenceId: -1` para bitstream sem sequência definida; mandar
+  // `?sequence=-1` seria lixo na URL. Sem o parâmetro, o nome do arquivo resolve.
+  const sequencia = arquivo.s >= 0 ? `?sequence=${arquivo.s}` : '';
+  return `https://${HOST_REPOSITORIO}/bitstream/handle/${handle}/${encodeURIComponent(arquivo.n)}${sequencia}`;
 }
 
 /** `1,3 MB` — vazio quando o repositório não informou o tamanho. */
@@ -57,6 +70,13 @@ export interface PdfDoTrabalho {
   url: string;
   /** O que aparece na lista quando o trabalho tem mais de um PDF. */
   rotulo: string;
+  /**
+   * Se o repositório vai servir este arquivo para exibir, e não para baixar.
+   * Sabendo disso antes do clique, a interface oferece o caminho certo em vez de
+   * abrir um quadro em branco. Tamanho desconhecido conta como exibível: o palpite
+   * otimista custa um quadro branco, o pessimista esconderia um PDF que abriria.
+   */
+  exibivel: boolean;
 }
 
 /**
@@ -71,7 +91,12 @@ export function pdfsDoTrabalho(doc: Documento): PdfDoTrabalho[] {
     const url = urlDoPdf(doc, arquivo);
     if (!url) return [];
     const tamanho = tamanhoLegivel(arquivo.b);
-    return [{ arquivo, url, rotulo: tamanho ? `${arquivo.n} · ${tamanho}` : arquivo.n }];
+    return [{
+      arquivo,
+      url,
+      rotulo: tamanho ? `${arquivo.n} · ${tamanho}` : arquivo.n,
+      exibivel: !arquivo.b || arquivo.b < LIMIAR_EXIBICAO,
+    }];
   });
 }
 

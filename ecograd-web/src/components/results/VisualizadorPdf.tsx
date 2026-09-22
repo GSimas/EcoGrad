@@ -92,7 +92,14 @@ export function VerPdf({ doc }: { doc: Documento }) {
             </div>
           )}
 
-          {embutir ? (
+          {!embutir ? (
+            <EmNovaAba pdf={atual} motivo="Neste navegador o PDF não abre dentro da página. Ele abre no visualizador do seu aparelho." />
+          ) : !atual.exibivel ? (
+            <EmNovaAba
+              pdf={atual}
+              motivo="O repositório envia arquivos acima de 8 MB como download, e não para exibir — é uma configuração do servidor da UFSC. Este abre no visualizador do seu computador."
+            />
+          ) : (
             <iframe
               // `key` força o iframe a recarregar ao trocar de arquivo: sem ele o
               // navegador mantém o PDF anterior no visualizador nativo.
@@ -101,8 +108,6 @@ export function VerPdf({ doc }: { doc: Documento }) {
               title={`PDF: ${atual.arquivo.n}`}
               className="min-h-0 flex-1 bg-white"
             />
-          ) : (
-            <EmNovaAba pdf={atual} />
           )}
         </Dialog.Content>
       </Dialog.Portal>
@@ -111,16 +116,16 @@ export function VerPdf({ doc }: { doc: Documento }) {
 }
 
 /**
- * O que aparece no lugar do PDF em navegador de celular, que não o exibe embutido.
- * Não é um erro a esconder: é o caminho que funciona ali, dito com todas as letras.
+ * O que aparece no lugar do PDF quando ele não abre embutido — em navegador de
+ * celular, ou quando o repositório manda o arquivo como download. Não é um erro a
+ * esconder: é o caminho que funciona ali, dito com todas as letras, em vez de um
+ * quadro branco que não explica nada.
  */
-function EmNovaAba({ pdf }: { pdf: PdfDoTrabalho }) {
+function EmNovaAba({ pdf, motivo }: { pdf: PdfDoTrabalho; motivo: string }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
       <FileText size={40} aria-hidden className="text-eco-accent" />
-      <p className="text-sm text-slate-200">
-        Neste navegador o PDF não abre dentro da página. Ele abre no visualizador do seu aparelho.
-      </p>
+      <p className="max-w-prose text-sm text-slate-200">{motivo}</p>
       <a className="btn btn-primary min-h-11" href={pdf.url} target="_blank" rel="noopener noreferrer">
         <ExternalLink size={15} aria-hidden className="mr-1.5 inline-block align-text-bottom" />
         Abrir {pdf.arquivo.n}
