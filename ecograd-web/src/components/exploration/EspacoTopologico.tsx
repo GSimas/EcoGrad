@@ -44,9 +44,8 @@ const EIXOS = [
  *
  * O desenho é WebGL de verdade, pelo `echarts-gl`: arrastar gira, a roda
  * aproxima, e o botão direito desloca — sem controle nenhum na tela para isso,
- * como em qualquer visualizador tridimensional. O preço é que a tela é uma
- * superfície própria e o download de imagem não a alcança; a vista em tabela
- * continua entregando todos os valores.
+ * como em qualquer visualizador tridimensional. A imagem exportada é o
+ * enquadramento atual, e a vista em tabela entrega todos os valores.
  *
  * Os eixos mostram os valores originais das métricas. A escala logarítmica
  * transforma a posição, não o dado: o nome do eixo diz quando isso acontece, e
@@ -118,11 +117,11 @@ export function EspacoTopologico() {
         axisLine: { lineStyle: { color: corDoEixo } },
         axisPointer: { lineStyle: { color: corDoTexto } },
         splitLine: { lineStyle: { color: claro ? '#E2E8F0' : '#1E293B' } },
-        // O `echarts-gl` pinta o fundo da cena, e não herda o `backgroundColor`
-        // transparente do gráfico: sem uma cor aqui, o cubo sai sobre preto
-        // dentro de um cartão branco no tema claro. É a cor do cartão que ele
-        // ocupa, para a tela do WebGL desaparecer na página.
-        environment: claro ? '#FFFFFF' : '#0E1117',
+        // Sem céu: o `'auto'` padrão do `echarts-gl` pinta a cena de preto
+        // mesmo no tema claro. Com `'none'` a tela WebGL fica transparente — o
+        // cartão aparece por trás na página, e o PNG exportado sai sem fundo,
+        // enquanto o JPG recebe a cor do tema na composição da imagem.
+        environment: 'none',
         // É daqui que sai o movimento pelo mouse: arrastar gira, a roda
         // aproxima, o botão direito desloca. `autoRotate` fica desligado —
         // um cubo girando sozinho é exatamente o que "reduzir movimento" pede
@@ -200,7 +199,7 @@ export function EspacoTopologico() {
           <p>Os eixos trazem os valores originais das três métricas do grafo global. <strong>Escala dos eixos</strong>: elas têm cauda longa — a maioria dos termos aparece uma vez só, e alguns poucos dominam. Em escala linear, que é a do modelo original, essa maioria empilha num canto. A logarítmica, aplicada como log(1 + valor), espalha a massa sem alterar nenhum valor nem a ordem entre os nós: muda só a posição, e o nome do eixo avisa quando está em uso. Os números no passar do mouse e na tabela são sempre os originais.</p>
           <p>O tamanho do ponto segue o grau. A cor é a comunidade detectada pelo Louvain no grafo global — as maiores aparecem nomeadas e o restante fica agrupado, porque uma legenda com centenas de comunidades não ajuda a ler nada.</p>
           <p>Betweenness é aproximado por amostragem de pivôs em redes grandes, e closeness também. Posição alta em qualquer eixo descreve conectividade na rede desta seleção — não mede qualidade, impacto ou mérito.</p>
-          <p>O desenho é WebGL e não entra no download de imagem, que alcança só os gráficos comuns. Para levar os dados embora, use <strong>Ver dados em tabela</strong>: ela exporta em CSV e JSON, com todos os valores e o contexto da análise. A tabela também é o caminho pelo teclado, já que a órbita é um gesto de mouse.</p>
+          <p>Os botões de imagem baixam o enquadramento atual da órbita: gire e aproxime até o ângulo desejado antes de exportar. Para levar os dados embora, use <strong>Ver dados em tabela</strong>: ela exporta em CSV e JSON, com todos os valores e o contexto da análise. A tabela também é o caminho pelo teclado, já que a órbita é um gesto de mouse.</p>
         </div>
       </Expander>
 

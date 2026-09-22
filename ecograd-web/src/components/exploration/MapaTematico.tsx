@@ -1,15 +1,19 @@
 import { useMemo } from 'react';
-import { Compass } from 'lucide-react';
+import { ChevronDown, Compass, EyeOff } from 'lucide-react';
 import { AnalisesOcultas, Aviso, Card, Expander, Tabela } from '@/components/ui/primitives';
 import type { AnaliseOculta } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
+import { MenuAncorado } from '@/components/ui/MenuAncorado';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 import { Tabs } from '@/components/ui/Tabs';
+import { useSessionField } from '@/hooks/useSessionField';
 import { valorNumericoTabela } from '@/lib/visualizacao';
 import {
   CORES_QUADRANTE_TEMATICO,
   LEITURA_QUADRANTE_TEMATICO,
   linhasMacrotemas,
   linhasPalavrasChave,
+  palavrasChavePorFrequencia,
   QUADRANTES_TEMATICOS,
   quadrantesTematicos,
   type QuadranteTematico,
@@ -107,6 +111,53 @@ function opcaoMapa(
   };
 }
 
+const SEM_EXCLUSOES: string[] = [];
+
+/**
+ * Stopwords do mapa: um menu com todos os itens da seleção, em que cada item
+ * marcado sai do gráfico. As médias que dividem os quadrantes são recalculadas
+ * sem ele, porque um termo dominante — o próprio nome do programa, por
+ * exemplo — puxa a cruz e comprime todos os outros num canto.
+ */
+function ExcluirDoMapa({ rotulo, opcoes, excluidos, onChange }: {
+  rotulo: string;
+  opcoes: readonly string[];
+  excluidos: readonly string[];
+  onChange: (v: string[]) => void;
+}) {
+  // O nome acessível começa pelo texto visível, para que quem comanda por voz
+  // alcance o botão dizendo o que lê nele.
+  const texto = excluidos.length ? `Itens removidos (${excluidos.length})` : 'Remover itens do gráfico';
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <MenuAncorado
+        rotulo={rotulo}
+        rotuloGatilho={`${texto}: ${rotulo.toLowerCase()}`}
+        largura={380}
+        classeGatilho="btn"
+        conteudoGatilho={<>
+          <EyeOff size={16} aria-hidden="true" />
+          {texto}
+          <ChevronDown size={14} aria-hidden="true" />
+        </>}
+      >
+        {() => (
+          <MultiSelect
+            rotulo={rotulo}
+            opcoes={opcoes}
+            selecionados={excluidos}
+            onChange={onChange}
+            placeholder="Pesquise o item a remover..."
+          />
+        )}
+      </MenuAncorado>
+      {excluidos.length > 0 && (
+        <button type="button" className="btn text-xs" onClick={() => onChange([])}>Restaurar todos</button>
+      )}
+    </div>
+  );
+}
+
 /**
  * Análise Temática Estrutural — tabela geral de macrotemas e os dois mapas de
  * quadrantes. Transcrição de `pages/1_Avançado.py:283-400` e de
@@ -118,9 +169,23 @@ export function MapaTematico() {
   const statusSNA = useEcoGradStore((s) => s.statusSNA);
   const navegarPara = useEcoGradStore((s) => s.navegarPara);
 
+  const [excluirMacroSalvo, setExcluirMacro] = useSessionField<string[]>('mapa-tematico.excluir.macrotemas', SEM_EXCLUSOES);
+  const [excluirPkSalvo, setExcluirPk] = useSessionField<string[]>('mapa-tematico.excluir.palavras', SEM_EXCLUSOES);
+
   const macrotemas = useMemo(() => linhasMacrotemas(docs, sna), [docs, sna]);
-  const palavras = useMemo(() => linhasPalavrasChave(docs, sna, 40), [docs, sna]);
-  const quadMacro = useMemo(() => quadrantesTematicos(macrotemas, 'Betweenness', 'Grau'), [macrotemas]);
+  const opcoesMacro = useMemo(
+    () => [...macrotemas].sort((a, b) => b.Docs - a.Docs || a.Macrotema.localeCompare(b.Macrotema, 'pt-BR')).map((l) => l.Macrotema),
+    [macrotemas],
+  );
+  const opcoesPk = useMemo(() => palavrasChavePorFrequencia(docs).map(([pk]) => pk), [docs]);
+  // O que foi removido numa seleção anterior e não existe nesta fica guardado,
+  // mas não aparece: voltar à seleção antiga devolve as mesmas exclusões.
+  const excluirMacro = useMemo(() => { const s = new Set(opcoesMacro); return excluirMacroSalvo.filter((m) => s.has(m)); }, [excluirMacroSalvo, opcoesMacro]);
+  const excluirPk = useMemo(() => { const s = new Set(opcoesPk); return excluirPkSalvo.filter((p) => s.has(p)); }, [excluirPkSalvo, opcoesPk]);
+
+  const macrotemasNoMapa = useMemo(() => { const s = new Set(excluirMacro); return macrotemas.filter((l) => !s.has(l.Macrotema)); }, [macrotemas, excluirMacro]);
+  const palavras = useMemo(() => linhasPalavrasChave(docs, sna, 40, new Set(excluirPk)), [docs, sna, excluirPk]);
+  const quadMacro = useMemo(() => quadrantesTematicos(macrotemasNoMapa, 'Betweenness', 'Grau'), [macrotemasNoMapa]);
   const quadPk = useMemo(() => quadrantesTematicos(palavras, 'Betweenness', 'Grau'), [palavras]);
 
   const contexto = {
@@ -133,10 +198,10 @@ export function MapaTematico() {
   const semRede = !sna;
   /** Um único ponto não tem média a dividir: os quadrantes seriam decorativos. */
   const poucosMacrotemas = macrotemas.length > 0 && macrotemas.length < 3;
-  const poucasPalavras = palavras.length > 0 && palavras.length < 3;
+  const poucasPalavras = opcoesPk.length > 0 && opcoesPk.length < 3;
   const ocultas: AnaliseOculta[] = [
     ...(poucosMacrotemas ? [{ nome: 'Mapa de quadrantes dos macrotemas', motivo: `${macrotemas.length} ${macrotemas.length === 1 ? 'macrotema' : 'macrotemas'} na seleção, insuficientes para dividir pela média` }] : []),
-    ...(poucasPalavras ? [{ nome: 'Mapa de quadrantes das palavras-chave', motivo: `${palavras.length} ${palavras.length === 1 ? 'palavra-chave' : 'palavras-chave'} na seleção, insuficientes para dividir pela média` }] : []),
+    ...(poucasPalavras ? [{ nome: 'Mapa de quadrantes das palavras-chave', motivo: `${opcoesPk.length} ${opcoesPk.length === 1 ? 'palavra-chave' : 'palavras-chave'} na seleção, insuficientes para dividir pela média` }] : []),
   ];
 
   const avisoRede = semRede ? (
@@ -193,7 +258,11 @@ export function MapaTematico() {
             conteudo: poucosMacrotemas || macrotemas.length === 0 ? (
               <Aviso>{macrotemas.length === 0 ? 'Não há macrotemas na seleção carregada.' : 'A seleção tem poucos macrotemas para um mapa de quadrantes. A tabela geral acima descreve todos eles.'}</Aviso>
             ) : (
-              <Card>
+              <Card className="space-y-3">
+                <ExcluirDoMapa rotulo="Macrotemas removidos do mapa" opcoes={opcoesMacro} excluidos={excluirMacro} onChange={setExcluirMacro} />
+                {macrotemasNoMapa.length < 3 ? (
+                  <Aviso>Restam {macrotemasNoMapa.length} {macrotemasNoMapa.length === 1 ? 'macrotema' : 'macrotemas'} depois das remoções, poucos para dividir pela média. Restaure algum item para voltar a ver o mapa.</Aviso>
+                ) : (
                 <Grafico
                   altura={620}
                   leitura={{
@@ -201,23 +270,28 @@ export function MapaTematico() {
                     descricao: `X: betweenness no grafo global (índice). Y: grau absoluto (conexões). Tamanho: documentos do macrotema. Cor: quadrante do modelo original. Linhas tracejadas: médias de cada eixo — betweenness ${valorNumericoTabela(quadMacro.xMid)}; grau ${valorNumericoTabela(quadMacro.yMid)}. São descrições da posição na rede desta seleção, não juízo sobre os temas. A tabela permite abrir cada macrotema por teclado.`,
                     linhas: quadMacro.linhas as unknown as Array<Record<string, unknown>>,
                     colunas: [{ chave: 'Macrotema', rotulo: 'Macrotema' }, { chave: 'Quadrante', rotulo: 'Quadrante do modelo original' }, { chave: 'Docs', rotulo: 'Documentos (n)' }, { chave: 'Betweenness', rotulo: 'Betweenness (índice)' }, { chave: 'Grau', rotulo: 'Grau absoluto (conexões)' }],
-                    contexto,
+                    contexto: { ...contexto, removidosDoMapa: excluirMacro },
                     onAbrir: (l) => navegarPara('Macrotema', String(l.Macrotema)),
                   }}
                   onEvents={{ click: (p) => { const l = (p as { data?: { linha?: Record<string, unknown> } }).data?.linha; if (l) navegarPara('Macrotema', String(l.Macrotema)); } }}
                   option={opcaoMapa(quadMacro.linhas, 'Macrotema', 'Docs', quadMacro.xMid, quadMacro.yMid)}
                 />
+                )}
               </Card>
             ),
           },
           {
             valor: 'palavras',
             rotulo: 'Mapa das palavras-chave',
-            conteudo: poucasPalavras || palavras.length === 0 ? (
-              <Aviso>{palavras.length === 0 ? 'Não há palavras-chave registradas na seleção carregada.' : 'A seleção tem poucas palavras-chave para um mapa de quadrantes.'}</Aviso>
+            conteudo: poucasPalavras || opcoesPk.length === 0 ? (
+              <Aviso>{opcoesPk.length === 0 ? 'Não há palavras-chave registradas na seleção carregada.' : 'A seleção tem poucas palavras-chave para um mapa de quadrantes.'}</Aviso>
             ) : (
               <Card className="space-y-3">
-                <p className="text-sm text-slate-300">As 40 palavras-chave mais frequentes da seleção. Frequência conta documentos que citam o termo, uma vez por documento; não mede importância nem qualidade.</p>
+                <p className="text-sm text-slate-300">As 40 palavras-chave mais frequentes da seleção. Frequência conta documentos que citam o termo, uma vez por documento; não mede importância nem qualidade. Um termo removido abre espaço para o seguinte na ordem de frequência.</p>
+                <ExcluirDoMapa rotulo="Palavras-chave removidas do mapa" opcoes={opcoesPk} excluidos={excluirPk} onChange={setExcluirPk} />
+                {palavras.length < 3 ? (
+                  <Aviso>Restam {palavras.length} {palavras.length === 1 ? 'palavra-chave' : 'palavras-chave'} depois das remoções, poucas para dividir pela média. Restaure algum item para voltar a ver o mapa.</Aviso>
+                ) : (
                 <Grafico
                   altura={620}
                   leitura={{
@@ -225,12 +299,13 @@ export function MapaTematico() {
                     descricao: `X: betweenness no grafo global (índice). Y: grau absoluto (conexões). Tamanho: documentos que citam o termo. Cor: quadrante do modelo original. Linhas tracejadas: médias de cada eixo — betweenness ${valorNumericoTabela(quadPk.xMid)}; grau ${valorNumericoTabela(quadPk.yMid)}. A tabela permite abrir cada termo por teclado.`,
                     linhas: quadPk.linhas as unknown as Array<Record<string, unknown>>,
                     colunas: [{ chave: 'Palavra-chave', rotulo: 'Palavra-chave' }, { chave: 'Quadrante', rotulo: 'Quadrante do modelo original' }, { chave: 'Frequência', rotulo: 'Documentos (n)' }, { chave: 'Betweenness', rotulo: 'Betweenness (índice)' }, { chave: 'Grau', rotulo: 'Grau absoluto (conexões)' }],
-                    contexto: { ...contexto, limite: 40 },
+                    contexto: { ...contexto, limite: 40, removidosDoMapa: excluirPk },
                     onAbrir: (l) => navegarPara('Palavra-chave', String(l['Palavra-chave'])),
                   }}
                   onEvents={{ click: (p) => { const l = (p as { data?: { linha?: Record<string, unknown> } }).data?.linha; if (l) navegarPara('Palavra-chave', String(l['Palavra-chave'])); } }}
                   option={opcaoMapa(quadPk.linhas, 'Palavra-chave', 'Frequência', quadPk.xMid, quadPk.yMid)}
                 />
+                )}
               </Card>
             ),
           },

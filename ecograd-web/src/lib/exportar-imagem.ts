@@ -88,18 +88,27 @@ export function ehExportavel(valor: unknown): valor is InstanciaExportavel {
   return !!valor && typeof (valor as InstanciaExportavel).getDataURL === 'function';
 }
 
-/** Exporta um gráfico ECharts já renderizado. */
+/**
+ * Exporta um gráfico ECharts já renderizado.
+ *
+ * `webgl` marca os gráficos do `echarts-gl`. A camada WebGL só entra na imagem
+ * quando ela é composta na densidade de pixels da própria tela: acima dela, o
+ * zrender redesenha só os elementos 2D e o cubo sai em branco. Por isso o 3D
+ * abre mão da ampliação e sai na resolução em que está sendo visto.
+ */
 export function baixarGraficoECharts(
   instancia: InstanciaExportavel,
   titulo: string,
   formato: FormatoImagem,
+  { webgl = false }: { webgl?: boolean } = {},
 ): void {
+  const pixelRatio = webgl ? undefined : ESCALA;
   const dataUrl = instancia.getDataURL(
     formato === 'jpg'
-      ? { type: 'jpeg', backgroundColor: fundoOpacoDoTema(), pixelRatio: ESCALA }
+      ? { type: 'jpeg', backgroundColor: fundoOpacoDoTema(), pixelRatio }
       // `'transparent'` sobrepõe o `backgroundColor` da opção, que pode ter
       // sido trocado por uma cor sólida na adaptação de tema.
-      : { type: 'png', backgroundColor: 'transparent', pixelRatio: ESCALA },
+      : { type: 'png', backgroundColor: 'transparent', pixelRatio },
   );
   baixarDataUrl(dataUrl, nomeDeArquivo(titulo, formato));
 }

@@ -48,9 +48,8 @@ export function Grafico({
   mesclar?: boolean;
   /**
    * Usa o renderizador WebGL do `echarts-gl`, que traz órbita e zoom do mouse
-   * embutidos. Em troca, a tela é uma superfície própria: o download de imagem
-   * não a alcança, e por isso os botões de imagem somem aqui — a vista em tabela
-   * segue sendo o caminho para levar os dados embora.
+   * embutidos. A imagem exportada é o enquadramento atual da órbita, na
+   * resolução da tela (ver `baixarGraficoECharts`).
    */
   tridimensional?: boolean;
 }) {
@@ -65,8 +64,8 @@ export function Grafico({
   }, [onReady]);
   const baixar = useCallback((formato: FormatoImagem) => {
     const eci = instancia.current;
-    if (ehExportavel(eci)) baixarGraficoECharts(eci, leitura.titulo, formato);
-  }, [leitura.titulo]);
+    if (ehExportavel(eci)) baixarGraficoECharts(eci, leitura.titulo, formato, { webgl: tridimensional });
+  }, [leitura.titulo, tridimensional]);
   const opcaoFinal = useMemo<EChartsOption>(
     () => adaptarGrafico({
       backgroundColor: 'transparent',
@@ -95,7 +94,7 @@ export function Grafico({
       <div className="flex flex-wrap gap-2" role="group" aria-label={`Visualização de ${leitura.titulo}`}>
         <button type="button" className="btn" aria-pressed={vista !== 'tabela'} onClick={() => setVista('grafico')}>Ver gráfico</button>
         <button type="button" className="btn" aria-pressed={vista === 'tabela'} onClick={() => setVista('tabela')}>Ver dados em tabela</button>
-        {vista !== 'tabela' && !tridimensional && (
+        {vista !== 'tabela' && (
           <>
             <button type="button" className="btn" onClick={() => baixar('jpg')} title={`Baixar ${leitura.titulo} em JPG, com o fundo do tema atual`}>
               <ImageDown size={16} aria-hidden="true" />Baixar JPG (com fundo)

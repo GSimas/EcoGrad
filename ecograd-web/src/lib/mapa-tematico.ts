@@ -166,14 +166,27 @@ export function linhasMacrotemas(
 }
 
 /** Top-N palavras-chave com frequência e posição no grafo global. */
+/**
+ * Todas as palavras-chave da seleção, da mais citada para a menos, com empate
+ * resolvido em ordem alfabética — a mesma ordem de onde o mapa tira o seu topo.
+ */
+export function palavrasChavePorFrequencia(docs: readonly Documento[]): Array<[string, number]> {
+  const contagem = contar(docs.flatMap((d) => d.palavras_chave).filter(Boolean));
+  return [...contagem.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'));
+}
+
+/**
+ * `excluir` funciona como lista de stopwords: os termos saem antes do corte,
+ * então o topo continua com `topN` termos e o seguinte da fila entra no lugar.
+ */
 export function linhasPalavrasChave(
   docs: readonly Documento[],
   sna: SnaGlobal | null,
   topN = 40,
+  excluir: ReadonlySet<string> = new Set(),
 ): LinhaPalavraChave[] {
-  const contagem = contar(docs.flatMap((d) => d.palavras_chave).filter(Boolean));
-  return [...contagem.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR'))
+  return palavrasChavePorFrequencia(docs)
+    .filter(([pk]) => !excluir.has(pk))
     .slice(0, topN)
     .map(([pk, freq]) => ({
       'Palavra-chave': pk,

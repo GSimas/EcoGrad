@@ -92,6 +92,12 @@ test('as palavras-chave do mapa contam documentos e respeitam o topo pedido', ()
   assert.equal(linhas[0].Frequência, 2);
 });
 
+test('palavras-chave excluidas saem antes do corte e a seguinte entra no lugar', () => {
+  const linhas = linhasPalavrasChave(BASE, null, 2, new Set(['grafos']));
+  assert.equal(linhas.length, 2);
+  assert.deepEqual(linhas.map((l) => l['Palavra-chave']), ['ontologia', 'redes']);
+});
+
 test('os quadrantes dividem pela media e o valor igual a media fica no lado baixo', () => {
   const linhas = [
     { nome: 'a', x: 0, y: 0 },
