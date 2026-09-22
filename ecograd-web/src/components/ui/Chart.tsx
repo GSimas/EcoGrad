@@ -170,6 +170,33 @@ interface InstanciaECharts {
  * A correspondência é sempre por índice: os rótulos exibidos são truncados e não
  * servem para identificar a entidade.
  */
+/**
+ * `onReady` que transforma clique numa barra horizontal em seleção do item.
+ *
+ * O ECharts não entrega o índice da categoria num clique fora da barra desenhada,
+ * então a conversão é por pixel: a linha do cursor no eixo Y é o índice na lista
+ * já ordenada. Handlers e dados ficam em refs porque o zrender é registrado uma
+ * única vez, na criação do gráfico, e precisa enxergar sempre a versão atual.
+ */
+export function useCliqueEmBarra(dados: ReadonlyArray<[string, number]>, onSelecionar: (nome: string) => void) {
+  const ordenadoRef = useRef<Array<[string, number]>>([]);
+  ordenadoRef.current = ordenarRanking(dados);
+  const onSelecionarRef = useRef(onSelecionar);
+  onSelecionarRef.current = onSelecionar;
+  return useCallback((instancia: unknown) => {
+    const inst = instancia as InstanciaECharts;
+    inst.getZr().on('click', (evento) => {
+      const pixel: [number, number] = [evento.offsetX, evento.offsetY];
+      // Ignora cliques fora da área de plotagem (título, margens)
+      if (!inst.containPixel({ gridIndex: 0 }, pixel)) return;
+      const convertido = inst.convertFromPixel({ gridIndex: 0 }, pixel);
+      const indice = Math.round(convertido?.[1] ?? -1);
+      const alvo = ordenadoRef.current[indice];
+      if (alvo) onSelecionarRef.current(alvo[0]);
+    });
+  }, []);
+}
+
 export function RankingClicavel({
   dados,
   titulo,
@@ -184,13 +211,7 @@ export function RankingClicavel({
   altura?: number;
 }) {
   const ordenado = useMemo(() => ordenarRanking(dados), [dados]);
-
-  // Handlers e dados atuais ficam em refs: o zrender é registrado uma única vez,
-  // na criação do gráfico, e precisa enxergar sempre a versão mais recente.
-  const ordenadoRef = useRef(ordenado);
-  ordenadoRef.current = ordenado;
-  const onSelecionarRef = useRef(onSelecionar);
-  onSelecionarRef.current = onSelecionar;
+  const aoCriar = useCliqueEmBarra(dados, onSelecionar);
 
   const option = useMemo<EChartsOption>(() => {
     const base = barrasHorizontais(ordenado, titulo, cor);
@@ -200,19 +221,6 @@ export function RankingClicavel({
       series: [{ ...((base.series as unknown[])[0] as object), cursor: 'pointer' }],
     } as EChartsOption;
   }, [ordenado, titulo, cor]);
-
-  const aoCriar = useCallback((instancia: unknown) => {
-    const inst = instancia as InstanciaECharts;
-    inst.getZr().on('click', (evento) => {
-      const pixel: [number, number] = [evento.offsetX, evento.offsetY];
-      // Ignora cliques fora da área de plotagem (título, margens)
-      if (!inst.containPixel({ gridIndex: 0 }, pixel)) return;
-      const convertido = inst.convertFromPixel({ gridIndex: 0 }, pixel);
-      const indice = Math.round(convertido?.[1] ?? -1);
-      const alvo = ordenadoRef.current[indice];
-      if (alvo) onSelecionarRef.current(alvo[0]);
-    });
-  }, []);
 
   return <Grafico leitura={{ titulo, descricao: 'Barras: ocorrências no recorte carregado (n). Frequência não mede mérito. Use a tabela para ler nomes completos, exportar ou abrir uma entidade por teclado.', linhas: [...dados].map(([nome, valor]) => ({ nome, valor })), colunas: [{ chave: 'nome', rotulo: 'Nome completo' }, { chave: 'valor', rotulo: 'Ocorrências (n)' }], onAbrir: (l) => onSelecionar(String(l.nome)) }} option={option} altura={altura} larguraMinima={460} onReady={aoCriar} />;
 }

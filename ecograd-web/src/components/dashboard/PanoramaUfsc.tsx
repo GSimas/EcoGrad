@@ -14,10 +14,10 @@ import { PanoramaCapes } from './PanoramaCapes';
  * CAPES é consulta de rede e pode não responder. Uma seção indisponível não leva
  * a outra junto.
  */
-export function PanoramaUfsc() {
+export function PanoramaUfsc({ aoNavegar }: { aoNavegar: () => void }) {
   return (
     <div className="space-y-10">
-      <PanoramaAcervo />
+      <PanoramaAcervo aoNavegar={aoNavegar} />
       <div className="border-t border-eco-border pt-8">
         <PanoramaCapes />
       </div>

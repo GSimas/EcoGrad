@@ -1,7 +1,9 @@
 import { useId, useMemo, type ReactNode } from 'react';
+import { ArrowUpRight } from 'lucide-react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { baixarArquivo, cn } from '@/lib/utils';
+import { CHIP } from '@/components/layout/atalhos';
 import { FiltroCabecalho } from './FiltroCabecalho';
 import { valorExibido, consultaInicial, consultarLinhas, contextoPublicavel, csvComContexto, filtroAtivo, pacoteExportacao, type ConsultaTabela, type FiltroColuna, type RotulosColuna } from '@/lib/visualizacao';
 
@@ -77,7 +79,7 @@ export function Tabela<T extends Record<string, unknown>>({
           return <td key={c.chave} className={cn(c.className, '!whitespace-normal !overflow-visible !text-clip break-words')}>
             {c.render ? c.render(linha) : c.barra ? <div className="flex items-center gap-2"><span aria-hidden="true" className="h-1.5 w-12 shrink-0 overflow-hidden rounded bg-eco-border"><span className="block h-full bg-eco-accent" style={{ width: `${Math.max(0, Math.min(100, c.barra.max > 0 ? Number(bruto) / c.barra.max * 100 : 0))}%` }} /></span><span>{numero}</span></div> : numero}
           </td>;
-        })}{onAbrir && <td><button type="button" className="btn" aria-label={`Explorar ${rotuloAbrir ? rotuloAbrir(linha) : String(linha[colunas[0]?.chave] ?? 'registro')}`} onClick={() => onAbrir(linha)}>Explorar</button></td>}</tr>)}</tbody>
+        })}{onAbrir && <td><button type="button" className={cn(CHIP, 'min-h-0 px-3 py-1.5 text-xs')} aria-label={`Explorar ${rotuloAbrir ? rotuloAbrir(linha) : String(linha[colunas[0]?.chave] ?? 'registro')}`} onClick={() => onAbrir(linha)}><ArrowUpRight size={13} aria-hidden className="shrink-0" />Explorar</button></td>}</tr>)}</tbody>
       </table>
       {!filtradas.length && <p className="p-4 text-sm">{linhas.length ? 'Nenhuma linha corresponde à busca e aos filtros de coluna. Restaure a tabela para voltar.' : vazio}</p>}
     </div>
