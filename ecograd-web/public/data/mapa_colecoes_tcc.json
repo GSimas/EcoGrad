@@ -673,5 +673,20 @@
         "curso": "TCCs Turma 2008-Estudos Surdos",
         "setSpec": "col_123456789_104465",
         "handle": "123456789/104465"
+    },
+    {
+        "curso": "TCC DCS",
+        "setSpec": "col_123456789_209678",
+        "handle": "123456789/209678"
+    },
+    {
+        "curso": "TCC DCS (col_123456789_209680)",
+        "setSpec": "col_123456789_209680",
+        "handle": "123456789/209680"
+    },
+    {
+        "curso": "TCC Portarias da EES",
+        "setSpec": "col_123456789_230694",
+        "handle": "123456789/230694"
     }
 ]
