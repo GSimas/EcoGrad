@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFileSync } from 'node:fs';
+import { aplicarColetas, BATCH_FILE } from '../scripts/collection-batches.mjs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
 import { collectionShards } from '../scripts/collection-shards.mjs';
@@ -19,8 +20,18 @@ test('every real shard reconstitutes its original base in exact order with ident
   const root = new URL('../public/data/', import.meta.url);
   const manifest = JSON.parse(readFileSync(new URL('manifest.json', root)));
   const coverage = JSON.parse(readFileSync(new URL('colecoes-cobertura.json', root)));
-  for (const [tipo, filename] of [['ppg', 'base_consolidada_ufsc.json.gz'], ['tcc', 'base_tcc_ufsc.json.gz']]) {
-    const original = JSON.parse(gunzipSync(readFileSync(new URL(filename, root))));
+  // Os fragmentos são gerados sobre as bases com os lotes da coleta semanal já
+  // aplicados (`sync-data.mjs`). Comparar com as bases cruas acusaria diferença a
+  // cada coleta — os índices deslocam quando um lote substitui registros.
+  const coletas = new URL('../../coletas/', import.meta.url);
+  const lotes = readdirSync(coletas).filter((n) => BATCH_FILE.test(n)).sort()
+    .map((n) => JSON.parse(gunzipSync(readFileSync(new URL(n, coletas)))));
+  const bases = aplicarColetas({
+    ppg: JSON.parse(gunzipSync(readFileSync(new URL('base_consolidada_ufsc.json.gz', root)))),
+    tcc: JSON.parse(gunzipSync(readFileSync(new URL('base_tcc_ufsc.json.gz', root)))),
+  }, lotes);
+  for (const tipo of ['ppg', 'tcc']) {
+    const original = bases[tipo];
     const restored = new Map();
     for (const entry of manifest.collections[tipo]) {
       const compressed = readFileSync(new URL(entry.path.split('/').pop(), root));

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { catalogEntries, summarizeCollections } from '../scripts/collection-metadata.mjs';
-import { readFileSync } from 'node:fs';
+import { aplicarColetas, BATCH_FILE } from '../scripts/collection-batches.mjs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 test('exact collection identity, missing data, observed levels and duplicate sources', () => {
   const entries = catalogEntries({ 'Direito': 'col_1_2', 'Direito (Profissional)': 'col_1_3' }, []);
@@ -27,8 +28,19 @@ test('published preview agrees with both real bases and manifest, including zero
   const manifest = JSON.parse(readFileSync(new URL('manifest.json', root)));
   assert.equal(coverage.version, manifest.version);
   assert.ok(readFileSync(new URL('colecoes-cobertura.json', root)).length < 128 * 1024);
-  for (const [type, filename] of [['ppg', 'base_consolidada_ufsc.json.gz'], ['tcc', 'base_tcc_ufsc.json.gz']]) {
-    const data = JSON.parse(gunzipSync(readFileSync(new URL(filename, root))));
+  // Os lotes da coleta semanal entram sobre as bases antes da prévia ser gerada
+  // (`sync-data.mjs`). Comparar com as bases cruas acusaria diferença a cada
+  // coleta nova — e acusava: um lote que acrescenta dois registros a uma coleção
+  // fazia a prévia publicar 279 onde a base crua tem 277.
+  const coletas = new URL('../../coletas/', import.meta.url);
+  const lotes = readdirSync(coletas).filter((n) => BATCH_FILE.test(n)).sort()
+    .map((n) => JSON.parse(gunzipSync(readFileSync(new URL(n, coletas)))));
+  const bases = aplicarColetas({
+    ppg: JSON.parse(gunzipSync(readFileSync(new URL('base_consolidada_ufsc.json.gz', root)))),
+    tcc: JSON.parse(gunzipSync(readFileSync(new URL('base_tcc_ufsc.json.gz', root)))),
+  }, lotes);
+  for (const type of ['ppg', 'tcc']) {
+    const data = bases[type];
     for (const c of coverage.colecoes.filter((c) => c.tipo === type)) {
       const docs = data.filter((d) => d.programa_origem === c.nome);
       assert.equal(c.total, docs.length, c.nome);
