@@ -14,7 +14,11 @@ test('a seleção inicial traz o Dashboard, deixa a IA de fora e nenhum dossiê'
   assert.deepEqual(s.dashboard, SECOES_DASHBOARD.filter((x) => !x.ia).map((x) => x.id));
   assert.equal(s.dashboard.includes('sintese-ia'), false);
   assert.equal(selecaoVazia(s), false);
-  assert.equal(selecaoVazia({ dashboard: [], dossies: [], tema: 'claro' }), true);
+  assert.equal(s.formato, 'pdf');
+  assert.equal(s.incluirResumos, true);
+  assert.equal(selecaoVazia({ dashboard: [], dossies: [], tema: 'claro', formato: 'pdf', incluirResumos: true }), true);
+  // O JSON entrega os registros mesmo sem seção marcada: ele nunca fica vazio.
+  assert.equal(selecaoVazia({ dashboard: [], dossies: [], tema: 'claro', formato: 'json', incluirResumos: true }), false);
 });
 
 test('a seleção que volta da sessão é saneada sem derrubar o modal', () => {

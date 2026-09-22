@@ -75,6 +75,24 @@ mapeia a "ecologia do conhecimento" de ecossistemas acadêmicos para:
 O painel lateral recolhe para uma faixa de ícones, e o estado fica salvo na sessão. O botão
 **Sobre**, na tela inicial, explica a procedência dos dados e como a plataforma funciona por baixo.
 
+### Exportar relatório
+
+De qualquer página, **Exportar relatório** monta um arquivo com as seções do Dashboard e os dossiês
+visitados que você marcar. Tudo acontece no navegador; nada é enviado para servidor. Dois formatos:
+
+- **PDF** — documento para ler e circular, com capa, tabelas e os gráficos desenhados. Os gráficos
+  de abas que você nunca abriu são redesenhados fora da tela, e é isso que leva alguns segundos.
+- **JSON com dados completos** — o mesmo conteúdo em estrutura endereçável (`secoes`, com
+  `indicadores` e `tabelas`) e, além dele, os **registros completos da análise** em `documentos`:
+  título, ano, nível, autoria, orientação, palavras-chave, macrotema, coleção, link, resumo,
+  artefatos da ontologia e PDFs, com os mesmos nomes de campo da base de origem. Campos vazios não
+  aparecem, como na base. Os resumos podem ser desmarcados quando o arquivo precisa ser menor — a
+  tela estima o tamanho antes. Gráficos não atravessam: viram o nome da figura omitida, já que os
+  dados que os sustentam estão nas tabelas.
+
+Os dois carregam coleções, período, versão da base, data de geração e as ressalvas sobre os limites
+do recorte. Elas não são desmarcáveis: um arquivo circula longe da tela que as explica.
+
 ### 1. 📊 Dashboard
 
 KPIs da base, comparativo entre PPGs quando há mais de um, **ficha oficial da CAPES** (cruzada com
