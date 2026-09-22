@@ -340,4 +340,4 @@ export interface ChatMessage {
  * trocar de rota — é o que permite a um clique no Dashboard abrir o Motor de
  * Busca já com a entidade selecionada — sem criar import circular.
  */
-export type Rota = 'dashboard' | 'busca' | 'exploracao' | 'foresight' | 'memetica';
+export type Rota = 'dashboard' | 'busca' | 'avancada';

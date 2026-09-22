@@ -13,8 +13,8 @@ const ROTULOS = ['Período 1', 'Período 2', 'Período 3'] as const;
 /**
  * Sankey Temporal de palavras-chave — a aba "Fluxos" do Streamlit.
  * Transcrição de `pages/1_Avançado.py:846-930` sobre `preparar_sankey_temporal`
- * (backend.py:1091). Vive no Foresight porque no original as duas análises
- * dividiam a mesma aba: são as duas leituras temporais da ferramenta.
+ * (backend.py:1091). Vive junto do Radar porque no original as duas análises
+ * dividiam a aba "Fluxos": são as duas leituras temporais da ferramenta.
  */
 export function SankeyTemporal() {
   const docs = useEcoGradStore((s) => s.docs);

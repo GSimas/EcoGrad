@@ -22,7 +22,7 @@ function validLight(value: Record<string, unknown>): boolean {
   const strings = (v: unknown) => Array.isArray(v) && v.every((x) => typeof x === 'string');
   const chat = value.chat as Conversa | undefined;
   return typeof value.analysisId === 'string' && strings(value.programasSelecionados) && strings(value.cursosTccSelecionados)
-    && ['dashboard', 'busca', 'exploracao', 'foresight', 'memetica', 'chat'].includes(String(value.rota))
+    && ['dashboard', 'busca', 'avancada', 'exploracao', 'foresight', 'memetica', 'chat'].includes(String(value.rota))
     && !!value.ui && typeof value.ui === 'object' && !!chat && Array.isArray(chat.mensagens)
     && chat.mensagens.every((m) => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string')
     && typeof chat.entrada === 'string' && typeof chat.parcial === 'string' && typeof chat.contexto === 'string'

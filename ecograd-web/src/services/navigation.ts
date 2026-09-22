@@ -1,7 +1,7 @@
 import { identidadeDocumento } from '../lib/navigation';
 import { create } from 'zustand';
 import { useEcoGradStore } from '../stores/useEcoGradStore';
-import { analysisPage, applyContext, captureContext, compatible, HISTORY_KEY, HISTORY_LIMIT, pageUrl, parsePage, readHistory, statePage, trimHistory, type Page, type Position, type Visit } from '../lib/navigation';
+import { abaDoEndereco, analysisPage, applyContext, captureContext, CHAVE_ABA_AVANCADA, compatible, HISTORY_KEY, HISTORY_LIMIT, pageUrl, paginaCanonica, parsePage, readHistory, statePage, trimHistory, type AbaAvancada, type Page, type Position, type Visit } from '../lib/navigation';
 
 export interface NavigationPort {
   hash(): string;
@@ -34,7 +34,8 @@ export function suspenderRestauracaoDeRolagem(): () => void {
 export const restauracaoDeRolagemAtiva = () => restauracoesSuspensas === 0;
 let changePage: (page: Page) => void = () => {};
 let move: (delta: number) => void = () => {};
-export const navigatePage = (page: Page) => changePage(page);
+/** Nenhum chamador consegue empurrar um endereço aposentado para o histórico. */
+export const navigatePage = (page: Page) => changePage(paginaCanonica(page));
 export const navigateBack = () => move(-1);
 export const navigateForward = () => move(1);
 export function navigateVisit(id: string) {
@@ -107,10 +108,26 @@ export function initializeNavigation(port?: NavigationPort) {
     browser.push(next.id, pageUrl(page));
     activate(next, false);
   }
-  const initialPage = parsePage(browser.hash());
+  /**
+   * Um endereço aposentado abre a página que o sucedeu, já na aba que guarda o
+   * conteúdo prometido. A aba é aplicada antes de a visita nascer, para que ela
+   * entre no contexto capturado e sobreviva a voltar e avançar.
+   */
+  function aplicarAbaDoEndereco(pagina: Page | null): AbaAvancada | null {
+    const aba = pagina ? abaDoEndereco(pagina) : null;
+    if (aba) useEcoGradStore.setState((s) => ({ ui: { ...s.ui, [CHAVE_ABA_AVANCADA]: aba } }));
+    return aba;
+  }
+
+  const enderecoInicial = parsePage(browser.hash());
+  const abaInicial = aplicarAbaDoEndereco(enderecoInicial);
+  const initialPage = enderecoInicial === null ? null : paginaCanonica(enderecoInicial);
   const initial = visits.find((v) => v.id === browser.key() && v.page === initialPage);
-  if (initial && compatible(initial, useEcoGradStore.getState())) activate(initial, true);
-  else {
+  if (initial && compatible(initial, useEcoGradStore.getState())) {
+    // O percurso segue o mesmo; só a URL passa a ser a do endereço atual.
+    if (abaInicial) browser.replace(initial.id, pageUrl(initial.page));
+    activate(initial, true);
+  } else {
     const fresh = makeVisit(initialPage ?? statePage(useEcoGradStore.getState()));
     visits = [fresh];
     browser.replace(fresh.id, pageUrl(fresh.page));
@@ -143,8 +160,12 @@ export function initializeNavigation(port?: NavigationPort) {
     }
   });
   const offPop = browser.onPop(() => {
-    const page = parsePage(browser.hash()) ?? 'inicio';
-    if (browser.key() === current && visits.find((v) => v.id === current)?.page === page) return;
+    const endereco = parsePage(browser.hash()) ?? 'inicio';
+    const aba = aplicarAbaDoEndereco(endereco);
+    const page = paginaCanonica(endereco);
+    // Com endereço aposentado o retorno antecipado não serve: a URL ainda
+    // precisa ser reescrita, mesmo que a página exibida já seja a certa.
+    if (!aba && browser.key() === current && visits.find((v) => v.id === current)?.page === page) return;
     updateCurrent();
     const visit = visits.find((v) => v.id === browser.key() && v.page === page);
     if (visit && compatible(visit, useEcoGradStore.getState())) activate(visit, true);

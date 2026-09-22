@@ -8,7 +8,6 @@ import type { AnaliseOculta } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { CatalogoOntologia } from './CatalogoOntologia';
-import { EcologiaSNA } from './EcologiaSNA';
 import { GraficoLongevidade } from './GraficoLongevidade';
 import { calcularMetricasMemeticas, extrairMemesCompletos, tempoDeMeiaVida } from '@/lib/memetics';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -21,8 +20,11 @@ const OPCOES_FONTE = [
 /**
  * A Genética das Ideias: fecundidade, mortalidade infantil e longevidade.
  * Transcrição de `calcular_metricas_memeticas` e do painel de pages/1_Avançado.py:1370+.
+ *
+ * A rede de coocorrência entre estes mesmos termos vive em `EcologiaSNA`, na
+ * aba de estrutura: aqui ficam a propagação e o catálogo que a alimenta.
  */
-export function Memetica() {
+export function PropagacaoMemetica() {
   const catalogoRef = useRef<HTMLDivElement>(null);
   const [, setCatalogoAberto] = useSessionField('expander.Preparar artefatos e gerenciar catálogo (avançado)', false);
   const processando = useEcoGradStore((s)=>Boolean(s.ui['ontologia.processando']));
@@ -35,7 +37,6 @@ export function Memetica() {
   const [termoVisual, setTermoVisual] = useSessionField<string | null>('grafico.memes.termo', null);
   const [origemTermo, setOrigemTermo] = useSessionField('grafico.memes.origem', 'propagacao');
   const selecionarTermo = (nome:string) => {setOrigemTermo('propagacao');setTermoVisual(nome);};
-  const selecionarNo = (nome:string) => {setOrigemTermo('rede');setTermoVisual(nome);};
   const fonte = useEcoGradStore((s) => s.fonteMemes);
   const setFonte = useEcoGradStore((s) => s.setFonteMemes);
   const fonteRotulo = fonte === 'Artefatos Extraídos' ? OPCOES_FONTE[1] : OPCOES_FONTE[0];
@@ -74,18 +75,18 @@ export function Memetica() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Dna size={22} /> Memética e Ontologia
-        </h1>
+        <h2 className="flex items-center gap-2 text-xl font-bold">
+          <Dna size={20} aria-hidden /> Propagação de termos e ontologia
+        </h2>
         <p className="text-sm text-slate-400">
-          Explore a presença de termos nos trabalhos, seus intervalos de ocorrência e suas conexões na seleção.
+          Presença dos termos nos trabalhos e o intervalo entre a primeira e a última ocorrência de cada um.
         </p>
       </header>
 
       {processando && <Aviso><p role="status">Extração em andamento. {statusOntologia}</p><button type="button" className="btn mt-2" onClick={abrirCatalogo}>Acompanhar ou interromper extração</button></Aviso>}
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">1. Explore os termos e seus trabalhos</h2>
+        <h3 className="text-lg font-semibold">Explore os termos e seus trabalhos</h3>
 
         <GrupoOpcoes
           rotulo="Fonte dos termos"
@@ -98,7 +99,7 @@ export function Memetica() {
           <p>Período observado: {periodoTexto(cobertura)} · {docs.length} registros · {comTermos} com termos nesta fonte · {cobertura.semAno} sem ano.</p>
           <p>A propagação usa toda a seleção. Contagens são títulos distintos associados, não citações nem ocorrências no texto. Títulos iguais são agregados. Sem ano, o registro ainda contribui para contagens; intervalos exigem datas válidas.</p>
           <p>{fonte === 'Artefatos Extraídos' ? 'A cobertura é parcial quando apenas parte dos documentos possui artefatos. Revise as extrações nos resumos; a ausência de artefatos não comprova ausência do conceito.' : 'A fonte inclui palavras-chave normalizadas e palavras dos títulos, sem palavras comuns; não representa apenas palavras-chave fornecidas pelos autores.'}</p>
-          <p>Próximo passo: abra um termo em uma tabela para ler seus trabalhos. Para examinar conexões, construa a rede abaixo.</p>
+          <p>Próximo passo: abra um termo em uma tabela para ler seus trabalhos. Para examinar as conexões entre eles, use a rede memética na aba Estrutura da rede.</p>
           {semTitulo > 0 && <Aviso>{semTitulo} termos não têm título associado. O algoritmo original os inclui no grupo complementar a “Um título”; por isso esse grupo não equivale integralmente a repetição.</Aviso>}
           {fonte === 'Artefatos Extraídos' && <button type="button" className="btn" onClick={abrirCatalogo}>Preparar ou importar artefatos</button>}
         </Card>
@@ -202,7 +203,6 @@ export function Memetica() {
       </section>
 
       <TrabalhosDoTermo termo={termoVisual} fonteMemes={fonte} redeMemetica={origemTermo==='rede'} onFechar={()=>setTermoVisual(null)} />
-      <EcologiaSNA fonte={fonte} onSelecionarTermo={selecionarNo} />
       <Expander titulo="Métodos e limites da propagação">
         <p className="text-sm text-slate-300">Os nomes técnicos fecundidade, mortalidade e meia-vida são metáforas do modelo original. Aqui, fecundidade conta títulos distintos, mortalidade corresponde a exatamente um título e meia-vida é a mediana dos intervalos entre primeiro e último ano dos termos com mais de um título. Não se estima probabilidade de sobrevivência. Zero anos é válido quando as aparições datadas ocorrem no mesmo ano. Falta de observações posteriores não comprova extinção. Na rede, o extrator tem normalização própria; seus nomes e totais podem diferir dos gráficos de propagação. Os campos originais das exportações permanecem compatíveis.</p>
       </Expander>

@@ -70,7 +70,7 @@ mapeia a "ecologia do conhecimento" de ecossistemas acadêmicos para:
      macrotema, coleção) e carrega só o que você confirmar. Nada é baixado antes disso.
    - **Conversar** — o UFSCão respondendo sobre o **acervo inteiro** pelo índice, sem baixar
      coleção nenhuma.
-2. **Análise** — as seis seções abaixo, sobre o recorte carregado.
+2. **Análise** — as quatro seções abaixo, sobre o recorte carregado.
 
 O painel lateral recolhe para uma faixa de ícones, e o estado fica salvo na sessão. O botão
 **Sobre**, na tela inicial, explica a procedência dos dados e como a plataforma funciona por baixo.
@@ -98,55 +98,59 @@ entidade abre um dossiê com:
 - **Itens semelhantes** — recomendação topológica pelo **Índice de Jaccard**, calculada sobre a
   sobreposição do "DNA acadêmico" (vizinhança na rede).
 
-### 3. 🌐 Exploração Global
+### 3. 🔬 Análise Avançada
 
-A leitura estrutural do recorte — onde temas, pessoas e conceitos se posicionam no grafo global.
+Uma página com quatro abas, agrupadas por pergunta de pesquisa. Só a aba aberta é montada, e os
+cálculos mais pesados têm botão próprio — eles seguem em segundo plano se você trocar de aba.
 
-- **Análise Temática Estrutural** — tabela por macrotema com volumes, anos de início, pico e última
-  aparição, métricas SNA e o especialista de maior **Quociente Locacional**; mais os dois mapas de
-  quadrantes (macrotemas e Top 40 palavras-chave), divididos pela média de betweenness e de grau.
-- **Espaço Topológico 3D** — Grau × Betweenness × Closeness, com órbita por azimute e elevação,
-  cor pela comunidade do Louvain e escala dos eixos linear (a do modelo original) ou logarítmica.
-- **Furos Estruturais (Burt)** — rede de orientadores e palavras-chave, com restrição, diversidade
-  de vocabulário e intermediação.
-- **Boxplot de Especialização (QL)** — compara até cinco entidades entre Teses, Dissertações e
-  Outros.
+**Temas e conceitos** — o que existe na seleção.
+
+- **Análise Temática Estrutural** — tabela por macrotema com volumes, anos de início, pico e
+  última aparição, métricas SNA e o especialista de maior **Quociente Locacional**; mais os dois
+  mapas de quadrantes (macrotemas e Top 40 palavras-chave), divididos pela média de betweenness
+  e de grau.
+- **Propagação de termos** — fecundidade, mortalidade infantil, longevidade e tempo de meia-vida
+  dos memes, com o dispersograma de ano de nascimento × anos de sobrevivência.
+- **Mineração de artefatos** — a IA lê os resumos e extrai teorias, métodos e ferramentas de fato
+  utilizados, indo além das palavras-chave genéricas. O catálogo é exportável em CSV e pode ser
+  recarregado depois, sem gastar cota da API.
+
+**Tempo e tendências** — como o vocabulário mudou.
+
+- **Radar de Prospecção** — cruza **Momentum Temporal** (aceleração do uso de um termo,
+  normalizada por taxa relativa com suavização de Laplace) com **Novidade Estrutural**
+  (Betweenness × IDF), separando os termos em quatro quadrantes: Tendências, Sinais Fracos,
+  Mainstream e Base/Declínio. Segmentação por **percentil fixo** ou **K-Means adaptativo** de 4
+  clusters, e **Bootstrap** de 100 reamostragens para um betweenness robusto em bases pequenas.
+  Funciona sobre Palavras-chave, Macrotemas ou Artefatos da Ontologia IA.
+- **Sankey Temporal de palavras-chave** — três períodos ajustáveis, com os termos mais frequentes
+  de cada um ligados quando a mesma pessoa — orientador ou autor — atravessa períodos vizinhos.
+  É fluxo de vocabulário entre pessoas, não citação nem herança conceitual.
+- **Grid Search** — varre 108 configurações, valida cada uma contra a história real da base
+  (treino até T1, conferência em T2) e ranqueia por **MCC**, robusto a classes desbalanceadas.
+
+**Estrutura da rede** — como tudo se conecta.
+
+- **Espaço Topológico 3D** — Grau × Betweenness × Closeness, girável com o mouse ou pelos
+  controles de azimute e elevação, cor pela comunidade do Louvain e escala dos eixos linear (a do
+  modelo original) ou logarítmica.
+- **Furos Estruturais (Burt)** — rede de orientadores e palavras-chave, com restrição,
+  diversidade de vocabulário e intermediação.
+- **Ecologia Memética (SNA)** — rede de coocorrência entre os memes, com grafo interativo e
+  tabela de centralidade global exportável.
 - **Métricas de redes complexas** do grafo global — densidade, eficiência, entropia, clustering,
   PageRank, eigenvector e restrição média — junto das **métricas de ecologia profunda**:
   assortatividade ($r$), coeficiente rich-club ($\Phi$), expoente $\gamma$ da lei de potência e
   correlação de Spearman ($\rho$) entre grau e intermediação.
-- **Exportação da rede** em **GEXF**, **GraphML** e **JSON node-link**, para Gephi ou Cytoscape.
+
+**Especialização e dados** — comparar níveis e levar embora.
+
+- **Boxplot de Especialização (QL)** — compara até cinco entidades entre Teses, Dissertações e
+  Outros.
 - **Base de dados completa com métricas SNA** — um registro por linha, exportável com contexto.
+- **Exportação da rede** em **GEXF**, **GraphML** e **JSON node-link**, para Gephi ou Cytoscape.
 
-### 4. 🔮 Radar de Foresight
-
-Cruza **Momentum Temporal** (aceleração do uso de um termo, normalizada por taxa relativa com
-suavização de Laplace) com **Novidade Estrutural** (Betweenness × IDF), separando os termos em
-quatro quadrantes: Tendências, Sinais Fracos, Mainstream e Base/Declínio.
-
-- Segmentação por **percentil fixo** ou **K-Means adaptativo** de 4 clusters.
-- **Bootstrap** de 100 reamostragens para um betweenness robusto em bases pequenas.
-- **Grid Search** que varre 108 configurações, valida cada uma contra a história real da base
-  (treino até T1, conferência em T2) e ranqueia por **MCC** — robusto a classes desbalanceadas.
-
-Funciona sobre Palavras-chave, Macrotemas ou Artefatos da Ontologia IA.
-
-Na mesma página fica o **Sankey Temporal de palavras-chave**: três períodos ajustáveis, com os
-termos mais frequentes de cada um ligados quando a mesma pessoa — orientador ou autor — atravessa
-períodos vizinhos. É fluxo de vocabulário entre pessoas, não citação nem herança conceitual.
-
-### 5. 🧬 Memética e Ontologia
-
-- **Mineração de artefatos** — a IA lê os resumos e extrai teorias, métodos e ferramentas de fato
-  utilizados, indo além das palavras-chave genéricas. O catálogo é exportável em CSV e pode ser
-  recarregado depois, sem gastar cota da API.
-- **Genética das ideias** — fecundidade, mortalidade infantil e tempo de meia-vida dos memes.
-- **Longevidade** — dispersograma de ano de nascimento × anos de sobrevivência, com cor pelo ano
-  da última aparição e tamanho pelas replicações.
-- **Ecologia Memética (SNA)** — rede de coocorrência entre memes, com métricas de redes complexas,
-  métricas de ecologia profunda, grafo interativo e tabela de centralidade global exportável.
-
-### 6. 🐕 UFSCão · Consultor de IA
+### 4. 🐕 UFSCão · Consultor de IA
 
 O UFSCão fala em **duas superfícies**, com a mesma persona, a mesma configuração e os mesmos
 limites:
@@ -450,25 +454,30 @@ está concluída, com uma exceção declarada.
 
 | Módulo original | Onde estava | Onde está agora | Status |
 | --- | --- | --- | --- |
-| Espaço Topológico 3D (Grau × Betweenness × Closeness) | Exploração Global | Exploração Global | ✅ portado |
-| Mapa Temático (quadrantes de Callon / Bibliometrix) | Principal | Exploração Global | ✅ portado |
-| Sankey Temporal de palavras-chave | Fluxos | Foresight | ✅ portado |
-| Boxplot de Especialização (QL por nível) | Exploração Global | Exploração Global | ✅ portado |
-| Furos Estruturais de Burt (seção dedicada) | Exploração Global | Exploração Global | ✅ portado |
-| Exportação da rede (GEXF / GraphML / JSON) | Exploração Global | Exploração Global | ✅ portado |
-| Tabela geral da base com métricas SNA | Principal | Exploração Global | ✅ portado |
-| Métricas de redes complexas do grafo global | Exploração Global | Exploração Global | ✅ portado |
+| Espaço Topológico 3D (Grau × Betweenness × Closeness) | Exploração Global | Análise Avançada · Estrutura da rede | ✅ portado |
+| Mapa Temático (quadrantes de Callon / Bibliometrix) | Principal | Análise Avançada · Temas e conceitos | ✅ portado |
+| Sankey Temporal de palavras-chave | Fluxos | Análise Avançada · Tempo e tendências | ✅ portado |
+| Boxplot de Especialização (QL por nível) | Exploração Global | Análise Avançada · Especialização e dados | ✅ portado |
+| Furos Estruturais de Burt (seção dedicada) | Exploração Global | Análise Avançada · Estrutura da rede | ✅ portado |
+| Exportação da rede (GEXF / GraphML / JSON) | Exploração Global | Análise Avançada · Especialização e dados | ✅ portado |
+| Tabela geral da base com métricas SNA | Principal | Análise Avançada · Especialização e dados | ✅ portado |
+| Métricas de redes complexas do grafo global | Exploração Global | Análise Avançada · Estrutura da rede | ✅ portado |
 | Órbita via Neo4j (Cypher) | Motor de Busca | — | ⛔ fora de escopo, por decisão de projeto |
 
 Três diferenças deliberadas em relação ao original, todas declaradas na própria interface:
 
 - **O espaço 3D é uma projeção calculada no EcoGrad**, e não uma tela WebGL. Assim o gráfico
   continua dentro do invólucro acessível do projeto — vista em tabela, download de imagem, tema
-  claro e escuro, movimento reduzido —, ao custo de a órbita ser controlada por azimute e elevação
-  em vez de arrasto livre. Ele também oferece escala logarítmica além da linear do original, porque
-  as três métricas têm cauda longa e a linear empilha a maioria dos nós num canto do cubo.
-- **O Sankey Temporal ficou no Foresight**, e não numa página própria: no Streamlit ele já dividia
-  a aba "Fluxos" com o Radar de Prospecção.
+  claro e escuro, movimento reduzido —, ao custo de a órbita ser controlada pelo arrasto do mouse e
+  pelos controles de azimute e elevação, em vez de arrasto livre em três eixos. Ele também oferece
+  escala logarítmica além da linear do original, porque as três métricas têm cauda longa e a linear
+  empilha a maioria dos nós num canto do cubo.
+- **As três telas de análise viraram abas de uma só.** Exploração Global, Foresight e Memética
+  ocupavam páginas separadas por origem no Streamlit; hoje são quatro abas da Análise Avançada,
+  agrupadas por pergunta de pesquisa. A propagação dos termos ficou junto da análise temática, e a
+  rede memética junto do espaço topológico, porque é assim que elas são lidas. Os endereços
+  `#/exploracao`, `#/foresight` e `#/memetica` continuam abrindo, cada um na aba que guarda o
+  conteúdo que prometia.
 - **Os nomes dos quadrantes do Mapa Temático** são os do modelo original, mas os eixos são
   betweenness e grau no grafo global — não centralidade e densidade calculadas dentro de clusters
   temáticos, como em Callon. A interface diz isso onde o mapa aparece.

@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 /** Os três passos do fluxo, mostrados no "Sobre". */
 const PASSOS: [titulo: string, texto: string][] = [
   ['1. Defina o recorte', 'Busque documentos, pessoas, temas ou coleções inteiras na apresentação. Compare nomes completos, identificadores, períodos e tipos antes de carregar.'],
-  ['2. Explore as relações', 'Use busca, Dashboard, Radar e Memética conforme seu objetivo. Ajuda e atividades ficam acessíveis no menu.'],
+  ['2. Explore as relações', 'Use o Motor de Busca, o Dashboard e as abas da Análise Avançada conforme seu objetivo. Ajuda e atividades ficam acessíveis no menu.'],
   ['3. Confira a evidência', 'Abra as fontes originais. Indicadores descrevem o recorte escolhido; sugestões por IA precisam de revisão.'],
 ];
 
