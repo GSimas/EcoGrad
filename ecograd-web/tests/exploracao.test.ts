@@ -6,7 +6,7 @@ import { calcularFurosEstruturais, construirGrafoFuros } from '../src/lib/burt-f
 import { caixasQL, entidadesDisponiveis, gerarBaseBoxplotQL } from '../src/lib/boxplot-ql';
 import { periodosPadrao, prepararSankeyTemporal } from '../src/lib/sankey-temporal';
 import { escaparXml, grafoParaGexf, grafoParaGraphml, grafoParaNodeLink, serializarGrafo } from '../src/lib/exportar-grafo';
-import { agruparPorComunidade, pontosTopologicos, projetarEspaco } from '../src/lib/espaco-topologico';
+import { agruparPorComunidade, ELEVACAO_MAXIMA, ELEVACAO_MINIMA, normalizarCamera, pontosTopologicos, projetarEspaco } from '../src/lib/espaco-topologico';
 import { linhasBaseSNA, maximosBaseSNA } from '../src/lib/base-sna';
 import type { Documento, MetricasSNA, SnaGlobal, TipoNo } from '../src/types';
 
@@ -323,6 +323,18 @@ test('um eixo constante nao divide por zero na projecao', () => {
   const { projetados } = projetarEspaco(pontosTopologicos(sna, 'Macrotema').pontos);
   assert.equal(projetados.length, 2);
   for (const p of projetados) assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
+});
+
+test('a camera do arrasto da a volta na horizontal e encosta nos limites na vertical', () => {
+  // O arrasto soma graus sem fim; o azimute precisa voltar ao começo sozinho.
+  assert.deepEqual(normalizarCamera({ azimute: 361, elevacao: 0 }), { azimute: 1, elevacao: 0 });
+  assert.deepEqual(normalizarCamera({ azimute: -1, elevacao: 0 }), { azimute: 359, elevacao: 0 });
+  assert.deepEqual(normalizarCamera({ azimute: 720, elevacao: 0 }), { azimute: 0, elevacao: 0 });
+  // Passar de 90° viraria o cubo e inverteria o eixo Closeness sem aviso.
+  assert.equal(normalizarCamera({ azimute: 0, elevacao: 200 }).elevacao, ELEVACAO_MAXIMA);
+  assert.equal(normalizarCamera({ azimute: 0, elevacao: -200 }).elevacao, ELEVACAO_MINIMA);
+  // Os deslizadores têm passo de 1°: o ângulo do arrasto chega inteiro a eles.
+  assert.deepEqual(normalizarCamera({ azimute: 35.4, elevacao: 21.6 }), { azimute: 35, elevacao: 22 });
 });
 
 test('a legenda do espaco agrupa as comunidades menores num grupo unico', () => {

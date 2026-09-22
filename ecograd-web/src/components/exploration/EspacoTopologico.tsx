@@ -1,17 +1,21 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Box } from 'lucide-react';
 import { Aviso, Card, Expander } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { useSessionField } from '@/hooks/useSessionField';
+import { useArrastoOrbital } from '@/hooks/useArrastoOrbital';
 import { formatarNumero } from '@/lib/utils';
 import {
   agruparPorComunidade,
   ARESTAS_CUBO,
   CAMERA_PADRAO,
   DIMENSOES_3D,
+  ELEVACAO_MAXIMA,
+  ELEVACAO_MINIMA,
   ESCALAS_3D,
   LIMITE_PONTOS_3D,
+  normalizarCamera,
   pontosTopologicos,
   projetarEspaco,
   type Camera3D,
@@ -41,8 +45,23 @@ export function EspacoTopologico() {
   const statusSNA = useEcoGradStore((s) => s.statusSNA);
   const navegarPara = useEcoGradStore((s) => s.navegarPara);
   const [dimensao, setDimensao] = useSessionField<Dimensao3D>('grafico.espaco3d.dimensao', 'Palavra-chave');
-  const [camera, setCamera] = useSessionField<Camera3D>('rede.espaco3d.camera', CAMERA_PADRAO);
+  const [cameraSalva, setCameraSalva] = useSessionField<Camera3D>('rede.espaco3d.camera', CAMERA_PADRAO);
   const [escala, setEscala] = useSessionField<Escala3D>('grafico.espaco3d.escala', 'Logarítmica');
+
+  /**
+   * Ângulo enquanto o botão do mouse está pressionado.
+   *
+   * Não vai direto para a sessão: cada quadro do arrasto reescreveria o `ui` do
+   * store, e o histórico de navegação serializa a análise inteira a cada mudança
+   * dele. O ângulo só é gravado ao soltar; até lá vive aqui.
+   */
+  const [cameraArrasto, setCameraArrasto] = useState<Camera3D | null>(null);
+  const camera = cameraArrasto ?? cameraSalva;
+  const setCamera = (proxima: Camera3D) => {
+    setCameraArrasto(null);
+    setCameraSalva(normalizarCamera(proxima));
+  };
+  const arrasto = useArrastoOrbital(camera, setCameraArrasto, setCamera);
 
   const { pontos, total } = useMemo(() => pontosTopologicos(sna, dimensao, LIMITE_PONTOS_3D), [sna, dimensao]);
   const { projetados, cubo } = useMemo(() => projetarEspaco(pontos, camera, escala), [pontos, camera, escala]);
@@ -154,7 +173,7 @@ export function EspacoTopologico() {
           </label>
           <label className="flex flex-col gap-1.5 text-sm text-slate-300">
             Inclinação (elevação)
-            <input type="range" min={-80} max={80} step={1} value={camera.elevacao}
+            <input type="range" min={ELEVACAO_MINIMA} max={ELEVACAO_MAXIMA} step={1} value={camera.elevacao}
               aria-valuetext={`${camera.elevacao} graus`}
               onChange={(e) => setCamera({ ...camera, elevacao: Number(e.target.value) })}
               className="w-full accent-eco-accent" />
@@ -162,6 +181,10 @@ export function EspacoTopologico() {
           </label>
         </div>
         <button type="button" className="btn" onClick={() => setCamera(CAMERA_PADRAO)}>Restaurar o ângulo inicial</button>
+        <p className="text-sm text-slate-300">
+          Arraste o gráfico com o mouse para girar o cubo — os deslizadores acompanham o movimento e
+          continuam sendo o caminho pelo teclado. Um clique sem arrastar abre a entidade no Motor de Busca.
+        </p>
         <p className="text-sm text-slate-300" role="status">
           {total === 0
             ? `Nenhum nó do tipo ${dimensao} no grafo global desta seleção.`
@@ -175,7 +198,7 @@ export function EspacoTopologico() {
           <p><strong>Escala dos eixos</strong>: as três métricas têm cauda longa — a maioria dos termos aparece uma vez só, e alguns poucos dominam. Em escala linear, que é a do modelo original, essa maioria empilha num canto do cubo. A logarítmica, aplicada como log(1 + valor), espalha a massa sem alterar nenhum valor nem a ordem entre os nós: muda só a posição no desenho. Os números no tooltip e na tabela são sempre os originais.</p>
           <p>O tamanho do ponto segue o grau; a profundidade só o modula um pouco, para dar sensação de volume. A cor é a comunidade detectada pelo Louvain no grafo global — as maiores aparecem nomeadas e o restante fica agrupado, porque uma legenda com centenas de comunidades não ajuda a ler nada.</p>
           <p>Betweenness é aproximado por amostragem de pivôs em redes grandes, e closeness também. Posição alta em qualquer eixo descreve conectividade na rede desta seleção — não mede qualidade, impacto ou mérito.</p>
-          <p>A órbita é controlada pelos dois deslizadores. É uma projeção calculada aqui dentro, o que mantém o gráfico com vista em tabela, download de imagem, tema claro e escuro e respeito a “reduzir movimento”.</p>
+          <p>A órbita é controlada pelo arrasto do mouse ou pelos dois deslizadores, que mostram sempre o ângulo atual. Em telas de toque o arrasto fica desligado de propósito, para não sequestrar a rolagem da página: ali os deslizadores são o caminho. É uma projeção calculada aqui dentro, o que mantém o gráfico com vista em tabela, download de imagem, tema claro e escuro e respeito a “reduzir movimento”.</p>
         </div>
       </Expander>
 
@@ -199,7 +222,14 @@ export function EspacoTopologico() {
               contexto,
               onAbrir: (l) => navegarPara(TIPO_BUSCA[dimensao], String(l.Item)),
             }}
-            onEvents={{ click: (p) => { const d = (p as { data?: { ponto?: { Item: string } } }).data?.ponto; if (d) navegarPara(TIPO_BUSCA[dimensao], d.Item); } }}
+            onReady={arrasto.aoMontar}
+            onEvents={{ click: (p) => {
+              // Soltar o botão sobre o mesmo ponto em que o gesto começou ainda
+              // dispara um clique; girar o cubo não pode abrir uma entidade.
+              if (arrasto.houveArrasto()) return;
+              const d = (p as { data?: { ponto?: { Item: string } } }).data?.ponto;
+              if (d) navegarPara(TIPO_BUSCA[dimensao], d.Item);
+            } }}
             option={option}
           />
         </Card>

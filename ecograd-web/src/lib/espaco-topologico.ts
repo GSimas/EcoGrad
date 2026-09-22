@@ -69,6 +69,29 @@ export interface Camera3D {
 export const CAMERA_PADRAO: Camera3D = { azimute: 35, elevacao: 22 };
 
 /**
+ * Limites da inclinação. Passar de 90° viraria o cubo de cabeça para baixo e o
+ * eixo Closeness inverteria sem aviso; o teto em 80° mantém a leitura estável
+ * nas duas pontas do arrasto.
+ */
+export const ELEVACAO_MINIMA = -80;
+export const ELEVACAO_MAXIMA = 80;
+
+/**
+ * Câmera válida a partir de um ângulo qualquer: o azimute dá a volta (359° + 2°
+ * = 1°, e não 361°) e a elevação para nos limites. É o que permite arrastar sem
+ * fim na horizontal e encostar no teto na vertical.
+ */
+export function normalizarCamera({ azimute, elevacao }: Camera3D): Camera3D {
+  return {
+    azimute: ((Math.round(azimute) % 360) + 360) % 360,
+    elevacao: Math.min(ELEVACAO_MAXIMA, Math.max(ELEVACAO_MINIMA, Math.round(elevacao))),
+  };
+}
+
+/** Graus por pixel arrastado. Uma volta completa em pouco mais de meia tela. */
+export const GRAUS_POR_PIXEL = 0.4;
+
+/**
  * Como os três eixos são comprimidos no cubo.
  *
  * O `scatter_3d` original usava escala linear, e ela continua aqui como opção —
