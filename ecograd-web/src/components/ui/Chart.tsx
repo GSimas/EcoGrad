@@ -95,7 +95,8 @@ export function Grafico({
           </>
         )}
       </div>
-      {vista === 'tabela' ? <Tabela {...leitura} /> : <><div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
+      {/* `descricao` fica de fora: o Grafico já a mostra acima, nas duas vistas. */}
+      {vista === 'tabela' ? <Tabela {...leitura} descricao={undefined} /> : <><div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
     <CanvasBoundary><ReactECharts
       option={opcaoFinal}
       style={{ height: altura, width: '100%' }}

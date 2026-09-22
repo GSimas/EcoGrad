@@ -18,6 +18,13 @@ const pct = (parte: number, todo: number) => (todo ? `${Math.round((parte / todo
 const DIMENSOES = ['Coleções', 'Orientadores', 'Coorientadores', 'Palavras-chave'] as const;
 type Dimensao = typeof DIMENSOES[number];
 
+/** As fontes da nuvem. Cada uma conta uma unidade diferente — ver `FONTES_NUVEM`. */
+const FONTES = ['Títulos', 'Palavras-chave', 'Ambos'] as const;
+type Fonte = typeof FONTES[number];
+const CHAVE_NUVEM: Record<Fonte, keyof Acervo['nuvem']> = {
+  'Títulos': 'titulos', 'Palavras-chave': 'palavrasChave', 'Ambos': 'ambos',
+};
+
 const RANKING: Record<Dimensao, {
   dados: (p: Acervo) => Array<[string, number]>;
   titulo: string; unidade: string; coluna: string; descricao: string;
@@ -57,8 +64,9 @@ const RANKING: Record<Dimensao, {
 export function PanoramaAcervo({ aoNavegar }: { aoNavegar: () => void }) {
   const [dimensao, setDimensao] = useSessionField<Dimensao>('panorama.ranking', 'Coleções');
   const [alvo, setAlvo] = useState<AlvoDoAcervo | null>(null);
+  const [fonte, setFonte] = useSessionField<Fonte>('panorama.nuvem', 'Ambos');
   const { data, isLoading, error } = useQuery({
-    queryKey: ['colecoes-cobertura', 4],
+    queryKey: ['colecoes-cobertura', 5],
     queryFn: ({ signal }) => carregarCobertura(signal),
     staleTime: Infinity,
   });
@@ -173,6 +181,8 @@ export function PanoramaAcervo({ aoNavegar }: { aoNavegar: () => void }) {
         <RankingDoAcervo dados={dados} ranking={ranking} contexto={contexto} aoEscolher={escolher} />
       </Card>
 
+      <NuvemDoAcervo nuvem={p.nuvem} fonte={FONTES.includes(fonte) ? fonte : 'Ambos'} aoTrocar={setFonte} contexto={contexto} />
+
       <p className="text-xs text-slate-400">
         Cobertura de metadados no acervo: {pct(p.comResumo, p.registros)} com resumo,
         {' '}{pct(p.comPalavras, p.registros)} com palavras-chave, {pct(p.comOrientador, p.registros)} com orientação,
@@ -217,4 +227,50 @@ function RankingDoAcervo({ dados, ranking, contexto, aoEscolher }: {
     // O cursor avisa que a barra leva a algum lugar.
     option={{ ...base, series: [{ ...((base.series as unknown[])[0] as object), cursor: 'pointer' }] }}
   />;
+}
+
+/**
+ * A nuvem do acervo inteiro, nas três fontes.
+ *
+ * As unidades não são as mesmas e a escolha muda o que se lê: uma palavra-chave
+ * conta a expressão inteira ("engenharia de produção" = 1), e o título conta
+ * palavra a palavra. Somar as duas é adição do EcoGrad, e a descrição diz isso.
+ *
+ * Artigos, preposições e verbos de ligação em português, inglês e espanhol ficam
+ * de fora, junto com os termos que descrevem o gênero do documento ("estudo",
+ * "análise"): sem isso a nuvem diria o idioma, não o assunto.
+ */
+function NuvemDoAcervo({ nuvem, fonte, aoTrocar, contexto }: {
+  nuvem: Acervo['nuvem'];
+  fonte: Fonte;
+  aoTrocar: (f: Fonte) => void;
+  contexto: Record<string, unknown>;
+}) {
+  const dados = nuvem[CHAVE_NUVEM[fonte]];
+  const mistura = fonte === 'Ambos'
+    ? ' As duas fontes são somadas e misturam unidades: a palavra-chave conta a expressão inteira, o título conta palavra a palavra.'
+    : '';
+  return (
+    <Card className="space-y-4">
+      <GrupoOpcoes rotulo="Nuvem de palavras do acervo" opcoes={FONTES} valor={fonte} onChange={aoTrocar} />
+      <Grafico
+        altura={420}
+        leitura={{
+          titulo: `Nuvem de palavras · ${fonte}`,
+          descricao: `Tamanho da palavra: número de registros em que o termo aparece, nos 100 mais frequentes de todo o acervo. Cor e rotação são decorativas; leia os valores exatos na tabela. Artigos, preposições e termos que descrevem o gênero do trabalho ficam de fora, em português, inglês e espanhol. Nomes de lugar aparecem entre os primeiros porque o acervo é de uma universidade catarinense — frequência descreve o acervo, não a importância do tema.${mistura}`,
+          linhas: dados.map(([name, value]) => ({ name, value })),
+          colunas: [{ chave: 'name', rotulo: 'Termo' }, { chave: 'value', rotulo: 'Registros (n)' }],
+          contexto: { ...contexto, fonteDaNuvem: fonte },
+        }}
+        option={{
+          tooltip: { show: true },
+          series: [{
+            type: 'wordCloud', shape: 'circle', gridSize: 6, sizeRange: [12, 54],
+            rotationRange: [-45, 45], width: '100%', height: '100%', drawOutOfBound: false,
+            data: dados.map(([name, value]) => ({ name, value })),
+          }],
+        }}
+      />
+    </Card>
+  );
 }

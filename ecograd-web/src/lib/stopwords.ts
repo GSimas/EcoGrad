@@ -1,3 +1,5 @@
+import { STOPWORDS_NUVEM as STOPWORDS_NUVEM_BRUTAS } from '../../scripts/stopwords-nuvem.mjs';
+
 /**
  * Dicionário acadêmico bilíngue (PT/EN).
  * Transcrição fiel de STOPWORDS_ACADEMICAS (backend.py:33).
@@ -30,18 +32,13 @@ export const STOPWORDS_NORMALIZADAS: ReadonlySet<string> = new Set(
 );
 
 /**
- * Stopwords estritamente PT usadas por `obter_frequencias_texto` (backend.py:1303)
- * na nuvem de palavras de títulos/resumos. Mantida separada porque a lista original
- * do Python é um subconjunto (sem os termos em inglês).
+ * Stopwords das nuvens de palavras, em português, inglês e espanhol.
+ *
+ * A lista mora em `scripts/stopwords-nuvem.mjs`, e não aqui, porque a nuvem do
+ * Panorama é montada no build e as do dossiê e do relatório no navegador: duas
+ * cópias divergiriam, e a mesma palavra sumiria de uma nuvem e não da outra.
+ *
+ * Divergiu de `STOPWORDS_ACADEMICAS` de propósito: aquela é transcrição fiel do
+ * `backend.py` e tem paridade verificada; esta é do EcoGrad e pode crescer.
  */
-export const STOPWORDS_NUVEM_PT: ReadonlySet<string> = new Set([
-  'de', 'a', 'o', 'que', 'e', 'do', 'da', 'em', 'um', 'uma', 'para', 'com',
-  'não', 'os', 'no', 'se', 'na', 'por', 'mais', 'as', 'dos', 'como', 'mas',
-  'ao', 'das', 'à', 'seu', 'sua', 'ou', 'nos', 'já', 'eu', 'também', 'pelo',
-  'pela', 'até', 'isso', 'ela', 'entre', 'sem', 'mesmo', 'aos', 'nas', 'me',
-  'esse', 'essa', 'num', 'nem', 'numa', 'pelos', 'pelas', 'este', 'esta',
-  'sobre', 'estudo', 'análise', 'proposta', 'uso', 'aplicação', 'desenvolvimento',
-  'modelo', 'sistema', 'avaliação', 'gestão', 'conhecimento', 'engenharia',
-  'objetivo', 'pesquisa', 'trabalho', 'resultados', 'método', 'foi', 'foram',
-  'são', 'ser', 'através', 'forma', 'apresenta',
-]);
+export const STOPWORDS_NUVEM: ReadonlySet<string> = STOPWORDS_NUVEM_BRUTAS;

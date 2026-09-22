@@ -25,8 +25,10 @@ export interface PanoramaAcervo {
   topOrientadores: Array<[string, number]>;
   topCoorientadores: Array<[string, number]>;
   topPalavrasChave: Array<[string, number]>;
+  /** Os 100 termos mais frequentes de cada fonte, para a nuvem do acervo inteiro. */
+  nuvem: { titulos: Array<[string, number]>; palavrasChave: Array<[string, number]>; ambos: Array<[string, number]> };
 }
-export interface CatalogoCobertura { schema: 4; version: string; bytes: { ppg: number; tcc: number }; colecoes: ColecaoCobertura[]; panorama: PanoramaAcervo }
+export interface CatalogoCobertura { schema: 5; version: string; bytes: { ppg: number; tcc: number }; colecoes: ColecaoCobertura[]; panorama: PanoramaAcervo }
 function panoramaValido(p: PanoramaAcervo | undefined, count: (n: unknown) => boolean): boolean {
   if (!p || !count(p.registros)) return false;
   const escalares: unknown[] = [p.trabalhosUnicos, p.colecoes, p.colecoesPpg, p.colecoesTcc, p.autores, p.orientadores,
@@ -41,12 +43,14 @@ function panoramaValido(p: PanoramaAcervo | undefined, count: (n: unknown) => bo
     && Array.isArray(p.porNivel) && p.porNivel.every((v) => par(v, false))
     && Array.isArray(p.porAno) && p.porAno.every((v) => par(v, true))
     && [p.maioresColecoes, p.topOrientadores, p.topCoorientadores, p.topPalavrasChave]
-      .every((lista) => Array.isArray(lista) && lista.length <= 15 && lista.every((v) => par(v, false)));
+      .every((lista) => Array.isArray(lista) && lista.length <= 15 && lista.every((v) => par(v, false)))
+    && !!p.nuvem && [p.nuvem.titulos, p.nuvem.palavrasChave, p.nuvem.ambos]
+      .every((lista) => Array.isArray(lista) && lista.length <= 100 && lista.every((v) => par(v, false)));
 }
 export function validarCobertura(value: unknown, version: string): CatalogoCobertura {
   const c = value as CatalogoCobertura | null;
   const count = (n: unknown) => Number.isSafeInteger(n) && Number(n) >= 0;
-  if (!c || c.schema !== 4 || c.version !== version || !/^[a-f0-9]{64}$/.test(version) || !c.bytes || !count(c.bytes.ppg) || !count(c.bytes.tcc) || !Array.isArray(c.colecoes) ||
+  if (!c || c.schema !== 5 || c.version !== version || !/^[a-f0-9]{64}$/.test(version) || !c.bytes || !count(c.bytes.ppg) || !count(c.bytes.tcc) || !Array.isArray(c.colecoes) ||
     !panoramaValido(c.panorama, count) ||
     !c.colecoes.every((e) => e && typeof e.nome === 'string' && ['ppg', 'tcc'].includes(e.tipo) && Array.isArray(e.setSpecs) && e.setSpecs.every((s) => typeof s === 'string' && /^col_\d+_\d+$/.test(s)) &&
       count(e.total) && count(e.downloadBytes) && [e.semAno, e.comResumo, e.comPalavras, e.comOrientador, e.comFonte, e.fontesDistintas].every((n) => count(n) && n <= e.total) &&

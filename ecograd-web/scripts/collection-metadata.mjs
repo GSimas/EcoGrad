@@ -1,5 +1,7 @@
+import { STOPWORDS_NUVEM } from './stopwords-nuvem.mjs';
+
 /** Read-only preview of the exact records used by data-loader; no scientific transformation. */
-export const COVERAGE_SCHEMA = 4;
+export const COVERAGE_SCHEMA = 5;
 export function summarizeCollections(entries, records) {
   const buckets = new Map(entries.map((e) => [e.nome, { ...e, total: 0, niveis: {}, inicio: null, fim: null, semAno: 0, comResumo: 0, comPalavras: 0, comOrientador: 0, comFonte: 0, urls: new Set() }]));
   for (const d of records) {
@@ -40,15 +42,25 @@ export function catalogEntries(ppg, tcc) {
  * As definições acompanham as de `resumoRegistros` (src/lib/resultados.ts), para
  * o número do panorama e o do Dashboard significarem a mesma coisa.
  */
+/** Termos de um título, com as mesmas regras de `obterFrequenciasTexto` (src/lib/lexicon.ts). */
+function termosDoTitulo(titulo) {
+  return String(titulo ?? '').toLowerCase().replace(/[^\p{L}\p{N}_\s]/gu, '').split(/\s+/)
+    .filter((p) => p.length > 2 && !STOPWORDS_NUVEM.has(p));
+}
+
 export function panoramaAcervo(bases) {
   /** As 15 mais frequentes; empate desempatado pelo nome, para o ranking não oscilar entre builds. */
   const maiores = (mapa) => [...mapa].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR')).slice(0, 15);
+  /** Os 100 termos da nuvem; mais que isso o desenho não comporta e o arquivo cresce à toa. */
+  const nuvem = (mapa) => [...mapa].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR')).slice(0, 100);
   // Mapa, e não conjunto, para orientação, coorientação e palavra-chave: o
   // panorama mostra tanto quantas são distintas (`.size`) quanto as 15 mais
   // frequentes, e uma segunda passada só para o ranking seria desperdício.
   const autores = new Set();
   const orientadores = new Map(), coorientadores = new Map(), palavras = new Map();
   const macrotemas = new Set(), fontes = new Set(), colecoes = { ppg: new Set(), tcc: new Set() };
+  // A nuvem do Panorama cobre o acervo inteiro, que o navegador nunca carrega.
+  const titulos = new Map();
   const somar = (mapa, chave) => mapa.set(chave, (mapa.get(chave) ?? 0) + 1);
   const niveis = new Map(), anos = new Map(), porColecao = new Map();
   let registros = 0, semFonte = 0, semAno = 0;
@@ -67,6 +79,7 @@ export function panoramaAcervo(bases) {
       if (String(d.orientador ?? '').trim()) { somar(orientadores, String(d.orientador).trim()); com.orientador++; }
       for (const c of d.co_orientadores ?? []) if (String(c).trim()) somar(coorientadores, String(c).trim());
       for (const p of d.palavras_chave ?? []) if (String(p).trim()) somar(palavras, String(p).trim());
+      for (const t of termosDoTitulo(d.titulo)) somar(titulos, t);
       if (String(d.macrotema ?? '').trim()) macrotemas.add(String(d.macrotema).trim());
       if (String(d.resumo ?? '').trim()) com.resumo++;
       if ((d.palavras_chave ?? []).some((p) => String(p).trim())) com.palavras++;
@@ -100,5 +113,12 @@ export function panoramaAcervo(bases) {
     topOrientadores: maiores(orientadores),
     topCoorientadores: maiores(coorientadores),
     topPalavrasChave: maiores(palavras),
+    nuvem: {
+      titulos: nuvem(titulos),
+      palavrasChave: nuvem(palavras),
+      // Somado no mapa, e não nas duas listas cortadas: um termo frequente nas
+      // duas fontes ficaria de fora se cada lista fosse truncada antes da soma.
+      ambos: nuvem(new Map([...titulos].reduce((m, [t, n]) => m.set(t, (m.get(t) ?? 0) + n), new Map(palavras)))),
+    },
   };
 }

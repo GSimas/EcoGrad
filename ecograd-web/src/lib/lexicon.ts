@@ -3,7 +3,7 @@
  * Transcrição de `obter_frequencias_texto` (backend.py:1303).
  */
 import type { Documento } from '@/types';
-import { STOPWORDS_NUVEM_PT } from './stopwords';
+import { STOPWORDS_NUVEM } from './stopwords';
 
 export type FonteNuvem = 'Conceitos (Palavras-chave)' | 'Resumos (Abstracts)' | 'Títulos';
 
@@ -39,7 +39,7 @@ function contarFonte(docs: readonly Documento[], fonte: FonteNuvem, contagem: Ma
   // Equivalente a re.sub(r'[^\w\s]', '', texto.lower()) e split()
   const textoCompleto = textos.join(' ').toLowerCase().replace(/[^\p{L}\p{N}_\s]/gu, '');
   for (const palavra of textoCompleto.split(/\s+/)) {
-    if (palavra.length <= 2 || STOPWORDS_NUVEM_PT.has(palavra)) continue;
+    if (palavra.length <= 2 || STOPWORDS_NUVEM.has(palavra)) continue;
     contagem.set(palavra, (contagem.get(palavra) ?? 0) + 1);
   }
 }
