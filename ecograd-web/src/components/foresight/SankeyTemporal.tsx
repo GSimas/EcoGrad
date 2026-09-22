@@ -3,6 +3,7 @@ import { Waves } from 'lucide-react';
 import { Aviso, Card, Expander } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { useSessionField } from '@/hooks/useSessionField';
+import { FaixaDupla } from '@/components/ui/FaixaDupla';
 import { formatarNumero } from '@/lib/utils';
 import { periodosPadrao, prepararSankeyTemporal, type PeriodoSankey } from '@/lib/sankey-temporal';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -43,12 +44,19 @@ export function SankeyTemporal() {
     [docs, topN, periodos],
   );
 
-  const alterarPeriodo = (indice: number, campo: 'inicio' | 'fim', valor: number) => {
-    if (!periodos) return;
-    const proximos = periodos.map((p, i) => (i === indice ? { ...p, [campo]: valor } : p)) as [PeriodoSankey, PeriodoSankey, PeriodoSankey];
-    // Um período invertido não filtra nada; o limite acompanha a outra ponta.
-    const alvo = proximos[indice];
-    if (alvo.inicio > alvo.fim) proximos[indice] = campo === 'inicio' ? { ...alvo, fim: valor } : { ...alvo, inicio: valor };
+  /**
+   * Uma barra por período, com as duas pontas móveis.
+   *
+   * A `FaixaDupla` devolve `null` quando a ponta encosta no extremo da escala —
+   * é assim que ela representa "sem limite" nos filtros de tabela. Aqui todo
+   * período tem começo e fim concretos, então o extremo volta a ser o próprio
+   * ano da borda.
+   */
+  const alterarPeriodo = (indice: number, faixa: { min: number | null; max: number | null }) => {
+    if (!periodos || !limites) return;
+    const proximos = periodos.map((p, i) => (i === indice
+      ? { inicio: faixa.min ?? limites.min, fim: faixa.max ?? limites.max }
+      : p)) as [PeriodoSankey, PeriodoSankey, PeriodoSankey];
     setSalvos(proximos);
   };
 
@@ -122,23 +130,17 @@ export function SankeyTemporal() {
         <p className="text-sm text-slate-300">Base observada: {limites.min}–{limites.max}. Períodos podem se sobrepor; o modelo original também permitia.</p>
         <div className="grid gap-4 md:grid-cols-3">
           {periodos.map((p, i) => (
-            <fieldset key={ROTULOS[i]} className="space-y-2 rounded-lg border border-eco-border p-3">
+            <fieldset key={ROTULOS[i]} className="space-y-1 rounded-lg border border-eco-border p-3">
               <legend className="px-1 text-xs uppercase tracking-wide text-slate-400">{ROTULOS[i]}</legend>
-              <label className="flex flex-col gap-1 text-sm text-slate-300">
-                Primeiro ano
-                <input type="range" min={limites.min} max={limites.max} step={1} value={p.inicio}
-                  aria-valuetext={String(p.inicio)}
-                  onChange={(e) => alterarPeriodo(i, 'inicio', Number(e.target.value))}
-                  className="w-full accent-eco-accent" />
-              </label>
-              <label className="flex flex-col gap-1 text-sm text-slate-300">
-                Último ano
-                <input type="range" min={limites.min} max={limites.max} step={1} value={p.fim}
-                  aria-valuetext={String(p.fim)}
-                  onChange={(e) => alterarPeriodo(i, 'fim', Number(e.target.value))}
-                  className="w-full accent-eco-accent" />
-              </label>
-              <p className="text-sm text-eco-accent">{p.inicio}–{p.fim} · {formatarNumero(sankey.documentosPorPeriodo[i])} registros</p>
+              <FaixaDupla
+                rotulo={`${ROTULOS[i]}, em anos`}
+                min={limites.min}
+                max={limites.max}
+                passo={1}
+                valor={{ min: p.inicio, max: p.fim }}
+                onChange={(faixa) => alterarPeriodo(i, faixa)}
+              />
+              <p className="text-sm text-eco-accent" role="status">{p.inicio}–{p.fim} · {formatarNumero(sankey.documentosPorPeriodo[i])} registros</p>
             </fieldset>
           ))}
         </div>

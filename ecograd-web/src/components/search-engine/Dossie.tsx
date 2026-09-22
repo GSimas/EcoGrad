@@ -13,6 +13,7 @@ import { calcularSimilaresRede } from '@/lib/similarity';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useGrafoHistorico, usePerfisSimilaridade } from '@/hooks/useDadosDerivados';
 import { VisaoEntidade } from './VisaoEntidade';
+import { AbrirTermoDaNuvem, useTermoDaNuvem } from '@/components/ui/AbrirTermoDaNuvem';
 import { MetricasEntidade } from './MetricasEntidade';
 import type { Documento, SnaGlobal, TipoBusca } from '@/types';
 
@@ -52,6 +53,7 @@ function GraficosDossie({
   // Chave nova de propósito: a antiga guardava uma fonte só, em string, e
   // voltaria da sessão como um valor que não é lista. `fontesValidas` ainda
   // filtra o que chega, porque a sessão restaura `ui` sem validar item a item.
+  const termoDaNuvem = useTermoDaNuvem();
   const [fontesSalvas, setFontesNuvem] = useSessionField<FonteNuvem[]>('dossie.nuvem.fontes', ['Conceitos (Palavras-chave)']);
   const fontesNuvem = useMemo(() => fontesValidas(fontesSalvas), [fontesSalvas]);
   // Atualização funcional, e não a lista deste render: dois cliques no mesmo
@@ -187,8 +189,9 @@ function GraficosDossie({
                   </p>
                 ) : (
                   <Grafico
-                    leitura={{ titulo: 'Frequências da nuvem de palavras', descricao: `Tamanho da palavra: frequência nas fontes selecionadas (ocorrências). Cor e rotação são decorativas. Leia todos os termos e valores na tabela.${fontesNuvem.length > 1 ? ' As fontes são somadas e misturam unidades: palavras-chave contam a expressão inteira, títulos e resumos contam palavra a palavra.' : ''}`, linhas: nuvem.map((l) => ({...l})), colunas: [{chave:'name',rotulo:'Termo completo'}, {chave:'value',rotulo:'Ocorrências (n)'}], contexto: {fontes:fontesNuvem} }}
+                    leitura={{ titulo: 'Frequências da nuvem de palavras', descricao: `Clique num termo para abri-lo: o modal oferece explorá-lo no recorte já carregado, ou carregar tudo o que o acervo tem sobre ele. Tamanho da palavra: frequência nas fontes selecionadas (ocorrências). Cor e rotação são decorativas. Leia todos os termos e valores na tabela.${fontesNuvem.length > 1 ? ' As fontes são somadas e misturam unidades: palavras-chave contam a expressão inteira, títulos e resumos contam palavra a palavra.' : ''}`, linhas: nuvem.map((l) => ({...l})), colunas: [{chave:'name',rotulo:'Termo completo'}, {chave:'value',rotulo:'Ocorrências (n)'}], contexto: {fontes:fontesNuvem}, onAbrir: (l) => termoDaNuvem.abrir(String(l.name)) }}
                     altura={420}
+                    onEvents={{ click: (p) => { const nome = (p as { name?: string }).name; if (nome) termoDaNuvem.abrir(nome); } }}
                     option={{
                       tooltip: { show: true },
                       series: [
@@ -250,6 +253,7 @@ function GraficosDossie({
         ? <Tabs chaveSessao="dossie" abas={abas} />
         : <Aviso>Nenhuma das análises gráficas descreve este item. Os metadados, os trabalhos e as relações continuam abaixo.</Aviso>}
       <AnalisesOcultas itens={ocultas} />
+      <AbrirTermoDaNuvem termo={termoDaNuvem.termo} aoFechar={termoDaNuvem.fechar} />
     </section>
   );
 }

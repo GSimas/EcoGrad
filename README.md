@@ -102,6 +102,11 @@ perfil epistemológico escrita por IA.
 Todo nome exibido é clicável — chips de destaque e as barras dos Top 10 — e leva direto ao dossiê
 da entidade no Motor de Busca.
 
+Nas **nuvens de palavras**, em qualquer tela, clicar num termo abre um convite em vez de agir: o
+modal diz quantas coleções seriam baixadas e quanto pesam, oferece explorar o termo no recorte já
+carregado quando ele aparece nele, e avisa quando o termo só existe dentro de títulos e resumos —
+sem ser palavra-chave, macrotema, pessoa ou título — e portanto não tem o que abrir.
+
 ### 2. 🔍 Motor de Busca e Dossiê
 
 Busca unificada por Documento, Autor, Orientador, Co-orientador, Palavra-chave e Macrotema. Cada
@@ -141,17 +146,18 @@ cálculos mais pesados têm botão próprio — eles seguem em segundo plano se 
   Mainstream e Base/Declínio. Segmentação por **percentil fixo** ou **K-Means adaptativo** de 4
   clusters, e **Bootstrap** de 100 reamostragens para um betweenness robusto em bases pequenas.
   Funciona sobre Palavras-chave, Macrotemas ou Artefatos da Ontologia IA.
-- **Sankey Temporal de palavras-chave** — três períodos ajustáveis, com os termos mais frequentes
-  de cada um ligados quando a mesma pessoa — orientador ou autor — atravessa períodos vizinhos.
-  É fluxo de vocabulário entre pessoas, não citação nem herança conceitual.
+- **Sankey Temporal de palavras-chave** — três períodos ajustáveis, cada um numa barra de duas
+  pontas, com os termos mais frequentes de cada um ligados quando a mesma pessoa — orientador ou
+  autor — atravessa períodos vizinhos. É fluxo de vocabulário entre pessoas, não citação nem
+  herança conceitual.
 - **Grid Search** — varre 108 configurações, valida cada uma contra a história real da base
   (treino até T1, conferência em T2) e ranqueia por **MCC**, robusto a classes desbalanceadas.
 
 **Estrutura da rede** — como tudo se conecta.
 
-- **Espaço Topológico 3D** — Grau × Betweenness × Closeness, girável com o mouse ou pelos
-  controles de azimute e elevação, cor pela comunidade do Louvain e escala dos eixos linear (a do
-  modelo original) ou logarítmica.
+- **Espaço Topológico 3D** — Grau × Betweenness × Closeness em WebGL (`echarts-gl`): arraste para
+  girar, roda para aproximar, botão direito para deslocar. Cor pela comunidade do Louvain e escala
+  dos eixos linear (a do modelo original) ou logarítmica.
 - **Furos Estruturais (Burt)** — rede de orientadores e palavras-chave, com restrição,
   diversidade de vocabulário e intermediação.
 - **Ecologia Memética (SNA)** — rede de coocorrência entre os memes, com grafo interativo e
@@ -484,12 +490,11 @@ está concluída, com uma exceção declarada.
 
 Três diferenças deliberadas em relação ao original, todas declaradas na própria interface:
 
-- **O espaço 3D é uma projeção calculada no EcoGrad**, e não uma tela WebGL. Assim o gráfico
-  continua dentro do invólucro acessível do projeto — vista em tabela, download de imagem, tema
-  claro e escuro, movimento reduzido —, ao custo de a órbita ser controlada pelo arrasto do mouse e
-  pelos controles de azimute e elevação, em vez de arrasto livre em três eixos. Ele também oferece
+- **O espaço 3D é WebGL, pelo `echarts-gl`**, com a mesma órbita livre do `scatter_3d` original.
+  A tela do WebGL é uma superfície própria e o download de imagem não a alcança: ali a vista em
+  tabela é o caminho para levar os dados embora, e também o caminho pelo teclado. Ele oferece
   escala logarítmica além da linear do original, porque as três métricas têm cauda longa e a linear
-  empilha a maioria dos nós num canto do cubo.
+  empilha a maioria dos nós num canto do cubo; o nome do eixo declara quando a escala está em uso.
 - **As três telas de análise viraram abas de uma só.** Exploração Global, Foresight e Memética
   ocupavam páginas separadas por origem no Streamlit; hoje são quatro abas da Análise Avançada,
   agrupadas por pergunta de pesquisa. A propagação dos termos ficou junto da análise temática, e a

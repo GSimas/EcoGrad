@@ -6,7 +6,7 @@ import { calcularFurosEstruturais, construirGrafoFuros } from '../src/lib/burt-f
 import { caixasQL, entidadesDisponiveis, gerarBaseBoxplotQL } from '../src/lib/boxplot-ql';
 import { periodosPadrao, prepararSankeyTemporal } from '../src/lib/sankey-temporal';
 import { escaparXml, grafoParaGexf, grafoParaGraphml, grafoParaNodeLink, serializarGrafo } from '../src/lib/exportar-grafo';
-import { agruparPorComunidade, ELEVACAO_MAXIMA, ELEVACAO_MINIMA, normalizarCamera, pontosTopologicos, projetarEspaco } from '../src/lib/espaco-topologico';
+import { agruparPorComunidade, pontosTopologicos, posicaoNoEixo } from '../src/lib/espaco-topologico';
 import { linhasBaseSNA, maximosBaseSNA } from '../src/lib/base-sna';
 import type { Documento, MetricasSNA, SnaGlobal, TipoNo } from '../src/types';
 
@@ -258,7 +258,7 @@ test('a exportacao da rede produz XML valido e JSON node-link', () => {
   assert.equal(escaparXml(null), '');
 });
 
-test('o espaco topologico filtra por dimensao, corta pelo grau e projeta o cubo', () => {
+test('o espaco topologico filtra por dimensao e corta pelo grau', () => {
   const sna: SnaGlobal = {
     alfa: metrica({ Tipo: 'Palavra-chave', 'Grau Absoluto': 9, Betweenness: 0.9, Closeness: 0.5, Comunidade: 1 }),
     beta: metrica({ Tipo: 'Palavra-chave', 'Grau Absoluto': 3, Betweenness: 0.1, Closeness: 0.2, Comunidade: 2 }),
@@ -276,65 +276,27 @@ test('o espaco topologico filtra por dimensao, corta pelo grau e projeta o cubo'
   // O corte mantém os de maior grau.
   assert.deepEqual(pontosTopologicos(sna, 'Palavra-chave', 1).pontos.map((p) => p.Item), ['alfa']);
   assert.deepEqual(pontosTopologicos(null, 'Palavra-chave'), { pontos: [], total: 0 });
-
-  const { projetados, cubo } = projetarEspaco(pk.pontos, { azimute: 35, elevacao: 22 });
-  assert.equal(projetados.length, 2);
-  assert.equal(cubo.length, 8);
-  for (const p of projetados) {
-    assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
-    assert.ok(p.profundidade >= 0 && p.profundidade <= 1);
-  }
-  // Ordem de desenho: o mais distante primeiro.
-  assert.ok(projetados[0].profundidade <= projetados[1].profundidade);
-  assert.deepEqual(projetarEspaco([]), { projetados: [], cubo: [] });
 });
 
-test('a escala logaritmica reposiciona sem trocar a ordem dos nos', () => {
-  const sna: SnaGlobal = {
-    gigante: metrica({ Tipo: 'Palavra-chave', 'Grau Absoluto': 1000, Betweenness: 0.9, Closeness: 0.9 }),
-    medio: metrica({ Tipo: 'Palavra-chave', 'Grau Absoluto': 10, Betweenness: 0.05, Closeness: 0.5 }),
-    pequeno: metrica({ Tipo: 'Palavra-chave', 'Grau Absoluto': 1, Betweenness: 0, Closeness: 0.1 }),
-  };
-  const { pontos } = pontosTopologicos(sna, 'Palavra-chave');
-  const camera = { azimute: 0, elevacao: 0 };
-  const linear = projetarEspaco(pontos, camera, 'Linear (modelo original)');
-  const log = projetarEspaco(pontos, camera, 'Logarítmica');
+test('a escala logaritmica comprime o eixo sem trocar a ordem dos nos', () => {
+  const linear = (v: number) => posicaoNoEixo(v, 'Linear (modelo original)');
+  const log = (v: number) => posicaoNoEixo(v, 'Logarítmica');
 
-  // Sem azimute nem elevação, o eixo X do desenho é o grau normalizado: dá para
-  // comparar as duas escalas diretamente.
-  const xPor = (r: typeof linear) => Object.fromEntries(r.projetados.map((p) => [p.ponto.Item, p.x]));
-  const xLinear = xPor(linear);
-  const xLog = xPor(log);
-  // A ordem entre os nós é a mesma nas duas escalas: a transformação é monótona.
-  assert.ok(xLinear.pequeno < xLinear.medio && xLinear.medio < xLinear.gigante);
-  assert.ok(xLog.pequeno < xLog.medio && xLog.medio < xLog.gigante);
-  // No linear o nó médio cola no pequeno; no log ele se afasta de verdade.
-  assert.ok(xLinear.medio - xLinear.pequeno < 0.02);
-  assert.ok(xLog.medio - xLog.pequeno > 0.2);
-  // Nenhum valor da métrica é transformado: a tabela segue com os originais.
-  assert.equal(log.projetados.find((p) => p.ponto.Item === 'gigante')!.ponto.Grau, 1000);
-});
+  // Linear é identidade: é a leitura fiel ao modelo original.
+  assert.equal(linear(1000), 1000);
+  assert.equal(linear(0), 0);
 
-test('um eixo constante nao divide por zero na projecao', () => {
-  const sna: SnaGlobal = {
-    a: metrica({ Tipo: 'Macrotema', 'Grau Absoluto': 2, Betweenness: 0.5, Closeness: 0.5 }),
-    b: metrica({ Tipo: 'Macrotema', 'Grau Absoluto': 2, Betweenness: 0.5, Closeness: 0.5 }),
-  };
-  const { projetados } = projetarEspaco(pontosTopologicos(sna, 'Macrotema').pontos);
-  assert.equal(projetados.length, 2);
-  for (const p of projetados) assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y));
-});
+  // A transformação é monótona, então a ordem entre os nós nunca muda.
+  assert.ok(log(1) < log(10) && log(10) < log(1000));
+  // E é ela que separa a massa: no linear o nó médio cola no pequeno.
+  const faixaLinear = (linear(10) - linear(1)) / (linear(1000) - linear(1));
+  const faixaLog = (log(10) - log(1)) / (log(1000) - log(1));
+  assert.ok(faixaLinear < 0.01, String(faixaLinear));
+  assert.ok(faixaLog > 0.2, String(faixaLog));
 
-test('a camera do arrasto da a volta na horizontal e encosta nos limites na vertical', () => {
-  // O arrasto soma graus sem fim; o azimute precisa voltar ao começo sozinho.
-  assert.deepEqual(normalizarCamera({ azimute: 361, elevacao: 0 }), { azimute: 1, elevacao: 0 });
-  assert.deepEqual(normalizarCamera({ azimute: -1, elevacao: 0 }), { azimute: 359, elevacao: 0 });
-  assert.deepEqual(normalizarCamera({ azimute: 720, elevacao: 0 }), { azimute: 0, elevacao: 0 });
-  // Passar de 90° viraria o cubo e inverteria o eixo Closeness sem aviso.
-  assert.equal(normalizarCamera({ azimute: 0, elevacao: 200 }).elevacao, ELEVACAO_MAXIMA);
-  assert.equal(normalizarCamera({ azimute: 0, elevacao: -200 }).elevacao, ELEVACAO_MINIMA);
-  // Os deslizadores têm passo de 1°: o ângulo do arrasto chega inteiro a eles.
-  assert.deepEqual(normalizarCamera({ azimute: 35.4, elevacao: 21.6 }), { azimute: 35, elevacao: 22 });
+  // `log1p` aceita o zero, que é o betweenness da maioria dos termos.
+  assert.equal(log(0), 0);
+  assert.equal(log(-5), 0);
 });
 
 test('a legenda do espaco agrupa as comunidades menores num grupo unico', () => {
@@ -344,8 +306,7 @@ test('a legenda do espaco agrupa as comunidades menores num grupo unico', () => 
       metrica({ Tipo: 'Palavra-chave', 'Grau Absoluto': 12 - i, Comunidade: i + 1 }),
     ]),
   );
-  const { projetados } = projetarEspaco(pontosTopologicos(sna, 'Palavra-chave').pontos);
-  const grupos = agruparPorComunidade(projetados, 8);
+  const grupos = agruparPorComunidade(pontosTopologicos(sna, 'Palavra-chave').pontos, 8);
   assert.equal(grupos.length, 9);
   assert.ok(grupos.some((g) => g.nome === 'Demais comunidades'));
 });

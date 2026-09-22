@@ -71,6 +71,40 @@ function paraResultado(indice: IndiceBusca, i: number): ResultadoBusca {
   return { nome, tipo: indice.tipos[tipo], registros, colecoes: cols.map((c) => ({ nome: indice.colecoes[c][0], catalogo: indice.colecoes[c][1] })) };
 }
 
+/**
+ * O item do acervo que corresponde a um termo solto, sem saber o tipo dele.
+ *
+ * As nuvens de palavras não sabem o que cada termo é: o mesmo desenho mistura
+ * palavras-chave declaradas e palavras isoladas de títulos e resumos. A busca é
+ * tolerante a acento e caixa — a nuvem do acervo já traz os termos
+ * normalizados, a do dossiê traz o que estava no texto — e prefere os tipos
+ * temáticos, porque um termo que também é sobrenome de alguém quase sempre foi
+ * clicado como tema.
+ *
+ * Devolve `null` quando o termo não existe no acervo. É essa ausência que
+ * distingue a palavra que vale a pena abrir daquela que só aparece dentro de
+ * um título.
+ */
+const PREFERENCIA_DE_TIPO: readonly TipoBusca[] = ['Palavra-chave', 'Macrotema', 'Documento', 'Orientador', 'Co-orientador', 'Autor'];
+
+export function termoDoAcervo(indice: IndiceBusca, nome: string): ResultadoBusca | null {
+  // Trim dos dois lados, como em `itemDoAcervo`: o índice de orientações remove
+  // espaços nas pontas, e um termo clicado pode chegar com eles.
+  const alvo = chaveBusca(nome.trim());
+  if (!alvo) return null;
+  let melhor = -1;
+  let melhorPeso = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < indice.itens.length; i += 1) {
+    const [n, t, registros] = indice.itens[i];
+    if (chaveBusca(n.trim()) !== alvo) continue;
+    const preferencia = PREFERENCIA_DE_TIPO.indexOf(indice.tipos[t]);
+    // Tipo preferido primeiro; entre iguais, o que cobre mais registros.
+    const peso = (preferencia < 0 ? PREFERENCIA_DE_TIPO.length : preferencia) * 1e9 - registros;
+    if (peso < melhorPeso) { melhorPeso = peso; melhor = i; }
+  }
+  return melhor < 0 ? null : paraResultado(indice, melhor);
+}
+
 /** O item exato do catálogo. Compara sem espaços nas pontas, que o índice de orientações remove. */
 export function itemDoAcervo(indice: IndiceBusca, tipo: TipoBusca, nome: string): ResultadoBusca | null {
   const t = indice.tipos.indexOf(tipo);
