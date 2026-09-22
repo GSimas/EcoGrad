@@ -2,10 +2,45 @@ import { useQuery } from '@tanstack/react-query';
 import { Library } from 'lucide-react';
 import { Aviso, Card, Carregando, Kpi } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO, barrasHorizontais } from '@/components/ui/Chart';
-import { carregarCobertura } from '@/lib/colecoes';
+import { GrupoOpcoes } from '@/components/ui/Tabs';
+import { useSessionField } from '@/hooks/useSessionField';
+import { carregarCobertura, type PanoramaAcervo as Acervo } from '@/lib/colecoes';
 
 const n = (v: number) => v.toLocaleString('pt-BR');
 const pct = (parte: number, todo: number) => (todo ? `${Math.round((parte / todo) * 100)}%` : '—');
+
+/**
+ * As quatro leituras do mesmo ranking. Cada uma conta uma coisa diferente, e o
+ * rótulo do eixo diz qual — "registros" e "ocorrências" não são sinônimos aqui.
+ */
+const DIMENSOES = ['Coleções', 'Orientadores', 'Coorientadores', 'Palavras-chave'] as const;
+type Dimensao = typeof DIMENSOES[number];
+
+const RANKING: Record<Dimensao, {
+  dados: (p: Acervo) => Array<[string, number]>;
+  titulo: string; unidade: string; coluna: string; descricao: string;
+}> = {
+  'Coleções': {
+    dados: (p) => p.maioresColecoes,
+    titulo: 'Maiores coleções', unidade: 'Registros (n)', coluna: 'Coleção',
+    descricao: 'Barras: número de registros (n) nas 15 coleções com mais registros. Tamanho de coleção não mede qualidade nem atividade atual do programa.',
+  },
+  'Orientadores': {
+    dados: (p) => p.topOrientadores,
+    titulo: 'Quem mais orientou', unidade: 'Orientações (n)', coluna: 'Orientador',
+    descricao: 'Barras: número de registros (n) em que cada pessoa consta como orientadora, nas 15 com mais ocorrências. Contagem por grafia do nome, sem unificar variantes: quem aparece escrito de dois jeitos é contado duas vezes. Volume de orientação não mede qualidade nem disponibilidade para orientar.',
+  },
+  'Coorientadores': {
+    dados: (p) => p.topCoorientadores,
+    titulo: 'Quem mais coorientou', unidade: 'Coorientações (n)', coluna: 'Coorientador',
+    descricao: 'Barras: número de registros (n) em que cada pessoa consta como coorientadora, nas 15 com mais ocorrências. Mesma ressalva da orientação: a contagem é por grafia do nome e não mede qualidade.',
+  },
+  'Palavras-chave': {
+    dados: (p) => p.topPalavrasChave,
+    titulo: 'Palavras-chave mais declaradas', unidade: 'Ocorrências (n)', coluna: 'Palavra-chave',
+    descricao: 'Barras: número de registros (n) que declaram cada termo, nos 15 mais frequentes. São as palavras-chave dos próprios autores, normalizadas sem acento e em minúsculas; termos sinônimos não são reunidos. Frequência descreve o acervo, não a importância do tema.',
+  },
+};
 
 /**
  * O acervo inteiro em números, sem depender do que foi carregado.
@@ -16,8 +51,9 @@ const pct = (parte: number, todo: number) => (todo ? `${Math.round((parte / todo
  * as mesmas do Dashboard, para o mesmo nome significar a mesma coisa nos dois.
  */
 export function PanoramaAcervo() {
+  const [dimensao, setDimensao] = useSessionField<Dimensao>('panorama.ranking', 'Coleções');
   const { data, isLoading, error } = useQuery({
-    queryKey: ['colecoes-cobertura', 3],
+    queryKey: ['colecoes-cobertura', 4],
     queryFn: ({ signal }) => carregarCobertura(signal),
     staleTime: Infinity,
   });
@@ -39,13 +75,8 @@ export function PanoramaAcervo() {
     limites: 'Todo o acervo coletado, não apenas as coleções carregadas na análise. Um trabalho depositado em duas coleções conta um registro em cada uma; "trabalhos únicos" reúne por link do repositório. Nomes de pessoa são contados como aparecem nos metadados, sem unificação de grafias.',
   };
 
-  const cobertura: Array<[string, number]> = [
-    ['Com resumo', p.comResumo],
-    ['Com palavras-chave', p.comPalavras],
-    ['Com orientação', p.comOrientador],
-    ['Com link da fonte', p.comFonte],
-    ['Com PDF aberto', p.comPdf],
-  ];
+  const ranking = RANKING[DIMENSOES.includes(dimensao) ? dimensao : 'Coleções'];
+  const dados = ranking.dados(p);
 
   return (
     <section className="space-y-5">
@@ -125,41 +156,30 @@ export function PanoramaAcervo() {
           />
         </Card>
 
-        <Card>
-          <Grafico
-            altura={400}
-            larguraMinima={460}
-            leitura={{
-              titulo: 'Maiores coleções do acervo',
-              descricao: 'Barras: número de registros (n) nas 15 coleções com mais registros. Tamanho de coleção não mede qualidade nem atividade atual do programa.',
-              linhas: p.maioresColecoes.map(([colecao, total]) => ({ colecao, total })),
-              colunas: [{ chave: 'colecao', rotulo: 'Coleção' }, { chave: 'total', rotulo: 'Registros (n)' }],
-              contexto,
-            }}
-            option={barrasHorizontais(p.maioresColecoes, 'Maiores coleções (top 15)', undefined, 'Registros (n)')}
-          />
-        </Card>
-
-        <Card>
-          <Grafico
-            altura={400}
-            larguraMinima={460}
-            leitura={{
-              titulo: 'Cobertura de metadados',
-              descricao: 'Barras: quantos dos registros do acervo trazem cada campo. Presença de metadado não comprova qualidade nem acesso ao texto completo — só diz que o campo está preenchido.',
-              linhas: cobertura.map(([campo, total]) => ({ campo, total, proporcao: pct(total, p.registros) })),
-              colunas: [{ chave: 'campo', rotulo: 'Campo' }, { chave: 'total', rotulo: 'Registros (n)' }, { chave: 'proporcao', rotulo: 'Do acervo' }],
-              contexto,
-            }}
-            option={barrasHorizontais(cobertura, `Cobertura de metadados (de ${n(p.registros)} registros)`, undefined, 'Registros (n)')}
-          />
-        </Card>
       </div>
 
+      <Card className="space-y-4">
+        <GrupoOpcoes rotulo="Ranking do acervo" opcoes={DIMENSOES} valor={dimensao} onChange={setDimensao} />
+        <Grafico
+          altura={440}
+          larguraMinima={520}
+          leitura={{
+            titulo: `${ranking.titulo} (top 15)`,
+            descricao: ranking.descricao,
+            linhas: dados.map(([item, total]) => ({ item, total })),
+            colunas: [{ chave: 'item', rotulo: ranking.coluna }, { chave: 'total', rotulo: ranking.unidade }],
+            contexto,
+          }}
+          option={barrasHorizontais(dados, `${ranking.titulo} (top 15)`, undefined, ranking.unidade)}
+        />
+      </Card>
+
       <p className="text-xs text-slate-400">
-        Presença de metadado não comprova qualidade nem acesso ao texto completo. “Com PDF aberto”
-        conta os registros em que o repositório serve ao menos um PDF publicamente
-        ({pct(p.comPdf, p.registros)} do acervo); o acesso continua sendo decidido pelo repositório.
+        Cobertura de metadados no acervo: {pct(p.comResumo, p.registros)} com resumo,
+        {' '}{pct(p.comPalavras, p.registros)} com palavras-chave, {pct(p.comOrientador, p.registros)} com orientação,
+        {' '}{pct(p.comFonte, p.registros)} com link da fonte e {pct(p.comPdf, p.registros)} com PDF aberto no
+        repositório. Campo preenchido não comprova qualidade nem acesso ao texto completo, e o acesso
+        continua sendo decidido pelo repositório.
       </p>
     </section>
   );

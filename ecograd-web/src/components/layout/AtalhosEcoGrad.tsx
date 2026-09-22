@@ -41,6 +41,7 @@ export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabi
   return (
     <nav aria-label="Atalhos do EcoGrad" className={cn('flex gap-2', empilhado ? 'flex-col items-center' : 'flex-wrap justify-center', className)}>
     <TutorialModal aoFazerTour={aoFazerTour}><button type="button" className={classe} disabled={desabilitado} aria-label="Ver tutorial" title="Ver tutorial"><BookOpen size={14} className="shrink-0" />{!somenteIcone && 'Ver tutorial'}</button></TutorialModal>
+    {comPanorama && <BotaoPanoramaUfsc compacto={somenteIcone} desabilitado={desabilitado} className={classe} />}
 
     <Janela titulo="Sobre" descricao="De onde vem o acervo, como o EcoGrad funciona e os limites do que os dados mostram." larga
       trigger={<button type="button" className={classe} disabled={desabilitado} aria-label="Sobre" title="Sobre"><Info size={14} className="shrink-0" />{!somenteIcone && 'Sobre'}</button>}>
@@ -87,7 +88,6 @@ export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabi
       </div>
     </Janela>
     <Aparencia chip compacto={somenteIcone} desabilitado={desabilitado} />
-    {comPanorama && <BotaoPanoramaUfsc compacto={somenteIcone} desabilitado={desabilitado} className={classe} />}
     </nav>
   );
 }

@@ -1,5 +1,5 @@
 /** Read-only preview of the exact records used by data-loader; no scientific transformation. */
-export const COVERAGE_SCHEMA = 3;
+export const COVERAGE_SCHEMA = 4;
 export function summarizeCollections(entries, records) {
   const buckets = new Map(entries.map((e) => [e.nome, { ...e, total: 0, niveis: {}, inicio: null, fim: null, semAno: 0, comResumo: 0, comPalavras: 0, comOrientador: 0, comFonte: 0, urls: new Set() }]));
   for (const d of records) {
@@ -41,8 +41,15 @@ export function catalogEntries(ppg, tcc) {
  * o número do panorama e o do Dashboard significarem a mesma coisa.
  */
 export function panoramaAcervo(bases) {
-  const pessoas = { autores: new Set(), orientadores: new Set(), coorientadores: new Set() };
-  const palavras = new Set(), macrotemas = new Set(), fontes = new Set(), colecoes = { ppg: new Set(), tcc: new Set() };
+  /** As 15 mais frequentes; empate desempatado pelo nome, para o ranking não oscilar entre builds. */
+  const maiores = (mapa) => [...mapa].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR')).slice(0, 15);
+  // Mapa, e não conjunto, para orientação, coorientação e palavra-chave: o
+  // panorama mostra tanto quantas são distintas (`.size`) quanto as 15 mais
+  // frequentes, e uma segunda passada só para o ranking seria desperdício.
+  const autores = new Set();
+  const orientadores = new Map(), coorientadores = new Map(), palavras = new Map();
+  const macrotemas = new Set(), fontes = new Set(), colecoes = { ppg: new Set(), tcc: new Set() };
+  const somar = (mapa, chave) => mapa.set(chave, (mapa.get(chave) ?? 0) + 1);
   const niveis = new Map(), anos = new Map(), porColecao = new Map();
   let registros = 0, semFonte = 0, semAno = 0;
   const com = { resumo: 0, palavras: 0, orientador: 0, fonte: 0, pdf: 0 };
@@ -56,10 +63,10 @@ export function panoramaAcervo(bases) {
       niveis.set(nivel, (niveis.get(nivel) ?? 0) + 1);
       const ano = Number.parseInt(String(d.ano ?? '').trim(), 10);
       if (Number.isFinite(ano)) anos.set(ano, (anos.get(ano) ?? 0) + 1); else semAno++;
-      for (const a of d.autores ?? []) if (String(a).trim()) pessoas.autores.add(String(a).trim());
-      if (String(d.orientador ?? '').trim()) { pessoas.orientadores.add(String(d.orientador).trim()); com.orientador++; }
-      for (const c of d.co_orientadores ?? []) if (String(c).trim()) pessoas.coorientadores.add(String(c).trim());
-      for (const p of d.palavras_chave ?? []) if (String(p).trim()) palavras.add(String(p).trim());
+      for (const a of d.autores ?? []) if (String(a).trim()) autores.add(String(a).trim());
+      if (String(d.orientador ?? '').trim()) { somar(orientadores, String(d.orientador).trim()); com.orientador++; }
+      for (const c of d.co_orientadores ?? []) if (String(c).trim()) somar(coorientadores, String(c).trim());
+      for (const p of d.palavras_chave ?? []) if (String(p).trim()) somar(palavras, String(p).trim());
       if (String(d.macrotema ?? '').trim()) macrotemas.add(String(d.macrotema).trim());
       if (String(d.resumo ?? '').trim()) com.resumo++;
       if ((d.palavras_chave ?? []).some((p) => String(p).trim())) com.palavras++;
@@ -78,9 +85,9 @@ export function panoramaAcervo(bases) {
     colecoes: colecoes.ppg.size + colecoes.tcc.size,
     colecoesPpg: colecoes.ppg.size,
     colecoesTcc: colecoes.tcc.size,
-    autores: pessoas.autores.size,
-    orientadores: pessoas.orientadores.size,
-    coorientadores: pessoas.coorientadores.size,
+    autores: autores.size,
+    orientadores: orientadores.size,
+    coorientadores: coorientadores.size,
     palavrasChave: palavras.size,
     macrotemas: macrotemas.size,
     comResumo: com.resumo, comPalavras: com.palavras, comOrientador: com.orientador, comFonte: com.fonte, comPdf: com.pdf,
@@ -89,6 +96,9 @@ export function panoramaAcervo(bases) {
     semAno,
     porNivel: [...niveis].sort((a, b) => b[1] - a[1]),
     porAno: ordenados.map((ano) => [ano, anos.get(ano)]),
-    maioresColecoes: [...porColecao].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'pt-BR')).slice(0, 15),
+    maioresColecoes: maiores(porColecao),
+    topOrientadores: maiores(orientadores),
+    topCoorientadores: maiores(coorientadores),
+    topPalavrasChave: maiores(palavras),
   };
 }

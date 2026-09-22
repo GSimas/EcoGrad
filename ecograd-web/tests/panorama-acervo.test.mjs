@@ -66,11 +66,46 @@ test('séries saem ordenadas para o gráfico não inverter o tempo', () => {
   assert.deepEqual(p.maioresColecoes, [['PPG Um', 3], ['TCC Dois', 1]]);
 });
 
+test('os rankings de pessoa e de tema contam ocorrências, não nomes distintos', () => {
+  const bases = { ppg: [
+    doc({ orientador: 'Bia', co_orientadores: ['Caio'], palavras_chave: ['ecologia', 'solo'] }),
+    doc({ orientador: 'Bia', co_orientadores: ['Caio', 'Duda'], palavras_chave: ['ecologia'] }),
+    doc({ orientador: 'Ana', co_orientadores: [], palavras_chave: ['solo'] }),
+  ], tcc: [] };
+  const p = panoramaAcervo(bases);
+  assert.deepEqual(p.topOrientadores, [['Bia', 2], ['Ana', 1]]);
+  assert.deepEqual(p.topCoorientadores, [['Caio', 2], ['Duda', 1]]);
+  assert.deepEqual(p.topPalavrasChave, [['ecologia', 2], ['solo', 2]]);
+  // O total distinto continua sendo o do conjunto, não o do ranking.
+  assert.deepEqual([p.orientadores, p.coorientadores, p.palavrasChave], [2, 2, 2]);
+});
+
+test('empate no ranking é desempatado pelo nome, para não oscilar entre builds', () => {
+  const bases = { ppg: [], tcc: [] };
+  // Todos com uma orientação cada: só a ordem alfabética separa.
+  for (const nome of ['Zia', 'Ana', 'Caio', 'Bia']) bases.ppg.push(doc({ orientador: nome }));
+  const p = panoramaAcervo(bases);
+  assert.deepEqual(p.topOrientadores.map(([nome]) => nome), ['Ana', 'Bia', 'Caio', 'Zia']);
+});
+
+test('cada ranking para em 15, mesmo com o acervo inteiro atrás', () => {
+  const bases = { ppg: [], tcc: [] };
+  for (let i = 0; i < 40; i++) {
+    for (let j = 0; j <= i; j++) {
+      bases.ppg.push(doc({ orientador: `Orientador ${i}`, co_orientadores: [`Coorientador ${i}`], palavras_chave: [`tema ${i}`], url: `https://repositorio.ufsc.br/handle/1/${i}-${j}` }));
+    }
+  }
+  const p = panoramaAcervo(bases);
+  for (const lista of [p.topOrientadores, p.topCoorientadores, p.topPalavrasChave]) assert.equal(lista.length, 15);
+  assert.deepEqual(p.topOrientadores[0], ['Orientador 39', 40]);
+});
+
 test('base vazia não quebra nem inventa período', () => {
   const p = panoramaAcervo({ ppg: [], tcc: [] });
   assert.deepEqual([p.registros, p.trabalhosUnicos, p.colecoes, p.autores], [0, 0, 0, 0]);
   assert.deepEqual([p.inicio, p.fim], [null, null]);
   assert.deepEqual([p.porAno, p.porNivel, p.maioresColecoes], [[], [], []]);
+  assert.deepEqual([p.topOrientadores, p.topCoorientadores, p.topPalavrasChave], [[], [], []]);
 });
 
 test('as 15 maiores coleções são um recorte, não o acervo todo', () => {
