@@ -139,9 +139,9 @@ const PASSOS: readonly PassoTour[] = [
   },
   {
     id: 'panorama',
-    alvo: '[aria-label="Abrir Panorama CAPES"]',
+    alvo: '[aria-label="Abrir Panorama UFSC"]',
     titulo: 'Contexto institucional, à parte',
-    texto: 'O Panorama CAPES traz dados oficiais dos programas da UFSC — notas, área, modalidade. Ele é independente das coleções que você carregou e não entra em nenhum cálculo do recorte: serve para situar o que você está lendo.',
+    texto: 'O Panorama UFSC reúne duas leituras da universidade: o acervo inteiro em números — registros, coleções, pessoas, cobertura de metadados — e os dados oficiais dos programas na CAPES. Nenhuma das duas entra nos cálculos do seu recorte: elas servem para situar o que você está lendo.',
   },
   {
     id: 'relatorio',

@@ -3,6 +3,7 @@ import { TutorialModal } from './TutorialModal';
 import { Janela } from './Janela';
 import { Aparencia } from './Aparencia';
 import { CHIP } from './atalhos';
+import { BotaoPanoramaUfsc } from './BotaoPanoramaUfsc';
 import { cn } from '@/lib/utils';
 
 /** Os três passos do fluxo, mostrados no "Sobre". */
@@ -23,10 +24,15 @@ const PASSOS: [titulo: string, texto: string][] = [
  * largura (`somenteIcone`), mas só empilha quando está recolhido, onde não
  * cabem três lado a lado. O nome segue no `title` e no leitor de tela.
  */
-export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabilitado = false, className, aoFazerTour }: {
+export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabilitado = false, comPanorama = false, className, aoFazerTour }: {
   somenteIcone?: boolean;
   empilhado?: boolean;
   desabilitado?: boolean;
+  /**
+   * Inclui o Panorama UFSC entre os atalhos. Só a apresentação pede: no painel
+   * lateral ele já tem lugar próprio na navegação, e apareceria duas vezes.
+   */
+  comPanorama?: boolean;
   className?: string;
   /** Quando presente, o tutorial oferece o tour guiado no topo. */
   aoFazerTour?: () => void;
@@ -66,7 +72,7 @@ export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabi
         </section>
         <section className="space-y-3 border-t border-eco-border pt-5">
           <h3 className="text-base font-semibold text-eco-accent">O que os dados permitem saber</h3>
-          <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama CAPES é uma consulta institucional independente; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
+          <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama UFSC traz o acervo inteiro em números e uma consulta institucional independente à CAPES; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
           <p className="text-sm leading-relaxed text-slate-300">O UFSCão, consultor de IA, responde sobre o acervo inteiro em Conversar, na tela inicial, e sobre as coleções carregadas no botão do canto inferior direito. Nos dois casos usa a chave de API do provedor que você escolher. Ele é uma inteligência artificial generativa: recebe contexto limitado da análise e pode errar, inclusive inventando trabalhos e nomes. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
         </section>
         <section className="space-y-2 border-t border-eco-border pt-5">
@@ -81,6 +87,7 @@ export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabi
       </div>
     </Janela>
     <Aparencia chip compacto={somenteIcone} desabilitado={desabilitado} />
+    {comPanorama && <BotaoPanoramaUfsc compacto={somenteIcone} desabilitado={desabilitado} className={classe} />}
     </nav>
   );
 }

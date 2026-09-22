@@ -69,7 +69,7 @@ export function BuscaGlobal() {
     retry: 1,
   });
   const cobertura = useQuery({
-    queryKey: ['colecoes-cobertura', 2],
+    queryKey: ['colecoes-cobertura', 3],
     queryFn: ({ signal }) => carregarCobertura(signal),
     enabled: ativada,
     staleTime: Infinity,

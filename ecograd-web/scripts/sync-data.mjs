@@ -1,5 +1,5 @@
 import { gunzipSync } from 'node:zlib';
-import { COVERAGE_SCHEMA, summarizeCollections, catalogEntries } from './collection-metadata.mjs';
+import { COVERAGE_SCHEMA, summarizeCollections, catalogEntries, panoramaAcervo } from './collection-metadata.mjs';
 import { collectionShards, SHARD_SCHEMA } from './collection-shards.mjs';
 import { aplicarColetas, BATCH_FILE } from './collection-batches.mjs';
 import { orientacoesShard } from './orientacoes-index.mjs';
@@ -97,11 +97,14 @@ const publicar = ({ descriptor, compressed }) => {
 const orientacoes = publicar(orientacoesShard([...bases.ppg, ...bases.tcc]));
 // Catálogo só de nomes para a busca da apresentação, sem carregar coleções.
 const busca = publicar(buscaShard(bases));
-writeFileSync(coveragePath, JSON.stringify({ schema: COVERAGE_SCHEMA, version, bytes: { ppg: statSync(join(destino, ARQUIVOS[2])).size, tcc: statSync(join(destino, ARQUIVOS[3])).size }, colecoes }));
+// O acervo inteiro em números: o navegador carrega só as coleções escolhidas e
+// nunca teria como contar pessoas ou trabalhos distintos do conjunto todo.
+const panorama = panoramaAcervo(bases);
+writeFileSync(coveragePath, JSON.stringify({ schema: COVERAGE_SCHEMA, version, bytes: { ppg: statSync(join(destino, ARQUIVOS[2])).size, tcc: statSync(join(destino, ARQUIVOS[3])).size }, colecoes, panorama }));
 // Stable scientific version: delivery changes do not invalidate equivalent checkpoints.
 writeFileSync(join(destino, 'manifest.json.tmp'), JSON.stringify({ version, files: hashes, collections, orientacoes, busca }));
 renameSync(join(destino, 'manifest.json.tmp'), join(destino, 'manifest.json'));
 for (const filename of readdirSync(destino)) {
   if (/^(colecao|orientacoes|busca)-[a-f0-9]{64}\.json\.gz$/.test(filename) && !generated.has(filename)) unlinkSync(join(destino, filename));
 }
-console.log(`[sync-data] Prévia de ${colecoes.length} coleções gerada.`);
+console.log(`[sync-data] Prévia de ${colecoes.length} coleções e panorama de ${panorama.registros} registros gerados.`);
