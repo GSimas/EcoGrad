@@ -17,6 +17,7 @@ Uso:
   python coleta/coletar_ufsc.py --reclassificar-tccs   # uma vez: tipo próprio para os TCCs da base
   python coleta/coletar_ufsc.py --preencher-arquivos             # uma vez: PDF dos registros já coletados
   python coleta/coletar_ufsc.py --preencher-arquivos --via-rest # o que o índice OAI não expõe
+  python coleta/coletar_ufsc.py --remover-ausentes              # tira da base o handle que sumiu do repositório
 """
 import argparse
 import datetime as dt
@@ -635,6 +636,76 @@ def preencher_arquivos_rest(trabalhadores=6):
     return 0
 
 
+def item_ausente(handle, sessao):
+    """O repositório confirma que o handle não resolve mais.
+
+    A página do item é a autoridade: item vivo responde 200, e item restrito também
+    (com a negativa de acesso dentro). Só o handle que sumiu devolve 404.
+
+    O OAI não serve de segunda opinião: o índice da UFSC expõe hoje menos itens do
+    que a base tem, e `idDoesNotExist` ali diz apenas que o item não está indexado.
+    Por isso o 404 é reconferido, com uma pausa: indisponibilidade passageira não
+    pode apagar registro."""
+    import requests
+    for tentativa in range(2):
+        try:
+            r = sessao.get(f'https://repositorio.ufsc.br/handle/{handle}', headers=AGENTE, timeout=(15, 60))
+        except requests.RequestException:
+            return False
+        if r.status_code != 404:
+            return False
+        if tentativa == 0:
+            time.sleep(2)
+    return True
+
+
+def remover_ausentes(trabalhadores=6):
+    """Grava um lote que remove os registros cujo handle sumiu do repositório.
+
+    Segue o mesmo caminho da coleta semanal — um lote em `coletas/` com os handles
+    em `removidos` (`aplicar_coletas`) — em vez de reescrever as bases: assim a
+    remoção fica datada, revisável no diff e reversível apagando o lote.
+
+    Confere só os registros sem PDF: um item que o repositório ainda serve não
+    sumiu, e varrer os 86 mil handles custaria horas para achar o mesmo punhado."""
+    import requests
+    suspeitos = sorted(handles_sem_arquivos())
+    print(f'{len(suspeitos)} handles sem PDF a conferir.')
+    local = threading.local()
+
+    def conferir(handle):
+        if not hasattr(local, 'sessao'):
+            local.sessao = requests.Session()
+        return handle, item_ausente(handle, local.sessao)
+
+    ausentes = []
+    pool = ThreadPoolExecutor(max_workers=trabalhadores)
+    futuros = [pool.submit(conferir, h) for h in suspeitos]
+    try:
+        for i, futuro in enumerate(as_completed(futuros), 1):
+            handle, sumiu = futuro.result()
+            if sumiu:
+                ausentes.append(handle)
+            if i % 500 == 0:
+                print(f'  ...{i}/{len(suspeitos)} conferidos ({len(ausentes)} ausentes)', flush=True)
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+
+    if not ausentes:
+        print('Nenhum handle ausente: nada a remover.')
+        return 0
+    bases = aplicar_coletas({'ppg': ler_gz(ARQ_PPG), 'tcc': ler_gz(ARQ_TCC)}, lotes_existentes())
+    atingidos = sum(1 for r in bases['ppg'] + bases['tcc'] if handle_de(r.get('url')) in set(ausentes))
+    agora = dt.datetime.now(dt.timezone.utc)
+    PASTA_COLETAS.mkdir(exist_ok=True)
+    caminho = PASTA_COLETAS / f"{agora.strftime('%Y-%m-%dT%H%M%SZ')}.json.gz"
+    gravar_gz(caminho, {'schema': 1, 'fonte': 'dspace', 'desde': agora.date().isoformat(),
+                        'coletado_em': agora.isoformat(timespec='seconds'),
+                        'ppg': [], 'tcc': [], 'removidos': sorted(ausentes)})
+    print(f'{len(ausentes)} handles ausentes, {atingidos} registros; lote {caminho.name} gravado.')
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--fonte', choices=['auto', 'dspace', 'oasisbr'], default='auto')
@@ -642,12 +713,16 @@ def main(argv=None):
     parser.add_argument('--reclassificar-tccs', action='store_true')
     parser.add_argument('--preencher-arquivos', action='store_true',
                         help='uma vez: grava o PDF dos registros já coletados (varre o índice OAI inteiro, minutos)')
+    parser.add_argument('--remover-ausentes', action='store_true',
+                        help='grava um lote removendo os registros cujo handle não resolve mais no repositório')
     parser.add_argument('--via-rest', action='store_true',
                         help='com --preencher-arquivos: alcança pela API REST o que o índice OAI não expõe '
                              '(uma requisição por item, horas; retoma de onde parou)')
     args = parser.parse_args(argv)
     if args.reclassificar_tccs:
         return reclassificar_tccs()
+    if args.remover_ausentes:
+        return remover_ausentes()
     if args.preencher_arquivos:
         return preencher_arquivos_rest() if args.via_rest else preencher_arquivos(args.desde)
 
