@@ -10,6 +10,7 @@ import type { AnaliseOculta } from '@/lib/relevancia';
 import { CORES_QUADRANTE, Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { GridSearch } from './GridSearch';
+import { SankeyTemporal } from './SankeyTemporal';
 import { prepararRadarForesight, segmentarPorKMeans, segmentarPorPercentil } from '@/lib/foresight-math';
 import { Atividade } from '@/components/ui/Atividade';
 import { useSnaWorker, useAtividade, emExecucao } from '@/hooks/useSnaWorker';
@@ -286,6 +287,7 @@ export function RadarForesight() {
 
         </>
       )}
+      <SankeyTemporal />
       <Expander titulo="Avaliação histórica avançada (Grid Search)">
         <GridSearch mostrarAtividade={false} />
       </Expander>

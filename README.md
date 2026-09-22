@@ -70,7 +70,7 @@ mapeia a "ecologia do conhecimento" de ecossistemas acadêmicos para:
      macrotema, coleção) e carrega só o que você confirmar. Nada é baixado antes disso.
    - **Conversar** — o UFSCão respondendo sobre o **acervo inteiro** pelo índice, sem baixar
      coleção nenhuma.
-2. **Análise** — as cinco seções abaixo, sobre o recorte carregado.
+2. **Análise** — as seis seções abaixo, sobre o recorte carregado.
 
 O painel lateral recolhe para uma faixa de ícones, e o estado fica salvo na sessão. O botão
 **Sobre**, na tela inicial, explica a procedência dos dados e como a plataforma funciona por baixo.
@@ -80,10 +80,6 @@ O painel lateral recolhe para uma faixa de ícones, e o estado fica salvo na ses
 KPIs da base, comparativo entre PPGs quando há mais de um, **ficha oficial da CAPES** (cruzada com
 a Plataforma Sucupira por *fuzzy matching*, que resolve programas renomeados) e uma síntese do
 perfil epistemológico escrita por IA.
-
-Traz também as **métricas de ecologia profunda**: assortatividade ($r$), coeficiente rich-club
-($\Phi$), expoente $\gamma$ da lei de potência e correlação de Spearman ($\rho$) entre grau e
-intermediação.
 
 Todo nome exibido é clicável — chips de destaque e as barras dos Top 10 — e leva direto ao dossiê
 da entidade no Motor de Busca.
@@ -102,7 +98,27 @@ entidade abre um dossiê com:
 - **Itens semelhantes** — recomendação topológica pelo **Índice de Jaccard**, calculada sobre a
   sobreposição do "DNA acadêmico" (vizinhança na rede).
 
-### 3. 🔮 Radar de Foresight
+### 3. 🌐 Exploração Global
+
+A leitura estrutural do recorte — onde temas, pessoas e conceitos se posicionam no grafo global.
+
+- **Análise Temática Estrutural** — tabela por macrotema com volumes, anos de início, pico e última
+  aparição, métricas SNA e o especialista de maior **Quociente Locacional**; mais os dois mapas de
+  quadrantes (macrotemas e Top 40 palavras-chave), divididos pela média de betweenness e de grau.
+- **Espaço Topológico 3D** — Grau × Betweenness × Closeness, com órbita por azimute e elevação,
+  cor pela comunidade do Louvain e escala dos eixos linear (a do modelo original) ou logarítmica.
+- **Furos Estruturais (Burt)** — rede de orientadores e palavras-chave, com restrição, diversidade
+  de vocabulário e intermediação.
+- **Boxplot de Especialização (QL)** — compara até cinco entidades entre Teses, Dissertações e
+  Outros.
+- **Métricas de redes complexas** do grafo global — densidade, eficiência, entropia, clustering,
+  PageRank, eigenvector e restrição média — junto das **métricas de ecologia profunda**:
+  assortatividade ($r$), coeficiente rich-club ($\Phi$), expoente $\gamma$ da lei de potência e
+  correlação de Spearman ($\rho$) entre grau e intermediação.
+- **Exportação da rede** em **GEXF**, **GraphML** e **JSON node-link**, para Gephi ou Cytoscape.
+- **Base de dados completa com métricas SNA** — um registro por linha, exportável com contexto.
+
+### 4. 🔮 Radar de Foresight
 
 Cruza **Momentum Temporal** (aceleração do uso de um termo, normalizada por taxa relativa com
 suavização de Laplace) com **Novidade Estrutural** (Betweenness × IDF), separando os termos em
@@ -115,7 +131,11 @@ quatro quadrantes: Tendências, Sinais Fracos, Mainstream e Base/Declínio.
 
 Funciona sobre Palavras-chave, Macrotemas ou Artefatos da Ontologia IA.
 
-### 4. 🧬 Memética e Ontologia
+Na mesma página fica o **Sankey Temporal de palavras-chave**: três períodos ajustáveis, com os
+termos mais frequentes de cada um ligados quando a mesma pessoa — orientador ou autor — atravessa
+períodos vizinhos. É fluxo de vocabulário entre pessoas, não citação nem herança conceitual.
+
+### 5. 🧬 Memética e Ontologia
 
 - **Mineração de artefatos** — a IA lê os resumos e extrai teorias, métodos e ferramentas de fato
   utilizados, indo além das palavras-chave genéricas. O catálogo é exportável em CSV e pode ser
@@ -126,7 +146,7 @@ Funciona sobre Palavras-chave, Macrotemas ou Artefatos da Ontologia IA.
 - **Ecologia Memética (SNA)** — rede de coocorrência entre memes, com métricas de redes complexas,
   métricas de ecologia profunda, grafo interativo e tabela de centralidade global exportável.
 
-### 5. 🐕 UFSCão · Consultor de IA
+### 6. 🐕 UFSCão · Consultor de IA
 
 O UFSCão fala em **duas superfícies**, com a mesma persona, a mesma configuração e os mesmos
 limites:
@@ -425,23 +445,37 @@ NEO4J_PASSWORD=...
 
 ## 📋 Estado da migração
 
-A migração cobre os módulos centrais, mas **nem tudo do app Streamlit foi portado**. O que não
-foi portado e hoje só existe no histórico do git (até o commit `cad47e3`):
+A migração do app Streamlit (cujo último estado vive no histórico do git, até o commit `cad47e3`)
+está concluída, com uma exceção declarada.
 
-| Módulo original | Onde estava | Status |
-| --- | --- | --- |
-| Espaço Topológico 3D (Grau × Betweenness × Closeness) | Exploração Global | ⏳ não portado |
-| Mapa Temático (quadrantes de Callon / Bibliometrix) | Principal | ⏳ não portado |
-| Sankey Temporal de palavras-chave | Fluxos | ⏳ não portado |
-| Boxplot de Especialização (QL por nível) | Exploração Global | ⏳ não portado |
-| Furos Estruturais de Burt (seção dedicada) | Exploração Global | ⏳ não portado |
-| Exportação da rede (GEXF / GraphML / JSON) | Exploração Global | ⏳ não portado |
-| Tabela geral da base com métricas SNA | Principal | ⏳ não portado |
-| Órbita via Neo4j (Cypher) | Motor de Busca | ⚠️ função pronta, UI usa o grafo em memória |
-| Métricas de redes complexas do grafo global | Exploração Global | ⚠️ motor pronto, exposto só na rede memética |
+| Módulo original | Onde estava | Onde está agora | Status |
+| --- | --- | --- | --- |
+| Espaço Topológico 3D (Grau × Betweenness × Closeness) | Exploração Global | Exploração Global | ✅ portado |
+| Mapa Temático (quadrantes de Callon / Bibliometrix) | Principal | Exploração Global | ✅ portado |
+| Sankey Temporal de palavras-chave | Fluxos | Foresight | ✅ portado |
+| Boxplot de Especialização (QL por nível) | Exploração Global | Exploração Global | ✅ portado |
+| Furos Estruturais de Burt (seção dedicada) | Exploração Global | Exploração Global | ✅ portado |
+| Exportação da rede (GEXF / GraphML / JSON) | Exploração Global | Exploração Global | ✅ portado |
+| Tabela geral da base com métricas SNA | Principal | Exploração Global | ✅ portado |
+| Métricas de redes complexas do grafo global | Exploração Global | Exploração Global | ✅ portado |
+| Órbita via Neo4j (Cypher) | Motor de Busca | — | ⛔ fora de escopo, por decisão de projeto |
 
-Os motores matemáticos de vários desses itens já existem em `ecograd-web/src/lib/` — falta a
-camada de interface.
+Três diferenças deliberadas em relação ao original, todas declaradas na própria interface:
+
+- **O espaço 3D é uma projeção calculada no EcoGrad**, e não uma tela WebGL. Assim o gráfico
+  continua dentro do invólucro acessível do projeto — vista em tabela, download de imagem, tema
+  claro e escuro, movimento reduzido —, ao custo de a órbita ser controlada por azimute e elevação
+  em vez de arrasto livre. Ele também oferece escala logarítmica além da linear do original, porque
+  as três métricas têm cauda longa e a linear empilha a maioria dos nós num canto do cubo.
+- **O Sankey Temporal ficou no Foresight**, e não numa página própria: no Streamlit ele já dividia
+  a aba "Fluxos" com o Radar de Prospecção.
+- **Os nomes dos quadrantes do Mapa Temático** são os do modelo original, mas os eixos são
+  betweenness e grau no grafo global — não centralidade e densidade calculadas dentro de clusters
+  temáticos, como em Callon. A interface diz isso onde o mapa aparece.
+
+A **órbita via Neo4j** é a única funcionalidade que não será portada: a função existe no histórico,
+mas o EcoGrad usa o grafo em memória e o JSON como fonte, sem banco de grafos. Ver
+[docs/ARMAZENAMENTO-E-VERSIONAMENTO.md](docs/ARMAZENAMENTO-E-VERSIONAMENTO.md).
 
 ---
 

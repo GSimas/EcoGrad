@@ -1,24 +1,24 @@
 import type { EcoGradState } from '../stores/useEcoGradStore';
 import type { Rota } from '../types';
-export const PAGES = ['inicio', 'selecao', 'dashboard', 'busca', 'foresight', 'memetica'] as const;
+export const PAGES = ['inicio', 'selecao', 'dashboard', 'busca', 'exploracao', 'foresight', 'memetica'] as const;
 export type Page = typeof PAGES[number] | 'nao-encontrada';
-export const PAGE_LABELS: Record<Page, string> = { inicio: 'Início', selecao: 'Seleção de coleções', dashboard: 'Dashboard', busca: 'Motor de Busca', foresight: 'Foresight', memetica: 'Memética e Ontologia', 'nao-encontrada': 'Página não encontrada' };
+export const PAGE_LABELS: Record<Page, string> = { inicio: 'Início', selecao: 'Seleção de coleções', dashboard: 'Dashboard', busca: 'Motor de Busca', exploracao: 'Exploração Global', foresight: 'Foresight', memetica: 'Memética e Ontologia', 'nao-encontrada': 'Página não encontrada' };
 export const HISTORY_KEY = 'ecograd-navigation-v1';
 export const HISTORY_LIMIT = 256 * 1024;
 export const HISTORY_COUNT = 60;
 export const HISTORY_TTL = 24 * 60 * 60 * 1000;
-export const analysisPage = (page: Page): page is Rota => ['dashboard', 'busca', 'foresight', 'memetica'].includes(page);
+export const analysisPage = (page: Page): page is Rota => ['dashboard', 'busca', 'exploracao', 'foresight', 'memetica'].includes(page);
 
 /**
- * As páginas que o EcoGrad oferece agora. Foresight e Memética continuam
- * inteiras no código — motores, testes e paridade com o backend Python —, e só
- * não são alcançáveis: sair desta lista é o único passo para trazer de volta.
+ * As páginas que o EcoGrad oferece agora.
  *
- * Esconder de verdade é mais do que tirar do menu. Uma sessão antiga guarda a
- * rota, e o endereço `#/foresight` continua sendo digitável; por isso
- * `rotaVisivel` também guarda a restauração da sessão e a leitura da URL.
+ * A lista continua existindo porque esconder de verdade é mais do que tirar do
+ * menu: uma sessão antiga guarda a rota, e o endereço `#/foresight` continua
+ * sendo digitável. Por isso `rotaVisivel` guarda também a restauração da sessão
+ * e a leitura da URL — tirar uma rota daqui basta para escondê-la inteira, e
+ * devolvê-la à lista basta para trazê-la de volta.
  */
-export const ROTAS_VISIVEIS: readonly Rota[] = ['dashboard', 'busca'];
+export const ROTAS_VISIVEIS: readonly Rota[] = ['dashboard', 'busca', 'exploracao', 'foresight', 'memetica'];
 export const rotaVisivel = (rota: string): rota is Rota => (ROTAS_VISIVEIS as readonly string[]).includes(rota);
 /** Para onde vai quem chega numa página escondida, por sessão antiga ou por URL. */
 export const ROTA_PADRAO: Rota = 'dashboard';

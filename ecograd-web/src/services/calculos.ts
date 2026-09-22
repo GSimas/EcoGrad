@@ -4,6 +4,7 @@ import type { SnaWorkerRequest, SnaWorkerResponse, Documento, TipoForesight } fr
 import type { DataWorkerRequest, DataWorkerResponse } from '../workers/data.worker';
 import type { FonteMemes } from '../lib/memetics';
 import type { ItemRecorte } from '../lib/recorte';
+import type { FormatoGrafo } from '../lib/exportar-grafo';
 
 export type Pedido = SnaWorkerRequest | DataWorkerRequest;
 export type Resultado = Exclude<SnaWorkerResponse | DataWorkerResponse, { type: 'progress' | 'error' }>;
@@ -28,6 +29,14 @@ export const calcularEcologiaMemes = (docs: Documento[], minCoocorrencia: number
   atividades.start('ecologia-memes', `Rede memética — ${fonte}, mínimo ${minCoocorrencia}`, { type: 'ecologia-memes', docs, minCoocorrencia, fonte });
 export const calcularMetricasComplexas = (docs: Documento[]) =>
   atividades.start('metricas-complexas', 'Métricas complexas', { type: 'metricas-complexas', docs });
+export const calcularFuros = (docs: Documento[]) =>
+  atividades.start('furos-estruturais', 'Furos estruturais (Burt)', { type: 'furos-estruturais', docs });
+/**
+ * A rede sai do worker já serializada. O download é feito por quem pediu, no
+ * `aoConcluir`: um `Blob` criado no worker não sobreviveria ao `postMessage`.
+ */
+export const exportarGrafoGlobal = (docs: Documento[], formato: FormatoGrafo, aoConcluir?: (r: Resultado) => void) =>
+  atividades.start('exportar-grafo', `Exportação da rede — ${formato}`, { type: 'exportar-grafo', docs, formato }, aoConcluir);
 /**
  * `aoConcluir` roda depois de a análise ser aplicada (não sobrevive a recarregar
  * a página). `recorte` delimita a análise dentro das coleções: o worker devolve

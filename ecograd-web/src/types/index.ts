@@ -294,6 +294,8 @@ export interface IndicesInvertidos {
 /** Mensagens do worker de SNA. */
 // Importado como tipo puro: a implementação vive em `lib/memetic-network.ts`.
 import type { EcologiaMemetica } from '@/lib/memetic-network';
+import type { FurosEstruturais } from '@/lib/burt-furos';
+import type { FormatoGrafo } from '@/lib/exportar-grafo';
 
 export type SnaWorkerRequest =
   | { type: 'sna-global'; docs: Documento[] }
@@ -312,7 +314,9 @@ export type SnaWorkerRequest =
       docs: Documento[];
       minCoocorrencia: number;
       fonte: 'Palavras-chave' | 'Artefatos Extraídos';
-    };
+    }
+  | { type: 'furos-estruturais'; docs: Documento[] }
+  | { type: 'exportar-grafo'; docs: Documento[]; formato: FormatoGrafo };
 
 export type SnaWorkerResponse =
   | { type: 'progress'; value: number | null; text: string }
@@ -322,6 +326,8 @@ export type SnaWorkerResponse =
   | { type: 'bootstrap'; result: BootstrapMap }
   | { type: 'grid-search'; grid: GridSearchRow[]; backtest: BacktestRow[] }
   | { type: 'ecologia-memes'; result: EcologiaMemetica }
+  | { type: 'furos-estruturais'; result: FurosEstruturais }
+  | { type: 'exportar-grafo'; formato: FormatoGrafo; conteudo: string; nos: number; arestas: number }
   | { type: 'error'; message: string };
 
 export interface ChatMessage {
@@ -334,4 +340,4 @@ export interface ChatMessage {
  * trocar de rota — é o que permite a um clique no Dashboard abrir o Motor de
  * Busca já com a entidade selecionada — sem criar import circular.
  */
-export type Rota = 'dashboard' | 'busca' | 'foresight' | 'memetica';
+export type Rota = 'dashboard' | 'busca' | 'exploracao' | 'foresight' | 'memetica';

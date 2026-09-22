@@ -263,12 +263,13 @@ test('table query, chart view and network camera survive traversal without rewin
 });
 
 test('so as paginas visiveis chegam ao menu, aos objetivos e a restauracao da sessao', () => {
-  // O EcoGrad hoje oferece Dashboard e Motor de Busca; Foresight e Memética
-  // continuam no código, e voltam tirando-as de `ROTAS_VISIVEIS`.
-  assert.deepEqual([...ROTAS_VISIVEIS], ['dashboard', 'busca']);
-  assert.equal(rotaVisivel('dashboard'), true);
-  assert.equal(rotaVisivel('foresight'), false);
-  assert.equal(rotaVisivel('memetica'), false);
+  // As cinco páginas de análise estão abertas. A lista continua sendo o único
+  // interruptor: tirar uma rota daqui a esconde do menu, dos objetivos, da URL
+  // e da restauração da sessão de uma vez só.
+  assert.deepEqual([...ROTAS_VISIVEIS], ['dashboard', 'busca', 'exploracao', 'foresight', 'memetica']);
+  for (const rota of ROTAS_VISIVEIS) assert.equal(rotaVisivel(rota), true);
+  assert.equal(rotaVisivel('inicio'), false);
+  assert.equal(rotaVisivel('pagina-inventada'), false);
 
   // Nenhum objetivo oferecido pode levar a uma página que não abre.
   assert.ok(OBJETIVOS.length > 0);
@@ -276,9 +277,8 @@ test('so as paginas visiveis chegam ao menu, aos objetivos e a restauracao da se
   // Id desconhecido continua caindo num objetivo utilizável.
   assert.ok(rotaVisivel(objetivoPorId('nao-existe').rota));
 
-  // Sessão salva numa página escondida abre no Dashboard, e não numa tela sem menu.
+  // Toda rota visível é restaurada como está; uma rota fora da lista cai no padrão.
   const base = { apresentacaoVista: true, dadosCarregados: true } as Parameters<typeof statePage>[0];
-  assert.equal(statePage({ ...base, rota: 'busca' }), 'busca');
-  assert.equal(statePage({ ...base, rota: 'foresight' }), ROTA_PADRAO);
-  assert.equal(statePage({ ...base, rota: 'memetica' }), ROTA_PADRAO);
+  for (const rota of ROTAS_VISIVEIS) assert.equal(statePage({ ...base, rota }), rota);
+  assert.equal(statePage({ ...base, rota: 'rota-aposentada' as typeof base.rota }), ROTA_PADRAO);
 });
