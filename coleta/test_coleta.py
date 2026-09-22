@@ -162,6 +162,27 @@ class PdfsDoRepositorio(unittest.TestCase):
                          'https://repositorio.ufsc.br/bitstream/handle/123456789/272516/'
                          'TCC%20Lucas%20Sodr%C3%A9.pdf?sequence=1')
 
+    def test_rest_traz_so_pdf_do_original_e_ja_da_a_sequencia(self):
+        item = {'bitstreams': [
+            {'name': 'TCC.pdf', 'bundleName': 'ORIGINAL', 'mimeType': 'application/pdf', 'sizeBytes': 1298530, 'sequenceId': 1},
+            {'name': 'license.txt', 'bundleName': 'LICENSE', 'mimeType': 'text/plain; charset=utf-8', 'sizeBytes': 1383, 'sequenceId': 2},
+            {'name': 'mini.pdf', 'bundleName': 'THUMBNAIL', 'mimeType': 'application/pdf', 'sizeBytes': 900, 'sequenceId': 3},
+            {'name': 'sem-sequencia.pdf', 'bundleName': 'ORIGINAL', 'mimeType': 'application/pdf', 'sizeBytes': 10, 'sequenceId': None},
+        ]}
+        self.assertEqual(c.arquivos_do_item_rest(item), [{'n': 'TCC.pdf', 's': 1, 'b': 1298530}])
+        self.assertEqual(c.arquivos_do_item_rest({}), [])
+
+    def test_rest_e_ore_produzem_o_mesmo_formato(self):
+        # As duas fontes alimentam o mesmo campo: divergir no formato quebraria a leitura.
+        ore, _ = c.arquivos_da_pagina(ORE_PAGINA)
+        rest = c.arquivos_do_item_rest({'bitstreams': [
+            {'name': 'TCC Lucas Sodré.pdf', 'bundleName': 'ORIGINAL', 'mimeType': 'application/pdf',
+             'sizeBytes': 1466314, 'sequenceId': 1}]})
+        self.assertEqual(rest, ore['123456789/272516'])
+
+    def test_checkpoint_do_rest_nao_e_confundido_com_lote(self):
+        self.assertIsNone(c.PADRAO_LOTE.match(c.CACHE_REST.name))
+
     def test_registro_so_ganha_o_campo_quando_ha_pdf(self):
         catalogo = c.Catalogo({'Programa de Pós-Graduação em Ecologia': 'col_1_10'}, [])
         meta = {'title': ['Um estudo'], 'type': ['Dissertação (Mestrado)']}

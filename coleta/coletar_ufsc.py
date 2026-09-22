@@ -15,7 +15,8 @@ baixado ou hospedado aqui, só o endereço de onde lê-lo.
 Uso:
   python coleta/coletar_ufsc.py [--fonte auto|dspace|oasisbr] [--desde AAAA-MM-DD]
   python coleta/coletar_ufsc.py --reclassificar-tccs   # uma vez: tipo próprio para os TCCs da base
-  python coleta/coletar_ufsc.py --preencher-arquivos   # uma vez: PDF dos registros já coletados
+  python coleta/coletar_ufsc.py --preencher-arquivos             # uma vez: PDF dos registros já coletados
+  python coleta/coletar_ufsc.py --preencher-arquivos --via-rest # o que o índice OAI não expõe
 """
 import argparse
 import datetime as dt
@@ -25,10 +26,12 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import unicodedata
 import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.parse import quote, unquote
 
@@ -38,8 +41,11 @@ ARQ_ESTADO = PASTA_COLETAS / 'estado.json'
 ARQ_PPG, ARQ_TCC = RAIZ / 'base_consolidada_ufsc.json.gz', RAIZ / 'base_tcc_ufsc.json.gz'
 ARQ_PROGRAMAS, ARQ_MAPA_TCC = RAIZ / 'programas_ufsc.json', RAIZ / 'mapa_colecoes_tcc.json'
 PADRAO_LOTE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{6}Z\.json\.gz$')
+# Nome fora do padrão de lote de propósito: `lotes_existentes` o ignora.
+CACHE_REST = PASTA_COLETAS / 'arquivos-rest.json.gz'
 
 OAI = 'https://repositorio.ufsc.br/oai/request'
+REST = 'https://repositorio.ufsc.br/rest'
 OASISBR = 'https://oasisbr.ibict.br/vufind/api/v1/search'
 AGENTE = {'User-Agent': 'EcoGrad-coleta/1.0 (+https://github.com/GSimas/Ecology-Graph)'}
 
@@ -523,37 +529,109 @@ def reclassificar_tccs():
     return 0
 
 
-def preencher_arquivos(desde=None):
-    """Uma vez: grava o PDF dos registros já coletados, com uma passada ORE do repositório inteiro.
+def fontes_de_registros():
+    """(caminho, conteúdo, registros) de cada arquivo que guarda registros: as duas bases e os
+    lotes de `coletas/`. Um lote substitui o registro da base pelo handle (`aplicar_coletas`),
+    então quem altera a base precisa alterar o lote também."""
+    for arq in (ARQ_PPG, ARQ_TCC):
+        base = ler_gz(arq)
+        yield arq, base, base
+    for caminho in sorted(PASTA_COLETAS.glob('*.json.gz')):
+        if PADRAO_LOTE.match(caminho.name):
+            lote = ler_gz(caminho)
+            yield caminho, lote, (lote.get('ppg') or []) + (lote.get('tcc') or [])
 
-    Reescreve as bases e os lotes de `coletas/`: um lote substitui o registro da base pelo handle
-    (`aplicar_coletas`), então preencher só a base deixaria de fora tudo que um lote já trocou."""
-    mapa = coletar_arquivos(desde)
-    print(f'{len(mapa)} itens com PDF no repositório.')
+
+def gravar_arquivos(mapa):
+    """Grava `arquivos` nos registros já coletados, por handle. Só reescreve o que mudou."""
     alterados = Counter()
-
-    def aplicar(registros, rotulo):
+    for caminho, conteudo, registros in fontes_de_registros():
         for r in registros:
             pdfs = mapa.get(handle_de(r.get('url')))
             if pdfs and r.get('arquivos') != pdfs:
                 r['arquivos'] = pdfs
-                alterados[rotulo] += 1
-
-    for arq in (ARQ_PPG, ARQ_TCC):
-        base = ler_gz(arq)
-        aplicar(base, arq.name)
-        gravar_gz(arq, base)
-    for caminho in sorted(PASTA_COLETAS.glob('*.json.gz')):
-        if not PADRAO_LOTE.match(caminho.name):
-            continue
-        lote = ler_gz(caminho)
-        aplicar(lote.get('ppg') or [], caminho.name)
-        aplicar(lote.get('tcc') or [], caminho.name)
-        gravar_gz(caminho, lote)
+                alterados[caminho.name] += 1
+        if alterados.get(caminho.name):
+            gravar_gz(caminho, conteudo)
     for nome, n in sorted(alterados.items()):
         print(f'  {nome}: {n} registros com PDF')
     if not alterados:
         print('  nenhum registro alterado.')
+    return alterados
+
+
+def handles_sem_arquivos():
+    return {h for _, _, registros in fontes_de_registros() for r in registros
+            if not r.get('arquivos') and (h := handle_de(r.get('url')))}
+
+
+def preencher_arquivos(desde=None):
+    """Uma vez: grava o PDF dos registros já coletados, com uma passada ORE do índice OAI."""
+    mapa = coletar_arquivos(desde)
+    print(f'{len(mapa)} itens com PDF no índice OAI.')
+    gravar_arquivos(mapa)
+    return 0
+
+
+def arquivos_do_item_rest(item):
+    """PDFs do bundle ORIGINAL na resposta do REST, no mesmo formato de `arquivos_do_entry`.
+
+    O REST já dá a sequência em `sequenceId`; no ORE ela só existe dentro da URL."""
+    saida = []
+    for b in item.get('bitstreams') or []:
+        sequencia, nome = b.get('sequenceId'), (b.get('name') or '').strip()
+        if b.get('bundleName') != 'ORIGINAL' or not str(b.get('mimeType') or '').startswith('application/pdf'):
+            continue
+        if not nome or not isinstance(sequencia, int):
+            continue
+        tamanho = b.get('sizeBytes')
+        saida.append({'n': nome, 's': sequencia, **({'b': tamanho} if isinstance(tamanho, int) else {})})
+    return saida
+
+
+def preencher_arquivos_rest(trabalhadores=6):
+    """Alcança pela API REST os itens que o índice OAI não expõe — hoje a maioria da base.
+
+    Um item por requisição, então dezenas de milhares delas: o progresso fica em `CACHE_REST`
+    e uma nova execução retoma dali. Poucos trabalhadores de propósito: o repositório é de
+    terceiros e a pressa não vale o risco de derrubá-lo."""
+    import requests
+    pendentes = handles_sem_arquivos()
+    cache = ler_gz(CACHE_REST) if CACHE_REST.exists() else {}
+    faltam = sorted(pendentes - set(cache))
+    print(f'{len(pendentes)} handles sem PDF · {len(cache)} já consultados · {len(faltam)} a consultar.')
+    local = threading.local()
+
+    def consultar(handle):
+        if not hasattr(local, 'sessao'):
+            local.sessao = requests.Session()
+        r = local.sessao.get(f'{REST}/handle/{handle}', params={'expand': 'bitstreams'},
+                             headers={**AGENTE, 'Accept': 'application/json'}, timeout=(15, 60))
+        r.raise_for_status()
+        return handle, arquivos_do_item_rest(r.json())
+
+    pool, erros = ThreadPoolExecutor(max_workers=trabalhadores), Counter()
+    futuros = [pool.submit(consultar, h) for h in faltam]
+    try:
+        for i, futuro in enumerate(as_completed(futuros), 1):
+            try:
+                handle, pdfs = futuro.result()
+                cache[handle] = pdfs  # lista vazia também entra: item sem PDF não se reconsulta.
+            except Exception as e:
+                erros[type(e).__name__] += 1
+            if i % 2000 == 0:
+                gravar_gz(CACHE_REST, cache)
+                print(f'  ...{i}/{len(faltam)} consultados ({sum(1 for v in cache.values() if v)} com PDF)', flush=True)
+    except KeyboardInterrupt:
+        print('interrompido; o que já foi consultado fica no checkpoint.', flush=True)
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+        gravar_gz(CACHE_REST, cache)
+    for nome, n in erros.most_common():
+        print(f'  falhas ({nome}): {n} — ficam para a próxima execução')
+    com_pdf = {h: pdfs for h, pdfs in cache.items() if pdfs}
+    print(f'{len(com_pdf)} itens com PDF pelo REST.')
+    gravar_arquivos(com_pdf)
     return 0
 
 
@@ -563,12 +641,15 @@ def main(argv=None):
     parser.add_argument('--desde', type=lambda s: dt.date.fromisoformat(s).isoformat(), help='AAAA-MM-DD; padrão: coletas/estado.json')
     parser.add_argument('--reclassificar-tccs', action='store_true')
     parser.add_argument('--preencher-arquivos', action='store_true',
-                        help='uma vez: grava o PDF dos registros já coletados (varre o repositório inteiro, dezenas de minutos)')
+                        help='uma vez: grava o PDF dos registros já coletados (varre o índice OAI inteiro, minutos)')
+    parser.add_argument('--via-rest', action='store_true',
+                        help='com --preencher-arquivos: alcança pela API REST o que o índice OAI não expõe '
+                             '(uma requisição por item, horas; retoma de onde parou)')
     args = parser.parse_args(argv)
     if args.reclassificar_tccs:
         return reclassificar_tccs()
     if args.preencher_arquivos:
-        return preencher_arquivos(args.desde)
+        return preencher_arquivos_rest() if args.via_rest else preencher_arquivos(args.desde)
 
     agora = dt.datetime.now(dt.timezone.utc)
     estado = ler_json(ARQ_ESTADO, {})
