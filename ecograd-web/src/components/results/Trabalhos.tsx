@@ -2,11 +2,17 @@ import { Select } from '@/components/ui/Select';
 import { useId, useMemo } from 'react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { fonteSegura, filtrarTrabalhos, type FiltroTrabalhos } from '@/lib/resultados';
+import { VerPdf } from '@/components/results/VisualizadorPdf';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { Documento } from '@/types';
+/**
+ * Os dois caminhos para o documento: o PDF, quando o repositório o serve aberto,
+ * e a página do registro, que sempre vale — é lá que estão os metadados
+ * completos, e é para lá que se vai quando o texto é restrito.
+ */
 export function FonteTrabalho({ doc }: { doc: Documento }) {
   const url = fonteSegura(doc.url);
-  return url ? <a className="btn min-h-11 text-eco-accent" href={url} target="_blank" rel="noopener noreferrer">Abrir fonte original ↗<span className="sr-only">: {doc.titulo} (nova aba)</span></a> : <p className="text-xs text-slate-400">Link de fonte não disponível neste registro.</p>;
+  return <><VerPdf doc={doc} />{url ? <a className="btn min-h-11 text-eco-accent" href={url} target="_blank" rel="noopener noreferrer">Abrir fonte original ↗<span className="sr-only">: {doc.titulo} (nova aba)</span></a> : <p className="text-xs text-slate-400">Link de fonte não disponível neste registro.</p>}</>;
 }
 export function Trabalhos({ docs, sessionKey, titulo = 'Trabalhos para ler' }: { docs: readonly Documento[]; sessionKey: string; titulo?: string }) {
   const id = useId();

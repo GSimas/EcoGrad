@@ -52,7 +52,7 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
         <p className="text-sm text-slate-300">{doc.ano ?? 'Ano não informado'} · Tipo registrado: {doc.nivel_academico || 'não informado'}</p>
         <p className="text-sm"><strong>Coleção:</strong> {doc.programa_origem || 'não informada'}</p>
         {tcc.includes(doc.programa_origem) && <p className="text-xs text-slate-300">Acervo de TCCs (graduação ou especialização). O tipo acima reproduz a base, inclusive possíveis inconsistências; não foi inferido pelo nome da coleção.</p>}
-        <FonteTrabalho doc={doc} />
+        <div className="flex flex-wrap gap-2"><FonteTrabalho doc={doc} /></div>
         <p className="break-words text-xs text-slate-400">Fonte informada no registro: {doc.url || 'ausente'}. O acesso ao texto completo depende do repositório.</p>
       </Card>
       <Card className="space-y-3"><h3 className="text-lg font-semibold">Resumo</h3><p className="whitespace-pre-line break-words text-sm leading-relaxed text-slate-200">{doc.resumo.trim() || 'Resumo não disponível no recorte local. Consulte a fonte original, quando houver link.'}</p></Card>
