@@ -1,8 +1,9 @@
 import { useSessionField } from '@/hooks/useSessionField';
-import { useId, useRef, useState, type ReactNode } from 'react';
+import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { ChevronDown, Info, ChevronRight } from 'lucide-react';
 import { cn, formatarNumero } from '@/lib/utils';
+import { blocosPorIdioma } from '@/lib/idioma';
 import { classeDoTipo } from '@/lib/tipos-cor';
 import type { AnaliseOculta } from '@/lib/relevancia';
 
@@ -69,6 +70,25 @@ export function Kpi({
       {children}
     </div>
   );
+}
+
+/**
+ * Texto do acervo com o idioma marcado, para o leitor de tela usar a voz certa.
+ *
+ * Quando o texto é todo de um idioma, o `lang` vai no próprio elemento e o DOM
+ * fica igual ao de antes. Só quando há mais de um idioma — resumo em português
+ * seguido do abstract em inglês, o caso comum nas teses — ele se parte em
+ * `<span>` por bloco, preservando as quebras de linha originais.
+ */
+export function TextoDoAcervo({ texto, className, vazio }: { texto: string; className?: string; vazio?: string }) {
+  const blocos = useMemo(() => blocosPorIdioma(texto), [texto]);
+  if (!blocos.length) return <p className={className}>{vazio}</p>;
+  if (blocos.length === 1) return <p className={className} lang={blocos[0].idioma ?? undefined}>{blocos[0].texto}</p>;
+  return <p className={className}>{blocos.map((b, i) => (
+    <span key={i} lang={b.idioma ?? undefined}>{i ? `
+
+${b.texto}` : b.texto}</span>
+  ))}</p>;
 }
 
 export function Progresso({ valor, texto }: { valor: number | null; texto?: string }) {

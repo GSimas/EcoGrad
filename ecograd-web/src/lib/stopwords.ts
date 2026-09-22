@@ -1,4 +1,4 @@
-import { STOPWORDS_NUVEM as STOPWORDS_NUVEM_BRUTAS } from '../../scripts/stopwords-nuvem.mjs';
+import listas from '../data/stopwords-nuvem.json';
 
 /**
  * Dicionário acadêmico bilíngue (PT/EN).
@@ -34,11 +34,26 @@ export const STOPWORDS_NORMALIZADAS: ReadonlySet<string> = new Set(
 /**
  * Stopwords das nuvens de palavras, em português, inglês e espanhol.
  *
- * A lista mora em `scripts/stopwords-nuvem.mjs`, e não aqui, porque a nuvem do
- * Panorama é montada no build e as do dossiê e do relatório no navegador: duas
- * cópias divergiriam, e a mesma palavra sumiria de uma nuvem e não da outra.
+ * As listas moram em `src/data/stopwords-nuvem.json` porque a nuvem do Panorama é
+ * montada no build e as do dossiê e do relatório no navegador: duas cópias
+ * divergiriam, e a mesma palavra sumiria de uma nuvem e não da outra. JSON, e não
+ * um módulo, é o único formato que o TypeScript compilado e os scripts `.mjs`
+ * leem do mesmo lugar.
  *
  * Divergiu de `STOPWORDS_ACADEMICAS` de propósito: aquela é transcrição fiel do
  * `backend.py` e tem paridade verificada; esta é do EcoGrad e pode crescer.
  */
-export const STOPWORDS_NUVEM: ReadonlySet<string> = STOPWORDS_NUVEM_BRUTAS;
+export const STOPWORDS_NUVEM: ReadonlySet<string> = new Set([
+  ...listas.pt, ...listas.en, ...listas.es, ...listas.academicas,
+]);
+
+/**
+ * As mesmas listas separadas por idioma, para `detectarIdioma`.
+ *
+ * São palavras gramaticais de alta frequência: o idioma de um texto é o que mais
+ * tiver delas. Reaproveitar o que já filtra as nuvens evita uma segunda lista
+ * para dizer a mesma coisa.
+ */
+export const STOPWORDS_POR_IDIOMA: Readonly<Record<'pt' | 'en' | 'es', ReadonlySet<string>>> = {
+  pt: new Set(listas.pt), en: new Set(listas.en), es: new Set(listas.es),
+};

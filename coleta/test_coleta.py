@@ -193,5 +193,50 @@ class PdfsDoRepositorio(unittest.TestCase):
         self.assertNotIn('arquivos', sem[0][1])
 
 
+class Resposta:
+    def __init__(self, status):
+        self.status_code = status
+
+
+class Sessao:
+    """Sessão de mentira: guarda o que foi pedido e devolve o que o teste mandar."""
+    def __init__(self, *status):
+        self.status, self.pedidos = list(status), []
+
+    def get(self, url, **_):
+        self.pedidos.append(url)
+        return Resposta(self.status.pop(0) if self.status else 200)
+
+
+class HandleQueSumiu(unittest.TestCase):
+    def test_so_o_404_repetido_conta_como_ausente(self):
+        # Um 404 isolado pode ser indisponibilidade; apagar registro por causa dele
+        # seria perder dado que ainda existe no repositório.
+        self.assertTrue(c.item_ausente('1/1', Sessao(404, 404)))
+        self.assertFalse(c.item_ausente('1/1', Sessao(404, 200)))
+
+    def test_item_vivo_ou_restrito_nunca_e_removido(self):
+        # Item restrito responde 200 com a negativa dentro: continua existindo.
+        self.assertFalse(c.item_ausente('1/1', Sessao(200)))
+        self.assertFalse(c.item_ausente('1/1', Sessao(500, 500)))
+
+    def test_falha_de_rede_nao_apaga_nada(self):
+        import requests
+
+        class SemRede(Sessao):
+            def get(self, url, **_):
+                raise requests.RequestException('sem rede')
+
+        self.assertFalse(c.item_ausente('1/1', SemRede()))
+
+    def test_lote_de_remocao_tira_o_handle_das_duas_bases(self):
+        # A remoção segue o caminho da coleta semanal: um lote com `removidos`.
+        bases = {'ppg': [{'url': url(1)}, {'url': url(2)}], 'tcc': [{'url': url(1)}]}
+        lote = {'ppg': [], 'tcc': [], 'removidos': ['123/1']}
+        saida = c.aplicar_coletas(bases, [lote])
+        self.assertEqual(saida['ppg'], [{'url': url(2)}])
+        self.assertEqual(saida['tcc'], [])
+
+
 if __name__ == '__main__':
     unittest.main()
