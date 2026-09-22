@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buscarNoAcervo, colecoesDoItem, itemDoAcervo, prepararBusca, type IndiceBusca } from '../src/lib/busca-global';
+import { buscarNoAcervo, colecoesDoItem, itemDoAcervo, prepararBusca, termoDoAcervo, type IndiceBusca } from '../src/lib/busca-global';
 import { correspondeBusca, filtrarPorRelevancia } from '../src/lib/utils';
 
 const indice: IndiceBusca = {
@@ -46,4 +46,28 @@ test('termos em qualquer ordem acham o nome oficial do acervo', () => {
   assert.deepEqual(buscarNoAcervo(busca, 'Demo Richard').map((r) => r.nome), ['Souza, Richard Demo']);
   assert.ok(correspondeBusca('Souza, Richard Demo', 'demo SOUZA'));
   assert.equal(correspondeBusca('Souza, Richard Demo', 'richard silva'), false);
+});
+
+test('o termo clicado numa nuvem acha a entidade sem saber o tipo dela', () => {
+  // A nuvem do acervo entrega os termos normalizados, sem acento e em minúsculas;
+  // a do dossiê entrega o que estava no texto. Os dois precisam achar o mesmo item.
+  assert.equal(termoDoAcervo(indice, 'gestao')?.nome, 'Gestão');
+  assert.equal(termoDoAcervo(indice, 'GESTÃO')?.nome, 'Gestão');
+  assert.equal(termoDoAcervo(indice, '  Gestão  ')?.nome, 'Gestão');
+
+  // "Gestão pública" é palavra-chave e "Gestão" é macrotema: nomes diferentes,
+  // itens diferentes. A busca é por igualdade, não por trecho.
+  assert.equal(termoDoAcervo(indice, 'gestão pública')?.tipo, 'Palavra-chave');
+  assert.equal(termoDoAcervo(indice, 'congestão'), null);
+
+  // Termo que só existe dentro de um título não é entidade: o modal precisa
+  // disso para dizer que não há o que abrir, em vez de abrir a coisa errada.
+  assert.equal(termoDoAcervo(indice, 'escolar'), null);
+  assert.equal(termoDoAcervo(indice, ''), null);
+
+  // Homônimo entre tipos: o temático vence o nome de pessoa.
+  const comHomonimo: IndiceBusca = { ...indice, itens: [...indice.itens, ['Gestão', 1, 40, [0]]] };
+  const achado = termoDoAcervo(comHomonimo, 'gestao');
+  assert.equal(achado?.tipo, 'Macrotema');
+  assert.equal(achado?.registros, 9);
 });

@@ -14,8 +14,11 @@ import {
   calcularMaturidadeRede,
   calcularMetricasComplexas,
   calcularSnaGlobal,
+  construirGrafoGlobal,
 } from '@/lib/sna-engine';
 import { gerarEcologiaMemes } from '@/lib/memetic-network';
+import { calcularFurosEstruturais } from '@/lib/burt-furos';
+import { serializarGrafo } from '@/lib/exportar-grafo';
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -95,6 +98,28 @@ ctx.addEventListener('message', (evento: MessageEvent<SnaWorkerRequest>) => {
           (_value, text) => responder({ type: 'progress', value: null, text }),
         );
         responder({ type: 'ecologia-memes', result });
+        break;
+      }
+      case 'furos-estruturais': {
+        // Constraint é O(Σ d²) e betweenness é Brandes: a rede de orientadores
+        // e palavras-chave é pequena perto da global, mas ainda trava a página.
+        const result = calcularFurosEstruturais(pedido.docs, (_value, text) =>
+          responder({ type: 'progress', value: null, text }),
+        );
+        responder({ type: 'furos-estruturais', result });
+        break;
+      }
+      case 'exportar-grafo': {
+        responder({ type: 'progress', value: null, text: 'Montando a rede global para exportação...' });
+        const g = construirGrafoGlobal(pedido.docs);
+        responder({ type: 'progress', value: null, text: `Serializando ${g.order} nós em ${pedido.formato}...` });
+        responder({
+          type: 'exportar-grafo',
+          formato: pedido.formato,
+          conteudo: serializarGrafo(g, pedido.formato),
+          nos: g.order,
+          arestas: g.size,
+        });
         break;
       }
       default:

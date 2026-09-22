@@ -2,7 +2,7 @@ import { PAGE_LABELS, rotaVisivel } from '@/lib/navigation';
 import { navigatePage, useNavigation } from '@/services/navigation';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { BookOpen, Dna, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Radar, Search, X } from 'lucide-react';
+import { BookOpen, LayoutDashboard, Menu, Microscope, PanelLeftClose, PanelLeftOpen, Search, X } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { AtalhosEcoGrad } from './AtalhosEcoGrad';
 import { OfertaDeExemplo, useTourGuiado } from './TourGuiado';
@@ -17,8 +17,7 @@ import type { Rota } from '@/types';
 const TODAS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }> = [
   { rota: 'dashboard', rotulo: 'Dashboard', icone: LayoutDashboard },
   { rota: 'busca', rotulo: 'Motor de Busca', icone: Search },
-  { rota: 'foresight', rotulo: 'Foresight', icone: Radar },
-  { rota: 'memetica', rotulo: 'Memética e Ontologia', icone: Dna },
+  { rota: 'avancada', rotulo: 'Análise Avançada', icone: Microscope },
 ];
 /** Só o que está visível agora chega ao menu (`ROTAS_VISIVEIS`, em `lib/navigation`). */
 const ITENS = TODAS.filter(({ rota }) => rotaVisivel(rota));

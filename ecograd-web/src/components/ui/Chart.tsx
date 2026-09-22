@@ -3,6 +3,9 @@ import { adaptarGrafico } from '@/lib/aparencia-graficos';
 import { lazy, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { CanvasBoundary } from './CanvasBoundary';
 const ReactECharts = lazy(() => import('./EChartsCanvas'));
+// O 3D mora noutro pedaço: o `echarts-gl` só é baixado por quem abre um gráfico
+// tridimensional, e não por todo mundo que abre um gráfico qualquer.
+const ReactEChartsGL = lazy(() => import('./EChartsCanvas3D'));
 import type { EChartsOption } from 'echarts';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Tabela, type LeituraDados } from './Tabela';
@@ -24,6 +27,7 @@ export function Grafico({
   onReady,
   rodape,
   mesclar = false,
+  tridimensional = false,
 }: {
   option: EChartsOption;
   leitura: LeituraDados;
@@ -42,6 +46,12 @@ export function Grafico({
    * arrasto (`roam`) quando só o estilo muda, como no destaque de um nó.
    */
   mesclar?: boolean;
+  /**
+   * Usa o renderizador WebGL do `echarts-gl`, que traz órbita e zoom do mouse
+   * embutidos. A imagem exportada é o enquadramento atual da órbita, na
+   * resolução da tela (ver `baixarGraficoECharts`).
+   */
+  tridimensional?: boolean;
 }) {
   const { claro, reduzir } = useAparencia();
   const [vista, setVista] = useSessionField('grafico.' + leitura.titulo, 'grafico');
@@ -54,8 +64,8 @@ export function Grafico({
   }, [onReady]);
   const baixar = useCallback((formato: FormatoImagem) => {
     const eci = instancia.current;
-    if (ehExportavel(eci)) baixarGraficoECharts(eci, leitura.titulo, formato);
-  }, [leitura.titulo]);
+    if (ehExportavel(eci)) baixarGraficoECharts(eci, leitura.titulo, formato, { webgl: tridimensional });
+  }, [leitura.titulo, tridimensional]);
   const opcaoFinal = useMemo<EChartsOption>(
     () => adaptarGrafico({
       backgroundColor: 'transparent',
@@ -97,7 +107,7 @@ export function Grafico({
       </div>
       {/* `descricao` fica de fora: o Grafico já a mostra acima, nas duas vistas. */}
       {vista === 'tabela' ? <Tabela {...leitura} descricao={undefined} aninhada /> : <><div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
-    <CanvasBoundary><ReactECharts
+    <CanvasBoundary>{tridimensional ? <ReactEChartsGL
       option={opcaoFinal}
       style={{ height: altura, width: '100%' }}
       opts={{ renderer: 'canvas' }}
@@ -105,7 +115,15 @@ export function Grafico({
       lazyUpdate
       onEvents={onEvents}
       onChartReady={aoMontar}
-    /></CanvasBoundary></div></div>{rodape}</>}
+    /> : <ReactECharts
+      option={opcaoFinal}
+      style={{ height: altura, width: '100%' }}
+      opts={{ renderer: 'canvas' }}
+      notMerge={!mesclar}
+      lazyUpdate
+      onEvents={onEvents}
+      onChartReady={aoMontar}
+    />}</CanvasBoundary></div></div>{rodape}</>}
     </section>
   );
 }

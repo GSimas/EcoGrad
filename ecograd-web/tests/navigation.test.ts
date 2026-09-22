@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { useEcoGradStore as store } from '../src/stores/useEcoGradStore';
 import { initializeNavigation, navigateBack, navigateForward, navigatePage, navigateVisit, registerPosition, useNavigation, type NavigationPort } from '../src/services/navigation';
-import { captureContext, applyContext, HISTORY_COUNT, HISTORY_KEY, HISTORY_TTL, pageUrl, parsePage, readHistory, ROTA_PADRAO, ROTAS_VISIVEIS, rotaVisivel, statePage, trimHistory, type Visit } from '../src/lib/navigation';
+import { abaDoEndereco, captureContext, applyContext, CHAVE_ABA_AVANCADA, HISTORY_COUNT, HISTORY_KEY, HISTORY_TTL, pageUrl, paginaCanonica, parsePage, readHistory, ROTA_PADRAO, ROTAS_VISIVEIS, rotaCanonica, rotaVisivel, statePage, trimHistory, type Visit } from '../src/lib/navigation';
 import { OBJETIVOS, objetivoPorId } from '../src/lib/objetivos';
 
 function browser(hash = '') {
@@ -29,12 +29,22 @@ function setup(hash = '') {
   return { ...b, stop };
 }
 test('URLs contain only whitelisted pages; unknown and injected URLs resolve safely', () => {
-  assert.equal(parsePage('#/foresight'), 'foresight');
+  assert.equal(parsePage('#/avancada'), 'avancada');
   assert.equal(parsePage('#/busca/'), 'busca');
   assert.equal(parsePage(''), null);
   assert.equal(parsePage('#/busca?rascunho=privado'), 'nao-encontrada');
   assert.equal(parsePage('#/../chat'), 'nao-encontrada');
   assert.equal(pageUrl('busca'), '#/busca');
+  // Endereços de antes da fusão das três telas continuam sendo lidos, e cada
+  // um resolve para a página que o sucedeu — nunca para "não encontrada".
+  for (const antigo of ['exploracao', 'foresight', 'memetica'] as const) {
+    assert.equal(parsePage(`#/${antigo}`), antigo);
+    assert.equal(paginaCanonica(antigo), 'avancada');
+    assert.ok(abaDoEndereco(antigo));
+  }
+  assert.equal(paginaCanonica('busca'), 'busca');
+  assert.equal(abaDoEndereco('busca'), null);
+  assert.equal(pageUrl('avancada'), '#/avancada');
 });
 test('browser back/forward restores entity and filters without resetting documents, chat or work state', () => {
   const b = setup();
@@ -64,25 +74,25 @@ test('browser back/forward restores entity and filters without resetting documen
 test('duplicates, typing and progress do not fill history; a new branch replaces Forward', () => {
   const b = setup();
   try {
-    navigatePage('foresight'); navigatePage('foresight');
+    navigatePage('avancada'); navigatePage('avancada');
     for (let i = 0; i < 20; i++) store.setState({ mensagemCarregamento: String(i), ui: { 'busca.texto.Documento': `parcial ${i}` } });
     assert.equal(b.entries.length, 2);
-    navigatePage('busca'); navigateBack(); navigatePage('memetica');
+    navigatePage('busca'); navigateBack(); navigatePage('dashboard');
     assert.equal(b.entries.length, 3);
     navigateForward();
-    assert.equal(useNavigation.getState().page, 'memetica');
+    assert.equal(useNavigation.getState().page, 'dashboard');
   } finally { b.stop(); }
 });
 test('reload restores the same history entry and its forward path', () => {
   const b = setup();
   store.getState().navegarPara('Autor', 'Pessoa A');
-  navigatePage('foresight'); navigateBack();
+  navigatePage('avancada'); navigateBack();
   b.stop();
   const stop = initializeNavigation(b.port);
   try {
     assert.equal(store.getState().buscaTermo, 'Pessoa A');
     assert.equal(useNavigation.getState().visits.length, 3);
-    navigateForward(); assert.equal(useNavigation.getState().page, 'foresight');
+    navigateForward(); assert.equal(useNavigation.getState().page, 'avancada');
     navigateVisit(useNavigation.getState().visits[0].id);
     assert.equal(useNavigation.getState().page, 'dashboard');
   } finally { stop(); }
@@ -91,7 +101,7 @@ test('new analysis invalidates old entity history even when native Back reaches 
   const b = setup();
   try {
     store.getState().navegarPara('Orientador', 'Pessoa antiga');
-    navigatePage('foresight');
+    navigatePage('avancada');
     store.getState().novaConsulta();
     const analysisId = store.getState().analysisId;
     b.port.go(-1);
@@ -109,7 +119,11 @@ test('direct links require a base and continue to the requested page after loadi
     // Sem base, o link direto cai na apresentação: é lá que as coleções são buscadas.
     assert.equal(useNavigation.getState().page, 'inicio');
     store.getState().concluirCarregamento([{ titulo: 'Documento' }] as never, { programas: ['Coleção'], cursosTcc: [] }, 'v1');
-    assert.equal(useNavigation.getState().page, 'foresight');
+    // O link antigo do Foresight abre a Análise Avançada na aba temporal, e o
+    // endereço passa a ser o atual: ninguém fica com uma URL que não existe.
+    assert.equal(useNavigation.getState().page, 'avancada');
+    assert.equal(store.getState().ui[CHAVE_ABA_AVANCADA], 'tempo');
+    assert.equal(b.port.hash(), '#/avancada');
     assert.equal(store.getState().programasSelecionados[0], 'Coleção');
   } finally { stop(); }
 });
@@ -131,7 +145,7 @@ test('expired, corrupt and oversized histories are discarded; storage rejection 
   b.port.storage.setItem = () => { throw new Error('QuotaExceededError'); };
   const stop = initializeNavigation(b.port);
   try {
-    navigatePage('foresight'); navigateBack();
+    navigatePage('avancada'); navigateBack();
     assert.equal(useNavigation.getState().page, 'dashboard');
     assert.match(useNavigation.getState().storageError, /não pôde ser salvo/);
     const visit = useNavigation.getState().visits[0];
@@ -149,7 +163,7 @@ test('scroll and focus belong to each visit and survive reload', () => {
   const release = registerPosition(() => ({ top, focus: { tag: 'BUTTON', label: '', text: 'Abrir trabalho', ordinal: 0 } }));
   try {
     navigatePage('busca'); top = 900;
-    navigatePage('foresight'); top = 0;
+    navigatePage('avancada'); top = 0;
     navigateBack();
     assert.equal(useNavigation.getState().restore?.top, 900);
     assert.equal(useNavigation.getState().restore?.focus?.text, 'Abrir trabalho');
@@ -162,12 +176,12 @@ test('scroll and focus belong to each visit and survive reload', () => {
 test('unknown addresses keep the known path and do not duplicate popstate/hashchange events', () => {
   const b = setup();
   try {
-    navigatePage('foresight');
+    navigatePage('avancada');
     b.address('#/does-not-exist');
     assert.equal(useNavigation.getState().page, 'nao-encontrada');
     assert.equal(useNavigation.getState().visits.length, 3);
     navigateBack();
-    assert.equal(useNavigation.getState().page, 'foresight');
+    assert.equal(useNavigation.getState().page, 'avancada');
     b.stop();
     const stop = initializeNavigation(b.port);
     navigateForward(); assert.equal(useNavigation.getState().page, 'nao-encontrada');
@@ -210,8 +224,9 @@ test('an explicit direct link takes precedence over the loading goal', () => {
   const stop = initializeNavigation(b.port);
   try {
     store.getState().concluirCarregamento([{ titulo: 'X' }] as never, { programas: ['A'], cursosTcc: [] }, 'v1', 'trabalhos');
-    assert.equal(useNavigation.getState().page, 'memetica');
-    assert.equal(b.port.hash(), '#/memetica');
+    assert.equal(useNavigation.getState().page, 'avancada');
+    assert.equal(store.getState().ui[CHAVE_ABA_AVANCADA], 'temas');
+    assert.equal(b.port.hash(), '#/avancada');
   } finally { stop(); }
 });
 
@@ -250,7 +265,7 @@ test('table query, chart view and network camera survive traversal without rewin
   try {
     const ui={'tabela.Radar':{busca:'água',coluna:'Total',direcao:'desc',pagina:2},'grafico.Radar':'tabela','rede.orbita.camera':{zoom:2,x:12,y:30}};
     store.setState({ui,statusSNA:'calculando'});
-    navigatePage('foresight');
+    navigatePage('avancada');
     store.getState().setChat({entrada:'Texto atual',parcial:'Resposta parcial'});
     navigateBack();
     assert.deepEqual(store.getState().ui,ui);
@@ -263,12 +278,13 @@ test('table query, chart view and network camera survive traversal without rewin
 });
 
 test('so as paginas visiveis chegam ao menu, aos objetivos e a restauracao da sessao', () => {
-  // O EcoGrad hoje oferece Dashboard e Motor de Busca; Foresight e Memética
-  // continuam no código, e voltam tirando-as de `ROTAS_VISIVEIS`.
-  assert.deepEqual([...ROTAS_VISIVEIS], ['dashboard', 'busca']);
-  assert.equal(rotaVisivel('dashboard'), true);
-  assert.equal(rotaVisivel('foresight'), false);
-  assert.equal(rotaVisivel('memetica'), false);
+  // As cinco páginas de análise estão abertas. A lista continua sendo o único
+  // interruptor: tirar uma rota daqui a esconde do menu, dos objetivos, da URL
+  // e da restauração da sessão de uma vez só.
+  assert.deepEqual([...ROTAS_VISIVEIS], ['dashboard', 'busca', 'avancada']);
+  for (const rota of ROTAS_VISIVEIS) assert.equal(rotaVisivel(rota), true);
+  assert.equal(rotaVisivel('inicio'), false);
+  assert.equal(rotaVisivel('pagina-inventada'), false);
 
   // Nenhum objetivo oferecido pode levar a uma página que não abre.
   assert.ok(OBJETIVOS.length > 0);
@@ -276,9 +292,14 @@ test('so as paginas visiveis chegam ao menu, aos objetivos e a restauracao da se
   // Id desconhecido continua caindo num objetivo utilizável.
   assert.ok(rotaVisivel(objetivoPorId('nao-existe').rota));
 
-  // Sessão salva numa página escondida abre no Dashboard, e não numa tela sem menu.
+  // Toda rota visível é restaurada como está; uma rota fora da lista cai no padrão.
   const base = { apresentacaoVista: true, dadosCarregados: true } as Parameters<typeof statePage>[0];
-  assert.equal(statePage({ ...base, rota: 'busca' }), 'busca');
-  assert.equal(statePage({ ...base, rota: 'foresight' }), ROTA_PADRAO);
-  assert.equal(statePage({ ...base, rota: 'memetica' }), ROTA_PADRAO);
+  for (const rota of ROTAS_VISIVEIS) assert.equal(statePage({ ...base, rota }), rota);
+  // Sessão guardada antes da fusão abre a página que sucedeu a rota dela.
+  for (const antiga of ['exploracao', 'foresight', 'memetica']) {
+    assert.equal(statePage({ ...base, rota: antiga as typeof base.rota }), 'avancada');
+    assert.equal(rotaCanonica(antiga), 'avancada');
+  }
+  assert.equal(statePage({ ...base, rota: 'rota-inventada' as typeof base.rota }), ROTA_PADRAO);
+  assert.equal(rotaCanonica('rota-inventada'), ROTA_PADRAO);
 });

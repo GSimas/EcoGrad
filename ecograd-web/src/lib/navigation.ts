@@ -1,27 +1,64 @@
 import type { EcoGradState } from '../stores/useEcoGradStore';
 import type { Rota } from '../types';
-export const PAGES = ['inicio', 'selecao', 'dashboard', 'busca', 'foresight', 'memetica'] as const;
+export const PAGES = ['inicio', 'selecao', 'dashboard', 'busca', 'avancada', 'exploracao', 'foresight', 'memetica'] as const;
 export type Page = typeof PAGES[number] | 'nao-encontrada';
-export const PAGE_LABELS: Record<Page, string> = { inicio: 'Início', selecao: 'Seleção de coleções', dashboard: 'Dashboard', busca: 'Motor de Busca', foresight: 'Foresight', memetica: 'Memética e Ontologia', 'nao-encontrada': 'Página não encontrada' };
+export const PAGE_LABELS: Record<Page, string> = { inicio: 'Início', selecao: 'Seleção de coleções', dashboard: 'Dashboard', busca: 'Motor de Busca', avancada: 'Análise Avançada', exploracao: 'Análise Avançada', foresight: 'Análise Avançada', memetica: 'Análise Avançada', 'nao-encontrada': 'Página não encontrada' };
 export const HISTORY_KEY = 'ecograd-navigation-v1';
 export const HISTORY_LIMIT = 256 * 1024;
 export const HISTORY_COUNT = 60;
 export const HISTORY_TTL = 24 * 60 * 60 * 1000;
-export const analysisPage = (page: Page): page is Rota => ['dashboard', 'busca', 'foresight', 'memetica'].includes(page);
+export const analysisPage = (page: Page): page is Rota => ['dashboard', 'busca', 'avancada'].includes(page);
 
 /**
- * As páginas que o EcoGrad oferece agora. Foresight e Memética continuam
- * inteiras no código — motores, testes e paridade com o backend Python —, e só
- * não são alcançáveis: sair desta lista é o único passo para trazer de volta.
+ * As páginas que o EcoGrad oferece agora.
  *
- * Esconder de verdade é mais do que tirar do menu. Uma sessão antiga guarda a
- * rota, e o endereço `#/foresight` continua sendo digitável; por isso
- * `rotaVisivel` também guarda a restauração da sessão e a leitura da URL.
+ * A lista continua existindo porque esconder de verdade é mais do que tirar do
+ * menu: uma sessão antiga guarda a rota, e um endereço antigo continua sendo
+ * digitável. Por isso `rotaVisivel` guarda também a restauração da sessão e a
+ * leitura da URL — tirar uma rota daqui basta para escondê-la inteira, e
+ * devolvê-la à lista basta para trazê-la de volta.
  */
-export const ROTAS_VISIVEIS: readonly Rota[] = ['dashboard', 'busca'];
+export const ROTAS_VISIVEIS: readonly Rota[] = ['dashboard', 'busca', 'avancada'];
 export const rotaVisivel = (rota: string): rota is Rota => (ROTAS_VISIVEIS as readonly string[]).includes(rota);
 /** Para onde vai quem chega numa página escondida, por sessão antiga ou por URL. */
 export const ROTA_PADRAO: Rota = 'dashboard';
+
+/** As abas da Análise Avançada, na ordem em que aparecem. */
+export const ABAS_AVANCADA = ['temas', 'tempo', 'rede', 'dados'] as const;
+export type AbaAvancada = typeof ABAS_AVANCADA[number];
+export const ROTULOS_ABA: Record<AbaAvancada, string> = {
+  temas: 'Temas e conceitos',
+  tempo: 'Tempo e tendências',
+  rede: 'Estrutura da rede',
+  dados: 'Especialização e dados',
+};
+/**
+ * Onde a aba escolhida é guardada. O prefixo `tabs.` já a inclui no contexto
+ * que o histórico captura, então voltar e avançar recuperam a aba junto com o
+ * resto da vista — sem que ela precise aparecer na URL.
+ */
+export const CHAVE_ABA_AVANCADA = 'tabs.avancada';
+
+/**
+ * Endereços de antes de as três telas de análise virarem abas de uma só.
+ *
+ * Continuam abrindo: sessões guardadas no navegador e links compartilhados
+ * dependem disso, e mandar alguém para "página não encontrada" por causa de uma
+ * reorganização nossa seria um defeito. Cada um leva à aba que hoje guarda o
+ * conteúdo que ele prometia.
+ */
+export const ROTAS_APOSENTADAS: Record<string, AbaAvancada> = {
+  exploracao: 'temas',
+  foresight: 'tempo',
+  memetica: 'temas',
+};
+/** Aba pedida por um endereço aposentado, ou `null` se o endereço é atual. */
+export const abaDoEndereco = (page: string): AbaAvancada | null => ROTAS_APOSENTADAS[page] ?? null;
+/** Nome público da página: um endereço aposentado vira a página que o sucedeu. */
+export const paginaCanonica = (page: Page): Page => (page in ROTAS_APOSENTADAS ? 'avancada' : page);
+/** Rota utilizável a partir do que a sessão guardou, por mais antigo que seja. */
+export const rotaCanonica = (rota: string): Rota =>
+  rotaVisivel(rota) ? rota : rota in ROTAS_APOSENTADAS ? 'avancada' : ROTA_PADRAO;
 /** Only fixed, public page names can enter a URL. No entity, draft, collection or search query. */
 export const pageUrl = (page: Page) => `#/${page === 'nao-encontrada' ? 'pagina-nao-encontrada' : page}`;
 export function parsePage(hash: string): Page | null {
@@ -32,8 +69,8 @@ export function parsePage(hash: string): Page | null {
 /** Sem base carregada o lugar é a apresentação: é lá que as coleções são escolhidas. */
 export function statePage(s: EcoGradState): Page {
   if (!s.apresentacaoVista || !s.dadosCarregados) return 'inicio';
-  // A sessão guardada pode apontar para uma página que hoje está escondida.
-  return rotaVisivel(s.rota) ? s.rota : ROTA_PADRAO;
+  // A sessão guardada pode apontar para uma página aposentada ou escondida.
+  return rotaCanonica(s.rota);
 }
 export const contextualKey = (key: string) => /^(tabela\.|grafico\.|rede\.|tabs\.|expander\.|dossie\.|orbita\.|capes\.|memes\.|dashboard\.|busca\.texto\.)/.test(key);
 export type ViewContext = Pick<EcoGradState, 'buscaTipo' | 'buscaTermo' | 'tipoForesight' | 'janelaRecente' | 'metodoCorte' | 'percentilCorte' | 'usarBootstrap' | 'fonteMemes' | 'minCoocorrencia'> & { ui: Record<string, unknown> };

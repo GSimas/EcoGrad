@@ -21,7 +21,7 @@ test('aplicar seleção substitui nomes e documentos atomicamente; navegação p
   store.getState().novaConsulta();
   const anterior = [{ titulo: 'Trabalho A' } as Documento];
   store.getState().concluirCarregamento(anterior, { programas: ['A'], cursosTcc: [] });
-  store.getState().setRota('foresight');
+  store.getState().setRota('avancada');
   assert.equal(store.getState().docs, anterior);
   const novos = [{ titulo: 'Trabalho B' } as Documento];
   const registros: Array<{ docs: Documento[]; nomes: string[] }> = [];
@@ -40,7 +40,7 @@ test('nova análise limpa coleções e resultados, enquanto trocar de página os
   const docs = [{ titulo: 'Trabalho A' } as Documento];
   store.getState().concluirCarregamento(docs, { programas: ['A'], cursosTcc: ['TCC B'] });
   store.getState().setSnaGlobal({});
-  store.getState().setRota('memetica');
+  store.getState().setRota('avancada');
   assert.equal(store.getState().docs, docs);
   assert.deepEqual(store.getState().programasSelecionados, ['A']);
   store.getState().novaConsulta();

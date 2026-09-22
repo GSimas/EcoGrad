@@ -3,18 +3,36 @@ import { RedeInterativa } from '@/components/ui/RedeInterativa';
 import { Dna, Network, RefreshCw, Table } from 'lucide-react';
 import { Aviso, Card, Expander, Kpi, Tabela } from '@/components/ui/primitives';
 import { Atividade } from '@/components/ui/Atividade';
+import { GrupoOpcoes } from '@/components/ui/Tabs';
+import { TrabalhosDoTermo } from '@/components/results/TrabalhosDoTermo';
+import { useSessionField } from '@/hooks/useSessionField';
 import { useSnaWorker, useAtividade, emExecucao } from '@/hooks/useSnaWorker';
 import { formatarNumero } from '@/lib/utils';
-import type { FonteMemes } from '@/lib/memetics';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+
+/** Mesmos rótulos da propagação: as duas abas falam da mesma fonte de termos. */
+const OPCOES_FONTE = [
+  'Palavras-chave e Títulos (Tradicional)',
+  'Artefatos Extraídos pela IA (Ontologia)',
+] as const;
 
 /**
  * Ecologia Memética (SNA) — rede de coocorrência entre memes.
  * Transcrição do bloco de `pages/1_Avançado.py:1485-1565`: métricas de redes
  * complexas, ecologia profunda, grafo interativo e tabela de centralidade.
+ *
+ * A fonte dos termos é a mesma da propagação e mora no store, mas o seletor se
+ * repete aqui: as duas análises vivem em abas diferentes, e uma delas não pode
+ * depender de a pessoa ter passado pela outra para escolher sobre o que olha.
  */
-export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; onSelecionarTermo: (termo: string) => void }) {
+export function EcologiaSNA() {
   const docs = useEcoGradStore((s) => s.docs);
+  const fonte = useEcoGradStore((s) => s.fonteMemes);
+  const setFonte = useEcoGradStore((s) => s.setFonteMemes);
+  const fonteRotulo = fonte === 'Artefatos Extraídos' ? OPCOES_FONTE[1] : OPCOES_FONTE[0];
+  const setFonteRotulo = (rotulo: string) => setFonte(rotulo.includes('IA') ? 'Artefatos Extraídos' : 'Palavras-chave');
+  const [termoVisual, setTermoVisual] = useSessionField<string | null>('grafico.memes.termo-rede', null);
+  const onSelecionarTermo = (nome: string) => setTermoVisual(nome);
   const { calcularEcologiaMemes } = useSnaWorker();
   const minCoocorrencia = useEcoGradStore((s) => s.minCoocorrencia);
   const setMinCoocorrencia = useEcoGradStore((s) => s.setMinCoocorrencia);
@@ -43,7 +61,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
+        <h2 className="flex items-center gap-2 text-xl font-bold">
           <Network size={18} />
           {ehIA ? 'Ecologia dos Artefatos Ontológicos (SNA)' : 'Ecologia Memética Tradicional (SNA)'}
         </h2>
@@ -55,7 +73,8 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
       </div>
 
       <Card className="space-y-3">
-        <p className="text-sm text-slate-300">2. Explore conexões · corte visual atual: {minCoocorrencia} coocorrências. As métricas e a tabela usam a rede completa.</p>
+        <GrupoOpcoes rotulo="Fonte dos termos" opcoes={OPCOES_FONTE} valor={fonteRotulo} onChange={setFonteRotulo} />
+        <p className="text-sm text-slate-300">Corte visual atual: {minCoocorrencia} coocorrências. As métricas e a tabela usam a rede completa.</p>
         <Expander titulo="Configuração avançada do recorte da rede">
         <label className="block space-y-1.5">
           <span className="text-xs uppercase tracking-wide text-slate-400">
@@ -103,7 +122,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
         {dados?.centralidade.length === 0 && <Aviso>A rede não contém termos conectados nesta fonte. Experimente palavras-chave e títulos, verifique o catálogo ou amplie as coleções. Reduzir o corte visual não cria conexões na rede completa.</Aviso>}
       </Card>
 
-      {!dados && !task?.resultado && !calculando && <Aviso>A rede ainda não foi construída para esta análise. Use Construir rede memética; os gráficos de propagação acima já podem ser explorados.</Aviso>}
+      {!dados && !task?.resultado && !calculando && <Aviso>A rede ainda não foi construída para esta análise. Use Construir rede memética; a propagação dos mesmos termos, na aba Temas e conceitos, já pode ser explorada.</Aviso>}
       {dados && (
         <>
           <div className="space-y-2">
@@ -217,6 +236,7 @@ export function EcologiaSNA({ fonte, onSelecionarTermo }: { fonte: FonteMemes; o
           </Expander>
         </>
       )}
+      <TrabalhosDoTermo termo={termoVisual} fonteMemes={fonte} redeMemetica onFechar={() => setTermoVisual(null)} />
     </section>
   );
 }

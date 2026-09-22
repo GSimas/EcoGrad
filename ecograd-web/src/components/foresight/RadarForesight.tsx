@@ -1,6 +1,6 @@
 import { valorNumericoTabela } from '@/lib/visualizacao';
 import { coberturaRadar, corteEfetivo, LEITURA_QUADRANTE, motivoRadarVazio } from '@/lib/interpretacao';
-import { navigatePage } from '@/services/navigation';
+import { CHAVE_ABA_AVANCADA } from '@/lib/navigation';
 import { useSessionField } from '@/hooks/useSessionField';
 import { TrabalhosDoTermo } from '@/components/results/TrabalhosDoTermo';
 import { useMemo } from 'react';
@@ -10,6 +10,7 @@ import type { AnaliseOculta } from '@/lib/relevancia';
 import { CORES_QUADRANTE, Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { GridSearch } from './GridSearch';
+import { SankeyTemporal } from './SankeyTemporal';
 import { prepararRadarForesight, segmentarPorKMeans, segmentarPorPercentil } from '@/lib/foresight-math';
 import { Atividade } from '@/components/ui/Atividade';
 import { useSnaWorker, useAtividade, emExecucao } from '@/hooks/useSnaWorker';
@@ -63,6 +64,18 @@ export function RadarForesight() {
   const contextoRadar = { coberturaTemporal: cobertura, segmentacaoEfetiva: efetivo, interpretacaoCategorias: LEITURA_QUADRANTE, dimensao: tipo, janelaRecenteAnos: janelaRecente, metodoCorte, percentilCorte, bootstrap: bootstrap ? {reamostragens: 100, fracao: 0.85} : false, cortes: {x:segmentado.xMid,y:segmentado.yMid} };
   const colunasRadar = [{chave:'Termo',rotulo:'Termo completo'}, {chave:'Quadrante',rotulo:'Categoria original do modelo'}, {chave:'Total',rotulo:'Ocorrências totais (n)'}, {chave:'Aparições Recentes',rotulo:'Ocorrências recentes (n)'}, {chave:'Tração (%)',rotulo:'Tração (%)'}, {chave:'Momentum (Burst)',rotulo:'Momentum (índice)'}, {chave:'Novidade (Estrutural * IDF)',rotulo:'Novidade (índice)'}, {chave:'Bet. Robusto?',rotulo:'Betweenness robusto'},{chave:'Bet. IQR',rotulo:'Betweenness: intervalo interquartil'},{chave:'cluster_id',rotulo:'Cluster K-Means (identificador)'}];
   const executarBootstrap = () => { calcularBootstrap(docs, tipo, 100, 0.85); };
+  /**
+   * Sem artefatos não há o que o Radar analise nesta dimensão, e o catálogo que
+   * os produz vive noutra aba. O botão leva até lá em vez de deixar a pessoa
+   * procurando: troca a aba e abre a seção já expandida.
+   */
+  const abrirCatalogoOntologia = () => {
+    useEcoGradStore.setState((s) => ({ ui: {
+      ...s.ui,
+      [CHAVE_ABA_AVANCADA]: 'temas',
+      'expander.Preparar artefatos e gerenciar catálogo (avançado)': true,
+    } }));
+  };
 
   /**
    * Quadrantes sobre dois ou três termos são ruído: o K-Means nem roda com
@@ -87,9 +100,9 @@ export function RadarForesight() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <RadarIcon size={22} /> Radar de Prospecção (Foresight Acadêmico)
-        </h1>
+        <h2 className="flex items-center gap-2 text-xl font-bold">
+          <RadarIcon size={20} aria-hidden /> Radar de Prospecção (Foresight Acadêmico)
+        </h2>
         <p className="text-sm text-slate-400">
           Cruza <strong>Momentum Temporal</strong> (burst normalizado por taxa relativa) com{' '}
           <strong>Novidade Estrutural</strong> (Betweenness × IDF).
@@ -97,7 +110,7 @@ export function RadarForesight() {
       </header>
 
       <Card className="space-y-4">
-        <h2 className="text-base font-semibold">1. Escolha o que investigar</h2>
+        <h3 className="text-base font-semibold">Escolha o que investigar</h3>
         <p className="text-sm text-slate-300">Compare mudanças no uso dos termos e abra os trabalhos que sustentam cada ponto. Os índices descrevem esta seleção; não comprovam inovação ou crescimento futuro.</p>
         <div className="grid gap-4 md:grid-cols-2">
           <GrupoOpcoes rotulo="Dimensão de análise" opcoes={TIPOS} valor={tipo} onChange={setTipo} />
@@ -176,7 +189,7 @@ export function RadarForesight() {
         <Aviso tipo="aviso">
           <p>{motivoRadarVazio(cobertura)}</p>
           {tipo !== 'Palavra-chave' && <button type="button" className="btn mt-2" onClick={()=>setTipo('Palavra-chave')}>Explorar palavras-chave</button>}
-          {tipo === 'Artefatos (Ontologia IA)' && <button type="button" className="btn mt-2" onClick={()=>navigatePage('memetica')}>Abrir Memética</button>}
+          {tipo === 'Artefatos (Ontologia IA)' && <button type="button" className="btn mt-2" onClick={abrirCatalogoOntologia}>Abrir o catálogo ontológico</button>}
         </Aviso>
       ) : (
         <>
@@ -286,6 +299,7 @@ export function RadarForesight() {
 
         </>
       )}
+      <SankeyTemporal />
       <Expander titulo="Avaliação histórica avançada (Grid Search)">
         <GridSearch mostrarAtividade={false} />
       </Expander>

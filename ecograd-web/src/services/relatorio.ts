@@ -13,7 +13,7 @@
 import type { EChartsOption } from 'echarts';
 import {
   blocosDaCapa, carimboDeData, lerChaveDossie, nomeDoArquivo,
-  type Bloco, type Relatorio, type SelecaoRelatorio,
+  type Bloco, type ContextoCapa, type Relatorio, type SelecaoRelatorio,
 } from '@/lib/relatorio';
 import { relevanciaDossie } from '@/lib/relevancia';
 import { canvasParaDataUrl } from '@/lib/exportar-imagem';
@@ -34,6 +34,14 @@ import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { Documento, TipoBusca } from '@/types';
 
 export interface ProgressoRelatorio { feitos: number; total: number; etapa: string }
+
+/**
+ * O relatório montado, com o contexto que a capa consumiu.
+ *
+ * O PDF só precisa dos blocos — a capa já está pronta neles. O JSON precisa dos
+ * valores por trás, para publicá-los como campos em vez de frases.
+ */
+export interface RelatorioMontado { relatorio: Relatorio; contexto: ContextoCapa }
 
 /** Cancelamento cooperativo: cada passo confere antes de gastar tempo. */
 function conferirCancelamento(signal: AbortSignal) {
@@ -177,10 +185,18 @@ export async function montarRelatorio(
   selecao: SelecaoRelatorio,
   onProgresso: (p: ProgressoRelatorio) => void,
   signal: AbortSignal,
-): Promise<Relatorio> {
+): Promise<RelatorioMontado> {
   const s = useEcoGradStore.getState();
   const docs = s.docs;
   const claro = selecao.tema === 'claro';
+  /**
+   * No JSON não há gráfico a desenhar: só as tabelas que o sustentam viajam.
+   * Pular o redesenho fora da tela é o que faz a exportação em JSON sair em um
+   * instante, enquanto a do PDF leva segundos.
+   */
+  const desenhar: typeof imagemDoGrafico = selecao.formato === 'json'
+    ? async () => null
+    : imagemDoGrafico;
   const total = passosDoRelatorio(selecao);
   let feitos = 0;
   const avancar = async (etapa: string) => { feitos += 1; onProgresso({ feitos, total, etapa }); await respirar(); };
@@ -249,7 +265,7 @@ export async function montarRelatorio(
       // Mesmo critério da tela: ranking de um nome só não é ranking.
       if (mapa.size <= 1) continue;
       const dados = topN(mapa, 10);
-      const img = await imagemDoGrafico(barrasHorizontais(dados, titulo, cor), { altura: 360, claro });
+      const img = await desenhar(barrasHorizontais(dados, titulo, cor), { altura: 360, claro });
       if (img) corpo.push({ tipo: 'imagem', dataUrl: img.dataUrl, alt: titulo, proporcao: img.proporcao });
       corpo.push(tabela(titulo, ['Nome completo', 'Ocorrências (n)'], dados.map(([nome, n]) => [nome, String(n)]),
         'Frequência descreve o recorte carregado; não mede mérito nem disponibilidade para orientar.'));
@@ -298,7 +314,7 @@ export async function montarRelatorio(
       corpo.push({ tipo: 'subtitulo', texto: 'Diagrama radial · orientação conjunta' });
       // Quadrado e grande: o círculo precisa de espaço igual nos quatro lados
       // para os nomes inteiros caberem sem encostar na borda.
-      const img = await imagemDoGrafico(opcaoRedeRadial(rede, undefined, { paraExportacao: true }),
+      const img = await desenhar(opcaoRedeRadial(rede, undefined, { paraExportacao: true }),
         { altura: 1400, largura: 1400, claro, recortar: true });
       if (img) corpo.push({ tipo: 'imagem', dataUrl: img.dataUrl, alt: 'Diagrama radial de orientação conjunta', proporcao: img.proporcao });
       corpo.push(tabela('Pares de orientação conjunta',
@@ -341,7 +357,7 @@ export async function montarRelatorio(
       corpo.push({ tipo: 'nota', texto: 'Percentual dos registros de cada ano com o campo preenchido. Serve para separar queda real de lacuna de metadado: um tema que some num ano pode ter sumido, ou aquele ano pode ter vindo sem palavras-chave.' });
       // Altura acompanha o número de campos, como na tela; a largura do eixo
       // cresce com os anos, então um recorte longo precisa de mais espaço.
-      const imgCob = await imagemDoGrafico(opcaoCoberturaTemporal(c), { altura: 26 * c.campos.length + 190, claro });
+      const imgCob = await desenhar(opcaoCoberturaTemporal(c), { altura: 26 * c.campos.length + 190, claro });
       if (imgCob) corpo.push({ tipo: 'imagem', dataUrl: imgCob.dataUrl, alt: 'Mapa de cobertura de metadados por ano', proporcao: imgCob.proporcao });
       corpo.push(tabela('Cobertura por ano', ['Ano', 'Campo', 'Com o campo (n)', 'Registros no ano (n)', 'Cobertura'],
         c.celulas.map((cel) => [String(cel.ano), cel.campo, String(cel.preenchidos), String(cel.total), cel.total === 0 ? '—' : `${Math.round(cel.percentual)}%`])));
@@ -406,7 +422,7 @@ export async function montarRelatorio(
     ] });
 
     if (mostrar.has('evolucao')) {
-      const img = await imagemDoGrafico({
+      const img = await desenhar({
         grid: { left: 8, right: 16, top: 24, bottom: 8, containLabel: true },
         xAxis: { type: 'category', data: serie.map((p) => String(p.ano)), axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } } },
         yAxis: { type: 'value', minInterval: 1, splitLine: { lineStyle: { color: TEMA_GRAFICO.grade } }, axisLine: { lineStyle: { color: TEMA_GRAFICO.eixo } } },
@@ -421,7 +437,7 @@ export async function montarRelatorio(
     if (mostrar.has('lexicometria')) {
       const nuvem = obterFrequenciasTexto(docsAlvo, [FONTES_NUVEM[0]], 40);
       if (nuvem.length) {
-        const img = await imagemDoGrafico({
+        const img = await desenhar({
           series: [{ type: 'wordCloud', shape: 'circle', gridSize: 6, sizeRange: [12, 54], rotationRange: [-45, 45], width: '100%', height: '100%', drawOutOfBound: false,
             textStyle: { fontFamily: 'Inter, sans-serif', fontWeight: 600, color: TEMA_GRAFICO.paleta[0] }, data: nuvem }],
         }, { altura: 400, claro });
@@ -433,7 +449,7 @@ export async function montarRelatorio(
 
     if (mostrar.has('orbita')) {
       corpo.push({ tipo: 'subtitulo', texto: 'Órbita de relacionamentos' });
-      const ehAtual = s.buscaTipo === tipo && s.buscaTermo === termo;
+      const ehAtual = selecao.formato !== 'json' && s.buscaTipo === tipo && s.buscaTermo === termo;
       const img = ehAtual ? imagemDaOrbitaNaTela() : null;
       if (img) corpo.push({ tipo: 'imagem', dataUrl: img, alt: 'Órbita de relacionamentos', proporcao: 0.5 });
       else corpo.push({ tipo: 'nota', texto: 'A órbita é uma simulação de forças, e o desenho só existe enquanto está na tela. Aqui vão as ligações em tabela; para incluir a imagem, abra a aba da órbita deste dossiê antes de exportar.' });
@@ -474,16 +490,20 @@ export async function montarRelatorio(
   }
 
   const agora = new Date();
+  const contexto: ContextoCapa = {
+    colecoes: nomesColecoes,
+    registros: docs.length,
+    periodo: periodoTexto(cobertura),
+    baseVersao: s.baseVersion,
+    geradoEm: agora,
+  };
   return {
-    titulo: `EcoGrad · Relatório da análise · ${carimboDeData(agora)}`,
-    arquivo: nomeDoArquivo(agora),
-    capa: blocosDaCapa({
-      colecoes: nomesColecoes,
-      registros: docs.length,
-      periodo: periodoTexto(cobertura),
-      baseVersao: s.baseVersion,
-      geradoEm: agora,
-    }),
-    corpo,
+    contexto,
+    relatorio: {
+      titulo: `EcoGrad · Relatório da análise · ${carimboDeData(agora)}`,
+      arquivo: nomeDoArquivo(agora, selecao.formato),
+      capa: blocosDaCapa(contexto),
+      corpo,
+    },
   };
 }

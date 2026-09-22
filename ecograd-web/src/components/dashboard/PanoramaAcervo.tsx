@@ -181,7 +181,8 @@ export function PanoramaAcervo({ aoNavegar }: { aoNavegar: () => void }) {
         <RankingDoAcervo dados={dados} ranking={ranking} contexto={contexto} aoEscolher={escolher} />
       </Card>
 
-      <NuvemDoAcervo nuvem={p.nuvem} fonte={FONTES.includes(fonte) ? fonte : 'Ambos'} aoTrocar={setFonte} contexto={contexto} />
+      <NuvemDoAcervo nuvem={p.nuvem} fonte={FONTES.includes(fonte) ? fonte : 'Ambos'} aoTrocar={setFonte} contexto={contexto}
+        aoEscolherTermo={(nome) => setAlvo({ tipo: 'Termo', nome })} />
 
       <p className="text-xs text-slate-400">
         Cobertura de metadados no acervo: {pct(p.comResumo, p.registros)} com resumo,
@@ -240,11 +241,12 @@ function RankingDoAcervo({ dados, ranking, contexto, aoEscolher }: {
  * de fora, junto com os termos que descrevem o gênero do documento ("estudo",
  * "análise"): sem isso a nuvem diria o idioma, não o assunto.
  */
-function NuvemDoAcervo({ nuvem, fonte, aoTrocar, contexto }: {
+function NuvemDoAcervo({ nuvem, fonte, aoTrocar, contexto, aoEscolherTermo }: {
   nuvem: Acervo['nuvem'];
   fonte: Fonte;
   aoTrocar: (f: Fonte) => void;
   contexto: Record<string, unknown>;
+  aoEscolherTermo: (termo: string) => void;
 }) {
   const dados = nuvem[CHAVE_NUVEM[fonte]];
   const mistura = fonte === 'Ambos'
@@ -257,11 +259,13 @@ function NuvemDoAcervo({ nuvem, fonte, aoTrocar, contexto }: {
         altura={420}
         leitura={{
           titulo: `Nuvem de palavras · ${fonte}`,
-          descricao: `Tamanho da palavra: número de registros em que o termo aparece, nos 100 mais frequentes de todo o acervo. Cor e rotação são decorativas; leia os valores exatos na tabela. Artigos, preposições e termos que descrevem o gênero do trabalho ficam de fora, em português, inglês e espanhol. Nomes de lugar aparecem entre os primeiros porque o acervo é de uma universidade catarinense — frequência descreve o acervo, não a importância do tema.${mistura}`,
+          descricao: `Clique num termo para abri-lo no EcoGrad: o modal diz antes o que seria carregado, e avisa quando o termo não é uma entidade do acervo. Tamanho da palavra: número de registros em que o termo aparece, nos 100 mais frequentes de todo o acervo. Cor e rotação são decorativas; leia os valores exatos na tabela. Artigos, preposições e termos que descrevem o gênero do trabalho ficam de fora, em português, inglês e espanhol. Nomes de lugar aparecem entre os primeiros porque o acervo é de uma universidade catarinense — frequência descreve o acervo, não a importância do tema.${mistura}`,
           linhas: dados.map(([name, value]) => ({ name, value })),
           colunas: [{ chave: 'name', rotulo: 'Termo' }, { chave: 'value', rotulo: 'Registros (n)' }],
           contexto: { ...contexto, fonteDaNuvem: fonte },
+          onAbrir: (l) => aoEscolherTermo(String(l.name)),
         }}
+        onEvents={{ click: (p) => { const nome = (p as { name?: string }).name; if (nome) aoEscolherTermo(nome); } }}
         option={{
           tooltip: { show: true },
           series: [{

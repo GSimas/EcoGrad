@@ -125,15 +125,17 @@ ecograd-web/
    atalho para voltar).
 2. **Seleção de coleções** — escolha dos PPGs e cursos, com o Panorama CAPES
    sempre visível.
-3. **Análise** — Dashboard, Motor de Busca, Foresight e Memética. O UFSCão, consultor de IA, fica em um botão
+3. **Análise** — Dashboard, Motor de Busca e Análise Avançada (quatro abas). O UFSCão, consultor de IA, fica em um botão
    flutuante e usa a chave de API do próprio usuário (OpenAI, Anthropic, Google, OpenRouter e outros).
 
 O painel lateral recolhe para uma faixa de ícones (o estado fica salvo na sessão).
 
-A página de Memética reúne o catálogo ontológico, as métricas de propagação, o gráfico de
-longevidade (ano de nascimento × anos de sobrevivência, cor pelo ano da última aparição) e a
-**Ecologia Memética (SNA)**: rede de coocorrência entre memes com métricas de redes complexas,
-ecologia profunda, grafo interativo e tabela de centralidade global.
+A Análise Avançada agrupa por pergunta, e não por origem: **Temas e conceitos** reúne a análise
+temática, a propagação dos termos e o catálogo ontológico; **Tempo e tendências**, o Radar, o Sankey
+e o Grid Search; **Estrutura da rede**, o espaço topológico 3D, os furos de Burt, a rede memética e
+as métricas do grafo global; **Especialização e dados**, o boxplot de QL, a base completa e a
+exportação da rede. As abas do Radix montam só o painel ativo, então os gráficos pesados carregam
+sob demanda.
 
 Qualquer nome clicável no Dashboard (chips de destaque e as barras dos Top 10)
 abre o Motor de Busca já com o dossiê daquela entidade — a rota vive no store,
@@ -269,7 +271,7 @@ Resultados só voltam se o identificador da análise, o formato persistido e o h
 
 ### Rotas e percurso
 
-As páginas têm rotas `#/inicio`, `#/selecao`, `#/dashboard`, `#/busca`, `#/foresight`, `#/memetica` e `#/chat`. Voltar/avançar do navegador e o controle **Histórico desta análise** recuperam entidades, filtros, abas, seções abertas, rolagem e foco, sem substituir a base, os rascunhos ou atividades em andamento. Links diretos sem base pedem selecionar as coleções antes de abrir a página desejada.
+As páginas têm rotas `#/inicio`, `#/selecao`, `#/dashboard`, `#/busca`, `#/avancada` e `#/chat`. Os endereços `#/exploracao`, `#/foresight` e `#/memetica`, de antes de as três telas de análise virarem abas, continuam abrindo — cada um na aba correspondente da Análise Avançada, reescrevendo a URL para `#/avancada`. Voltar/avançar do navegador e o controle **Histórico desta análise** recuperam entidades, filtros, abas, seções abertas, rolagem e foco, sem substituir a base, os rascunhos ou atividades em andamento. Links diretos sem base pedem selecionar as coleções antes de abrir a página desejada.
 
 A URL contém apenas a página. Entidades e contexto ficam na aba, em até 60 visitas/256 KiB adicionais de sessionStorage (validade de 24 h). Uma nova análise ou versão da base invalida o percurso anterior. Compartilhar o link não transfere a entidade, as coleções nem conversas. Testes: `npm run test:navigation`.
 

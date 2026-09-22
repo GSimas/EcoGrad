@@ -65,11 +65,29 @@ export function lerChaveDossie(chave: string): { tipo: TipoBusca; termo: string 
 
 export type TemaRelatorio = 'claro' | 'escuro';
 
+/**
+ * Em que forma o relatório sai.
+ *
+ * O PDF é o documento para ler e circular; o JSON é o mesmo conteúdo para
+ * reprocessar, e leva junto os registros completos da análise — com resumo e
+ * palavras-chave, como na base de origem. Um gráfico não sobrevive à travessia:
+ * no JSON vão as tabelas que o sustentam, e o nome da figura omitida.
+ */
+export const FORMATOS_RELATORIO = ['pdf', 'json'] as const;
+export type FormatoRelatorio = typeof FORMATOS_RELATORIO[number];
+
 export interface SelecaoRelatorio {
   dashboard: readonly string[];
   /** Chaves de `chaveDossie`. */
   dossies: readonly string[];
   tema: TemaRelatorio;
+  formato: FormatoRelatorio;
+  /**
+   * Resumos e artefatos da ontologia no JSON. Ligado por padrão — é o que
+   * "dados completos" quer dizer —, mas desligável: num acervo grande os
+   * resumos respondem pela maior parte do arquivo.
+   */
+  incluirResumos: boolean;
 }
 
 /** Nada marcado por padrão significaria um PDF vazio; o útil é o oposto. */
@@ -78,6 +96,8 @@ export function selecaoInicial(): SelecaoRelatorio {
     dashboard: SECOES_DASHBOARD.filter((s) => !s.ia).map((s) => s.id),
     dossies: [],
     tema: 'claro',
+    formato: 'pdf',
+    incluirResumos: true,
   };
 }
 
@@ -91,10 +111,20 @@ export function selecaoValida(valor: unknown): SelecaoRelatorio {
     dashboard: Array.isArray(v.dashboard) ? SECOES_DASHBOARD.map((s) => s.id).filter((id) => (v.dashboard as unknown[]).includes(id) && ids.has(id)) : padrao.dashboard,
     dossies: Array.isArray(v.dossies) ? (v.dossies as unknown[]).filter((d): d is string => typeof d === 'string' && lerChaveDossie(d) !== null) : [],
     tema: v.tema === 'escuro' ? 'escuro' : 'claro',
+    formato: v.formato === 'json' ? 'json' : 'pdf',
+    incluirResumos: v.incluirResumos !== false,
   };
 }
 
-export const selecaoVazia = (s: SelecaoRelatorio) => s.dashboard.length === 0 && s.dossies.length === 0;
+/**
+ * Seleção que não produziria nada.
+ *
+ * Vale só para o PDF: sem seção marcada ele sairia com capa e mais nada. O JSON
+ * ainda entrega os registros completos da análise, que não dependem de seção
+ * nenhuma — por isso não fica vazio.
+ */
+export const selecaoVazia = (s: SelecaoRelatorio) =>
+  s.formato === 'pdf' && s.dashboard.length === 0 && s.dossies.length === 0;
 
 export interface ContextoCapa {
   colecoes: readonly string[];
@@ -108,8 +138,8 @@ export interface ContextoCapa {
 export const carimboDeData = (d: Date) =>
   `${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
-export const nomeDoArquivo = (d: Date) =>
-  `ecograd-relatorio-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.pdf`;
+export const nomeDoArquivo = (d: Date, formato: FormatoRelatorio = 'pdf') =>
+  `ecograd-relatorio-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.${formato}`;
 
 /**
  * Ressalvas que acompanham todo relatório.

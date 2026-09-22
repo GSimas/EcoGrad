@@ -2,6 +2,7 @@ import { iaVazia, type EstadoIA } from '../lib/ia-state';
 import { aplicarPorIdentidade } from '../lib/ontologia-importacao';
 import { referenciaDocumento } from '../lib/resultados';
 import { objetivoPorId } from '../lib/objetivos';
+import { CHAVE_ABA_AVANCADA } from '../lib/navigation';
 import { aplicarUnificacao, type MapaGrafias } from '../lib/unificacao';
 import type { SelecaoColecoes } from '../lib/selecao';
 import { resumoRecorte, type ItemRecorte } from '../lib/recorte';
@@ -214,7 +215,11 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
           analysisId: crypto.randomUUID(),
           ia: iaVazia(),
           baseVersion,
-          ui: { ...get().ui, 'selecao.rascunho': undefined, 'dossie.documento': undefined, 'ontologia.processando': false, 'ontologia.status': '', 'ontologia.erros': [], 'ontologia.upload': null },
+          // Objetivos que levam à Análise Avançada dizem também a qual aba: sem
+          // isso, quem escolheu "investigar mudanças nos temas" cairia na aba
+          // temática e teria de procurar o Radar.
+          ui: { ...get().ui, 'selecao.rascunho': undefined, 'dossie.documento': undefined, 'ontologia.processando': false, 'ontologia.status': '', 'ontologia.erros': [], 'ontologia.upload': null,
+            ...(objetivoPorId(objetivo).aba ? { [CHAVE_ABA_AVANCADA]: objetivoPorId(objetivo).aba } : {}) },
           ...(selecao && docs.length ? { programasSelecionados: selecao.programas, cursosTccSelecionados: selecao.cursosTcc } : {}),
           recorte,
           rota: objetivoPorId(objetivo).rota,

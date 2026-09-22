@@ -8,8 +8,7 @@ import { Apresentacao } from '@/components/layout/Apresentacao';
 import { FundoDinamico } from '@/components/layout/FundoDinamico';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { MotorBusca } from '@/components/search-engine/MotorBusca';
-import { RadarForesight } from '@/components/foresight/RadarForesight';
-import { Memetica } from '@/components/memetics/Memetica';
+import { AnaliseAvancada } from '@/components/advanced/AnaliseAvancada';
 import { ConsultorFlutuante } from '@/components/chat/ConsultorIA';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { AtividadesIA } from '@/components/ui/AtividadesIA';
@@ -63,8 +62,7 @@ export default function App() {
           <div key={rota} className="eco-page-enter mx-auto min-h-full w-full min-w-0 max-w-[1400px] px-3 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-8">
             {rota === 'dashboard' && <Dashboard />}
             {rota === 'busca' && <MotorBusca />}
-            {rota === 'foresight' && <RadarForesight />}
-            {rota === 'memetica' && <Memetica />}
+            {rota === 'avancada' && <AnaliseAvancada />}
           </div>
         )}
       </main>

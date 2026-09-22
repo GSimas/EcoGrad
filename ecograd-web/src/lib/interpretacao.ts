@@ -39,7 +39,7 @@ export function coberturaRadar(docs: readonly Documento[], janela: number, tipo:
 
 export function motivoRadarVazio(c: ReturnType<typeof coberturaRadar>) {
   if (c.ultimo === null) return 'A seleção não contém anos válidos. Use Editar seleção para escolher uma coleção com datas.';
-  if (c.comTermosDatados === 0) return 'Não há termos desta dimensão em registros com ano válido. Experimente outra dimensão; para artefatos, prepare ou importe o catálogo em Memética.';
+  if (c.comTermosDatados === 0) return 'Não há termos desta dimensão em registros com ano válido. Experimente outra dimensão; para artefatos, prepare ou importe o catálogo na aba Temas e conceitos.';
   if (!c.passado || !c.recente) return 'A janela não separa registros em dois períodos. Reduza a janela recente; se todos os registros forem do mesmo ano, escolha uma coleção com maior cobertura temporal em Editar seleção.';
   return 'Nenhum termo atende aos cortes de frequência neste recorte. Experimente outra dimensão ou janela, ou amplie as coleções em Editar seleção. Alterar o percentil não inclui termos excluídos por frequência.';
 }

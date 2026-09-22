@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
-import { atividades, calcularSna, calcularBootstrap, calcularMetricasComplexas, executarGridSearch, calcularEcologiaMemes } from '../services/calculos';
+import { atividades, calcularSna, calcularBootstrap, calcularMetricasComplexas, calcularFuros, executarGridSearch, calcularEcologiaMemes, exportarGrafoGlobal } from '../services/calculos';
 
-const acoes = { calcularSna, calcularBootstrap, calcularMetricasComplexas, executarGridSearch, calcularEcologiaMemes };
+const acoes = { calcularSna, calcularBootstrap, calcularMetricasComplexas, calcularFuros, executarGridSearch, calcularEcologiaMemes, exportarGrafoGlobal };
 /** A desmontagem de uma página remove apenas a assinatura, nunca a atividade. */
 export function useSnaWorker() { return acoes; }
 export function useAtividades() {
