@@ -9,9 +9,14 @@ pelo DSpace alcançar o mesmo período (o estado do DSpace só avança quando el
 As bases não são reescritas: cada execução grava um lote em `coletas/` com inclusões e remoções
 por handle, aplicado em ordem por `ecograd-web/scripts/sync-data.mjs`.
 
+Cada registro leva em `arquivos` o PDF que o repositório serve aberto, quando há: nenhum arquivo é
+baixado ou hospedado aqui, só o endereço de onde lê-lo.
+
 Uso:
   python coleta/coletar_ufsc.py [--fonte auto|dspace|oasisbr] [--desde AAAA-MM-DD]
   python coleta/coletar_ufsc.py --reclassificar-tccs   # uma vez: tipo próprio para os TCCs da base
+  python coleta/coletar_ufsc.py --preencher-arquivos             # uma vez: PDF dos registros já coletados
+  python coleta/coletar_ufsc.py --preencher-arquivos --via-rest # o que o índice OAI não expõe
 """
 import argparse
 import datetime as dt
@@ -21,10 +26,14 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import unicodedata
+import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from urllib.parse import quote, unquote
 
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA_COLETAS = RAIZ / 'coletas'
@@ -32,8 +41,11 @@ ARQ_ESTADO = PASTA_COLETAS / 'estado.json'
 ARQ_PPG, ARQ_TCC = RAIZ / 'base_consolidada_ufsc.json.gz', RAIZ / 'base_tcc_ufsc.json.gz'
 ARQ_PROGRAMAS, ARQ_MAPA_TCC = RAIZ / 'programas_ufsc.json', RAIZ / 'mapa_colecoes_tcc.json'
 PADRAO_LOTE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{6}Z\.json\.gz$')
+# Nome fora do padrão de lote de propósito: `lotes_existentes` o ignora.
+CACHE_REST = PASTA_COLETAS / 'arquivos-rest.json.gz'
 
 OAI = 'https://repositorio.ufsc.br/oai/request'
+REST = 'https://repositorio.ufsc.br/rest'
 OASISBR = 'https://oasisbr.ibict.br/vufind/api/v1/search'
 AGENTE = {'User-Agent': 'EcoGrad-coleta/1.0 (+https://github.com/GSimas/Ecology-Graph)'}
 
@@ -161,7 +173,7 @@ def limpar_meta(meta):
     return {k: [v for v in vs if v] for k, vs in (meta or {}).items()}
 
 
-def registro_dspace(meta, colecao, nivel, handle):
+def registro_dspace(meta, colecao, nivel, handle, arquivos=()):
     contrib = [normalizar_nome(c) for c in meta.get('contributor', []) if 'ufsc' not in c.lower() and 'universidade' not in c.lower()]
     descricoes = meta.get('description', [])
     return {
@@ -176,10 +188,12 @@ def registro_dspace(meta, colecao, nivel, handle):
         'programa_origem': colecao,
         'url': next((i for i in meta.get('identifier', []) if str(i).startswith('http')), f'https://repositorio.ufsc.br/handle/{handle}'),
         'fonte': 'dspace',
+        # Ausente quando o item não tem PDF aberto (só imagens, vídeo, ou acesso restrito).
+        **({'arquivos': list(arquivos)} if arquivos else {}),
     }
 
 
-def registros_do_item(meta, specs, nomes_sets, catalogo, handle):
+def registros_do_item(meta, specs, nomes_sets, catalogo, handle, arquivos=()):
     """Um registro por coleção de teses, dissertações ou TCCs em que o item está, como na base atual."""
     tipos, saida = meta.get('type', []), []
     for spec in specs:
@@ -195,8 +209,93 @@ def registros_do_item(meta, specs, nomes_sets, catalogo, handle):
         nivel = classificar_nivel(tipos, colecao_tcc=nome) if tipo == 'tcc' else classificar_nivel(tipos)
         if tipo == 'ppg' and nivel not in (TESE, DISSERTACAO):
             continue
-        saida.append((tipo, registro_dspace(meta, nome, nivel, handle)))
+        saida.append((tipo, registro_dspace(meta, nome, nivel, handle, arquivos)))
     return saida
+
+
+# --- PDFs do item (OAI-PMH, formato ORE)
+# O `oai_dc` da passada principal só traz o handle; o `ore` é o formato do OAI que lista os
+# bitstreams do item, com nome, tipo, tamanho e o bundle a que pertencem. Nada é baixado: o que
+# fica na base é o endereço do PDF no próprio repositório.
+ORE_NS = {'oai': 'http://www.openarchives.org/OAI/2.0/', 'atom': 'http://www.w3.org/2005/Atom',
+          'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'dcterms': 'http://purl.org/dc/terms/'}
+RDF_ABOUT = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}about'
+ORE_AGREGA = 'http://www.openarchives.org/ore/terms/aggregates'
+
+
+def url_arquivo(handle, arquivo):
+    """Endereço do PDF no repositório, na forma que o DSpace serve inline (sem `Content-Disposition`).
+
+    A forma que o ORE devolve (`/bitstream/{handle}/{sequência}/{nome}`) responde 301 para esta; guardar
+    o destino poupa o desvio a cada abertura."""
+    return f"https://repositorio.ufsc.br/bitstream/handle/{handle}/{quote(arquivo['n'])}?sequence={arquivo['s']}"
+
+
+def arquivos_do_entry(entry):
+    """PDFs do bundle ORIGINAL de um `<atom:entry>` do ORE, na ordem do repositório.
+
+    `{'n': nome de arquivo, 's': sequência no item, 'b': bytes}` — o handle já está na `url` do
+    registro, então não se repete aqui. O mime sozinho descarta `license.txt` e as miniaturas; o
+    bundle descarta um PDF derivado que o DSpace tenha gerado fora do ORIGINAL."""
+    bundles = {}
+    for d in entry.findall('.//rdf:Description', ORE_NS):
+        sobre, desc = d.get(RDF_ABOUT), d.findtext('dcterms:description', namespaces=ORE_NS)
+        if sobre and desc:
+            bundles[sobre] = desc.strip()
+    saida = []
+    for link in entry.findall('atom:link', ORE_NS):
+        href = link.get('href') or ''
+        if link.get('rel') != ORE_AGREGA or link.get('type') != 'application/pdf':
+            continue
+        # Sem triples para este href o bundle é desconhecido: o mime já basta, e um PDF a mais é
+        # melhor que nenhum (quem abre vê o arquivo e julga).
+        if bundles.get(href, 'ORIGINAL') != 'ORIGINAL':
+            continue
+        sequencia = re.search(r'/bitstream/\d+/\d+/(\d+)/', href)
+        nome = (link.get('title') or '').strip() or unquote(href.rsplit('/', 1)[-1])
+        if not sequencia or not nome:
+            continue
+        bytes_ = link.get('length') or ''
+        saida.append({'n': nome, 's': int(sequencia.group(1)), **({'b': int(bytes_)} if bytes_.isdigit() else {})})
+    return saida
+
+
+def arquivos_da_pagina(xml):
+    """(handle → PDFs, resumptionToken) de uma resposta `ListRecords` do ORE."""
+    raiz = ET.fromstring(xml)
+    erro = raiz.find('oai:error', ORE_NS)
+    if erro is not None:
+        if erro.get('code') == 'noRecordsMatch':
+            return {}, ''
+        raise RuntimeError(f"OAI-PMH (ore) recusou a consulta: {erro.get('code')} — {(erro.text or '').strip()}")
+    lista = raiz.find('oai:ListRecords', ORE_NS)
+    if lista is None:
+        raise RuntimeError('resposta do OAI-PMH (ore) sem ListRecords')
+    mapa = {}
+    for rec in lista.findall('oai:record', ORE_NS):
+        handle = handle_de(rec.findtext('oai:header/oai:identifier', namespaces=ORE_NS))
+        entry = rec.find('oai:metadata/atom:entry', ORE_NS)
+        if not handle or entry is None:
+            continue
+        pdfs = arquivos_do_entry(entry)
+        if pdfs:
+            mapa[handle] = pdfs
+    return mapa, (lista.findtext('oai:resumptionToken', namespaces=ORE_NS) or '').strip()
+
+
+def coletar_arquivos(desde=None):
+    """handle → PDFs de todos os itens da janela. `desde=None` varre o repositório inteiro."""
+    params = {'verb': 'ListRecords', 'metadataPrefix': 'ore', **({'from': desde} if desde else {})}
+    mapa, pagina = {}, 0
+    while True:
+        parcial, token = arquivos_da_pagina(baixar_texto(OAI, params))
+        mapa.update(parcial)
+        pagina += 1
+        if pagina % 20 == 0:
+            print(f'  ...{pagina} páginas de PDFs lidas ({len(mapa)} itens com PDF)', flush=True)
+        if not token:
+            return mapa
+        params = {'verb': 'ListRecords', 'resumptionToken': token}
 
 
 def coletar_dspace(desde, catalogo):
@@ -205,6 +304,14 @@ def coletar_dspace(desde, catalogo):
     # ponytail: o Sickle não tem prazo total por página; o timeout-minutes do job é o teto.
     oai = Sickle(OAI, max_retries=3, timeout=(15, 60), headers=AGENTE)
     nomes_sets = {s.setSpec: s.setName for s in oai.ListSets()}
+    # Os PDFs são um extra: o produto da coleta é o metadado, e uma falha só nesta passada não pode
+    # custar a semana inteira. Os registros saem sem `arquivos` e a próxima coleta os alcança.
+    try:
+        arquivos = coletar_arquivos(desde)
+        print(f'  ...{len(arquivos)} itens com PDF no período', flush=True)
+    except Exception as e:
+        print(f'  ...passada de PDFs (ore) falhou ({e}); os registros saem sem PDF', flush=True)
+        arquivos = {}
     lote, removidos, vistos, ultimo = {'ppg': [], 'tcc': []}, set(), set(), None
     try:
         for i, item in enumerate(oai.ListRecords(metadataPrefix='oai_dc', **{'from': desde}), 1):
@@ -220,7 +327,7 @@ def coletar_dspace(desde, catalogo):
             meta = limpar_meta(item.metadata)
             if not (meta.get('title') or [''])[0].strip():
                 continue
-            for tipo, registro in registros_do_item(meta, item.header.setSpecs, nomes_sets, catalogo, handle):
+            for tipo, registro in registros_do_item(meta, item.header.setSpecs, nomes_sets, catalogo, handle, arquivos.get(handle, ())):
                 if (handle, registro['programa_origem']) not in vistos:
                     vistos.add((handle, registro['programa_origem']))
                     lote[tipo].append(registro)
@@ -422,14 +529,127 @@ def reclassificar_tccs():
     return 0
 
 
+def fontes_de_registros():
+    """(caminho, conteúdo, registros) de cada arquivo que guarda registros: as duas bases e os
+    lotes de `coletas/`. Um lote substitui o registro da base pelo handle (`aplicar_coletas`),
+    então quem altera a base precisa alterar o lote também."""
+    for arq in (ARQ_PPG, ARQ_TCC):
+        base = ler_gz(arq)
+        yield arq, base, base
+    for caminho in sorted(PASTA_COLETAS.glob('*.json.gz')):
+        if PADRAO_LOTE.match(caminho.name):
+            lote = ler_gz(caminho)
+            yield caminho, lote, (lote.get('ppg') or []) + (lote.get('tcc') or [])
+
+
+def gravar_arquivos(mapa):
+    """Grava `arquivos` nos registros já coletados, por handle. Só reescreve o que mudou."""
+    alterados = Counter()
+    for caminho, conteudo, registros in fontes_de_registros():
+        for r in registros:
+            pdfs = mapa.get(handle_de(r.get('url')))
+            if pdfs and r.get('arquivos') != pdfs:
+                r['arquivos'] = pdfs
+                alterados[caminho.name] += 1
+        if alterados.get(caminho.name):
+            gravar_gz(caminho, conteudo)
+    for nome, n in sorted(alterados.items()):
+        print(f'  {nome}: {n} registros com PDF')
+    if not alterados:
+        print('  nenhum registro alterado.')
+    return alterados
+
+
+def handles_sem_arquivos():
+    return {h for _, _, registros in fontes_de_registros() for r in registros
+            if not r.get('arquivos') and (h := handle_de(r.get('url')))}
+
+
+def preencher_arquivos(desde=None):
+    """Uma vez: grava o PDF dos registros já coletados, com uma passada ORE do índice OAI."""
+    mapa = coletar_arquivos(desde)
+    print(f'{len(mapa)} itens com PDF no índice OAI.')
+    gravar_arquivos(mapa)
+    return 0
+
+
+def arquivos_do_item_rest(item):
+    """PDFs do bundle ORIGINAL na resposta do REST, no mesmo formato de `arquivos_do_entry`.
+
+    O REST já dá a sequência em `sequenceId`; no ORE ela só existe dentro da URL."""
+    saida = []
+    for b in item.get('bitstreams') or []:
+        sequencia, nome = b.get('sequenceId'), (b.get('name') or '').strip()
+        if b.get('bundleName') != 'ORIGINAL' or not str(b.get('mimeType') or '').startswith('application/pdf'):
+            continue
+        if not nome or not isinstance(sequencia, int):
+            continue
+        tamanho = b.get('sizeBytes')
+        saida.append({'n': nome, 's': sequencia, **({'b': tamanho} if isinstance(tamanho, int) else {})})
+    return saida
+
+
+def preencher_arquivos_rest(trabalhadores=6):
+    """Alcança pela API REST os itens que o índice OAI não expõe — hoje a maioria da base.
+
+    Um item por requisição, então dezenas de milhares delas: o progresso fica em `CACHE_REST`
+    e uma nova execução retoma dali. Poucos trabalhadores de propósito: o repositório é de
+    terceiros e a pressa não vale o risco de derrubá-lo."""
+    import requests
+    pendentes = handles_sem_arquivos()
+    cache = ler_gz(CACHE_REST) if CACHE_REST.exists() else {}
+    faltam = sorted(pendentes - set(cache))
+    print(f'{len(pendentes)} handles sem PDF · {len(cache)} já consultados · {len(faltam)} a consultar.')
+    local = threading.local()
+
+    def consultar(handle):
+        if not hasattr(local, 'sessao'):
+            local.sessao = requests.Session()
+        r = local.sessao.get(f'{REST}/handle/{handle}', params={'expand': 'bitstreams'},
+                             headers={**AGENTE, 'Accept': 'application/json'}, timeout=(15, 60))
+        r.raise_for_status()
+        return handle, arquivos_do_item_rest(r.json())
+
+    pool, erros = ThreadPoolExecutor(max_workers=trabalhadores), Counter()
+    futuros = [pool.submit(consultar, h) for h in faltam]
+    try:
+        for i, futuro in enumerate(as_completed(futuros), 1):
+            try:
+                handle, pdfs = futuro.result()
+                cache[handle] = pdfs  # lista vazia também entra: item sem PDF não se reconsulta.
+            except Exception as e:
+                erros[type(e).__name__] += 1
+            if i % 2000 == 0:
+                gravar_gz(CACHE_REST, cache)
+                print(f'  ...{i}/{len(faltam)} consultados ({sum(1 for v in cache.values() if v)} com PDF)', flush=True)
+    except KeyboardInterrupt:
+        print('interrompido; o que já foi consultado fica no checkpoint.', flush=True)
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+        gravar_gz(CACHE_REST, cache)
+    for nome, n in erros.most_common():
+        print(f'  falhas ({nome}): {n} — ficam para a próxima execução')
+    com_pdf = {h: pdfs for h, pdfs in cache.items() if pdfs}
+    print(f'{len(com_pdf)} itens com PDF pelo REST.')
+    gravar_arquivos(com_pdf)
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--fonte', choices=['auto', 'dspace', 'oasisbr'], default='auto')
     parser.add_argument('--desde', type=lambda s: dt.date.fromisoformat(s).isoformat(), help='AAAA-MM-DD; padrão: coletas/estado.json')
     parser.add_argument('--reclassificar-tccs', action='store_true')
+    parser.add_argument('--preencher-arquivos', action='store_true',
+                        help='uma vez: grava o PDF dos registros já coletados (varre o índice OAI inteiro, minutos)')
+    parser.add_argument('--via-rest', action='store_true',
+                        help='com --preencher-arquivos: alcança pela API REST o que o índice OAI não expõe '
+                             '(uma requisição por item, horas; retoma de onde parou)')
     args = parser.parse_args(argv)
     if args.reclassificar_tccs:
         return reclassificar_tccs()
+    if args.preencher_arquivos:
+        return preencher_arquivos_rest() if args.via_rest else preencher_arquivos(args.desde)
 
     agora = dt.datetime.now(dt.timezone.utc)
     estado = ler_json(ARQ_ESTADO, {})

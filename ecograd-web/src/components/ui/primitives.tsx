@@ -55,7 +55,9 @@ export function Kpi({
     <div className={cn('kpi', className)}>
       <span className="kpi-rotulo flex items-start justify-between gap-2">
         <span>{rotulo}</span>
-        {ajuda && <span className="eco-metric-help relative inline-flex shrink-0">
+        {/* Sem `relative`: quem mede o tooltip é o cartão (`.kpi`), para ele não
+            crescer para fora e ser cortado nos cartões da ponta. */}
+        {ajuda && <span className="eco-metric-help inline-flex shrink-0">
           <button type="button" className="eco-metric-help-trigger inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-400" aria-label={`Informações sobre ${rotulo}`} aria-describedby={ajudaId}>
             <Info size={15} aria-hidden="true" />
           </button>

@@ -8,13 +8,30 @@
  * cai para `pako` nos navegadores que não o expõem.
  */
 import { inflate } from 'pako';
-import type { CatalogoProgramas, ColecaoTCC, Documento } from '@/types';
+import type { ArquivoPdf, CatalogoProgramas, ColecaoTCC, Documento } from '@/types';
 import { carregarColecoes, carregarManifestoColecoes, type CollectionManifest, type ProgressoColecoes } from './collection-loader';
 
 export const CAMINHO_BASE_PPG = '/data/base_consolidada_ufsc.json.gz';
 export const CAMINHO_BASE_TCC = '/data/base_tcc_ufsc.json.gz';
 export const CAMINHO_CATALOGO_PPG = '/data/programas_ufsc.json';
 export const CAMINHO_CATALOGO_TCC = '/data/mapa_colecoes_tcc.json';
+
+/**
+ * Os PDFs do registro, descartando entrada malformada.
+ *
+ * `undefined` quando não sobra nenhuma, para o campo continuar ausente em vez de
+ * virar uma lista vazia — quem lê distingue "sem PDF" de "lista a conferir".
+ */
+function arquivosPdf(bruto: unknown): ArquivoPdf[] | undefined {
+  if (!Array.isArray(bruto)) return undefined;
+  const saida = bruto.flatMap((a): ArquivoPdf[] => {
+    if (!a || typeof a !== 'object') return [];
+    const { n, s, b } = a as Record<string, unknown>;
+    if (typeof n !== 'string' || !n.trim() || !Number.isInteger(s)) return [];
+    return [{ n: n.trim(), s: s as number, ...(typeof b === 'number' && b > 0 ? { b } : {}) }];
+  });
+  return saida.length ? saida : undefined;
+}
 
 /**
  * Transcrição de `_normalizar_documentos` (backend.py:50).
@@ -57,6 +74,7 @@ export function normalizarDocumentos(dados: unknown[]): Documento[] {
       ano,
       pureza_nmf: typeof d.pureza_nmf === 'number' ? d.pureza_nmf : undefined,
       ontologia_ia: (d.ontologia_ia as Documento['ontologia_ia']) ?? undefined,
+      arquivos: arquivosPdf(d.arquivos),
     });
   }
 

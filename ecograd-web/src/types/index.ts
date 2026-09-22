@@ -10,6 +10,23 @@ export interface OntologiaIA {
   metodos_e_tecnicas: string[];
 }
 
+/**
+ * PDF que o repositório serve aberto, como a coleta o registrou
+ * (`arquivos_do_entry`, coleta/coletar_ufsc.py). Nomes curtos porque o campo se
+ * repete em dezenas de milhares de registros dentro dos `.json.gz` das coleções.
+ *
+ * O handle não se repete aqui: ele já está na `url` do documento, e é de lá que
+ * `urlDoPdf` monta o endereço. Nenhum arquivo é hospedado pelo EcoGrad.
+ */
+export interface ArquivoPdf {
+  /** Nome do arquivo no repositório, já decodificado. */
+  n: string;
+  /** Sequência do bitstream dentro do item. */
+  s: number;
+  /** Tamanho em bytes, quando o repositório o informou. */
+  b?: number;
+}
+
 export interface Documento {
   titulo: string;
   nivel_academico: string;
@@ -27,6 +44,8 @@ export interface Documento {
   /** Peculiaridade temática pré-computada pelo pipeline (0–100). */
   pureza_nmf?: number;
   ontologia_ia?: OntologiaIA | string;
+  /** Ausente quando o item não tem PDF aberto: só imagens, vídeo, ou acesso restrito. */
+  arquivos?: ArquivoPdf[];
 }
 
 /** Nível acadêmico canônico — `_normalizar_nivel` (backend.py:1743). */

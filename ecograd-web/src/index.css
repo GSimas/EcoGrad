@@ -175,7 +175,9 @@
   }
 
   .kpi {
-    @apply flex flex-col gap-1 rounded-xl border border-eco-border bg-eco-panel p-4;
+    /* `relative` para o tooltip da ajuda se medir pelo cartão, e não pelo ícone:
+       ancorado no ícone ele crescia para fora e era cortado nos cartões da ponta. */
+    @apply relative flex flex-col gap-1 rounded-xl border border-eco-border bg-eco-panel p-4;
   }
 
   .kpi-valor {
@@ -606,8 +608,12 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
 .eco-analise-ativa { transition: border-color var(--motion-base) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-emphasized); }
 .eco-entity-link > svg { transition: color var(--motion-fast) var(--ease-standard), transform var(--motion-base) var(--ease-emphasized); }
 .eco-metric-help-trigger { transition: color var(--motion-fast) var(--ease-standard), background-color var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-emphasized); }
+/* Presa ao cartão, e não ao ícone: dentro de um diálogo rolável o `overflow-y: auto`
+   também corta na horizontal, e um tooltip de largura fixa saindo pela borda ficava
+   ilegível justamente nos cartões da ponta. Com as duas âncoras ele nunca passa do
+   cartão, em qualquer coluna e em qualquer largura de tela. */
 .eco-metric-tooltip {
-  position: absolute; z-index: 40; bottom: calc(100% + .5rem); right: -.25rem; width: min(18rem, calc(100vw - 2rem));
+  position: absolute; z-index: 40; bottom: calc(100% + .35rem); left: 0; right: 0;
   padding: .65rem .75rem; border: 1px solid rgb(var(--control-border)); border-radius: .5rem;
   background: rgb(var(--eco-bg)); color: rgb(var(--slate-200)); box-shadow: 0 10px 30px rgb(0 0 0 / .3);
   font-size: .75rem; font-weight: 400; line-height: 1.45; text-transform: none; letter-spacing: normal;

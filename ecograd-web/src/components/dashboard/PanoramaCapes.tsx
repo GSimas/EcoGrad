@@ -98,7 +98,7 @@ export function PanoramaCapes() {
     );
   }
 
-  const contexto = { fonte: data.fonte, baseVersao: null, colecoes: null, registrosCarregados: null, periodoObservado: null, entidade: null, pagina: 'Panorama CAPES', filtros: { nivel: nivelSel, modalidade: modalidadeSel, nota: notaSel }, limites: 'Programas em funcionamento, contados por código. Não é uma correspondência com coleções locais. A data da consulta não é a data de atualização da CAPES.' };
+  const contexto = { fonte: data.fonte, baseVersao: null, colecoes: null, registrosCarregados: null, periodoObservado: null, entidade: null, pagina: 'Panorama UFSC — CAPES', filtros: { nivel: nivelSel, modalidade: modalidadeSel, nota: notaSel }, limites: 'Programas em funcionamento, contados por código. Não é uma correspondência com coleções locais. A data da consulta não é a data de atualização da CAPES.' };
   const excelencia = filtrados.filter((p) => p.Nota === '6' || p.Nota === '7').length;
   const grandesAreas = new Set(filtrados.map((p) => p['Grande Área'])).size;
 

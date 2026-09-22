@@ -39,6 +39,17 @@ test('preview rejects wrong version, malformed counters and unsupported schemas'
   const bad = structuredClone(raw); bad.colecoes[0].comResumo = -1;
   assert.throws(() => validarCobertura(bad, raw.version));
 });
+test('preview rejects a panorama that contradicts itself', () => {
+  const raw = JSON.parse(readFileSync('public/data/colecoes-cobertura.json', 'utf8'));
+  // Um painel sobre todo o acervo é o tipo de número que ninguém confere de
+  // cabeça: melhor recusar do que exibir um total impossível.
+  const semPanorama = structuredClone(raw); delete semPanorama.panorama;
+  assert.throws(() => validarCobertura(semPanorama, raw.version));
+  const maisQueTudo = structuredClone(raw); maisQueTudo.panorama.comPdf = raw.panorama.registros + 1;
+  assert.throws(() => validarCobertura(maisQueTudo, raw.version));
+  const serieTorta = structuredClone(raw); serieTorta.panorama.porAno = [['dois mil', 1]];
+  assert.throws(() => validarCobertura(serieTorta, raw.version));
+});
 test('preview fetch never downloads a document base and rejects updates during the request', async () => {
   const raw = JSON.parse(readFileSync('public/data/colecoes-cobertura.json', 'utf8'));
   const original = globalThis.fetch; const calls: string[] = [];

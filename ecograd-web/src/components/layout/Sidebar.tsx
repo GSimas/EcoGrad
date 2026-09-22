@@ -2,14 +2,13 @@ import { PAGE_LABELS, rotaVisivel } from '@/lib/navigation';
 import { navigatePage, useNavigation } from '@/services/navigation';
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { BookOpen, Dna, Landmark, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Radar, Search, X } from 'lucide-react';
+import { BookOpen, Dna, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, Radar, Search, X } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { AtalhosEcoGrad } from './AtalhosEcoGrad';
 import { OfertaDeExemplo, useTourGuiado } from './TourGuiado';
 import { ExportarRelatorio } from './ExportarRelatorio';
 import { FundoDinamico } from './FundoDinamico';
-import { Janela } from './Janela';
-import { PanoramaCapes } from '@/components/dashboard/PanoramaCapes';
+import { BotaoPanoramaUfsc } from './BotaoPanoramaUfsc';
 import { cn } from '@/lib/utils';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import { RecorteAtivo } from './RecorteAtivo';
@@ -24,18 +23,11 @@ const TODAS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }
 /** Só o que está visível agora chega ao menu (`ROTAS_VISIVEIS`, em `lib/navigation`). */
 const ITENS = TODAS.filter(({ rota }) => rotaVisivel(rota));
 
-export function BotaoPanoramaCapes({ compacto = false }: { compacto?: boolean }) {
-  return <Janela titulo="Panorama CAPES" descricao="Dados institucionais da UFSC, independentes das coleções da sua análise." larga
-    trigger={<button type="button" className="btn min-h-11" aria-label="Abrir Panorama CAPES" title="Panorama CAPES"><Landmark size={18} />{!compacto && 'Panorama CAPES'}</button>}>
-    <PanoramaCapes />
-  </Janela>;
-}
-
 /** Cabeçalho do celular: ali o tutorial não tem o rodapé da lateral para morar. */
 export function AcessosAjuda({ compacto = false }: { compacto?: boolean }) {
   return <>
     <TutorialModal><button type="button" className="btn min-h-11" aria-label="Ajuda e tutorial" title="Ajuda e tutorial"><BookOpen size={18} />{!compacto && 'Ajuda e tutorial'}</button></TutorialModal>
-    <BotaoPanoramaCapes compacto={compacto} />
+    <BotaoPanoramaUfsc compacto={compacto} />
   </>;
 }
 
@@ -71,7 +63,7 @@ function Navegacao({ compacto, aoNavegar, tour }: { compacto: boolean; aoNavegar
     </>}
     {!state.dadosCarregados && !compacto && <p className="text-sm leading-relaxed text-slate-400">Escolha coleções para explorar trabalhos, pesquisadores e temas. O panorama institucional e a ajuda estão disponíveis a qualquer momento.</p>}
     <div className="flex flex-col gap-2 border-t border-eco-border pt-3">
-      <BotaoPanoramaCapes compacto={compacto} />
+      <BotaoPanoramaUfsc compacto={compacto} />
       <ExportarRelatorio compacto={compacto} />
     </div>
     {/* Chips do rodapé da apresentação, aqui só com o ícone: a lateral é estreita

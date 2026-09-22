@@ -1,7 +1,9 @@
 import { useId, useMemo, type ReactNode } from 'react';
+import { ArrowUpRight } from 'lucide-react';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { baixarArquivo, cn } from '@/lib/utils';
+import { CHIP } from '@/components/layout/atalhos';
 import { FiltroCabecalho } from './FiltroCabecalho';
 import { valorExibido, consultaInicial, consultarLinhas, contextoPublicavel, csvComContexto, filtroAtivo, pacoteExportacao, type ConsultaTabela, type FiltroColuna, type RotulosColuna } from '@/lib/visualizacao';
 
@@ -69,15 +71,23 @@ export function Tabela<T extends Record<string, unknown>>({
               ordem={consulta.coluna === c.chave ? consulta.direcao : null}
               aoOrdenar={(d) => ordenar(c.chave, d)} />
           </div>
-        </th>)}{onAbrir && <th scope="col">Explorar</th>}</tr></thead>
-        <tbody>{filtradas.slice(pagina * 25, (pagina + 1) * 25).map((linha, i) => <tr key={i}>{colunas.map((c) => {
+        </th>)}</tr></thead>
+        <tbody>{filtradas.slice(pagina * 25, (pagina + 1) * 25).map((linha, i) => <tr key={i}>{colunas.map((c, coluna) => {
           const bruto = linha[c.chave];
           // Mesmo texto que o filtro por seleção lista: a opção marcada é o que se lê aqui.
           const numero = valorExibido(bruto);
+          const conteudo = c.render ? c.render(linha) : c.barra ? <div className="flex items-center gap-2"><span aria-hidden="true" className="h-1.5 w-12 shrink-0 overflow-hidden rounded bg-eco-border"><span className="block h-full bg-eco-accent" style={{ width: `${Math.max(0, Math.min(100, c.barra.max > 0 ? Number(bruto) / c.barra.max * 100 : 0))}%` }} /></span><span>{numero}</span></div> : numero;
           return <td key={c.chave} className={cn(c.className, '!whitespace-normal !overflow-visible !text-clip break-words')}>
-            {c.render ? c.render(linha) : c.barra ? <div className="flex items-center gap-2"><span aria-hidden="true" className="h-1.5 w-12 shrink-0 overflow-hidden rounded bg-eco-border"><span className="block h-full bg-eco-accent" style={{ width: `${Math.max(0, Math.min(100, c.barra.max > 0 ? Number(bruto) / c.barra.max * 100 : 0))}%` }} /></span><span>{numero}</span></div> : numero}
+            {/* O caminho para explorar é o próprio nome, na primeira coluna: uma
+                coluna "Explorar" à direita repetia a identidade da linha e
+                separava o rótulo do que ele abre. */}
+            {onAbrir && coluna === 0
+              ? <button type="button" className={cn(CHIP, 'min-h-0 max-w-full px-3 py-1.5 text-left text-xs')} aria-label={`Explorar ${rotuloAbrir ? rotuloAbrir(linha) : String(bruto ?? 'registro')}`} onClick={() => onAbrir(linha)}>
+                <ArrowUpRight size={13} aria-hidden className="shrink-0" /><span className="min-w-0 break-words">{conteudo}</span>
+              </button>
+              : conteudo}
           </td>;
-        })}{onAbrir && <td><button type="button" className="btn" aria-label={`Explorar ${rotuloAbrir ? rotuloAbrir(linha) : String(linha[colunas[0]?.chave] ?? 'registro')}`} onClick={() => onAbrir(linha)}>Explorar</button></td>}</tr>)}</tbody>
+        })}</tr>)}</tbody>
       </table>
       {!filtradas.length && <p className="p-4 text-sm">{linhas.length ? 'Nenhuma linha corresponde à busca e aos filtros de coluna. Restaure a tabela para voltar.' : vazio}</p>}
     </div>

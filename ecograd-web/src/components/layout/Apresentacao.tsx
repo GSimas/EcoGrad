@@ -41,7 +41,7 @@ export function Apresentacao() {
         </div>}
       </header>
 
-      <AtalhosEcoGrad desabilitado={carregando} className="mt-auto pt-16" aoFazerTour={tour.comecar} />
+      <AtalhosEcoGrad comPanorama desabilitado={carregando} className="mt-auto pt-16" aoFazerTour={tour.comecar} />
       <OfertaDeExemplo tour={tour} />
 
       <footer className="mt-8 flex flex-col items-center gap-2 text-xs text-slate-300">

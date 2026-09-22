@@ -90,5 +90,108 @@ class RegrasDeColeta(unittest.TestCase):
         self.assertEqual(saida['tcc'], [{'url': url(4)}])
 
 
+ORE_PAGINA = """<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"
+         xmlns:atom="http://www.w3.org/2005/Atom"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:dcterms="http://purl.org/dc/terms/">
+ <ListRecords>
+  <record>
+   <header><identifier>oai:repositorio.ufsc.br:123456789/272516</identifier></header>
+   <metadata>
+    <atom:entry>
+     <atom:link rel="alternate" href="https://repositorio.ufsc.br/handle/123456789/272516"/>
+     <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
+           href="https://repositorio.ufsc.br/bitstream/123456789/272516/1/TCC%20Lucas%20Sodr%c3%a9.pdf"
+           title="TCC Lucas Sodré.pdf" type="application/pdf" length="1466314"/>
+     <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
+           href="https://repositorio.ufsc.br/bitstream/123456789/272516/2/license.txt"
+           title="license.txt" type="text/plain; charset=utf-8" length="1383"/>
+     <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
+           href="https://repositorio.ufsc.br/bitstream/123456789/272516/3/miniatura.pdf"
+           title="miniatura.pdf" type="application/pdf" length="900"/>
+     <triples xmlns="http://www.openarchives.org/ore/atom/">
+      <rdf:Description rdf:about="https://repositorio.ufsc.br/bitstream/123456789/272516/1/TCC%20Lucas%20Sodr%c3%a9.pdf">
+       <dcterms:description>ORIGINAL</dcterms:description>
+      </rdf:Description>
+      <rdf:Description rdf:about="https://repositorio.ufsc.br/bitstream/123456789/272516/3/miniatura.pdf">
+       <dcterms:description>THUMBNAIL</dcterms:description>
+      </rdf:Description>
+     </triples>
+    </atom:entry>
+   </metadata>
+  </record>
+  <record>
+   <header><identifier>oai:repositorio.ufsc.br:123456789/221154</identifier></header>
+   <metadata>
+    <atom:entry>
+     <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
+           href="https://repositorio.ufsc.br/bitstream/123456789/221154/1/PRANCHA%201.jpg"
+           title="PRANCHA 1.jpg" type="image/jpeg" length="8873336"/>
+    </atom:entry>
+   </metadata>
+  </record>
+  <resumptionToken completeListSize="207" cursor="0">ore/2026-09-10T00:00:00Z///100</resumptionToken>
+ </ListRecords>
+</OAI-PMH>"""
+
+ORE_VAZIO = """<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/">
+ <error code="noRecordsMatch">No matches for the query</error>
+</OAI-PMH>"""
+
+
+class PdfsDoRepositorio(unittest.TestCase):
+    def test_pagina_ore_traz_so_pdf_do_bundle_original(self):
+        mapa, token = c.arquivos_da_pagina(ORE_PAGINA)
+        # license.txt cai pelo mime; a miniatura em PDF cai pelo bundle; o item só de imagem não entra.
+        self.assertEqual(mapa, {'123456789/272516': [{'n': 'TCC Lucas Sodré.pdf', 's': 1, 'b': 1466314}]})
+        self.assertEqual(token, 'ore/2026-09-10T00:00:00Z///100')
+
+    def test_periodo_sem_itens_nao_e_erro(self):
+        self.assertEqual(c.arquivos_da_pagina(ORE_VAZIO), ({}, ''))
+
+    def test_bundle_desconhecido_vale_pelo_mime(self):
+        # Sem o bloco <triples>, o mime é a única evidência — e um PDF a mais é melhor que nenhum.
+        sem_triples = ORE_PAGINA[:ORE_PAGINA.index('<triples')] + '</atom:entry></metadata></record></ListRecords></OAI-PMH>'
+        mapa, _ = c.arquivos_da_pagina(sem_triples)
+        self.assertEqual([a['n'] for a in mapa['123456789/272516']], ['TCC Lucas Sodré.pdf', 'miniatura.pdf'])
+
+    def test_url_do_pdf_e_a_forma_que_o_dspace_serve_inline(self):
+        self.assertEqual(c.url_arquivo('123456789/272516', {'n': 'TCC Lucas Sodré.pdf', 's': 1}),
+                         'https://repositorio.ufsc.br/bitstream/handle/123456789/272516/'
+                         'TCC%20Lucas%20Sodr%C3%A9.pdf?sequence=1')
+
+    def test_rest_traz_so_pdf_do_original_e_ja_da_a_sequencia(self):
+        item = {'bitstreams': [
+            {'name': 'TCC.pdf', 'bundleName': 'ORIGINAL', 'mimeType': 'application/pdf', 'sizeBytes': 1298530, 'sequenceId': 1},
+            {'name': 'license.txt', 'bundleName': 'LICENSE', 'mimeType': 'text/plain; charset=utf-8', 'sizeBytes': 1383, 'sequenceId': 2},
+            {'name': 'mini.pdf', 'bundleName': 'THUMBNAIL', 'mimeType': 'application/pdf', 'sizeBytes': 900, 'sequenceId': 3},
+            {'name': 'sem-sequencia.pdf', 'bundleName': 'ORIGINAL', 'mimeType': 'application/pdf', 'sizeBytes': 10, 'sequenceId': None},
+        ]}
+        self.assertEqual(c.arquivos_do_item_rest(item), [{'n': 'TCC.pdf', 's': 1, 'b': 1298530}])
+        self.assertEqual(c.arquivos_do_item_rest({}), [])
+
+    def test_rest_e_ore_produzem_o_mesmo_formato(self):
+        # As duas fontes alimentam o mesmo campo: divergir no formato quebraria a leitura.
+        ore, _ = c.arquivos_da_pagina(ORE_PAGINA)
+        rest = c.arquivos_do_item_rest({'bitstreams': [
+            {'name': 'TCC Lucas Sodré.pdf', 'bundleName': 'ORIGINAL', 'mimeType': 'application/pdf',
+             'sizeBytes': 1466314, 'sequenceId': 1}]})
+        self.assertEqual(rest, ore['123456789/272516'])
+
+    def test_checkpoint_do_rest_nao_e_confundido_com_lote(self):
+        self.assertIsNone(c.PADRAO_LOTE.match(c.CACHE_REST.name))
+
+    def test_registro_so_ganha_o_campo_quando_ha_pdf(self):
+        catalogo = c.Catalogo({'Programa de Pós-Graduação em Ecologia': 'col_1_10'}, [])
+        meta = {'title': ['Um estudo'], 'type': ['Dissertação (Mestrado)']}
+        pdfs = [{'n': 'tese.pdf', 's': 1, 'b': 10}]
+        com = c.registros_do_item(meta, ['col_1_10'], {}, catalogo, '1/99', pdfs)
+        self.assertEqual(com[0][1]['arquivos'], pdfs)
+        sem = c.registros_do_item(meta, ['col_1_10'], {}, catalogo, '1/99')
+        self.assertNotIn('arquivos', sem[0][1])
+
+
 if __name__ == '__main__':
     unittest.main()

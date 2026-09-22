@@ -21,3 +21,6 @@ temp_gen.html
 
 # Grafo de conhecimento gerado pelo graphify (ver CLAUDE.md)
 graphify-out/
+
+# Checkpoint local do --preencher-arquivos --via-rest (ver coleta/coletar_ufsc.py)
+coletas/arquivos-rest.json.gz
