@@ -63,19 +63,20 @@ const PASSOS: readonly PassoTour[] = [
     id: 'indicadores',
     alvo: '[aria-label="Indicadores do recorte"]',
     titulo: 'Os números contam o recorte, não a universidade',
-    texto: 'Cada cartão descreve o que você carregou. Autores, Orientadores e Palavras-chave contam nomes distintos, não pessoas: homônimos viram um nome só e grafias diferentes contam separado. O ⓘ de cada cartão diz exatamente o que entra na conta.',
+    texto: 'Cada cartão descreve o que você carregou — role com a roda do mouse ou use as setas para ver todos. Autores, Orientadores e Palavras-chave contam nomes distintos, não pessoas: homônimos viram um nome só e grafias diferentes contam separado. O ⓘ de cada cartão diz exatamente o que entra na conta.',
   },
   {
     id: 'cobertura',
     alvo: '[aria-label="Cobertura do recorte"]',
     titulo: 'Leia a cobertura antes dos números',
-    texto: 'Este bloco diz quantos registros vieram, que anos aparecem e quanto deles tem resumo, palavras-chave e orientação. É o que separa uma queda real de uma lacuna de metadado — leia sempre antes de interpretar qualquer frequência.',
+    texto: 'Esta dica ⓘ diz quantos registros vieram, que anos aparecem e quanto deles tem resumo, palavras-chave e orientação. É o que separa uma queda real de uma lacuna de metadado — leia sempre antes de interpretar qualquer frequência.',
   },
   {
     id: 'destaques',
+    // No Dashboard é o botão que abre a janela; dentro dela, a seção de mesmo nome.
     alvo: '[aria-label="Destaques do Ecossistema"]',
     titulo: 'Quatro leituras do mesmo recorte',
-    texto: 'Top 10 ordena por volume. Volumes e Genealogia mostra quem orientou quem. Intermediação e proximidade descreve a posição de cada pessoa na rede — quem liga grupos, não quem é melhor. Diagrama radial desenha as ligações. O que não descreveria nada neste recorte — uma rede sem ligação, uma série de um ano só — não aparece, e uma nota diz o que sumiu e por quê: ocultar é decisão de exibição, nenhum registro saiu dos cálculos.',
+    texto: 'Este botão abre os destaques numa janela. Top 10 ordena por volume. Volumes e Genealogia mostra quem orientou quem. Intermediação e proximidade descreve a posição de cada pessoa na rede — quem liga grupos, não quem é melhor. Diagrama radial desenha as ligações. O que não descreveria nada neste recorte — uma rede sem ligação, uma série de um ano só — não aparece, e uma nota diz o que sumiu e por quê: ocultar é decisão de exibição, nenhum registro saiu dos cálculos.',
   },
   {
     id: 'verGrafico',
@@ -84,16 +85,18 @@ const PASSOS: readonly PassoTour[] = [
     texto: 'Este par de botões troca entre o gráfico e os dados. A tabela mostra nomes completos, exporta e abre uma entidade pelo teclado; o gráfico baixa em JPG ou PNG. As barras são ocorrências no recorte carregado — frequência descreve o que foi coletado, não mede mérito.',
   },
   {
-    id: 'coberturaAno',
-    alvo: '[aria-label="Cobertura de metadados por ano"]',
-    titulo: 'O mapa de lacunas, ano a ano',
-    texto: 'Cada célula é a porcentagem dos registros daquele ano com o campo preenchido, e as barras abaixo dizem quantos registros o ano tem. Um tema que some em 2010 pode ter sumido — ou 2010 pode ser o ano que veio sem palavras-chave. Este mapa distingue os dois casos.',
+    id: 'filtros',
+    // O botão da lista no Dashboard: os filtros moram dentro da janela que ele abre.
+    alvo: '[aria-label="Trabalhos para ler"]',
+    titulo: 'Filtrar a lista não muda a conta',
+    texto: 'Este botão abre a lista de trabalhos. Toda lista de trabalhos filtra por texto, por coleção e por ter resumo, e um aviso diz quantos registros sobraram. Estes filtros recortam o que você lê, e não o que foi calculado: os indicadores e os gráficos continuam descrevendo o recorte inteiro.',
   },
   {
-    id: 'filtros',
-    alvo: '[aria-label="Filtros dos trabalhos"]',
-    titulo: 'Filtrar a lista não muda a conta',
-    texto: 'Toda lista de trabalhos filtra por texto, por coleção e por ter resumo, e o aviso abaixo diz quantos registros sobraram. Estes filtros recortam o que você lê, e não o que foi calculado: os indicadores e os gráficos continuam descrevendo o recorte inteiro.',
+    id: 'coberturaAno',
+    // O botão do bloco, e não o mapa: o mapa só existe com a janela e o collapse abertos.
+    alvo: '[aria-label="Fontes, cobertura e comparação das coleções"]',
+    titulo: 'O contexto da base, num bloco à parte',
+    texto: 'Fontes institucionais, tipos e repetições de fonte, o mapa de cobertura de metadados por ano e a comparação entre coleções abrem por este botão. Consulte antes de interpretar uma queda: um tema que some em 2010 pode ter sumido — ou 2010 pode ser o ano que veio sem palavras-chave. O mapa distingue os dois casos.',
   },
   {
     id: 'tema',
@@ -104,19 +107,19 @@ const PASSOS: readonly PassoTour[] = [
   },
   {
     id: 'dossie',
-    // O título, e não a seção inteira: a lista de trabalhos passa de mil pixels
-    // de altura, e um recorte maior que a tela não destaca coisa alguma.
-    alvo: '[aria-label="Trabalhos associados"] > h2',
+    // O botão que abre a lista numa janela: é ele que fica na página do dossiê.
+    alvo: '[aria-label="Trabalhos associados"]',
     dependeDe: 'abrirTema',
     titulo: 'O dossiê reúne a evidência',
-    texto: 'Cada dossiê mostra os trabalhos associados, as pessoas e os temas ligados a eles, e as análises que fazem sentido para aquele item. Abra a fonte original antes de usar qualquer achado: o EcoGrad reorganiza metadados, não confere o texto dos trabalhos.',
+    texto: 'Este botão abre os trabalhos associados. Cada dossiê reúne esses trabalhos, as pessoas e os temas ligados a eles, e as análises que fazem sentido para aquele item. Abra a fonte original antes de usar qualquer achado: o EcoGrad reorganiza metadados, não confere o texto dos trabalhos.',
   },
   {
     id: 'analises',
-    alvo: '[aria-label="Gráficos do dossiê"]',
+    // O botão "Gráficos"; as abas moram na janela que ele abre.
+    alvo: '[aria-label="Gráficos"]',
     dependeDe: 'abrirTema',
     titulo: 'Cinco perguntas sobre o mesmo item',
-    texto: 'Evolução Histórica mostra o item ao longo dos anos. Lexicometria conta palavras — e deixa escolher a fonte: palavras-chave, títulos, resumos ou tudo. Órbita de Relacionamentos desenha a vizinhança. Frequências e relações (QL) cruza quantidade com qualidade declarada. Itens Semelhantes aproxima por metadado compartilhado.',
+    texto: 'Este botão abre os gráficos do item. Evolução Histórica mostra o item ao longo dos anos. Lexicometria conta palavras — e deixa escolher a fonte: palavras-chave, títulos, resumos ou tudo. Órbita de Relacionamentos desenha a vizinhança. Frequências e relações (QL) cruza quantidade com qualidade declarada. Itens Semelhantes aproxima por metadado compartilhado.',
   },
   {
     id: 'relacionados',
@@ -145,10 +148,12 @@ const PASSOS: readonly PassoTour[] = [
   },
   {
     id: 'relatorio',
-    alvo: '[aria-label="Exportar relatório em PDF"]',
+    // Mesmo rótulo do botão da lateral. Ele deixou de dizer "em PDF" quando o
+    // relatório ganhou o JSON, e o passo ficou sem alvo: o tour parava no 13.
+    alvo: '[aria-label="Exportar relatório"]',
     soDesktop: true,
     titulo: 'Levar o recorte embora',
-    texto: 'O relatório em PDF monta o que você escolher do Dashboard e do Motor de Busca, com os gráficos como imagem e as ressalvas junto. É gerado inteiro no seu navegador — nada do seu recorte sai daqui. Daqui em diante, siga as relações que interessarem e confira sempre nas fontes.',
+    texto: 'O relatório monta o que você escolher do Dashboard e do Motor de Busca — em PDF, com os gráficos como imagem e as ressalvas junto, ou em JSON, com os dados completos. É gerado inteiro no seu navegador — nada do seu recorte sai daqui. Daqui em diante, siga as relações que interessarem e confira sempre nas fontes.',
   },
 ];
 

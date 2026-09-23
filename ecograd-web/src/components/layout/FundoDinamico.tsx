@@ -19,18 +19,18 @@ const lerCor = (nome: string, alternativa: string) => {
 };
 
 /**
- * No escuro a rede brilha com o âmbar da marca sobre azul frio; no claro, tons
- * frios saturados, que o fundo quase branco exigiria para aparecer. `forca`
- * compensa a diferença de percepção entre os dois fundos.
+ * No escuro a rede acende com o limão-sinal da Scientata sobre malha ciano; no
+ * claro, verdes-petróleo claros sobre o papel. `forca` compensa a diferença de
+ * percepção entre os dois fundos — as ondas ficam discretas, como o brilho
+ * difuso do herói da Scientata, e a rede é quem desenha.
  */
 function paleta(claro: boolean): Paleta {
-  const acento = lerCor('--eco-accent', claro ? '137 70 0' : '255 182 72');
-  // No claro o desenho é feito de azuis de ALTA luminância: sobre um fundo quase
-  // branco é o matiz que o torna visível, enquanto tons médios escureceriam a
+  const acento = lerCor('--eco-accent', claro ? '35 110 94' : '184 255 74');
+  // No claro o desenho usa tons de ALTA luminância: tons médios escureceriam a
   // base e derrubariam o contraste do texto auxiliar que passa por cima.
   return claro
-    ? { onda: '150 190 235', malha: '120 165 215', ponto: '95 145 205', pontoAlfa: 0.5, forca: 1 }
-    : { onda: acento, malha: '150 190 255', ponto: acento, pontoAlfa: 0.5, forca: 1 };
+    ? { onda: '150 200 185', malha: '110 170 155', ponto: '80 145 128', pontoAlfa: 0.5, forca: 0.8 }
+    : { onda: acento, malha: '83 215 208', ponto: acento, pontoAlfa: 0.55, forca: 0.35 };
 }
 
 /**
@@ -180,9 +180,14 @@ export function FundoDinamico({ className }: { className?: string }) {
       iniciado = true;
       quadro = requestAnimationFrame(passo);
     };
+    // Mudar `canvas.width` apaga o desenho. Esperar o próximo quadro para
+    // redesenhar deixava a pintura deste quadro com o canvas vazio — e, ao
+    // recolher ou abrir a lateral, a largura muda a cada quadro da transição:
+    // o fundo piscava. Redesenhar aqui, no retorno do observador, acontece
+    // antes da pintura.
     const observador = new ResizeObserver(() => {
       if (!iniciado) iniciar();
-      else if (medir()) estado.current.sujo = true;
+      else if (medir()) desenhar();
     });
     observador.observe(host);
     iniciar();

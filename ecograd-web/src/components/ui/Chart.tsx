@@ -10,7 +10,9 @@ import type { EChartsOption } from 'echarts';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Tabela, type LeituraDados } from './Tabela';
 import { baixarGraficoECharts, ehExportavel, type FormatoImagem } from '@/lib/exportar-imagem';
-import { ImageDown } from 'lucide-react';
+import { BaixarImagem } from './BaixarImagem';
+import { Dica } from './primitives';
+import { useEmJanela } from './contexto-janela';
 import { TEMA_GRAFICO } from '@/lib/tema-grafico';
 
 // Os tokens moram em `lib/tema-grafico`, para que os construtores de opção
@@ -28,6 +30,8 @@ export function Grafico({
   rodape,
   mesclar = false,
   tridimensional = false,
+  descricaoEmDica: descricaoEmDicaPedida,
+  dicaExtra,
 }: {
   option: EChartsOption;
   leitura: LeituraDados;
@@ -52,8 +56,15 @@ export function Grafico({
    * resolução da tela (ver `baixarGraficoECharts`).
    */
   tridimensional?: boolean;
+  /** Mostra a descrição numa dica "i" ao lado do título, em vez do parágrafo. */
+  descricaoEmDica?: boolean;
+  /** Instruções a mais, na mesma dica da descrição (só com `descricaoEmDica`). */
+  dicaExtra?: ReactNode;
 }) {
   const { claro, reduzir } = useAparencia();
+  // Dentro de uma janela de bloco, a descrição vai para a dica mesmo sem pedido.
+  const emJanela = useEmJanela();
+  const descricaoEmDica = descricaoEmDicaPedida ?? emJanela;
   const [vista, setVista] = useSessionField('grafico.' + leitura.titulo, 'grafico');
   // Instância do ECharts, guardada para exportar a imagem. O `onReady` do
   // chamador continua sendo chamado: a exportação não toma o lugar dele.
@@ -69,7 +80,7 @@ export function Grafico({
   const opcaoFinal = useMemo<EChartsOption>(
     () => adaptarGrafico({
       backgroundColor: 'transparent',
-      textStyle: { color: TEMA_GRAFICO.texto, fontFamily: 'Inter, system-ui, sans-serif' },
+      textStyle: { color: TEMA_GRAFICO.texto, fontFamily: '"Manrope Variable", Manrope, system-ui, sans-serif' },
       color: TEMA_GRAFICO.paleta,
       ...option,
       animation: !reduzir,
@@ -77,7 +88,7 @@ export function Grafico({
       legend: { ...(option.legend as object), selectedMode: false },
       tooltip: {
         backgroundColor: TEMA_GRAFICO.fundoTooltip,
-        borderColor: '#26303B',
+        borderColor: '#2C3834',
         textStyle: { color: TEMA_GRAFICO.texto },
         ...(option.tooltip as object),
         renderMode: 'richText',
@@ -89,21 +100,14 @@ export function Grafico({
 
   return (
     <section className="min-w-0 space-y-3" aria-label={leitura.titulo}>
-      <p className="text-sm font-medium">{leitura.titulo}</p>
-      <p className="text-xs leading-relaxed text-slate-300">{leitura.descricao}</p>
+      {descricaoEmDica && leitura.descricao
+        ? <div className="flex items-center gap-2"><p className="text-sm font-medium">{leitura.titulo}</p><Dica rotulo={`Como ler: ${leitura.titulo}`}><p>{leitura.descricao}</p>{dicaExtra}</Dica></div>
+        : <><p className="text-sm font-medium">{leitura.titulo}</p>
+          <p className="text-xs leading-relaxed text-slate-300">{leitura.descricao}</p></>}
       <div className="flex flex-wrap gap-2" role="group" aria-label={`Visualização de ${leitura.titulo}`}>
         <button type="button" className="btn" aria-pressed={vista !== 'tabela'} onClick={() => setVista('grafico')}>Ver gráfico</button>
         <button type="button" className="btn" aria-pressed={vista === 'tabela'} onClick={() => setVista('tabela')}>Ver dados em tabela</button>
-        {vista !== 'tabela' && (
-          <>
-            <button type="button" className="btn" onClick={() => baixar('jpg')} title={`Baixar ${leitura.titulo} em JPG, com o fundo do tema atual`}>
-              <ImageDown size={16} aria-hidden="true" />Baixar JPG (com fundo)
-            </button>
-            <button type="button" className="btn" onClick={() => baixar('png')} title={`Baixar ${leitura.titulo} em PNG, com fundo transparente`}>
-              <ImageDown size={16} aria-hidden="true" />Baixar PNG (sem fundo)
-            </button>
-          </>
-        )}
+        {vista !== 'tabela' && <BaixarImagem titulo={leitura.titulo} onBaixar={baixar} />}
       </div>
       {/* `descricao` fica de fora: o Grafico já a mostra acima, nas duas vistas. */}
       {vista === 'tabela' ? <Tabela {...leitura} descricao={undefined} aninhada /> : <><div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
@@ -221,6 +225,7 @@ export function RankingClicavel({
   titulo,
   cor,
   onSelecionar,
+  descricaoEmDica: descricaoEmDicaPedida,
   altura = 330,
 }: {
   dados: ReadonlyArray<[string, number]>;
@@ -228,9 +233,13 @@ export function RankingClicavel({
   cor?: string;
   onSelecionar: (nome: string) => void;
   altura?: number;
+  /** Descrição e convite ao clique numa dica "i", em vez de letra miúda. */
+  descricaoEmDica?: boolean;
 }) {
   const ordenado = useMemo(() => ordenarRanking(dados), [dados]);
   const aoCriar = useCliqueEmBarra(dados, onSelecionar);
+  const emJanela = useEmJanela();
+  const descricaoEmDica = descricaoEmDicaPedida ?? emJanela;
 
   const option = useMemo<EChartsOption>(() => {
     const base = barrasHorizontais(ordenado, titulo, cor);
@@ -241,5 +250,7 @@ export function RankingClicavel({
     } as EChartsOption;
   }, [ordenado, titulo, cor]);
 
-  return <Grafico leitura={{ titulo, descricao: 'Barras: ocorrências no recorte carregado (n). Frequência não mede mérito. Use a tabela para ler nomes completos, exportar ou abrir uma entidade por teclado.', linhas: [...dados].map(([nome, valor]) => ({ nome, valor })), colunas: [{ chave: 'nome', rotulo: 'Nome completo' }, { chave: 'valor', rotulo: 'Ocorrências (n)' }], onAbrir: (l) => onSelecionar(String(l.nome)) }} option={option} altura={altura} larguraMinima={460} onReady={aoCriar} />;
+  const descricao = 'Barras: ocorrências no recorte carregado (n). Frequência não mede mérito. Use a tabela para ler nomes completos, exportar ou abrir uma entidade por teclado.'
+    + (descricaoEmDica ? ' Clique em qualquer barra para abrir o dossiê da entidade no Motor de Busca.' : '');
+  return <Grafico descricaoEmDica={descricaoEmDica} leitura={{ titulo, descricao, linhas: [...dados].map(([nome, valor]) => ({ nome, valor })), colunas: [{ chave: 'nome', rotulo: 'Nome completo' }, { chave: 'valor', rotulo: 'Ocorrências (n)' }], onAbrir: (l) => onSelecionar(String(l.nome)) }} option={option} altura={altura} larguraMinima={460} onReady={aoCriar} />;
 }

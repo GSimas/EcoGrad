@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
@@ -141,4 +143,18 @@ test('o primeiro passo de cada tela diz qual é, para o tour saber navegar', () 
   // Um passo sem rota herda a tela de quem veio antes; o primeiro de todos não
   // tem de quem herdar.
   assert.notEqual(rotaDoPasso(passos[0]), null);
+});
+
+test('todo alvo do tour existe em algum componente: um rótulo renomeado não pode deixar um passo sem alvo', () => {
+  // O passo do relatório apontava para "Exportar relatório em PDF" depois que o
+  // botão passou a se chamar só "Exportar relatório": o tour parava um passo antes.
+  const fontes = (readdirSync('src/components', { recursive: true }) as string[])
+    .filter((f) => f.endsWith('.tsx'))
+    .map((f) => readFileSync(join('src/components', f), 'utf8'))
+    .join('\n');
+  for (const p of passosDoTour({ temAnalise: false })) {
+    const rotulo = /aria-label\^?="([^"]+)"/.exec(p.alvo)?.[1];
+    if (!rotulo) continue;
+    assert.ok(fontes.includes(rotulo), `${p.id}: nenhum componente tem o rótulo "${rotulo}"`);
+  }
 });

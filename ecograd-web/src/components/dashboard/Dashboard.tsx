@@ -1,4 +1,7 @@
 import { useMemo } from 'react';
+import { BookOpenText, Layers, Trophy } from 'lucide-react';
+import { BlocoEmJanela } from '@/components/ui/BlocoEmJanela';
+import { Carrossel } from '@/components/ui/Carrossel';
 import { AnalisesOcultas, Kpi, Expander } from '@/components/ui/primitives';
 import type { AnaliseOculta } from '@/lib/relevancia';
 import { Destaques } from './Destaques';
@@ -9,11 +12,11 @@ import { Trabalhos } from '@/components/results/Trabalhos';
 import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
 import { CoberturaTemporal } from '@/components/results/CoberturaTemporal';
 import { Relacoes } from '@/components/results/Relacoes';
-import { ComparacaoColecoes } from './ComparacaoColecoes';
+import { ComparacaoColecoes, TiposFontePorColecao } from './ComparacaoColecoes';
 import { resumoRegistros, periodoTexto } from '@/lib/resultados';
 import { RecorteAtivo } from '@/components/layout/RecorteAtivo';
 
-/** Resultados do recorte e trabalhos; cobertura, comparação e fontes fecham a página. */
+/** Indicadores e temas à vista; destaques, trabalhos e fontes abrem em janelas a partir de três botões. */
 export function Dashboard() {
   const { docs, conjuntos, contagens, niveis } = useDadosDerivados();
   const snaGlobal = useEcoGradStore((s) => s.snaGlobal);
@@ -54,7 +57,8 @@ export function Dashboard() {
 
       <RecorteAtivo />
 
-      <div role="group" aria-label="Indicadores do recorte" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Indicadores num carrossel lateral; a cobertura do recorte vira a dica "i" do cabeçalho. */}
+      <Carrossel rotulo="Indicadores do recorte" cabecalho={<CoberturaAnalise docs={docs} emDica />}>
         <Kpi rotulo="Registros carregados" valor={docs.length} detalhe="Não necessariamente trabalhos únicos" />
         <Kpi
           rotulo="Trabalhos únicos"
@@ -96,33 +100,55 @@ export function Dashboard() {
           detalhe="Classes atribuídas pelo pipeline"
           ajuda="Macrotemas são atribuídos por `pipeline_ufsc.py` (NMF + Gemini), não declarados pelos autores."
         />
+      </Carrossel>
+
+      {/* Três blocos longos viram botões: a página mostra o essencial e cada
+          leitura detalhada abre numa janela, sem empurrar o resto para baixo. */}
+      <div role="group" aria-label="Aprofundar a análise" className="grid gap-3 md:grid-cols-3">
+        <BlocoEmJanela titulo="Destaques do Ecossistema" icone={<Trophy size={20} aria-hidden="true" />}
+          descricao="Rankings por volume, genealogia acadêmica, intermediação e diagrama radial.">
+          <Destaques
+            docs={docs}
+            snaGlobal={snaGlobal}
+            contagens={contagens}
+            conjuntos={conjuntos}
+            niveis={niveis}
+            statusSNA={statusSNA}
+            semCabecalho
+          />
+        </BlocoEmJanela>
+        <BlocoEmJanela titulo="Trabalhos para ler" icone={<BookOpenText size={20} aria-hidden="true" />}
+          descricao={`${docs.length.toLocaleString('pt-BR')} registros, dos mais recentes aos mais antigos, com filtros por texto e coleção.`}>
+          <Trabalhos docs={docs} sessionKey="dashboard.trabalhos" mostrarResumo={false} semCabecalho />
+        </BlocoEmJanela>
+        <BlocoEmJanela titulo="Fontes, cobertura e comparação das coleções" icone={<Layers size={20} aria-hidden="true" />}
+          descricao="Contexto institucional, tipos de fonte, cobertura de metadados por ano e comparação entre coleções.">
+          <div className="space-y-6">
+            <section className="space-y-3">
+              <h2 className="text-lg font-semibold">Fontes e contexto institucional</h2>
+              {tcc.length > 0 && <p className="text-sm text-slate-300">O catálogo de TCCs inclui graduação ou especialização; há {tcc.length} {tcc.length === 1 ? 'coleção selecionada' : 'coleções selecionadas'}. Essas coleções não recebem nota de programa CAPES. Tipos inconsistentes ou “Outros” são mantidos como registrados na base.</p>}
+              {ppg.length > 0 ? <Expander titulo="Consultar vínculos CAPES e síntese por IA" lazy><FichaTecnica docs={docsPpg} programas={ppg.filter((n) => !tcc.includes(n))} /></Expander> : <p className="text-sm text-slate-300">Não há coleção de pós-graduação selecionada para a ficha institucional. O Panorama UFSC continua disponível no menu.</p>}
+            </section>
+            <div className="space-y-2">
+              <Expander titulo="Tipos e repetições de fonte por coleção" lazy>
+                <TiposFontePorColecao docs={docs} nomes={nomes} />
+              </Expander>
+              {colunasCobertura > 1 && <Expander titulo="Cobertura de metadados por ano" lazy>
+                <CoberturaTemporal docs={docs} />
+              </Expander>}
+              {nomes.length > 1 && <Expander titulo="Comparar coleções" lazy>
+                <ComparacaoColecoes docs={docs} nomes={nomes} tcc={tcc} ppg={ppg} />
+              </Expander>}
+            </div>
+            <AnalisesOcultas itens={ocultas} />
+          </div>
+        </BlocoEmJanela>
       </div>
-      <CoberturaAnalise docs={docs} />
-      <Destaques
-        docs={docs}
-        snaGlobal={snaGlobal}
-        contagens={contagens}
-        conjuntos={conjuntos}
-        niveis={niveis}
-        statusSNA={statusSNA}
-      />
-      <Trabalhos docs={docs} sessionKey="dashboard.trabalhos" />
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Relacoes docs={docs} tipo="Palavra-chave" titulo="Temas para começar a exploração" />
         <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores presentes no recorte" />
       </div>
-
-      {/* Cobertura, comparação e fontes fecham a página: descrevem a base, não o recorte em exploração. */}
-      {colunasCobertura > 1 && <Expander titulo="Cobertura de metadados por ano" aberto>
-        <CoberturaTemporal docs={docs} />
-      </Expander>}
-      {nomes.length > 1 && <ComparacaoColecoes docs={docs} nomes={nomes} tcc={tcc} ppg={ppg} />}
-      <AnalisesOcultas itens={ocultas} />
-      <section className="space-y-3">
-        <h2 className="text-xl font-semibold">Fontes e contexto institucional</h2>
-        {tcc.length > 0 && <p className="text-sm text-slate-300">O catálogo de TCCs inclui graduação ou especialização; há {tcc.length} {tcc.length === 1 ? 'coleção selecionada' : 'coleções selecionadas'}. Essas coleções não recebem nota de programa CAPES. Tipos inconsistentes ou “Outros” são mantidos como registrados na base.</p>}
-        {ppg.length > 0 ? <Expander titulo="Consultar vínculos CAPES e síntese por IA" lazy><FichaTecnica docs={docsPpg} programas={ppg.filter((n) => !tcc.includes(n))} /></Expander> : <p className="text-sm text-slate-300">Não há coleção de pós-graduação selecionada para a ficha institucional. O Panorama UFSC continua disponível no menu.</p>}
-      </section>
     </div>
   );
 }

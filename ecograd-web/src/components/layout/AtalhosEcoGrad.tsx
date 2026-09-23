@@ -47,13 +47,13 @@ export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabi
       trigger={<button type="button" className={classe} disabled={desabilitado} aria-label="Sobre" title="Sobre"><Info size={14} className="shrink-0" />{!somenteIcone && 'Sobre'}</button>}>
       <div className="space-y-6">
         <section className="space-y-3">
-          <h3 className="text-base font-semibold text-eco-accent">De onde vêm os dados</h3>
+          <h3 className="text-base font-semibold text-slate-100">De onde vêm os dados</h3>
           <p className="text-sm leading-relaxed text-slate-300">
             Tudo o que o EcoGrad mostra vem do <a href="http://repositorio.ufsc.br/" target="_blank" rel="noopener noreferrer" className="text-eco-accent underline">Repositório Institucional da UFSC</a>, o acervo público onde teses, dissertações e TCCs da universidade são depositados. O EcoGrad não produz dado novo: ele reorganiza o que já está lá, e cada trabalho mantém o link para a página original, que é sempre a fonte a conferir.
           </p>
         </section>
         <section className="space-y-3 border-t border-eco-border pt-5">
-          <h3 className="text-base font-semibold text-eco-accent">Como funciona, por baixo</h3>
+          <h3 className="text-base font-semibold text-slate-100">Como funciona, por baixo</h3>
           <p className="text-sm leading-relaxed text-slate-300">
             <strong className="text-slate-200">Coleta.</strong> O repositório roda <strong>DSpace</strong>, que expõe os metadados de cada depósito por uma interface de coleta padronizada. Uma rotina semanal percorre as coleções, traz os registros novos e normaliza o que chega — nomes grafados de formas diferentes, anos, níveis e palavras-chave.
           </p>
@@ -68,16 +68,16 @@ export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabi
           </p>
         </section>
         <section className="space-y-3 border-t border-eco-border pt-5">
-          <h3 className="text-base font-semibold text-eco-accent">Da pergunta à fonte</h3>
+          <h3 className="text-base font-semibold text-slate-100">Da pergunta à fonte</h3>
           <ol className="grid gap-4 md:grid-cols-3">{PASSOS.map(([titulo, texto]) => <li key={titulo} className="card"><h3 className="font-semibold">{titulo}</h3><p className="mt-2 text-sm leading-relaxed text-slate-300">{texto}</p></li>)}</ol>
         </section>
         <section className="space-y-3 border-t border-eco-border pt-5">
-          <h3 className="text-base font-semibold text-eco-accent">O que os dados permitem saber</h3>
+          <h3 className="text-base font-semibold text-slate-100">O que os dados permitem saber</h3>
           <p className="text-sm leading-relaxed text-slate-300">O EcoGrad analisa um recorte local do repositório, com lacunas de metadados e possíveis sobreposições. Ele não representa toda a produção atual da UFSC. O Panorama UFSC traz o acervo inteiro em números e uma consulta institucional independente à CAPES; dados de um programa só são atribuídos a uma coleção quando há vínculo documentado por código.</p>
           <p className="text-sm leading-relaxed text-slate-300">O UFSCão, consultor de IA, responde sobre o acervo inteiro em Conversar, na tela inicial, e sobre as coleções carregadas no botão do canto inferior direito. Nos dois casos usa a chave de API do provedor que você escolher. Ele é uma inteligência artificial generativa: recebe contexto limitado da análise e pode errar, inclusive inventando trabalhos e nomes. Explore as fontes para confirmar suas respostas. Textos e resultados permanecem na sessão; consulte o estado de recuperação no topo da página.</p>
         </section>
         <section className="space-y-2 border-t border-eco-border pt-5">
-          <h3 className="text-base font-semibold text-eco-accent">Créditos</h3>
+          <h3 className="text-base font-semibold text-slate-100">Créditos</h3>
           <p className="text-sm leading-relaxed text-slate-300">
             Desenvolvido por <a href="https://gustavosimas.com" target="_blank" rel="noopener noreferrer" className="text-eco-accent underline">Gustavo Simas</a>.
           </p>

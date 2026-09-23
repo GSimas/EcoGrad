@@ -140,7 +140,7 @@ function Selecao({ rotulo, opcoes, marcados, onChange }: {
             className={cn('flex min-h-9 w-full items-center gap-2 rounded px-2 py-1 text-left text-xs',
               marcado ? 'bg-eco-accent/10 text-eco-accent' : 'text-slate-300 hover:bg-white/5')}>
             <span className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded border',
-              marcado ? 'border-eco-accent bg-eco-action text-black' : 'border-eco-border')}>{marcado && <Check size={11} aria-hidden />}</span>
+              marcado ? 'border-eco-accent bg-eco-action text-eco-on-action' : 'border-eco-border')}>{marcado && <Check size={11} aria-hidden />}</span>
             <span className="min-w-0 flex-1 break-words">{o.valor}</span>
             <span className="shrink-0 text-slate-500">{o.contagem}</span>
           </button>

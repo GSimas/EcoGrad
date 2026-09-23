@@ -39,7 +39,7 @@ function Navegacao({ compacto, aoNavegar, tour }: { compacto: boolean; aoNavegar
   return <>
     {state.dadosCarregados && <>
       {!compacto && <div className="eco-analise-ativa rounded-lg border border-eco-accent/40 bg-eco-accent/10 p-3 text-sm">
-        <p className="text-xs text-slate-300">Análise ativa</p>
+        <p className="font-mono text-[.68rem] uppercase tracking-[.12em] text-slate-300">Análise ativa</p>
         {colecoesAtivas.length === 0
           ? <p className="mt-1 break-words text-eco-accent">{rotuloAnaliseAtiva(state)}</p>
           : <ul className="mt-1 max-h-48 space-y-1 overflow-y-auto overscroll-contain pr-1">
@@ -97,7 +97,7 @@ export function Sidebar() {
       <FundoDinamico className="absolute inset-0" />
       <div className={cn('relative z-10 flex h-full min-h-0 flex-col gap-3 overflow-y-auto', recolhida ? 'p-2' : 'p-4')}>
       <button type="button" onClick={() => navigatePage('inicio')} className={cn('eco-brand-home flex min-h-12 items-center gap-3 rounded-lg text-left', recolhida ? 'w-12 justify-center' : 'w-full px-2')} aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
-        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <strong className="text-eco-accent">EcoGrad · UFSC</strong>}
+        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <span className="flex flex-col leading-tight"><strong className="text-lg font-semibold tracking-tight text-slate-100">EcoGrad</strong><span className="font-mono text-[.68rem] uppercase tracking-[.14em] text-slate-400">UFSC · 001</span></span>}
       </button>
       <button type="button" className="btn min-h-11" onClick={alternar} aria-expanded={!recolhida} aria-label={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'} title={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'}>
         {recolhida ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}
@@ -111,7 +111,7 @@ export function Sidebar() {
         <Dialog.Portal><Dialog.Overlay className="eco-dialog-overlay fixed inset-0 z-40 bg-black/70 lg:hidden" />
           <Dialog.Content className="eco-drawer-content fixed inset-y-0 left-0 z-50 flex w-[min(20rem,90vw)] flex-col gap-3 overflow-y-auto overscroll-contain border-r border-eco-border bg-eco-bg p-4 lg:hidden"
             onCloseAutoFocus={(event) => { if (navegou.current) { event.preventDefault(); navegou.current = false; document.getElementById('conteudo-principal')?.focus(); } }}>
-            <div className="flex items-center justify-between gap-2"><Dialog.Title className="font-semibold text-eco-accent">Menu EcoGrad</Dialog.Title><Dialog.Close className="btn h-11 w-11 px-0" aria-label="Fechar menu de navegação"><X size={20} /></Dialog.Close></div>
+            <div className="flex items-center justify-between gap-2"><Dialog.Title className="font-semibold tracking-tight text-slate-100">Menu EcoGrad</Dialog.Title><Dialog.Close className="btn h-11 w-11 px-0" aria-label="Fechar menu de navegação"><X size={20} /></Dialog.Close></div>
             <Dialog.Description className="sr-only">Navegue pela análise, edite as coleções ou abra a ajuda e os dados CAPES.</Dialog.Description>
             <Navegacao compacto={false} tour={tour} aoNavegar={() => { navegou.current = true; setMenu(false); }} />
           </Dialog.Content>
@@ -120,7 +120,7 @@ export function Sidebar() {
       {/* Mesma marca da lateral do desktop: no celular ela é o único caminho de volta à apresentação. */}
       <button type="button" onClick={() => navigatePage('inicio')} className="eco-brand-home flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left" aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
         <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-8 w-8 shrink-0 object-contain" />
-        <span className="min-w-0 flex-1"><span className="block text-sm font-bold text-eco-accent">EcoGrad</span><span className="block truncate text-xs text-slate-400">{PAGE_LABELS[page]}</span></span>
+        <span className="min-w-0 flex-1"><span className="block text-sm font-semibold tracking-tight text-slate-100">EcoGrad</span><span className="block truncate text-xs text-slate-400">{PAGE_LABELS[page]}</span></span>
       </button>
       <AcessosAjuda compacto />
     </header>

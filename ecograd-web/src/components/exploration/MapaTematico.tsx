@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ChevronDown, Compass, EyeOff } from 'lucide-react';
-import { AnalisesOcultas, Aviso, Card, Expander, Tabela } from '@/components/ui/primitives';
+import { AnalisesOcultas, Aviso, Card, Tabela } from '@/components/ui/primitives';
 import type { AnaliseOculta } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { MenuAncorado } from '@/components/ui/MenuAncorado';
@@ -20,6 +20,7 @@ import {
 } from '@/lib/mapa-tematico';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { EChartsOption } from 'echarts';
+import { CabecalhoBloco } from '@/components/ui/BlocoEmJanela';
 
 const COLUNAS_MACROTEMA = [
   { chave: 'Macrotema', rotulo: 'Macrotema', className: 'max-w-xs' },
@@ -103,7 +104,7 @@ function opcaoMapa(
             silent: true,
             symbol: 'none',
             label: { show: false },
-            lineStyle: { color: '#7F8C8D', type: 'dashed' as const, width: 1 },
+            lineStyle: { color: '#6E7B75', type: 'dashed' as const, width: 1 },
             data: [{ xAxis: xMid }, { yAxis: yMid }],
           }
         : undefined,
@@ -214,23 +215,18 @@ export function MapaTematico() {
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="flex items-center gap-2 text-lg font-semibold"><Compass size={18} aria-hidden /> Análise Temática Estrutural</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Consolida cada macrotema em volumes, anos e posição na rede, e situa macrotemas e palavras-chave nos quadrantes do modelo original.
-        </p>
-      </div>
-
-      {avisoRede}
-
-      <Expander titulo="Como ler os quadrantes temáticos">
-        <div className="space-y-3 text-sm text-slate-300">
+      <CabecalhoBloco titulo="Análise Temática Estrutural" icone={<Compass size={18} aria-hidden />}>
+        <p>Consolida cada macrotema em volumes, anos e posição na rede, e situa macrotemas e palavras-chave nos quadrantes do modelo original.</p>
+        <div className="space-y-2">
           <p>Os eixos são <strong>betweenness</strong> (posição de ponte no grafo global) e <strong>grau absoluto</strong> (conexões diretas do termo). A cruz tracejada é a média de cada eixo entre os pontos exibidos — muda quando o recorte muda, então a posição de um tema é relativa a esta seleção, não absoluta.</p>
           <p>Os nomes “Temas Motores”, “Temas de Nicho”, “Temas Básicos” e “Temas Emergentes / Declínio” vêm do modelo original, inspirado na tradição bibliométrica de Callon. Aqui eles rotulam apenas a combinação alto/baixo dos dois eixos: <strong>não</strong> são centralidade e densidade calculadas dentro de clusters temáticos, e não comprovam maturidade, isolamento ou emergência de um tema.</p>
           <ul className="space-y-1">{QUADRANTES_TEMATICOS.map((q) => <li key={q}><strong>{q}</strong> — {LEITURA_QUADRANTE_TEMATICO[q]}.</li>)}</ul>
           <p>Na tabela geral, o “especialista” é a entidade de maior Quociente Locacional dentro do macrotema: QL = (documentos da entidade no tema ÷ documentos da entidade) ÷ (documentos do tema ÷ documentos da seleção). QL alto significa concentração relativa, não produtividade nem autoridade sobre o assunto. Quem tem pouquíssimos trabalhos alcança QL alto com facilidade — confira a coluna de documentos antes de ler o índice.</p>
         </div>
-      </Expander>
+      </CabecalhoBloco>
+
+      {avisoRede}
+
 
       <Tabs
         chaveSessao="exploracao.mapa-tematico"

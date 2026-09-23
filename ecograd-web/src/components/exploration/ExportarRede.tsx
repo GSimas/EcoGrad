@@ -1,5 +1,5 @@
 import { Download } from 'lucide-react';
-import { Aviso, Card, Expander } from '@/components/ui/primitives';
+import { Aviso, Card } from '@/components/ui/primitives';
 import { Atividade } from '@/components/ui/Atividade';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { emExecucao, useAtividade, useSnaWorker } from '@/hooks/useSnaWorker';
@@ -7,6 +7,7 @@ import { useSessionField } from '@/hooks/useSessionField';
 import { baixarArquivo, formatarNumero } from '@/lib/utils';
 import { EXTENSAO_GRAFO, FORMATOS_GRAFO, MIME_GRAFO, type FormatoGrafo } from '@/lib/exportar-grafo';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
+import { CabecalhoBloco } from '@/components/ui/BlocoEmJanela';
 
 /** Nome de arquivo derivado da análise ativa, sem acentos nem espaços. */
 function nomeArquivo(rotulo: string, formato: FormatoGrafo): string {
@@ -44,12 +45,16 @@ export function ExportarRede() {
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="flex items-center gap-2 text-lg font-semibold"><Download size={18} aria-hidden /> Exportação da rede</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Leva o grafo global da seleção para Gephi, Cytoscape ou qualquer ferramenta que leia GEXF, GraphML ou JSON node-link.
-        </p>
-      </div>
+      <CabecalhoBloco titulo="Exportação da rede" icone={<Download size={18} aria-hidden />}>
+        <p>Leva o grafo global da seleção para Gephi, Cytoscape ou qualquer ferramenta que leia GEXF, GraphML ou JSON node-link.</p>
+        <p>O arquivo é montado em segundo plano e o download começa sozinho ao terminar. Redes grandes levam alguns segundos.</p>
+        <div className="space-y-2">
+          <p>Sai a <strong>rede global completa</strong> da seleção ativa: um nó por documento, autor, orientador, palavra-chave, macrotema e artefato da ontologia, e uma aresta para cada vínculo entre o documento e essas entidades. Não é o recorte visual dos grafos desenhados na tela, que limitam o desenho aos nós de maior grau.</p>
+          <p>Cada nó leva o atributo <code>tipo</code>, que é a categoria usada em todo o EcoGrad. O grafo é não-dirigido e sem pesos: uma aresta existe ou não existe, e repetições do mesmo par não a duplicam. Métricas de centralidade <strong>não</strong> vão no arquivo — recalcule-as na ferramenta de destino, para que sejam as dela.</p>
+          <p>O identificador do nó é o texto da entidade como está nos metadados, com as fusões de pessoa desta sessão já aplicadas. Homônimos continuam colapsados num nó só, e grafias diferentes da mesma pessoa continuam separadas, salvo o que você tenha unificado.</p>
+          <p>GEXF e GraphML são XML e abrem direto no Gephi. JSON node-link segue o formato do <code>networkx.node_link_data</code>, que o Cytoscape e o D3 leem.</p>
+        </div>
+      </CabecalhoBloco>
 
       <Card className="space-y-4">
         <GrupoOpcoes rotulo="Formato do arquivo" opcoes={FORMATOS_GRAFO} valor={formato} onChange={setFormato} />
@@ -58,9 +63,6 @@ export function ExportarRede() {
             <Download size={14} />
             {exportando ? 'Preparando o arquivo…' : `Baixar a rede em ${formato}`}
           </button>
-          <p className="text-xs text-slate-500">
-            O arquivo é montado em segundo plano e o download começa sozinho ao terminar. Redes grandes levam alguns segundos.
-          </p>
         </div>
         <Atividade id="exportar-grafo" />
         {ultima && !exportando && (
@@ -74,14 +76,6 @@ export function ExportarRede() {
         {docs.length === 0 && <Aviso tipo="aviso">Não há documentos na seleção carregada, então não há rede a exportar.</Aviso>}
       </Card>
 
-      <Expander titulo="O que vai no arquivo">
-        <div className="space-y-3 text-sm text-slate-300">
-          <p>Sai a <strong>rede global completa</strong> da seleção ativa: um nó por documento, autor, orientador, palavra-chave, macrotema e artefato da ontologia, e uma aresta para cada vínculo entre o documento e essas entidades. Não é o recorte visual dos grafos desenhados na tela, que limitam o desenho aos nós de maior grau.</p>
-          <p>Cada nó leva o atributo <code>tipo</code>, que é a categoria usada em todo o EcoGrad. O grafo é não-dirigido e sem pesos: uma aresta existe ou não existe, e repetições do mesmo par não a duplicam. Métricas de centralidade <strong>não</strong> vão no arquivo — recalcule-as na ferramenta de destino, para que sejam as dela.</p>
-          <p>O identificador do nó é o texto da entidade como está nos metadados, com as fusões de pessoa desta sessão já aplicadas. Homônimos continuam colapsados num nó só, e grafias diferentes da mesma pessoa continuam separadas, salvo o que você tenha unificado.</p>
-          <p>GEXF e GraphML são XML e abrem direto no Gephi. JSON node-link segue o formato do <code>networkx.node_link_data</code>, que o Cytoscape e o D3 leem.</p>
-        </div>
-      </Expander>
     </section>
   );
 }

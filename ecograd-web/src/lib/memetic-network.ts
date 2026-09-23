@@ -307,7 +307,7 @@ export function gerarEcologiaMemes(
 
   const maxGrauAbs = Math.max(...grauAbs, 1);
   const ehIA = fonte === 'Artefatos Extraídos';
-  const corBase = ehIA ? '#9B59B6' : '#2ECC71';
+  const corBase = ehIA ? '#6A7DFF' : '#8FCF3E';
 
   const nodes: GraphNode[] = visiveis.map((termo) => {
     const i = indicePorRotulo.get(termo)!;

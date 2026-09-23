@@ -9,13 +9,14 @@ import { AnalisesOcultas, Aviso, Card, Expander, Tabela } from '@/components/ui/
 import type { AnaliseOculta } from '@/lib/relevancia';
 import { CORES_QUADRANTE, Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
-import { GridSearch } from './GridSearch';
-import { SankeyTemporal } from './SankeyTemporal';
 import { prepararRadarForesight, segmentarPorKMeans, segmentarPorPercentil } from '@/lib/foresight-math';
 import { Atividade } from '@/components/ui/Atividade';
 import { useSnaWorker, useAtividade, emExecucao } from '@/hooks/useSnaWorker';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { ForesightRow, Quadrante, TipoForesight } from '@/types';
+import { CabecalhoBloco, chaveJanela } from '@/components/ui/BlocoEmJanela';
+import { Carrossel } from '@/components/ui/Carrossel';
+import { Dica } from '@/components/ui/Dica';
 
 const TIPOS: TipoForesight[] = ['Palavra-chave', 'Macrotema', 'Artefatos (Ontologia IA)'];
 const QUADRANTES: Quadrante[] = ['↗ Tendência', '↖ Sinal Fraco', '↘ Mainstream', '↙ Base/Declínio'];
@@ -73,6 +74,8 @@ export function RadarForesight() {
     useEcoGradStore.setState((s) => ({ ui: {
       ...s.ui,
       [CHAVE_ABA_AVANCADA]: 'temas',
+      [chaveJanela('radar')]: false,
+      [chaveJanela('propagacao')]: true,
       'expander.Preparar artefatos e gerenciar catálogo (avançado)': true,
     } }));
   };
@@ -99,19 +102,21 @@ export function RadarForesight() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <h2 className="flex items-center gap-2 text-xl font-bold">
-          <RadarIcon size={20} aria-hidden /> Radar de Prospecção (Foresight Acadêmico)
-        </h2>
-        <p className="text-sm text-slate-400">
-          Cruza <strong>Momentum Temporal</strong> (burst normalizado por taxa relativa) com{' '}
-          <strong>Novidade Estrutural</strong> (Betweenness × IDF).
-        </p>
-      </header>
+      <CabecalhoBloco titulo="Radar de Prospecção (Foresight Acadêmico)" icone={<RadarIcon size={18} aria-hidden />}>
+        <p>Cruza <strong>Momentum Temporal</strong> (burst normalizado por taxa relativa) com{' '}
+          <strong>Novidade Estrutural</strong> (Betweenness × IDF).</p>
+        <p>Compare mudanças no uso dos termos e abra os trabalhos que sustentam cada ponto. Os índices descrevem esta seleção; não comprovam inovação ou crescimento futuro.</p>
+        <div className="space-y-2">
+          <p>Momentum mede variação de taxas de ocorrência entre períodos, com suavização e ponderação pelo volume. Novidade é betweenness × IDF: um índice estrutural, não uma medida de originalidade ou qualidade.</p>
+          <p>Entram termos com pelo menos 3 ocorrências totais, 2 recentes e no máximo {Math.floor(cobertura.limiteOcorrencias)} totais (máximo entre 10 e 10% dos registros datados). Registros sem termos ainda entram nos denominadores das taxas.</p>
+          <ul className="space-y-2">{QUADRANTES.map((q)=><li key={q}><strong>{LEITURA_QUADRANTE[q]}</strong> — categoria original: {q}.</li>)}</ul>
+          <p>No percentil, alto significa estritamente acima do corte; valores iguais ficam em baixo. No K-Means, médias iguais à mediana dos centroides entram em alto. “Sinal Fraco”, “Tendência” e “Base/Declínio” são nomes do modelo; não comprovam emergência, consolidação ou declínio. No K-Means, a categoria é atribuída ao cluster pela média dos índices.</p>
+          <p>Ausência de betweenness no grafo global recebe zero no cálculo pontual; zero não prova ausência de conexões. Cobertura incompleta, termos normalizados e diferenças entre coleções afetam a leitura. Abra os trabalhos e verifique resumos e fontes antes de interpretar.</p>
+        </div>
+      </CabecalhoBloco>
 
       <Card className="space-y-4">
         <h3 className="text-base font-semibold">Escolha o que investigar</h3>
-        <p className="text-sm text-slate-300">Compare mudanças no uso dos termos e abra os trabalhos que sustentam cada ponto. Os índices descrevem esta seleção; não comprovam inovação ou crescimento futuro.</p>
         <div className="grid gap-4 md:grid-cols-2">
           <GrupoOpcoes rotulo="Dimensão de análise" opcoes={TIPOS} valor={tipo} onChange={setTipo} />
           <label className="flex flex-col gap-2 text-sm text-slate-300">
@@ -127,15 +132,6 @@ export function RadarForesight() {
         </div>
       </Card>
 
-      <Expander titulo="Como interpretar períodos, índices e classificações">
-        <div className="space-y-3 text-sm text-slate-300">
-          <p>Momentum mede variação de taxas de ocorrência entre períodos, com suavização e ponderação pelo volume. Novidade é betweenness × IDF: um índice estrutural, não uma medida de originalidade ou qualidade.</p>
-          <p>Entram termos com pelo menos 3 ocorrências totais, 2 recentes e no máximo {Math.floor(cobertura.limiteOcorrencias)} totais (máximo entre 10 e 10% dos registros datados). Registros sem termos ainda entram nos denominadores das taxas.</p>
-          <ul className="space-y-2">{QUADRANTES.map((q)=><li key={q}><strong>{LEITURA_QUADRANTE[q]}</strong> — categoria original: {q}.</li>)}</ul>
-          <p>No percentil, alto significa estritamente acima do corte; valores iguais ficam em baixo. No K-Means, médias iguais à mediana dos centroides entram em alto. “Sinal Fraco”, “Tendência” e “Base/Declínio” são nomes do modelo; não comprovam emergência, consolidação ou declínio. No K-Means, a categoria é atribuída ao cluster pela média dos índices.</p>
-          <p>Ausência de betweenness no grafo global recebe zero no cálculo pontual; zero não prova ausência de conexões. Cobertura incompleta, termos normalizados e diferenças entre coleções afetam a leitura. Abra os trabalhos e verifique resumos e fontes antes de interpretar.</p>
-        </div>
-      </Expander>
 
       <Expander titulo="Configurações avançadas do Radar">
         <div className="space-y-4">
@@ -157,9 +153,9 @@ export function RadarForesight() {
             </span>
           </label>
         ) : (
-          <p className="text-xs text-slate-500">
-            O K-Means agrupa os índices padronizados em 4 clusters. As linhas no gráfico são medianas dos centroides, não limites exatos. Com menos de 4 termos, aplica-se percentil 65.
-          </p>
+          <Dica rotulo="Como ler: K-Means adaptativo">
+            <p>O K-Means agrupa os índices padronizados em 4 clusters. As linhas no gráfico são medianas dos centroides, não limites exatos. Com menos de 4 termos, aplica-se percentil 65.</p>
+          </Dica>
         )}
 
         <div className="flex flex-wrap items-center gap-3 border-t border-eco-border pt-3">
@@ -264,7 +260,7 @@ export function RadarForesight() {
                           silent: true,
                           symbol: 'none',
                           label: {show:false},
-                          lineStyle: { color: '#7F8C8D', type: 'dashed' as const, width: 1 },
+                          lineStyle: { color: '#6E7B75', type: 'dashed' as const, width: 1 },
                           data: [{ xAxis: segmentado.xMid }, { yAxis: segmentado.yMid }],
                         }
                       : undefined,
@@ -273,7 +269,7 @@ export function RadarForesight() {
             />
           </Card>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Carrossel rotulo="Termos por quadrante">
             {QUADRANTES.map((q) => (
               <Card key={q} className="space-y-1">
                 <p className="flex items-start gap-2 text-sm font-semibold text-slate-200">
@@ -291,7 +287,7 @@ export function RadarForesight() {
                 </p>
               </Card>
             ))}
-          </div>
+          </Carrossel>
           </>}
 
           <AnalisesOcultas itens={ocultasRadar} />
@@ -299,10 +295,6 @@ export function RadarForesight() {
 
         </>
       )}
-      <SankeyTemporal />
-      <Expander titulo="Avaliação histórica avançada (Grid Search)">
-        <GridSearch mostrarAtividade={false} />
-      </Expander>
     </div>
   );
 }

@@ -1,17 +1,18 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { classeDoTipo } from '@/lib/tipos-cor';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { BotaoEntidade, Card, Kpi, Tabela, TextoDoAcervo } from '@/components/ui/primitives';
+import { BotaoEntidade, Card, Dica, Kpi, Tabela, TextoDoAcervo } from '@/components/ui/primitives';
 import { Trabalhos, FonteTrabalho } from '@/components/results/Trabalhos';
 import { Relacoes } from '@/components/results/Relacoes';
-import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
 import { carregarIndiceOrientacoes, orientacoesDe, orientacoesLocais, temOrientacoes } from '@/lib/orientacoes';
 import { carregarIndiceBusca, itemDoAcervo } from '@/lib/busca-global';
 import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { ChevronRight, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';
+import { BookOpenText, ChartColumn, ChevronRight, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';
+import { BlocoEmJanela } from '@/components/ui/BlocoEmJanela';
+import { NOTA_EXPORTACAO, NOTA_FILTROS } from '@/components/ui/Tabela';
 import { PAPEIS_PESSOA, type Documento, type PapelPessoa, type TipoBusca } from '@/types';
-const JUSTIFICATIVA: Record<TipoBusca, string> = {
+export const JUSTIFICATIVA: Record<TipoBusca, string> = {
   Documento: 'Metadados do registro selecionado no recorte local.',
   Pessoa: 'Todos os trabalhos em que este nome aparece, em qualquer papel. Nomes iguais podem representar pessoas diferentes; confira as fontes.',
   Autor: 'Trabalhos em que este nome aparece na autoria. Nomes iguais podem representar pessoas diferentes; confira as fontes.',
@@ -20,7 +21,29 @@ const JUSTIFICATIVA: Record<TipoBusca, string> = {
   'Palavra-chave': 'Trabalhos que contêm esta palavra-chave nos metadados. Os pesquisadores abaixo se relacionam ao tema por esses registros.',
   Macrotema: 'Trabalhos que receberam esta classificação temática na base. Ela não é necessariamente uma palavra-chave fornecida pelo autor.',
 };
-export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca; docs: readonly Documento[]; termo: string; analises?: ReactNode }) {
+/**
+ * Gráficos e trabalhos associados abrem em janelas a partir de dois botões; a
+ * página do dossiê fica com a ficha, os indicadores e as relações.
+ */
+function BotoesDossie({ graficos, trabalhos, orientados }: { graficos?: ReactNode; trabalhos?: { docs: readonly Documento[] }; orientados?: string }) {
+  if (!graficos && !trabalhos) return null;
+  return <div role="group" aria-label="Aprofundar o dossiê" className={`grid gap-3 sm:grid-cols-2 ${orientados ? 'lg:grid-cols-3' : ''}`}>
+    {graficos && <BlocoEmJanela titulo="Gráficos" icone={<ChartColumn size={20} aria-hidden="true" />}
+      descricao="Evolução histórica, lexicometria, órbita de relacionamentos, frequências e relações (QL) e itens semelhantes — os que descrevem este item.">
+      {graficos}
+    </BlocoEmJanela>}
+    {trabalhos && <BlocoEmJanela titulo="Trabalhos associados" icone={<BookOpenText size={20} aria-hidden="true" />}
+      descricao={`${trabalhos.docs.length.toLocaleString('pt-BR')} ${trabalhos.docs.length === 1 ? 'registro associado' : 'registros associados'}, com filtros por texto e coleção.`}>
+      <Trabalhos docs={trabalhos.docs} sessionKey="dossie.trabalhos" titulo="Trabalhos associados" mostrarResumo={false} semCabecalho />
+    </BlocoEmJanela>}
+    {orientados && <BlocoEmJanela titulo="Orientados" icone={<UsersRound size={20} aria-hidden="true" />}
+      descricao="Pessoas que este nome orientou ou coorientou, em qualquer coleção do acervo.">
+      <Orientados key={orientados} termo={orientados} />
+    </BlocoEmJanela>}
+  </div>;
+}
+
+export function VisaoEntidade({ tipo, docs, termo, analises, graficos }: { tipo: TipoBusca; docs: readonly Documento[]; termo: string; analises?: ReactNode; graficos?: ReactNode }) {
   const tcc = useEcoGradStore((s) => s.cursosTccSelecionados);
   const navegar = useEcoGradStore((s) => s.navegarPara);
   const base = useEcoGradStore((s) => s.docs);
@@ -59,7 +82,7 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
       <Card className="space-y-5">
         <header className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-eco-accent/15 text-eco-accent"><UsersRound size={20} aria-hidden="true" /></span>
-          <div><h3 className="text-lg font-semibold">Autoria, orientação e temas</h3><p className="mt-1 text-xs text-slate-400">Explore as pessoas e os assuntos vinculados a este registro.</p></div>
+          <div className="flex items-center gap-2"><h3 className="text-lg font-semibold">Autoria, orientação e temas</h3><Dica rotulo="Como ler: autoria, orientação e temas"><p>Explore as pessoas e os assuntos vinculados a este registro.</p></Dica></div>
         </header>
         {pessoas.length ? <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{pessoas.map((p) => {
           const Icone = p.icone;
@@ -80,14 +103,12 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
           </section>}
         </div>
       </Card>
-    </section>{analises}</>;
+    </section><BotoesDossie graficos={graficos} />{analises}</>;
   }
   const ehPapel = (PAPEIS_PESSOA as readonly string[]).includes(tipo);
   return <section className="space-y-5" aria-label={`Trabalhos e relações de ${termo}`}>
-    <p className="text-sm leading-relaxed text-slate-300">{JUSTIFICATIVA[tipo]}</p>
-
     {tipo === 'Pessoa' && papeis.length > 0 && <section className="card space-y-3" aria-label="Papéis no recorte">
-      <div><h3 className="text-base font-semibold">Papéis no recorte</h3><p className="mt-1 text-xs leading-relaxed text-slate-400">Os trabalhos abaixo reúnem todos os papéis. Abra um papel para ver só a parte dele. Um mesmo trabalho pode contar em mais de um papel.</p></div>
+      <div className="flex items-center gap-2"><h3 className="text-base font-semibold">Papéis no recorte</h3><Dica rotulo="Como ler: papéis no recorte"><p>Os trabalhos associados reúnem todos os papéis. Abra um papel para ver só a parte dele. Um mesmo trabalho pode contar em mais de um papel.</p></Dica></div>
       <ul className="flex flex-wrap gap-2">{papeis.map(([papel, n]) => <li key={papel}>
         <button type="button" className="btn-chip min-h-10" onClick={() => navegar(papel, termo)}>{papel} · {n} {n === 1 ? 'registro' : 'registros'}</button>
       </li>)}</ul>
@@ -105,10 +126,8 @@ export function VisaoEntidade({ tipo, docs, termo, analises }: { tipo: TipoBusca
         </li>)}
       </ul>
     </Kpi></div>
-    <CoberturaAnalise docs={docs} />
+    <BotoesDossie graficos={graficos} trabalhos={{ docs }} orientados={ehPapel || tipo === 'Pessoa' ? termo : undefined} />
     {analises}
-    <Trabalhos docs={docs} sessionKey="dossie.trabalhos" titulo="Trabalhos associados" />
-    {(ehPapel || tipo === 'Pessoa') && <Orientandos key={termo} termo={termo} />}
     <div className={`grid gap-4 ${tipo !== 'Orientador' && tipo !== 'Co-orientador' ? 'lg:grid-cols-2' : ''}`}>
       {tipo !== 'Orientador' && tipo !== 'Co-orientador' && <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores dos trabalhos associados" />}
       <Relacoes docs={docs} tipo={tipo === 'Autor' || tipo === 'Pessoa' ? 'Co-orientador' : 'Palavra-chave'} titulo={tipo === 'Autor' || tipo === 'Pessoa' ? 'Coorientadores dos trabalhos associados' : 'Palavras-chave dos trabalhos associados'} />
@@ -133,7 +152,7 @@ const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um :
  * Quem esta pessoa orientou ou coorientou, em todo o acervo. Enquanto o índice do
  * acervo baixa, ou se ele falhar, mostra só as coleções carregadas.
  */
-function Orientandos({ termo }: { termo: string }) {
+function Orientados({ termo }: { termo: string }) {
   const pessoa = termo.trim();
   const navegar = useEcoGradStore((s) => s.navegarPara);
   const base = useEcoGradStore((s) => s.docs);
@@ -187,11 +206,12 @@ function Orientandos({ termo }: { termo: string }) {
       : abrindo && erroCarregamento ? `Não foi possível abrir “${abrindo.nome}”: ${erroCarregamento}`
         : abrindo ? `Localizando “${abrindo.nome}” no acervo…` : '';
 
-  return <section className="card space-y-4" aria-label="Orientandos">
-    <header className="flex items-start gap-3">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-eco-accent/12 text-eco-accent"><UsersRound size={19} aria-hidden="true" /></span>
-      <div><h3 className="text-lg font-semibold">Orientandos <span className="text-eco-accent">({linhas.length})</span></h3><p className="mt-1 text-xs leading-relaxed text-slate-400">Pessoas que este nome orientou ou coorientou em qualquer coleção do acervo, da mais recente à mais antiga. O capelo marca quem também orienta ou coorienta. Um nome de coleção não carregada também abre o dossiê: carregamos só as coleções da pessoa, o que substitui a análise atual. A correspondência é pelo nome exato; nomes iguais podem representar pessoas diferentes.</p></div>
-    </header>
+  // Mora na janela "Orientados": o título dela nomeia o bloco, e as instruções vão para a dica.
+  return <section className="space-y-4" aria-label="Orientados">
+    <div className="flex items-center gap-2">
+      <p className="text-sm font-semibold">{plural(linhas.length, 'pessoa orientada', 'pessoas orientadas')}</p>
+      <Dica rotulo="Como ler: orientados"><p>Pessoas que este nome orientou ou coorientou em qualquer coleção do acervo, da mais recente à mais antiga. O capelo marca quem também orienta ou coorienta. Um nome de coleção não carregada também abre o dossiê: carregamos só as coleções da pessoa, o que substitui a análise atual. A correspondência é pelo nome exato; nomes iguais podem representar pessoas diferentes.</p><p>{NOTA_FILTROS} {NOTA_EXPORTACAO}</p></Dica>
+    </div>
     {!indice && <p role={isError ? 'alert' : 'status'} className={isError ? 'text-sm text-amber-200' : 'text-sm text-slate-400'}>
       {isError ? 'Não foi possível consultar todo o acervo. Mostrando só as coleções carregadas.' : 'Consultando todo o acervo. Por enquanto, só as coleções carregadas.'}
     </p>}
@@ -199,7 +219,7 @@ function Orientandos({ termo }: { termo: string }) {
       {papeis.charAt(0).toUpperCase() + papeis.slice(1)}, em {plural(colecoes.size, 'coleção', 'coleções')}
       {fora > 0 ? `, ${fora === 1 ? '1 delas' : `${fora} delas`} fora da seleção carregada.` : ', todas na seleção carregada.'}
     </p>}
-    <div className="eco-related-table"><Tabela titulo={`Orientandos de ${termo}`} linhas={tabela}
+    <div className="eco-related-table"><Tabela titulo={`Orientados de ${termo}`} linhas={tabela} notasNaDica
       vazio={indice ? 'Nenhuma orientação ou coorientação registrada para este nome em nenhuma coleção do acervo.' : 'Nenhuma orientação ou coorientação nas coleções carregadas.'}
       colunas={[
         { chave: 'nome', rotulo: 'Pessoa', render: (l) => {

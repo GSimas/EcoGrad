@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { ChartColumn, FileText, GraduationCap, Handshake, Radius, School, Sprout, Target, Trophy, User, Waypoints } from 'lucide-react';
-import { AnalisesOcultas, Aviso, Card, Chip, Expander } from '@/components/ui/primitives';
+import { AnalisesOcultas, Aviso, Card, Chip, Dica, Expander } from '@/components/ui/primitives';
 import { temLigacaoRadial } from '@/lib/rede-radial';
 import { calcularGenealogia, calcularTopologia, topologiaSemSinal } from '@/lib/destaques';
 import type { AnaliseOculta } from '@/lib/relevancia';
@@ -32,6 +32,8 @@ interface Props {
    * assim que os documentos chegam, e só ela espera.
    */
   statusSNA: StatusSNA;
+  /** Dentro de uma janela o título dela já nomeia o bloco. */
+  semCabecalho?: boolean;
 }
 
 /**
@@ -39,7 +41,7 @@ interface Props {
  * liderança topológica (Betweenness/Closeness).
  * Transcrição de Principal.py:432-596.
  */
-export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statusSNA }: Props) {
+export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statusSNA, semCabecalho = false }: Props) {
   const navegarPara = useEcoGradStore((s) => s.navegarPara);
 
   const genealogia = useMemo(() => calcularGenealogia(docs, conjuntos), [docs, conjuntos]);
@@ -104,9 +106,6 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
       rotulo: <><ChartColumn size={15} aria-hidden /> Top 10</>,
       conteudo: (
         <div className="space-y-3">
-          <p className="text-xs text-slate-500">
-            Clique em qualquer barra para abrir o dossiê da entidade no Motor de Busca.
-          </p>
           <div className="grid gap-4 lg:grid-cols-2">
             {rankings.map((r) => (
               <Card key={r.chave}>
@@ -114,6 +113,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
                   dados={topN(r.dados, 10)}
                   titulo={r.titulo}
                   cor={r.cor}
+                  descricaoEmDica
                   onSelecionar={(nome) => navegarPara(r.tipo, nome)}
                 />
               </Card>
@@ -156,9 +156,7 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
           <Card className="space-y-3">
             {genealogia.formadores.length > 0 ? (
                 <Expander titulo={`Formadores de Professores (${genealogia.formadores.length})`} icone={<Sprout size={16} aria-hidden />} persistir={false}>
-                  <p className="mb-3 text-xs leading-relaxed text-slate-400">
-                    Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal ou atuação atual.
-                  </p>
+                  <div className="mb-3"><Dica rotulo="Como ler: formadores de professores"><p>Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal ou atuação atual.</p></Dica></div>
                   <div className="flex flex-wrap gap-1.5">
                     {genealogia.formadores.map((f) => (
                       <Chip key={f} tipo="Orientador" onClick={() => navegarPara('Orientador', f)}>
@@ -200,13 +198,15 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
       conteudo: (comSna(
         <div className="space-y-8">
           <section className="space-y-4" aria-label="Intermediação">
-            <h3 className="flex items-center gap-2 text-base font-semibold"><Waypoints size={17} aria-hidden /> Intermediação (Betweenness)</h3>
-            <Aviso>
-              <strong>O que é Betweenness (Intermediação)?</strong> Mede quantas vezes um nó
-              atua como &quot;ponte&quot; no caminho mais curto entre outros nós. Alto
-              Betweenness = elo que conecta bolhas de conhecimento diferentes nos caminhos calculados. Isso não comprova controle real do fluxo
-              de informação ou interdisciplinaridade.
-            </Aviso>
+            <div className="flex items-center gap-2">
+              <h3 className="flex items-center gap-2 text-base font-semibold"><Waypoints size={17} aria-hidden /> Intermediação (Betweenness)</h3>
+              <Dica rotulo="O que é Betweenness (Intermediação)?">
+                <p><strong>O que é Betweenness (Intermediação)?</strong> Mede quantas vezes um nó
+                  atua como &quot;ponte&quot; no caminho mais curto entre outros nós. Alto
+                  Betweenness = elo que conecta bolhas de conhecimento diferentes nos caminhos calculados. Isso não comprova controle real do fluxo
+                  de informação ou interdisciplinaridade.</p>
+              </Dica>
+            </div>
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="space-y-3">
                 {botaoSna('Orientador (Maior Betweenness):', topSna.oriBet, 'Orientador', <School size={14} aria-hidden />)}
@@ -220,12 +220,14 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
           </section>
 
           <section className="space-y-4 border-t border-eco-border pt-6" aria-label="Proximidade">
-            <h3 className="flex items-center gap-2 text-base font-semibold"><Target size={17} aria-hidden /> Proximidade (Closeness)</h3>
-            <Aviso>
-              <strong>O que é Closeness (Proximidade)?</strong> Mede a distância média de um nó
-              para todos os outros. Alto Closeness = estar no &quot;centro nervoso&quot; do
-              ecossistema, acessando ou disseminando conhecimento com menos saltos.
-            </Aviso>
+            <div className="flex items-center gap-2">
+              <h3 className="flex items-center gap-2 text-base font-semibold"><Target size={17} aria-hidden /> Proximidade (Closeness)</h3>
+              <Dica rotulo="O que é Closeness (Proximidade)?">
+                <p><strong>O que é Closeness (Proximidade)?</strong> Mede a distância média de um nó
+                  para todos os outros. Alto Closeness = estar no &quot;centro nervoso&quot; do
+                  ecossistema, acessando ou disseminando conhecimento com menos saltos.</p>
+              </Dica>
+            </div>
             <div className="grid gap-4 lg:grid-cols-2">
               <Card className="space-y-3">
                 {botaoSna('Orientador Mais Central:', topSna.oriClose, 'Orientador', <School size={14} aria-hidden />)}
@@ -257,9 +259,9 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
 
   return (
     <section className="space-y-4" aria-label="Destaques do Ecossistema">
-      <h3 className="flex items-center gap-2 text-lg font-semibold">
+      {!semCabecalho && <h3 className="flex items-center gap-2 text-lg font-semibold">
         <Trophy size={18} /> Destaques do Ecossistema
-      </h3>
+      </h3>}
 
       {abas.length > 0
         ? <Tabs chaveSessao="destaques" abas={abas} />

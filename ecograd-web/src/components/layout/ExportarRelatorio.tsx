@@ -21,7 +21,7 @@ function Item({ marcado, onToggle, titulo, descricao }: { marcado: boolean; onTo
       className={cn('flex w-full items-start gap-2.5 rounded-lg border p-3 text-left transition',
         marcado ? 'border-eco-accent/50 bg-eco-accent/10' : 'border-eco-border hover:bg-white/5')}>
       <span className={cn('mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border',
-        marcado ? 'border-eco-accent bg-eco-action text-black' : 'border-eco-border')}>
+        marcado ? 'border-eco-accent bg-eco-action text-eco-on-action' : 'border-eco-border')}>
         {marcado && <Check size={11} />}
       </span>
       <span className="min-w-0">
@@ -217,7 +217,7 @@ export function ExportarRelatorio({ compacto = false }: { compacto?: boolean }) 
             {(['claro', 'escuro'] as const).map((t) => (
               <button key={t} type="button" aria-pressed={selecao.tema === t} disabled={gerando} onClick={() => definirTema(t)}
                 className={cn('min-h-9 rounded-md px-3 py-1.5 text-sm capitalize transition',
-                  selecao.tema === t ? 'bg-eco-action text-black' : 'text-slate-400 hover:bg-white/5')}>
+                  selecao.tema === t ? 'bg-eco-action text-eco-on-action' : 'text-slate-400 hover:bg-white/5')}>
                 {t}
               </button>
             ))}

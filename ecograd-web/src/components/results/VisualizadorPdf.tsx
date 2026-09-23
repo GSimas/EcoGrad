@@ -46,7 +46,7 @@ export function VerPdf({ doc }: { doc: Documento }) {
               <FileText size={18} aria-hidden />
             </span>
             <div className="min-w-0 flex-1">
-              <Dialog.Title className="line-clamp-2 text-sm font-semibold text-eco-accent">
+              <Dialog.Title className="line-clamp-2 text-sm font-semibold text-slate-100">
                 {doc.titulo || 'Trabalho sem título'}
               </Dialog.Title>
               <Dialog.Description className="text-xs text-slate-400">

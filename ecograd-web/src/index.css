@@ -5,27 +5,35 @@
 @tailwind utilities;
 
 @layer base {
+  /* Identidade Scientata: tinta verde-quase-preta, papel quente e o sinal
+     limão como único acento. Os nomes dos tokens seguem os do EcoGrad, então
+     todo componente herda a paleta sem mudar de classe. */
   :root {
     color-scheme: dark;
-    --eco-bg: 14 17 23;
-    --eco-panel: 22 27 34;
-    --eco-border: 53 65 82;
-    --eco-accent: 255 182 72;
-    --control-border: 108 126 148;
-    --slate-100: 245 247 250;
-    --slate-200: 226 232 240;
-    --slate-300: 203 213 225;
-    --slate-400: 171 184 202;
-    --slate-500: 157 172 192;
-    --slate-600: 67 82 102;
-    --hover: 255 255 255;
-    --info: 166 220 255;
-    --warning: 255 220 150;
-    --error: 255 177 177;
-    --success: 136 232 188;
-    --tipo-documento: 160 131 180;
-    --tipo-pessoa: 112 145 169;
-    --tipo-tema: 92 153 122;
+    --eco-bg: 7 17 15;
+    --eco-panel: 13 28 23;
+    --eco-border: 44 56 52;
+    --eco-accent: 184 255 74;
+    /* Ação principal: bloco limão com tinta por cima, como os botões da Scientata. */
+    --eco-action: 184 255 74;
+    --eco-on-action: 7 17 15;
+    --eco-grade: 236 243 238;
+    --eco-grade-alfa: .045;
+    --control-border: 104 118 112;
+    --slate-100: 240 238 230;
+    --slate-200: 222 226 220;
+    --slate-300: 203 210 206;
+    --slate-400: 185 194 189;
+    --slate-500: 156 167 162;
+    --slate-600: 57 68 63;
+    --hover: 240 238 230;
+    --info: 83 215 208;
+    --warning: 245 189 89;
+    --error: 255 145 118;
+    --success: 143 220 120;
+    --tipo-documento: 150 160 255;
+    --tipo-pessoa: 85 186 220;
+    --tipo-tema: 143 207 62;
     --card-space: 1.25rem;
     --table-y: .75rem;
     --motion-fast: 140ms;
@@ -33,8 +41,12 @@
     --motion-slow: 420ms;
     --ease-standard: cubic-bezier(.2, 0, 0, 1);
     --ease-emphasized: cubic-bezier(.22, 1, .36, 1);
-    --fonte-app: 'Inter Variable', Inter, 'Helvetica Neue', system-ui, sans-serif;
-    --fonte-recursos: 'cv02', 'cv03', 'cv04', 'cv11';
+    --fonte-app: 'Manrope Variable', Manrope, Arial, system-ui, sans-serif;
+    /* Serifa de destaque e mono de rótulo não mudam com a preferência de leitura:
+       são desenho de marca, não texto corrido. */
+    --fonte-destaque: 'Instrument Serif', Georgia, serif;
+    --fonte-mono: 'DM Mono', ui-monospace, 'Cascadia Mono', monospace;
+    --fonte-recursos: normal;
     --letra-espaco: 0;
     --palavra-espaco: normal;
     --linha-altura: 1.6;
@@ -44,25 +56,30 @@
   }
   :root[data-tema="claro"] {
     color-scheme: light;
-    --eco-bg: 245 247 250;
-    --eco-panel: 255 255 255;
-    --eco-border: 202 211 222;
-    --eco-accent: 137 70 0;
-    --control-border: 111 126 145;
-    --slate-100: 17 27 43;
-    --slate-200: 30 41 59;
-    --slate-300: 51 65 85;
-    --slate-400: 71 85 105;
-    --slate-500: 80 94 114;
-    --slate-600: 215 223 233;
-    --hover: 30 41 59;
-    --info: 7 79 119;
-    --warning: 117 65 0;
-    --error: 158 30 37;
-    --success: 6 99 68;
-    --tipo-documento: 125 90 150;
-    --tipo-pessoa: 78 109 131;
-    --tipo-tema: 67 112 89;
+    --eco-bg: 240 238 230;
+    --eco-panel: 248 247 242;
+    --eco-border: 207 207 199;
+    --eco-accent: 35 110 94;
+    /* No papel a ação vira bloco de tinta com texto limão — o inverso do escuro. */
+    --eco-action: 7 17 15;
+    --eco-on-action: 184 255 74;
+    --eco-grade: 7 17 15;
+    --eco-grade-alfa: .05;
+    --control-border: 122 130 124;
+    --slate-100: 7 17 15;
+    --slate-200: 20 32 29;
+    --slate-300: 42 55 50;
+    --slate-400: 60 73 68;
+    --slate-500: 77 89 84;
+    --slate-600: 207 209 201;
+    --hover: 7 17 15;
+    --info: 18 88 110;
+    --warning: 122 68 0;
+    --error: 160 44 24;
+    --success: 32 105 48;
+    --tipo-documento: 88 70 170;
+    --tipo-pessoa: 28 98 128;
+    --tipo-tema: 52 108 36;
   }
   /* Serifa de texto longo, empacotada com o app. */
   :root[data-fonte="serifada"] {
@@ -84,24 +101,27 @@
   /* Alto contraste: paletas completas, para o teste de contraste cobrir as quatro. */
   :root[data-contraste="alto"] {
     --eco-bg: 0 0 0;
-    --eco-panel: 12 12 12;
+    --eco-panel: 10 14 12;
     --eco-border: 255 255 255;
-    --eco-accent: 255 214 102;
+    --eco-accent: 184 255 74;
+    --eco-action: 184 255 74;
+    --eco-on-action: 0 0 0;
+    --eco-grade-alfa: 0;
     --control-border: 255 255 255;
     --slate-100: 255 255 255;
     --slate-200: 255 255 255;
-    --slate-300: 246 248 252;
-    --slate-400: 236 240 246;
-    --slate-500: 228 233 241;
+    --slate-300: 246 246 242;
+    --slate-400: 236 238 232;
+    --slate-500: 226 230 224;
     --slate-600: 128 128 128;
     --hover: 255 255 255;
-    --info: 150 220 255;
+    --info: 150 230 225;
     --warning: 255 224 130;
-    --error: 255 158 158;
-    --success: 130 245 190;
-    --tipo-documento: 198 170 214;
-    --tipo-pessoa: 158 190 212;
-    --tipo-tema: 140 200 170;
+    --error: 255 165 145;
+    --success: 170 245 150;
+    --tipo-documento: 190 198 255;
+    --tipo-pessoa: 150 215 240;
+    --tipo-tema: 184 240 120;
     --vidro-opacidade: 1;
     --vidro-blur: 0px;
   }
@@ -109,22 +129,24 @@
     --eco-bg: 255 255 255;
     --eco-panel: 255 255 255;
     --eco-border: 0 0 0;
-    --eco-accent: 92 45 0;
+    --eco-accent: 15 75 62;
+    --eco-action: 0 0 0;
+    --eco-on-action: 184 255 74;
     --control-border: 0 0 0;
     --slate-100: 0 0 0;
     --slate-200: 0 0 0;
-    --slate-300: 12 12 12;
-    --slate-400: 22 22 22;
-    --slate-500: 32 32 32;
+    --slate-300: 10 14 12;
+    --slate-400: 20 26 24;
+    --slate-500: 30 36 34;
     --slate-600: 196 196 196;
     --hover: 0 0 0;
-    --info: 0 58 106;
+    --info: 0 62 80;
     --warning: 88 48 0;
-    --error: 140 0 0;
-    --success: 0 82 54;
-    --tipo-documento: 92 62 115;
-    --tipo-pessoa: 44 78 100;
-    --tipo-tema: 34 82 60;
+    --error: 130 20 0;
+    --success: 10 80 30;
+    --tipo-documento: 60 40 130;
+    --tipo-pessoa: 10 70 95;
+    --tipo-tema: 30 80 20;
   }
 
   html,
@@ -141,6 +163,13 @@
 
   body {
     @apply bg-eco-bg text-slate-200 antialiased;
+    /* Malha de engenharia da Scientata: linhas finas a cada 64px, fixas atrás
+       do conteúdo. Em alto contraste o alfa vai a zero e a malha some. */
+    background-image:
+      linear-gradient(rgb(var(--eco-grade) / var(--eco-grade-alfa)) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--eco-grade) / var(--eco-grade-alfa)) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-attachment: fixed;
     font-family: var(--fonte-app);
     line-height: var(--linha-altura);
     letter-spacing: var(--letra-espaco);
@@ -148,11 +177,15 @@
     font-feature-settings: var(--fonte-recursos);
   }
 
+  /* Títulos no tom do papel, peso médio e entreletra apertada — o acento fica
+     para a palavra em destaque (`.eco-destaque`), não para o título inteiro. */
   h1,
   h2,
   h3 {
-    @apply text-eco-accent font-semibold tracking-tight;
+    @apply text-slate-100 font-medium;
+    letter-spacing: -0.025em;
   }
+  h1 { letter-spacing: -0.04em; }
 
   ::-webkit-scrollbar {
     width: 10px;
@@ -171,33 +204,63 @@
 
 @layer components {
   .card {
-    @apply rounded-xl border border-eco-border bg-eco-panel p-4;
+    @apply border border-eco-border bg-eco-panel p-4;
   }
 
   .kpi {
     /* `relative` para o tooltip da ajuda se medir pelo cartão, e não pelo ícone:
        ancorado no ícone ele crescia para fora e era cortado nos cartões da ponta. */
-    @apply relative flex flex-col gap-1 rounded-xl border border-eco-border bg-eco-panel p-4;
+    @apply relative flex flex-col gap-1 border border-eco-border bg-eco-panel p-4;
   }
 
   .kpi-valor {
-    @apply text-2xl font-bold text-slate-100 tabular-nums;
+    @apply text-3xl font-medium text-slate-100 tabular-nums;
+    letter-spacing: -0.04em;
   }
 
   .kpi-rotulo {
-    @apply text-sm font-medium text-slate-400;
+    @apply font-mono text-xs uppercase text-slate-400;
+    letter-spacing: .08em;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-eco-border
-      bg-eco-panel px-3 py-2 text-sm font-medium text-slate-200 transition
-      hover:border-eco-accent/60 hover:bg-eco-accent/10 hover:text-eco-accent
+    @apply inline-flex items-center justify-center gap-2 border border-eco-border
+      bg-eco-panel/70 px-3 py-2 text-sm font-medium text-slate-200 transition
+      hover:border-eco-accent/70 hover:bg-eco-accent/[.06] hover:text-eco-accent
       focus-visible:outline focus-visible:outline-2 focus-visible:outline-eco-accent
       disabled:cursor-not-allowed;
   }
 
+  /* Bloco sólido de ação, como "Conhecer aplicações" na Scientata: ganha um
+     halo da própria cor no hover em vez de trocar de tom. */
   .btn-primary {
-    @apply border-eco-action bg-eco-action text-black hover:bg-amber-400 hover:text-black;
+    @apply border-eco-action bg-eco-action font-bold text-eco-on-action
+      hover:border-eco-action hover:bg-eco-action hover:text-eco-on-action;
+  }
+  .btn-primary:not(:disabled):hover { box-shadow: 0 0 28px rgb(var(--eco-action) / .35); }
+
+  /* Palavra em destaque num título: serifa itálica no acento, como "visão" e
+     "inteligência" na Scientata. Só decoração tipográfica — o texto é o mesmo. */
+  .eco-destaque {
+    font-family: var(--fonte-destaque);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: rgb(var(--eco-accent));
+  }
+  .eco-brilho { text-shadow: 0 0 36px rgb(var(--eco-accent) / .35); }
+
+  /* Sobretítulo técnico: mono em caixa alta com um traço à esquerda. */
+  .eco-sobretitulo {
+    @apply inline-flex items-center gap-3 font-mono text-xs uppercase text-slate-400;
+    letter-spacing: .14em;
+  }
+  .eco-sobretitulo::before {
+    content: '';
+    width: 2.25rem;
+    height: 1px;
+    flex-shrink: 0;
+    background: rgb(var(--eco-accent));
   }
 
   /* Superfície de vidro: deixa o fundo transparecer sem comprometer a leitura.
@@ -209,13 +272,13 @@
   }
 
   .btn-chip {
-    @apply inline-flex max-w-full items-center gap-1.5 whitespace-normal rounded-full border border-eco-border
+    @apply inline-flex max-w-full items-center gap-1.5 whitespace-normal border border-eco-border
       bg-eco-panel px-3 py-1 text-left text-xs text-slate-300 transition
       hover:border-eco-accent/60 hover:text-eco-accent;
   }
 
   .input {
-    @apply w-full rounded-lg border border-eco-border bg-eco-bg px-3 py-2 text-sm text-slate-200
+    @apply w-full border border-eco-border bg-eco-bg px-3 py-2 text-sm text-slate-200
       placeholder:text-slate-500 focus:border-eco-accent focus:outline-none;
   }
 
@@ -224,7 +287,8 @@
   }
   .tabela th {
     @apply sticky top-0 z-10 whitespace-nowrap border-b border-eco-border bg-eco-panel
-      px-3 py-2 text-sm font-semibold text-slate-300;
+      px-3 py-2 font-mono text-xs font-medium uppercase text-slate-300;
+    letter-spacing: .06em;
   }
   .tabela td {
     @apply border-b border-eco-border/50 px-3 py-2 align-top text-slate-300;
@@ -234,21 +298,19 @@
   }
 
   .secao {
-    @apply mb-3 flex items-center gap-2 text-lg font-semibold text-eco-accent;
+    @apply mb-3 flex items-center gap-2 text-lg font-medium text-slate-100;
+    letter-spacing: -0.02em;
   }
+  .secao > svg { color: rgb(var(--eco-accent)); }
 
-  .aviso {
-    @apply rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200;
+  /* Avisos: filete à esquerda na cor do estado, sobre um véu da mesma cor. */
+  .aviso, .info, .erro, .sucesso {
+    @apply border border-l-2 px-4 py-3 text-sm;
   }
-  .info {
-    @apply rounded-lg border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-200;
-  }
-  .erro {
-    @apply rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200;
-  }
-  .sucesso {
-    @apply rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200;
-  }
+  .aviso { border-color: rgb(var(--warning) / .3); border-left-color: rgb(var(--warning)); background: rgb(var(--warning) / .07); }
+  .info { border-color: rgb(var(--info) / .3); border-left-color: rgb(var(--info)); background: rgb(var(--info) / .07); }
+  .erro { border-color: rgb(var(--error) / .3); border-left-color: rgb(var(--error)); background: rgb(var(--error) / .07); }
+  .sucesso { border-color: rgb(var(--success) / .3); border-left-color: rgb(var(--success)); background: rgb(var(--success) / .07); }
 }
 
 /* Interações da apresentação, sem alterar os cards dos painéis de análise. */
@@ -272,7 +334,7 @@
 
 .apresentacao .intro-block:focus-within {
   border-color: rgb(var(--eco-accent) / .65);
-  box-shadow: 0 12px 30px rgb(0 0 0 / 25%), 0 0 24px rgb(243 156 18 / 8%);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 25%), 0 0 24px rgb(var(--eco-accent) / 8%);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -280,7 +342,7 @@
     transform: translateY(-3px);
     border-color: rgb(var(--eco-accent) / .65);
     background-color: rgb(var(--eco-panel));
-    box-shadow: 0 12px 30px rgb(0 0 0 / 25%), 0 0 24px rgb(243 156 18 / 8%);
+    box-shadow: 0 12px 30px rgb(0 0 0 / 25%), 0 0 24px rgb(var(--eco-accent) / 8%);
   }
 
   .apresentacao .intro-block:hover .intro-mark {
@@ -290,12 +352,12 @@
 
   .apresentacao .intro-logo:hover {
     transform: translateY(-4px) rotate(-3deg) scale(1.04);
-    box-shadow: 0 12px 30px rgb(243 156 18 / 12%);
+    box-shadow: 0 12px 30px rgb(var(--eco-accent) / 14%);
   }
 
   .apresentacao .btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgb(243 156 18 / 15%);
+    box-shadow: 0 6px 18px rgb(var(--eco-accent) / 18%);
   }
 
   .apresentacao .btn:hover svg {
@@ -320,11 +382,11 @@
 }
 
 /* Markdown renderizado pelo chat */
-.markdown .eco-citacao { display: inline; min-height: 0; padding: 0 .1rem; border-radius: .25rem; color: rgb(var(--eco-accent)); font-size: .85em; font-weight: 600; cursor: pointer; }
+.markdown .eco-citacao { display: inline; min-height: 0; padding: 0 .1rem; border-radius: 0; color: rgb(var(--eco-accent)); font-size: .85em; font-weight: 600; cursor: pointer; }
 .markdown .eco-citacao:hover, .markdown .eco-citacao:focus-visible { text-decoration: underline; }
 /* Menção a um item do acervo no meio da prosa: pílula clicável que acompanha a
    linha do texto — por isso `display: inline` e a fonte herdada. */
-.markdown .eco-mencao { display: inline; min-height: 0; padding: .05rem .4rem; border: 1px solid rgb(var(--eco-border)); border-radius: 999px; background: rgb(var(--eco-accent) / .08); color: rgb(var(--slate-100)); font: inherit; cursor: pointer; }
+.markdown .eco-mencao { display: inline; min-height: 0; padding: .05rem .4rem; border: 1px solid rgb(var(--eco-border)); border-radius: 0; background: rgb(var(--eco-accent) / .08); color: rgb(var(--slate-100)); font: inherit; cursor: pointer; }
 .markdown .eco-mencao:hover, .markdown .eco-mencao:focus-visible { border-color: rgb(var(--eco-accent) / .6); background: rgb(var(--eco-accent) / .18); color: rgb(var(--eco-accent)); }
 /* Um item do acervo tem sempre a mesma cor, em qualquer tela: trabalho, pessoa
    ou tema. `--tipo` é o único lugar que decide o tom; as regras abaixo só o
@@ -367,18 +429,18 @@
 .eco-farejando .ponto:nth-child(3) { animation-delay: .32s; }
 /* Citação [n] do UFSCão do acervo: abre a obra no Motor de Busca. Pequena, para
    não quebrar a leitura, mas com área de toque e foco visíveis. */
-.markdown .eco-citacao { display: inline; min-height: 0; padding: 0 .15rem; border: 0; border-radius: .25rem; background: rgb(var(--tipo-documento) / .14); color: rgb(var(--tipo-documento)); font: inherit; font-size: .85em; font-weight: 600; cursor: pointer; vertical-align: baseline; }
+.markdown .eco-citacao { display: inline; min-height: 0; padding: 0 .15rem; border: 0; border-radius: 0; background: rgb(var(--tipo-documento) / .14); color: rgb(var(--tipo-documento)); font: inherit; font-size: .85em; font-weight: 600; cursor: pointer; vertical-align: baseline; }
 .markdown .eco-citacao:hover, .markdown .eco-citacao:focus-visible { background: rgb(var(--tipo-documento) / .28); }
 /* Link para a fonte original ao lado do botão do trabalho, dentro da resposta. */
 .markdown .eco-fonte-externa { margin-left: .15rem; text-decoration: none; }
 /* Tabela do Markdown: rolagem própria, para não empurrar o balão da conversa. */
-.eco-tabela-markdown { margin-bottom: .75rem; overflow-x: auto; border: 1px solid rgb(var(--eco-border)); border-radius: .5rem; }
+.eco-tabela-markdown { margin-bottom: .75rem; overflow-x: auto; border: 1px solid rgb(var(--eco-border)); }
 .markdown table { width: 100%; border-collapse: collapse; font-size: .95em; }
 .markdown th, .markdown td { padding: .4rem .6rem; border-bottom: 1px solid rgb(var(--eco-border)); text-align: left; vertical-align: top; }
 .markdown th { background: rgb(var(--eco-panel)); color: rgb(var(--slate-200)); font-weight: 600; }
 .markdown tbody tr:last-child td { border-bottom: 0; }
 .markdown a {
-  @apply text-eco-accent underline underline-offset-2 hover:text-amber-300;
+  @apply text-eco-accent underline underline-offset-2;
 }
 .markdown p {
   @apply mb-3 leading-relaxed;
@@ -418,7 +480,8 @@
 
 /* Presentation tokens only: data, analysis state and numeric formatting are unchanged. */
 .card, .kpi { padding: var(--card-space); }
-.card { box-shadow: 0 2px 8px rgb(0 0 0 / .07); }
+/* Sem sombra projetada: a Scientata separa superfícies por filete, não por elevação. */
+.card { box-shadow: none; }
 .btn, .btn-chip, .input { min-height: 2.75rem; border-color: rgb(var(--control-border)); }
 .btn, .btn-chip { transition: color var(--motion-fast) var(--ease-standard), background-color var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard); }
 .btn { white-space: normal; text-align: center; }
@@ -437,14 +500,14 @@ summary { min-height: 2.75rem; align-content: center; line-height: 1.5; }
 }
 .btn:not(:disabled):active, .btn-chip:not(:disabled):active { background-color: rgb(var(--eco-accent) / .2); }
 .btn:not(:disabled):active, .btn-chip:not(:disabled):active { transform: translateY(1px) scale(.985); }
-.btn-primary:not(:disabled):active { background-color: #ef9f23; }
+.btn-primary:not(:disabled):active { background-color: rgb(var(--eco-action) / .85); }
 button:disabled, input:disabled, select:disabled, textarea:disabled {
   opacity: 1; cursor: not-allowed; color: rgb(var(--slate-500));
 }
 .btn:disabled { background: rgb(var(--eco-bg)); border-color: rgb(var(--eco-border)); box-shadow: none; transform: none; }
 /* O primário desabilitado some no tema escuro com o fundo de `.btn:disabled`: fica
-   quase preto e parece outro componente. Mantém o âmbar, apagado, e o texto legível. */
-.btn-primary:disabled { background: rgb(var(--eco-accent) / .28); border-color: rgb(var(--eco-accent) / .38); color: rgb(var(--slate-200)); }
+   quase preto e parece outro componente. Mantém a cor de ação, apagada, e o texto legível. */
+.btn-primary:disabled { background: rgb(var(--eco-action) / .22); border-color: rgb(var(--eco-action) / .38); color: rgb(var(--slate-200)); }
 .info { color: rgb(var(--info)); }
 .aviso, .text-amber-200 { color: rgb(var(--warning)); }
 .erro, .text-red-400 { color: rgb(var(--error)); }
@@ -556,7 +619,7 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
 @media (hover: hover) and (pointer: fine) {
   .btn:not(:disabled):hover, .btn-chip:not(:disabled):hover { transform: translateY(-1px); }
   .btn:not(:disabled):hover > svg, .btn-chip:not(:disabled):hover > svg { transform: scale(1.08); }
-  .card:hover, .kpi:hover { border-color: rgb(var(--eco-accent) / .42); box-shadow: 0 8px 24px rgb(0 0 0 / .12); transform: translateY(-1px); }
+  .card:hover, .kpi:hover { border-color: rgb(var(--eco-accent) / .42); box-shadow: inset 0 0 60px rgb(var(--eco-accent) / .04); }
 }
 
 .select-chevron { transition: transform var(--motion-base) var(--ease-emphasized), color var(--motion-fast) var(--ease-standard); }
@@ -614,7 +677,7 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
    cartão, em qualquer coluna e em qualquer largura de tela. */
 .eco-metric-tooltip {
   position: absolute; z-index: 40; bottom: calc(100% + .35rem); left: 0; right: 0;
-  padding: .65rem .75rem; border: 1px solid rgb(var(--control-border)); border-radius: .5rem;
+  padding: .65rem .75rem; border: 1px solid rgb(var(--control-border)); border-radius: 0;
   background: rgb(var(--eco-bg)); color: rgb(var(--slate-200)); box-shadow: 0 10px 30px rgb(0 0 0 / .3);
   font-size: .75rem; font-weight: 400; line-height: 1.45; text-transform: none; letter-spacing: normal;
   opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(4px) scale(.98);
@@ -755,7 +818,7 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
    escuro ele mal aparece. O anel na cor de destaque é o que de fato mostra
    onde olhar — e o brilho separa o bloco em foco do resto da página. */
 .driver-active-element {
-  border-radius: .75rem;
+  border-radius: 0;
   outline: 2px solid rgb(var(--eco-accent));
   outline-offset: 4px;
   box-shadow: 0 0 0 4px rgb(var(--eco-accent) / .22), 0 0 32px rgb(var(--eco-accent) / .35);
@@ -772,26 +835,65 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
 .driver-popover.eco-tour {
   max-width: 22rem;
   border: 1px solid rgb(var(--eco-border));
-  border-radius: .75rem;
+  border-radius: 0;
   background: rgb(var(--eco-panel));
   color: rgb(var(--slate-200));
   box-shadow: 0 18px 40px rgb(0 0 0 / .45);
 }
-.driver-popover.eco-tour .driver-popover-title { color: rgb(var(--eco-accent)); font-size: 1rem; font-weight: 600; }
+.driver-popover.eco-tour .driver-popover-title { color: rgb(var(--slate-100)); font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; }
 .driver-popover.eco-tour .driver-popover-description { color: rgb(var(--slate-200)); font-size: .85rem; line-height: 1.5; opacity: .92; }
-.driver-popover.eco-tour .driver-popover-progress-text { color: rgb(var(--slate-200)); font-size: .72rem; opacity: .65; }
+.driver-popover.eco-tour .driver-popover-progress-text { color: rgb(var(--slate-200)); font-family: var(--fonte-mono); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
 .driver-popover.eco-tour .driver-popover-close-btn { color: rgb(var(--slate-200)); opacity: .6; }
 .driver-popover.eco-tour .driver-popover-close-btn:hover { opacity: 1; }
 .driver-popover.eco-tour .driver-popover-footer-btn {
-  min-height: 2.25rem; padding: 0 .85rem; border-radius: .5rem; text-shadow: none;
+  min-height: 2.25rem; padding: 0 .85rem; border-radius: 0; text-shadow: none;
   border: 1px solid rgb(var(--eco-border)); background: rgb(var(--eco-bg)); color: rgb(var(--slate-200)); font-size: .8rem;
 }
 .driver-popover.eco-tour .driver-popover-footer-btn:hover { border-color: rgb(var(--eco-accent) / .5); }
 /* O botão que avança é a ação principal — e nos passos de ação ele é a saída. */
 .driver-popover.eco-tour .driver-popover-navigation-btns button:last-child {
-  background: rgb(var(--eco-accent)); border-color: rgb(var(--eco-accent)); color: rgb(var(--eco-bg)); font-weight: 600;
+  background: rgb(var(--eco-action)); border-color: rgb(var(--eco-action)); color: rgb(var(--eco-on-action)); font-weight: 700;
 }
 .driver-popover.eco-tour .driver-popover-arrow-side-left { border-left-color: rgb(var(--eco-panel)); }
 .driver-popover.eco-tour .driver-popover-arrow-side-right { border-right-color: rgb(var(--eco-panel)); }
 .driver-popover.eco-tour .driver-popover-arrow-side-top { border-top-color: rgb(var(--eco-panel)); }
 .driver-popover.eco-tour .driver-popover-arrow-side-bottom { border-bottom-color: rgb(var(--eco-panel)); }
+
+/* Carrossel lateral (indicadores do Dashboard). `--distancia` vem do componente,
+   em cartões a partir do centro: 0 no meio, 1 no vizinho, 2 no seguinte. O
+   cartão central fica nítido e inteiro; os vizinhos, quase; os de longe
+   encolhem, apagam e desfocam — como se a informação se aproximasse ao chegar
+   ao centro. As bordas somem num degradê, e a barra de rolagem fica escondida:
+   a navegação é pela roda, pelas setas e pelo teclado. */
+.eco-carrossel {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+}
+.eco-carrossel::-webkit-scrollbar { display: none; }
+/* Arrasto com o mouse: mão aberta à espera, fechada durante o arrasto, e nada de
+   selecionar texto no caminho. */
+@media (pointer: fine) { .eco-carrossel { cursor: grab; } }
+.eco-carrossel[data-arrastando] { cursor: grabbing; user-select: none; }
+.eco-carrossel[data-arrastando] .eco-carrossel-item { transition: none; }
+.eco-carrossel:focus-visible { outline-offset: -3px; }
+.eco-carrossel-item {
+  --distancia: 0;
+  display: flex;
+  flex: 0 0 78%;
+  scroll-snap-align: center;
+  transform: scale(calc(1 - min(var(--distancia), 2) * .045));
+  filter: blur(clamp(0px, calc((var(--distancia) - .8) * 2.6px), 4px));
+  opacity: calc(1 - clamp(0, (var(--distancia) - .8) * .5, .65));
+  transition: transform 220ms var(--ease-standard), filter 220ms var(--ease-standard), opacity 220ms var(--ease-standard);
+  will-change: transform, filter;
+}
+.eco-carrossel-item > * { flex: 1; min-width: 0; }
+/* Três por vez, com uma fresta do quarto em cada ponta para sugerir que há mais. */
+@media (min-width: 768px) {
+  .eco-carrossel-item { flex-basis: calc((100% - 2 * .75rem) / 3.25); }
+}
+/* Alto contraste: nada de desfoque nem transparência sobre texto. */
+:root[data-contraste="alto"] .eco-carrossel-item { filter: none; opacity: 1; }
+:root[data-contraste="alto"] .eco-carrossel { -webkit-mask-image: none; mask-image: none; }

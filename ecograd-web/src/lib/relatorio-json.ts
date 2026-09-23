@@ -27,6 +27,8 @@ export interface TabelaJson {
   colunas: readonly string[];
   linhas: ReadonlyArray<readonly string[]>;
   nota?: string;
+  /** Link de cada linha na coluna nomeada — o título aponta para a fonte do trabalho. */
+  links?: { coluna: string; urls: ReadonlyArray<string | null> };
 }
 
 export interface SecaoJson {
@@ -103,7 +105,8 @@ export function secoesDosBlocos(blocos: readonly Bloco[]): SecaoJson[] {
       case 'ia': garantir().textosDeIA.push(b.texto); break;
       case 'indicadores': garantir().indicadores.push(...b.itens); break;
       case 'tabela':
-        garantir().tabelas.push({ titulo: b.titulo, colunas: [...b.colunas], linhas: b.linhas.map((l) => [...l]), ...(b.nota ? { nota: b.nota } : {}) });
+        garantir().tabelas.push({ titulo: b.titulo, colunas: [...b.colunas], linhas: b.linhas.map((l) => [...l]), ...(b.nota ? { nota: b.nota } : {}),
+          ...(b.links ? { links: { coluna: b.colunas[b.links.coluna], urls: [...b.links.urls] } } : {}) });
         break;
       case 'imagem': garantir().figurasOmitidas.push(b.alt); break;
       // Quebra de página é instrução de desenho: não existe fora do papel.

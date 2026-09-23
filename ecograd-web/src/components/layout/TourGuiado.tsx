@@ -56,7 +56,7 @@ export function OfertaDeExemplo({ tour }: { tour: ReturnType<typeof useTourGuiad
     <div role="dialog" aria-modal="true" aria-label="Coleção de exemplo para o tour"
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
       <div className="w-full max-w-md space-y-4 rounded-xl border border-eco-border bg-eco-bg p-5">
-        <h2 className="text-lg font-semibold text-eco-accent">Uma coleção para o tour</h2>
+        <h2 className="text-lg font-semibold text-slate-100">Uma coleção para o tour</h2>
         {tour.carregandoDemo && <p className="text-sm text-slate-300" role="status">Consultando o catálogo…</p>}
         {!tour.carregandoDemo && !tour.demo && (
           <p className="text-sm text-slate-300">

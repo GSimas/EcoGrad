@@ -3,6 +3,19 @@ export default {
   darkMode: 'class',
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
+    // Estética Scientata: cantos retos em tudo o que é superfície. `full` segue
+    // redondo para pontos, avatares e interruptores, que são círculos por natureza.
+    borderRadius: {
+      none: '0',
+      sm: '0',
+      DEFAULT: '0',
+      md: '0',
+      lg: '0',
+      xl: '0',
+      '2xl': '0',
+      '3xl': '0',
+      full: '9999px',
+    },
     extend: {
       colors: {
         slate: Object.fromEntries([100,200,300,400,500,600].map(n => [n, `rgb(var(--slate-${n}) / <alpha-value>)`])),
@@ -12,22 +25,26 @@ export default {
           panel: 'rgb(var(--eco-panel) / <alpha-value>)',
           border: 'rgb(var(--eco-border) / <alpha-value>)',
           accent: 'rgb(var(--eco-accent) / <alpha-value>)',
-          action: '#F6AD35',
-          doc: '#E74C3C',
-          autor: '#3498DB',
-          orientador: '#F39C12',
-          conceito: '#2ECC71',
-          macrotema: '#9B59B6',
+          // A ação principal muda com o tema (limão no escuro, tinta no claro).
+          action: 'rgb(var(--eco-action) / <alpha-value>)',
+          'on-action': 'rgb(var(--eco-on-action) / <alpha-value>)',
+          doc: '#E56D45',
+          autor: '#55BADC',
+          orientador: '#E9A13B',
+          conceito: '#8FCF3E',
+          macrotema: '#6A7DFF',
         },
         quadrant: {
-          tendencia: '#2ECC71',
-          sinal: '#F1C40F',
-          mainstream: '#3498DB',
-          declinio: '#E74C3C',
+          tendencia: '#8FCF3E',
+          sinal: '#F5BD59',
+          mainstream: '#55BADC',
+          declinio: '#E56D45',
         },
       },
       fontFamily: {
-        sans: ['Inter Variable', 'Inter', 'Helvetica Neue', 'system-ui', 'sans-serif'],
+        sans: ['Manrope Variable', 'Manrope', 'Arial', 'system-ui', 'sans-serif'],
+        destaque: ['Instrument Serif', 'Georgia', 'serif'],
+        mono: ['DM Mono', 'ui-monospace', 'Cascadia Mono', 'monospace'],
       },
     },
   },

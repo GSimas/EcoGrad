@@ -102,9 +102,9 @@ export function ConsultorFlutuante() {
   };
   return <>
     {!painelMontado && <button ref={botaoRef} type="button" onClick={abrir} aria-label="Abrir o UFSCão, consultor de IA" title="UFSCão · Consultor de IA"
-      className="eco-consultor-launch fixed bottom-4 right-4 z-40 flex min-h-12 items-center gap-2 rounded-full bg-eco-action px-4 text-sm font-semibold text-black shadow-xl transition hover:bg-amber-400 sm:bottom-6 sm:right-6">
+      className="eco-consultor-launch fixed bottom-4 right-4 z-40 flex min-h-12 items-center gap-2 bg-eco-action px-4 text-sm font-bold text-eco-on-action shadow-xl transition hover:shadow-[0_0_28px_rgb(var(--eco-action)/.45)] sm:bottom-6 sm:right-6">
       <RetratoUFSCao tamanho={24} /><span className="hidden sm:inline">UFSCão</span>
-      {streaming && <span className="h-2 w-2 rounded-full bg-black motion-safe:animate-pulse" aria-label="Resposta em andamento" />}
+      {streaming && <span className="h-2 w-2 rounded-full bg-eco-on-action motion-safe:animate-pulse" aria-label="Resposta em andamento" />}
     </button>}
     {painelMontado && <section role="dialog" aria-label="UFSCão · Consultor de IA" data-state={aberto ? 'open' : 'closed'} onKeyDown={(e) => { if (e.key === 'Escape' && !e.defaultPrevented) fechar(); }}
       className="eco-consultor-panel fixed inset-2 z-40 flex flex-col overflow-hidden rounded-xl border border-eco-border bg-eco-bg shadow-2xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[min(46rem,calc(100dvh-3rem))] sm:w-[30rem]">
@@ -397,7 +397,7 @@ function Balao({ papel, conteudo, dic, docs, aoAbrirRetrato }: { papel: 'user' |
   return (
     <div className={`flex gap-2 ${ehUsuario ? 'flex-row-reverse' : ''}`}>
       {ehUsuario
-        ? <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-eco-action text-black"><User size={14} /></span>
+        ? <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-eco-action text-eco-on-action"><User size={14} /></span>
         : <button type="button" className="eco-retrato flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-eco-border text-eco-accent"
           aria-label="Ver o retrato do UFSCão" title="Ver o retrato do UFSCão" onClick={aoAbrirRetrato}>
           <RetratoUFSCao tamanho={28} />

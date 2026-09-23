@@ -64,7 +64,7 @@ function desenharNo(no: GraphNode & { x?: number; y?: number }, ctx: CanvasRende
   // O rótulo só aparece com zoom suficiente, para não poluir o canvas
   if (escala > 1.4) {
     const fonte = 11 / escala;
-    ctx.font = `${fonte}px Inter, sans-serif`;
+    ctx.font = `${fonte}px "Manrope Variable", Manrope, sans-serif`;
     ctx.fillStyle = corTexto;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -184,7 +184,7 @@ export function OrbitaGrafo({
         </label>
       </Card>
 
-      <RedeInterativa id={`orbita.${termoFoco}`} pausadoPadrao={false} titulo="Órbita de relacionamentos" nodes={dados.nodes} links={dados.links} contexto={{anoLimite,profundidade,metodoTamanho,limiteVisualNos:600}} descricao={`Recorte acumulado até ${anoLimite}, ${profundidade} salto(s). Tamanho dos nós: ${metodoTamanho}. O foco é um losango; documentos, quadrados; orientação, estrelas; conceitos, triângulos; demais tipos, círculos. Registros sem ano entram no algoritmo com ano zero. Títulos e nomes iguais podem ser agregados; o recorte visual limita-se a 600 nós.`} onSelecionar={(n)=>onSelecionarNo?.(n.id,n.tipo)} desenharNo={desenharNo} />
+      <RedeInterativa id={`orbita.${termoFoco}`} pausadoPadrao={false} notasNaDica titulo="Órbita de relacionamentos" nodes={dados.nodes} links={dados.links} contexto={{anoLimite,profundidade,metodoTamanho,limiteVisualNos:600}} descricao={`Recorte acumulado até ${anoLimite}, ${profundidade} salto(s). Tamanho dos nós: ${metodoTamanho}. O foco é um losango; documentos, quadrados; orientação, estrelas; conceitos, triângulos; demais tipos, círculos. Registros sem ano entram no algoritmo com ano zero. Títulos e nomes iguais podem ser agregados; o recorte visual limita-se a 600 nós.`} onSelecionar={(n)=>onSelecionarNo?.(n.id,n.tipo)} desenharNo={desenharNo} />
     </div>
   );
 }
