@@ -21,26 +21,27 @@ test('every term requires one literal excerpt from its own summary, with exact c
 });
 
 test('endpoint validates actual provider excerpts and binds them to exact input summary and ID',async()=>{
- const original=fetch,key=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY='fake-test';
- let response:unknown={...onto,evidencias:evidence},sent='';
- globalThis.fetch=async(_url,options)=>{sent=String(options?.body);return Response.json({candidates:[{content:{parts:[{text:JSON.stringify(response)}]}}]});};
+ const original=fetch,key=process.env.DEEPSEEK_API_KEY;process.env.DEEPSEEK_API_KEY='fake-test';
+ let response:unknown={...onto,evidencias:evidence},sent='',url='';
+ globalThis.fetch=async(u,options)=>{url=String(u);sent=String(options?.body);return Response.json({choices:[{message:{content:JSON.stringify(response)}}]});};
  try {
   const item={id:'doc-v1-'+'c'.repeat(64),titulo:'Método exclusivo do título: Voisin',resumo};
   const success=await (await ontologia(req({itens:[item]}))).json();
   assert.equal(success.resultados[0].id,item.id);assert.deepEqual(success.resultados[0].evidencias,evidence);assert.equal(success.resultados[0].resumoSha256,await hashResumo(resumo));assert.ok(!sent.includes(item.titulo));assert.ok(!sent.includes(item.id));
+  assert.equal(url,'https://api.deepseek.com/v1/chat/completions');const corpo=JSON.parse(sent);assert.deepEqual(corpo.response_format,{type:'json_object'});assert.deepEqual(corpo.thinking,{type:'disabled'});assert.equal(corpo.messages[0].role,'user');
   response={...onto,evidencias:[{...evidence[0],trecho:'Citação inventada, ausente no resumo.'}]};
   const bad=await (await ontologia(req({itens:[item]}))).json();assert.equal(bad.processados,0);assert.equal(bad.resultados[0].ontologia,null);assert.match(bad.resultados[0].erro,/literal/);
- } finally {globalThis.fetch=original;if(key===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=key;}
+ } finally {globalThis.fetch=original;if(key===undefined)delete process.env.DEEPSEEK_API_KEY;else process.env.DEEPSEEK_API_KEY=key;}
 });
 
 test('synthesis scope is deterministic even when provider omits it, and invalid counts fail',async()=>{
- const original=fetch,key=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY='fake-test';
- globalThis.fetch=async()=>Response.json({candidates:[{content:{parts:[{text:'A pesquisa aborda energia.'}]}}]});
+ const original=fetch,key=process.env.DEEPSEEK_API_KEY;process.env.DEEPSEEK_API_KEY='fake-test';
+ globalThis.fetch=async()=>Response.json({choices:[{message:{content:'A pesquisa aborda energia.'}}]});
  try {
   const body={nomesProgramas:['A'],amostraTextos:'Título: Energia',recorte:{quantidade:1,total:264,salto:10,truncada:true}};
   const r=await (await sintese(req(body))).json();assert.match(r.descritivo,/^Síntese restrita a até 1 de 264 registros/);assert.match(r.escopo,/com corte de texto/);
   assert.equal((await sintese(req({...body,recorte:{...body.recorte,total:0}}))).status,400);
- } finally {globalThis.fetch=original;if(key===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=key;}
+ } finally {globalThis.fetch=original;if(key===undefined)delete process.env.DEEPSEEK_API_KEY;else process.env.DEEPSEEK_API_KEY=key;}
 });
 
 test('failed synthesis keeps the successful text, scope and input together',async()=>{

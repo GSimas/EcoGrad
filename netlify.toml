@@ -19,8 +19,8 @@
   # publicável (`anon`), com RLS somente leitura e nenhuma tabela de escrita
   # alcançável; o segredo do índice é a `service_role`, que nunca entra aqui.
   #
-  # Omitir só estas duas, e não desligar o scanner: GEMINI_API_KEY,
-  # NEO4J_PASSWORD e SUPABASE_DB_URL são segredos de verdade e continuam
+  # Omitir só estas duas, e não desligar o scanner: DEEPSEEK_API_KEY,
+  # GEMINI_API_KEY, NEO4J_PASSWORD e SUPABASE_DB_URL são segredos de verdade e continuam
   # vigiados.
   SECRETS_SCAN_OMIT_KEYS = "VITE_INDICE_URL,VITE_INDICE_CHAVE"
 

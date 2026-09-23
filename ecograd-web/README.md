@@ -41,7 +41,8 @@ Isso sobe o Vite e as funções juntos em <http://localhost:8888>, roteando `/ap
 (veja `.env.example`):
 
 ```bash
-GEMINI_API_KEY=...
+DEEPSEEK_API_KEY=...   # síntese, ontologia e cortesia do UFSCão
+GEMINI_API_KEY=...     # só o vetor da pergunta na busca por significado
 ```
 
 > **Não chame `netlify dev` diretamente de dentro de `ecograd-web/`.** A CLI resolve `base`, o
@@ -85,7 +86,7 @@ no [README da raiz](../README.md#️-o-índice-do-acervo); os comandos são este
 netlify.toml                    # na RAIZ do repositório, com base = "ecograd-web"
 ecograd-web/
 ├── netlify/functions/
-│   ├── lib/gemini.ts           # cliente Gemini (retry exponencial, fallback de modelos)
+│   ├── lib/gemini.ts           # cliente DeepSeek das funções (retry exponencial, fallback de modelos)
 │   ├── gemini-synthesize.ts    # síntese epistemológica do perfil do PPG
 │   ├── gemini-ontology.ts      # extração de teorias/métodos/ferramentas em lote
 │   ├── capes-proxy.ts          # proxy da API Sucupira/CAPES (contorna o CORS)
@@ -220,7 +221,7 @@ do arquivo já aponta para a subpasta da aplicação.
 Todo módulo compartilhado entre funções mora em `netlify/functions/lib/` — arquivos na raiz de
 `netlify/functions/` viram endpoints publicáveis, inclusive os prefixados com `_`.
 
-Defina `GEMINI_API_KEY` no painel do site, no escopo de funções — elas vivem apenas no runtime das funções e **nunca**
+Defina `DEEPSEEK_API_KEY` (e `GEMINI_API_KEY`, para a busca por significado) no painel do site, no escopo de funções — elas vivem apenas no runtime das funções e **nunca**
 entram no bundle do cliente.
 
 > **Bases de dados**: os `.json.gz` (62 MB) são copiados para `public/data/` pelo `sync:data`
@@ -239,7 +240,7 @@ em revisão até a aplicação explícita à análise.
 
 ## Segurança
 
-- Nenhuma chave secreta chega ao navegador: Gemini é acessado pelas funções. As duas
+- Nenhuma chave secreta chega ao navegador: DeepSeek e Gemini são acessados pelas funções. As duas
   `VITE_INDICE_*` são exceção **declarada** — a chave do índice é a publicável (`anon`), com RLS
   somente leitura e nenhuma tabela de escrita alcançável, e o prefixo `VITE_` diz que ela vai ao
   bundle de propósito.

@@ -65,7 +65,7 @@ export function CatalogoOntologia() {
  return <div className="space-y-4">
   <Card className="space-y-4">
    <h3 className="text-base font-semibold">Extração de artefatos por IA</h3>
-   <p className="text-sm text-slate-300">A IA recebe somente o resumo integral de cada documento do lote. Título e identificador vinculam a resposta ao documento no EcoGrad e não são enviados ao Google Gemini nesta extração. {comResumo} de {docs.length} registros têm resumo. A fila segue a ordem da seleção, ignora registros já enriquecidos e identidades ambíguas. Não envia chat nem notas CAPES.</p>
+   <p className="text-sm text-slate-300">A IA recebe somente o resumo integral de cada documento do lote. Título e identificador vinculam a resposta ao documento no EcoGrad e não são enviados à DeepSeek nesta extração. {comResumo} de {docs.length} registros têm resumo. A fila segue a ordem da seleção, ignora registros já enriquecidos e identidades ambíguas. Não envia chat nem notas CAPES.</p>
    <p className="text-sm text-slate-300">A IA propõe nomes de teorias, ferramentas e métodos e pode agrupá-los ou omitir conceitos. Revise as extrações e suas fontes. Há uma pausa de quatro segundos entre documentos. Cada resultado fica salvo para revisão; só altera a análise ao aplicar. Interromper impede novas solicitações, mas o provedor pode concluir uma já recebida.</p>
    <div className="flex flex-wrap items-end gap-3">
     <label className="text-sm">Tamanho do Lote<Select aria-label="Tamanho do Lote" className="mt-1" valor={String(tamanho)} disabled={processando} onChange={v=>setTamanho(Number(v))} opcoes={[5,10,20,50,100,200,500,1000].map(t=>({valor:String(t),rotulo:String(t)}))} /></label>
