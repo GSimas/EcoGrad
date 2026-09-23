@@ -166,7 +166,7 @@ function Balao({ papel, children, aoAbrirRetrato }: { papel: 'user' | 'assistant
   const usuario = papel === 'user';
   return <div className={`flex gap-2 ${usuario ? 'flex-row-reverse' : ''}`}>
     {usuario
-      ? <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-eco-action text-black"><User size={14} /></span>
+      ? <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-eco-action text-eco-on-action"><User size={14} /></span>
       : <button type="button" className="eco-retrato flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-eco-border text-eco-accent"
         aria-label="Ver o retrato do UFSCão" title="Ver o retrato do UFSCão" onClick={aoAbrirRetrato}>
         <RetratoUFSCao tamanho={28} />

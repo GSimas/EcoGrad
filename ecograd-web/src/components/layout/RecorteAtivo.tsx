@@ -39,7 +39,7 @@ export function RecorteAtivo({ compacto = false }: { compacto?: boolean }) {
 
   return (
     <section className="card border-eco-accent/40 bg-eco-accent/5" aria-label="Recorte da análise">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-eco-accent"><Scissors size={14} className="shrink-0" /> Análise recortada</h2>
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-100"><Scissors size={14} className="shrink-0" /> Análise recortada</h2>
       <p className="mt-2 text-sm leading-relaxed text-slate-200">
         Tudo nesta página descreve apenas {plural(docs, 'documento', 'documentos')} de {plural(itens.length, 'item escolhido', 'itens escolhidos')} na busca
         {colecoes > 0 && <> — e não {plural(colecoes, 'a coleção inteira', 'as coleções inteiras')} que precisaram ser baixadas para alcançá-los</>}.

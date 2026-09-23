@@ -1,7 +1,8 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useMemo } from 'react';
 import { Check, Cloud, Link2, Orbit, TrendingUp } from 'lucide-react';
-import { AnalisesOcultas, Aviso, BotaoEntidade, Card, Expander, Tabela } from '@/components/ui/primitives';
+import { AnalisesOcultas, Aviso, BotaoEntidade, Card, Dica, Expander, Tabela } from '@/components/ui/primitives';
+import { NOTA_EXPORTACAO, NOTA_FILTROS } from '@/components/ui/Tabela';
 import { relevanciaDossie } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { Tabs, type AbaDef } from '@/components/ui/Tabs';
@@ -27,18 +28,19 @@ interface Props {
 
 
 /**
- * Os gráficos ficam à vista, logo acima dos trabalhos associados; indicadores e
- * métodos seguem recolhidos em "Análises e métodos do dossiê".
+ * "Análises e métodos do dossiê" (indicadores de rede e métodos) está fora desta
+ * versão da interface. O bloco continua pronto: basta ligar esta constante.
  */
+const MOSTRAR_METODOS_DO_DOSSIE = false;
+
+/** Os gráficos abrem numa janela, pelo botão "Gráficos" do dossiê. */
 export function Dossie(props: Props) {
   return <div className="space-y-6">
     <VisaoEntidade tipo={props.tipo} docs={props.docsAlvo} termo={props.termo}
-      analises={<>
-        <GraficosDossie {...props} />
-        <Expander titulo="Análises e métodos do dossiê" lazy>
-          <MetricasEntidade termo={props.termo} docsAlvo={props.docsAlvo} docs={props.dadosCompletos} snaGlobal={props.snaGlobal} />
-        </Expander>
-      </>} />
+      graficos={<GraficosDossie {...props} />}
+      analises={MOSTRAR_METODOS_DO_DOSSIE && <Expander titulo="Análises e métodos do dossiê" lazy>
+        <MetricasEntidade termo={props.termo} docsAlvo={props.docsAlvo} docs={props.dadosCompletos} snaGlobal={props.snaGlobal} />
+      </Expander>} />
   </div>;
 }
 
@@ -149,7 +151,7 @@ function GraficosDossie({
                     aria-pressed={todasAsFontes}
                     onClick={() => setFontesNuvem([...FONTES_NUVEM])}
                     className={`inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-                      todasAsFontes ? 'bg-eco-action text-black' : 'text-slate-400 hover:bg-white/5'
+                      todasAsFontes ? 'bg-eco-action text-eco-on-action' : 'text-slate-400 hover:bg-white/5'
                     }`}
                   >
                     <Check size={13} aria-hidden className={todasAsFontes ? '' : 'opacity-0'} />
@@ -164,7 +166,7 @@ function GraficosDossie({
                         aria-pressed={ativo}
                         onClick={() => alternarFonte(f)}
                         className={`inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition ${
-                          ativo ? 'bg-eco-action text-black' : 'text-slate-400 hover:bg-white/5'
+                          ativo ? 'bg-eco-action text-eco-on-action' : 'text-slate-400 hover:bg-white/5'
                         }`}
                       >
                         <Check size={13} aria-hidden className={ativo ? '' : 'opacity-0'} />
@@ -173,9 +175,6 @@ function GraficosDossie({
                     );
                   })}
                 </div>
-                {fontesNuvem.length > 1 && <p className="text-xs text-slate-400">
-                  Fontes somadas. Palavras-chave contam a expressão inteira; títulos e resumos contam palavra a palavra. Um termo presente em mais de uma fonte soma as contagens.
-                </p>}
               </div>
               <Card>
                 {fontesNuvem.length === 0 ? (
@@ -189,8 +188,9 @@ function GraficosDossie({
                   </p>
                 ) : (
                   <Grafico
-                    leitura={{ titulo: 'Frequências da nuvem de palavras', descricao: `Clique num termo para abri-lo: o modal oferece explorá-lo no recorte já carregado, ou carregar tudo o que o acervo tem sobre ele. Tamanho da palavra: frequência nas fontes selecionadas (ocorrências). Cor e rotação são decorativas. Leia todos os termos e valores na tabela.${fontesNuvem.length > 1 ? ' As fontes são somadas e misturam unidades: palavras-chave contam a expressão inteira, títulos e resumos contam palavra a palavra.' : ''}`, linhas: nuvem.map((l) => ({...l})), colunas: [{chave:'name',rotulo:'Termo completo'}, {chave:'value',rotulo:'Ocorrências (n)'}], contexto: {fontes:fontesNuvem}, onAbrir: (l) => termoDaNuvem.abrir(String(l.name)) }}
+                    leitura={{ titulo: 'Frequências da nuvem de palavras', descricao: `Clique num termo para abri-lo: o modal oferece explorá-lo no recorte já carregado, ou carregar tudo o que o acervo tem sobre ele. Tamanho da palavra: frequência nas fontes selecionadas (ocorrências). Cor e rotação são decorativas. Leia todos os termos e valores na tabela.${fontesNuvem.length > 1 ? ' Fontes somadas. Palavras-chave contam a expressão inteira; títulos e resumos contam palavra a palavra. Um termo presente em mais de uma fonte soma as contagens.' : ''}`, linhas: nuvem.map((l) => ({...l})), colunas: [{chave:'name',rotulo:'Termo completo'}, {chave:'value',rotulo:'Ocorrências (n)'}], contexto: {fontes:fontesNuvem}, onAbrir: (l) => termoDaNuvem.abrir(String(l.name)) }}
                     altura={420}
+                    descricaoEmDica
                     onEvents={{ click: (p) => { const nome = (p as { name?: string }).name; if (nome) termoDaNuvem.abrir(nome); } }}
                     option={{
                       tooltip: { show: true },
@@ -205,12 +205,12 @@ function GraficosDossie({
                           height: '100%',
                           drawOutOfBound: false,
                           textStyle: {
-                            fontFamily: 'Inter, sans-serif',
+                            fontFamily: '"Manrope Variable", Manrope, sans-serif',
                             fontWeight: 600,
                             color: () =>
                               TEMA_GRAFICO.paleta[Math.floor(Math.random() * TEMA_GRAFICO.paleta.length)],
                           },
-                          emphasis: { textStyle: { textShadowBlur: 8, textShadowColor: '#F39C12' } },
+                          emphasis: { textStyle: { textShadowBlur: 8, textShadowColor: '#E9A13B' } },
                           data: nuvem,
                         },
                       ],
@@ -235,7 +235,8 @@ function GraficosDossie({
     abas.push({
           valor: 'perfil',
           rotulo: 'Frequências e relações (QL)',
-          conteudo: <><p className="mb-3 text-xs text-slate-400">Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação.</p><TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa" /></>,
+          conteudo: <TabelaQL linhas={tabelaQL} titulo="Frequência e especialização relativa"
+            introducao="Frequências dentro do recorte e especialização relativa. TCCs são incluídos em “Outros” pelo algoritmo original. QL não avalia a qualidade nem a disponibilidade de orientação." />,
     });
   }
 
@@ -290,10 +291,14 @@ function ItensSemelhantes({ termo, tipo, dadosCompletos }: Pick<Props, 'termo' |
   const similares = useMemo(() => calcularSimilaresRede(termo, tipo, perfis), [termo, tipo, perfis]);
   return (
             <div className="space-y-4">
-              <Aviso>
-                Recomendação topológica por <strong>Índice de Jaccard</strong>: mede a sobreposição
-                do &quot;DNA acadêmico&quot; (vizinhança na rede) entre entidades do mesmo tipo.
-              </Aviso>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-slate-200">Semelhança por Índice de Jaccard</p>
+                <Dica rotulo="Como ler: itens semelhantes">
+                  <p>Recomendação topológica por <strong>Índice de Jaccard</strong>: mede a sobreposição
+                    do &quot;DNA acadêmico&quot; (vizinhança na rede) entre entidades do mesmo tipo.</p>
+                  <p>{NOTA_FILTROS} {NOTA_EXPORTACAO}</p>
+                </Dica>
+              </div>
               {/* Contar grupos não serve: um documento sem semelhantes devolve
                   Teses e Dissertações vazias, duas chaves que renderizariam
                   duas tabelas vazias no lugar desta mensagem. */}
@@ -308,6 +313,7 @@ function ItensSemelhantes({ termo, tipo, dadosCompletos }: Pick<Props, 'termo' |
                     <Tabela
                       titulo={`Itens semelhantes: ${grupo}`}
                       altura="max-h-72"
+                      notasNaDica
                       linhas={itens as unknown as Array<Record<string, unknown>>}
                       colunas={[
                         {

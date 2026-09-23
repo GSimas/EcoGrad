@@ -1,11 +1,12 @@
 import { useSessionField } from '@/hooks/useSessionField';
 import { useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
-import { ChevronDown, Info, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn, formatarNumero } from '@/lib/utils';
 import { blocosPorIdioma } from '@/lib/idioma';
 import { classeDoTipo } from '@/lib/tipos-cor';
 import type { AnaliseOculta } from '@/lib/relevancia';
+import { Dica } from './Dica';
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={cn('card', className)}>{children}</div>;
@@ -51,19 +52,13 @@ export function Kpi({
   /** Conteúdo abaixo do valor, como uma lista que detalha o número. */
   children?: ReactNode;
 }) {
-  const ajudaId = useId();
   return (
     <div className={cn('kpi', className)}>
       <span className="kpi-rotulo flex items-start justify-between gap-2">
         <span>{rotulo}</span>
-        {/* Sem `relative`: quem mede o tooltip é o cartão (`.kpi`), para ele não
-            crescer para fora e ser cortado nos cartões da ponta. */}
-        {ajuda && <span className="eco-metric-help inline-flex shrink-0">
-          <button type="button" className="eco-metric-help-trigger inline-flex h-6 w-6 items-center justify-center rounded-full text-slate-400" aria-label={`Informações sobre ${rotulo}`} aria-describedby={ajudaId}>
-            <Info size={15} aria-hidden="true" />
-          </button>
-          <span id={ajudaId} role="tooltip" className="eco-metric-tooltip">{ajuda}</span>
-        </span>}
+        {/* Dica em portal: dentro do carrossel, que rola na horizontal, um balão
+            preso ao cartão seria cortado pela borda da faixa. */}
+        {ajuda && <Dica rotulo={`Informações sobre ${rotulo}`} className="h-6 w-6 border-0 normal-case tracking-normal"><p className="normal-case tracking-normal">{ajuda}</p></Dica>}
       </span>
       <span className="kpi-valor">{typeof valor === 'number' ? formatarNumero(valor) : valor}</span>
       {detalhe && <span className="text-xs text-slate-400">{detalhe}</span>}
@@ -175,6 +170,7 @@ export function Expander({
 }
 
 export { Tabela, type ColunaTabela } from './Tabela';
+export { Dica } from './Dica';
 
 export function Carregando({ texto }: { texto: string }) {
   return (

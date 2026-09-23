@@ -10,7 +10,8 @@
 import type { TipoBusca } from '@/types';
 
 export type Bloco =
-  | { tipo: 'titulo'; texto: string }
+  /** `url`: o título é o de um documento, e vira link para a fonte dele. */
+  | { tipo: 'titulo'; texto: string; url?: string }
   | { tipo: 'subtitulo'; texto: string }
   | { tipo: 'paragrafo'; texto: string }
   /** Texto miúdo e cinza: ressalvas, critérios, contagens de corte. */
@@ -18,9 +19,19 @@ export type Bloco =
   /** Texto de modelo de linguagem, desenhado dentro da tarja de aviso. */
   | { tipo: 'ia'; texto: string }
   | { tipo: 'indicadores'; itens: ReadonlyArray<{ rotulo: string; valor: string }> }
-  | { tipo: 'tabela'; titulo: string; colunas: readonly string[]; linhas: ReadonlyArray<readonly string[]>; nota?: string }
+  | { tipo: 'tabela'; titulo: string; colunas: readonly string[]; linhas: ReadonlyArray<readonly string[]>; nota?: string; links?: LinksDaTabela }
   | { tipo: 'imagem'; dataUrl: string; alt: string; proporcao: number }
   | { tipo: 'pagina' };
+
+/**
+ * Links de uma coluna da tabela — o título de cada trabalho aponta para a
+ * fonte dele no repositório. `urls` acompanha as linhas; `null` onde o registro
+ * não tem link seguro, e a célula fica como texto.
+ */
+export interface LinksDaTabela {
+  coluna: number;
+  urls: ReadonlyArray<string | null>;
+}
 
 export interface Relatorio {
   /** Vai para os metadados do PDF e para o topo da capa. */
@@ -64,6 +75,13 @@ export function lerChaveDossie(chave: string): { tipo: TipoBusca; termo: string 
 }
 
 export type TemaRelatorio = 'claro' | 'escuro';
+
+/**
+ * Fundo das páginas do PDF e dos gráficos desenhados para ele: o papel e a
+ * tinta da identidade do EcoGrad. Mora aqui, e não no desenho do PDF, porque o
+ * desenho dos gráficos também precisa dele — e para os dois nunca divergirem.
+ */
+export const FUNDO_DO_RELATORIO: Record<TemaRelatorio, string> = { claro: '#F0EEE6', escuro: '#07110F' };
 
 /**
  * Em que forma o relatório sai.

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Box } from 'lucide-react';
-import { Aviso, Card, Expander } from '@/components/ui/primitives';
+import { Aviso, Card } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { useSessionField } from '@/hooks/useSessionField';
@@ -20,6 +20,7 @@ import {
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { EChartsOption } from 'echarts';
 import type { TipoBusca } from '@/types';
+import { CabecalhoBloco } from '@/components/ui/BlocoEmJanela';
 
 /** A dimensão do espaço vira a categoria correspondente do Motor de Busca. */
 const TIPO_BUSCA: Record<Dimensao3D, TipoBusca> = {
@@ -79,15 +80,15 @@ export function EspacoTopologico() {
 
   const option = useMemo<EChartsOption>(() => {
     const paleta = TEMA_GRAFICO.paleta;
-    const corDoEixo = claro ? '#64748B' : '#475569';
-    const corDoTexto = claro ? '#334155' : '#CBD5E1';
+    const corDoEixo = claro ? '#6E7B75' : '#4D5954';
+    const corDoTexto = claro ? '#2A3732' : '#CBD2CE';
     const eixo = (i: number) => ({
       type: 'value' as const,
       name: nomeDoEixo(i),
       nameTextStyle: { color: corDoTexto },
       axisLine: { lineStyle: { color: corDoEixo } },
       axisLabel: { color: corDoTexto, fontSize: 10 },
-      splitLine: { lineStyle: { color: claro ? '#CBD5E1' : '#1E293B' } },
+      splitLine: { lineStyle: { color: claro ? '#CBD2CE' : '#16241F' } },
       axisPointer: { show: false },
     });
     return {
@@ -116,7 +117,7 @@ export function EspacoTopologico() {
         top: -20,
         axisLine: { lineStyle: { color: corDoEixo } },
         axisPointer: { lineStyle: { color: corDoTexto } },
-        splitLine: { lineStyle: { color: claro ? '#E2E8F0' : '#1E293B' } },
+        splitLine: { lineStyle: { color: claro ? '#DEE2DC' : '#16241F' } },
         // Sem céu: o `'auto'` padrão do `echarts-gl` pinta a cena de preto
         // mesmo no tema claro. Com `'none'` a tela WebGL fica transparente — o
         // cartão aparece por trás na página, e o PNG exportado sai sem fundo,
@@ -149,10 +150,10 @@ export function EspacoTopologico() {
           symbolSize: Math.min(26, 5 + Math.sqrt(Math.max(ponto.Grau, 1)) * 1.6),
         })),
         itemStyle: {
-          color: grupo.nome === 'Demais comunidades' ? '#64748B' : paleta[i % paleta.length],
+          color: grupo.nome === 'Demais comunidades' ? '#6E7B75' : paleta[i % paleta.length],
           opacity: 0.85,
         },
-        emphasis: { itemStyle: { color: '#F39C12' }, label: { show: true, formatter: (p: unknown) => (p as { data: { ponto: PontoTopologico } }).data.ponto.Item, color: corDoTexto } },
+        emphasis: { itemStyle: { color: '#E9A13B' }, label: { show: true, formatter: (p: unknown) => (p as { data: { ponto: PontoTopologico } }).data.ponto.Item, color: corDoTexto } },
       })),
     } as EChartsOption;
   }, [grupos, claro, reduzir, ehLog]);
@@ -171,22 +172,23 @@ export function EspacoTopologico() {
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="flex items-center gap-2 text-xl font-bold"><Box size={20} aria-hidden /> Espaço Topológico 3D</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Distribui os nós da dimensão escolhida em Grau × Betweenness × Closeness, os três eixos do grafo global.
-        </p>
-      </div>
+      <CabecalhoBloco titulo="Espaço Topológico 3D" icone={<Box size={18} aria-hidden />}>
+        <p>Distribui os nós da dimensão escolhida em Grau × Betweenness × Closeness, os três eixos do grafo global.</p>
+        <p><strong>Arraste para girar</strong>, use a roda do mouse para aproximar e o botão direito para deslocar.
+          Passe o mouse sobre um ponto para ler os valores, e clique para abrir a entidade no Motor de Busca.</p>
+        <div className="space-y-2">
+          <p>Os eixos trazem os valores originais das três métricas do grafo global. <strong>Escala dos eixos</strong>: elas têm cauda longa — a maioria dos termos aparece uma vez só, e alguns poucos dominam. Em escala linear, que é a do modelo original, essa maioria empilha num canto. A logarítmica, aplicada como log(1 + valor), espalha a massa sem alterar nenhum valor nem a ordem entre os nós: muda só a posição, e o nome do eixo avisa quando está em uso. Os números no passar do mouse e na tabela são sempre os originais.</p>
+          <p>O tamanho do ponto segue o grau. A cor é a comunidade detectada pelo Louvain no grafo global — as maiores aparecem nomeadas e o restante fica agrupado, porque uma legenda com centenas de comunidades não ajuda a ler nada.</p>
+          <p>Betweenness é aproximado por amostragem de pivôs em redes grandes, e closeness também. Posição alta em qualquer eixo descreve conectividade na rede desta seleção — não mede qualidade, impacto ou mérito.</p>
+          <p>Os botões de imagem baixam o enquadramento atual da órbita: gire e aproxime até o ângulo desejado antes de exportar. Para levar os dados embora, use <strong>Ver dados em tabela</strong>: ela exporta em CSV e JSON, com todos os valores e o contexto da análise. A tabela também é o caminho pelo teclado, já que a órbita é um gesto de mouse.</p>
+        </div>
+      </CabecalhoBloco>
 
       <Card className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <GrupoOpcoes rotulo="Dimensão no espaço" opcoes={DIMENSOES_3D} valor={dimensao} onChange={setDimensao} />
           <GrupoOpcoes rotulo="Escala dos eixos" opcoes={ESCALAS_3D} valor={escala} onChange={setEscala} />
         </div>
-        <p className="text-sm text-slate-300">
-          <strong>Arraste para girar</strong>, use a roda do mouse para aproximar e o botão direito para deslocar.
-          Passe o mouse sobre um ponto para ler os valores, e clique para abrir a entidade no Motor de Busca.
-        </p>
         <p className="text-sm text-slate-300" role="status">
           {total === 0
             ? `Nenhum nó do tipo ${dimensao} no grafo global desta seleção.`
@@ -194,14 +196,6 @@ export function EspacoTopologico() {
         </p>
       </Card>
 
-      <Expander titulo="Como ler o espaço e o que ele não diz">
-        <div className="space-y-3 text-sm text-slate-300">
-          <p>Os eixos trazem os valores originais das três métricas do grafo global. <strong>Escala dos eixos</strong>: elas têm cauda longa — a maioria dos termos aparece uma vez só, e alguns poucos dominam. Em escala linear, que é a do modelo original, essa maioria empilha num canto. A logarítmica, aplicada como log(1 + valor), espalha a massa sem alterar nenhum valor nem a ordem entre os nós: muda só a posição, e o nome do eixo avisa quando está em uso. Os números no passar do mouse e na tabela são sempre os originais.</p>
-          <p>O tamanho do ponto segue o grau. A cor é a comunidade detectada pelo Louvain no grafo global — as maiores aparecem nomeadas e o restante fica agrupado, porque uma legenda com centenas de comunidades não ajuda a ler nada.</p>
-          <p>Betweenness é aproximado por amostragem de pivôs em redes grandes, e closeness também. Posição alta em qualquer eixo descreve conectividade na rede desta seleção — não mede qualidade, impacto ou mérito.</p>
-          <p>Os botões de imagem baixam o enquadramento atual da órbita: gire e aproxime até o ângulo desejado antes de exportar. Para levar os dados embora, use <strong>Ver dados em tabela</strong>: ela exporta em CSV e JSON, com todos os valores e o contexto da análise. A tabela também é o caminho pelo teclado, já que a órbita é um gesto de mouse.</p>
-        </div>
-      </Expander>
 
       {pontos.length === 0 ? (
         <Aviso>Não há nós desta dimensão no grafo global. Escolha outra dimensão ou amplie as coleções carregadas.</Aviso>

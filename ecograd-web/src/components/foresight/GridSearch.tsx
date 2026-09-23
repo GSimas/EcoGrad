@@ -5,6 +5,7 @@ import { Aviso, Card, Tabela } from '@/components/ui/primitives';
 import { Atividade } from '@/components/ui/Atividade';
 import { useSnaWorker, useAtividade, emExecucao } from '@/hooks/useSnaWorker';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { Dica } from '@/components/ui/Dica';
 
 /**
  * Auto-ML: Grid Search e validação de robustez do modelo de Foresight.
@@ -36,11 +37,11 @@ export function GridSearch({ mostrarAtividade = true }: { mostrarAtividade?: boo
         </button>
       </div>
 
-      <p className="text-xs text-slate-500">
-        Treina o modelo até um ano de corte (T1) e confere os registros da janela posterior
-        (T2). O ranking usa o <strong>MCC</strong> (coeficiente de Matthews), robusto a classes
-        desbalanceadas; combinações degeneradas são descartadas.
-      </p>
+      <Dica rotulo="Como ler: avaliação histórica">
+        <p>Treina o modelo até um ano de corte (T1) e confere os registros da janela posterior
+          (T2). O ranking usa o <strong>MCC</strong> (coeficiente de Matthews), robusto a classes
+          desbalanceadas; combinações degeneradas são descartadas.</p>
+      </Dica>
 
       <p className="text-sm text-slate-300">São 108 combinações próprias desta avaliação: cortes de 2017 a 2020. T1 inclui o ano de corte; T2 começa no ano seguinte e termina no corte mais a janela futura. Os ajustes do Radar não configuram esta busca. O ranking é interno à mesma base, sem validação externa; o maior MCC não garante desempenho futuro. A busca varia janelas recentes de 2, 3 ou 4 anos, posteriores de 3, 4 ou 5 anos e percentis 50, 65 ou 80. O backtest usa IDF normalizado e mínimo de uma ocorrência recente, enquanto o Radar exige duas e usa IDF sem essa normalização.</p>
       {!grid && !rodando && <Aviso>Etapa opcional: explore primeiro os termos e seus trabalhos no Radar. Execute a avaliação quando houver cobertura temporal suficiente; nenhum cálculo é iniciado ao abrir esta seção.</Aviso>}

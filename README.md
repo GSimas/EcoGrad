@@ -340,7 +340,7 @@ netlify.toml                  # na raiz, com base = "ecograd-web"
 docs/                         # ADRs e aferição: o porquê de cada decisão, com os números
 ecograd-web/
 ├── indice/schema.sql         # definição canônica do índice Postgres
-├── netlify/functions/        # Gemini (síntese, ontologia, embedding), proxy CAPES, Neo4j
+├── netlify/functions/        # DeepSeek (síntese, ontologia), Gemini (embedding), proxy CAPES, Neo4j
 ├── scripts/                  # derivação e carga do índice, aferição, paridade
 ├── src/lib/                  # motores analíticos, prompts e guardrails, em TypeScript puro
 ├── src/workers/              # ingestão e redes complexas fora da main thread
@@ -430,7 +430,8 @@ para `public/data/` automaticamente. Detalhes, comandos e notas de deploy no
 | Variável | Onde vale | Para quê |
 | --- | --- | --- |
 | `VITE_INDICE_URL`, `VITE_INDICE_CHAVE` | **build** | endereço e chave publicável do índice. O Vite as grava no JS que vai ao navegador |
-| `GEMINI_API_KEY` | runtime das funções | síntese, ontologia e o *embedding* da pergunta |
+| `DEEPSEEK_API_KEY` | runtime das funções | síntese, ontologia e a cortesia do UFSCão |
+| `GEMINI_API_KEY` | runtime das funções | o *embedding* da pergunta (o índice foi vetorizado com o `gemini-embedding-2`) |
 | `SUPABASE_DB_URL` ou `SUPABASE_SERVICE_ROLE_KEY` | só na carga, na sua máquina | reconstruir o índice. **Nunca** precisam existir no ambiente de build |
 
 As duas `VITE_*` são **públicas por desenho** — o prefixo significa gravar o valor no bundle, e a

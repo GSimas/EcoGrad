@@ -184,9 +184,9 @@ export function PanoramaCapes() {
                   radius: ['40%', '65%'],
                   center: ['50%', '48%'],
                   data: porNota.map(([nome, valor]) => ({ name: `Nota ${nome}`, value: valor })),
-                  label: { color: '#FFFFFF', backgroundColor: '#0E1117', padding: [3, 5], borderRadius: 3, position: 'inside', formatter: '{d}%' },
+                  label: { color: '#FFFFFF', backgroundColor: '#07110F', padding: [3, 5], borderRadius: 3, position: 'inside', formatter: '{d}%' },
                   labelLayout: {hideOverlap:true},
-                  itemStyle: { borderColor: '#0E1117', borderWidth: 2 },
+                  itemStyle: { borderColor: '#07110F', borderWidth: 2 },
                 },
               ],
             }}

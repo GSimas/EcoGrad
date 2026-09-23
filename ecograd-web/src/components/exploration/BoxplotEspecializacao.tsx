@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Boxes } from 'lucide-react';
-import { AnalisesOcultas, Aviso, Card, Expander } from '@/components/ui/primitives';
+import { AnalisesOcultas, Aviso, Card } from '@/components/ui/primitives';
 import type { AnaliseOculta } from '@/lib/relevancia';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
@@ -18,6 +18,7 @@ import {
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { EChartsOption } from 'echarts';
 import type { TipoBusca } from '@/types';
+import { CabecalhoBloco } from '@/components/ui/BlocoEmJanela';
 
 /** Limite do `max_selections=5` do multiselect original. */
 const MAXIMO = 5;
@@ -74,7 +75,7 @@ export function BoxplotEspecializacao() {
         name: 'Faixa dos três níveis',
         type: 'boxplot',
         data: caixas.map((c) => c.resumo),
-        itemStyle: { color: 'rgba(52, 152, 219, 0.28)', borderColor: '#3498DB' },
+        itemStyle: { color: 'rgba(85, 186, 220, 0.28)', borderColor: '#55BADC' },
         tooltip: {
           // No boxplot do ECharts, `data[0]` é o índice da categoria; os cinco
           // números do resumo vêm de 1 a 5.
@@ -96,7 +97,7 @@ export function BoxplotEspecializacao() {
           silent: true,
           symbol: 'none',
           label: { show: true, formatter: 'QL = 1', color: TEMA_GRAFICO.texto, fontSize: 11 },
-          lineStyle: { color: '#7F8C8D', type: 'dashed' as const, width: 1 },
+          lineStyle: { color: '#6E7B75', type: 'dashed' as const, width: 1 },
           data: [{ yAxis: 1 }],
         },
       },
@@ -131,12 +132,15 @@ export function BoxplotEspecializacao() {
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="flex items-center gap-2 text-lg font-semibold"><Boxes size={18} aria-hidden /> Boxplot de Especialização (QL)</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Compara o Quociente Locacional de até {MAXIMO} entidades nos três níveis acadêmicos da seleção.
-        </p>
-      </div>
+      <CabecalhoBloco titulo="Boxplot de Especialização (QL)" icone={<Boxes size={18} aria-hidden />}>
+        <p>Compara o Quociente Locacional de até {MAXIMO} entidades nos três níveis acadêmicos da seleção.</p>
+        <div className="space-y-2">
+              <p>Para cada entidade e cada nível, QL = (documentos da entidade naquele nível ÷ documentos da entidade) ÷ (documentos do nível na seleção ÷ documentos da seleção). <strong>QL acima de 1</strong> indica concentração naquele nível acima da proporção geral da seleção; abaixo de 1, o contrário. É uma razão relativa ao recorte carregado — não à universidade inteira, nem ao campo.</p>
+              <p>Teses e Dissertações são os níveis canônicos; TCC e demais categorias caem em “Outros”, como no modelo original.</p>
+              <p><strong>Cada caixa resume exatamente três valores</strong> — um por nível. Três observações não descrevem distribuição: a caixa aqui é uma forma compacta de comparar os três níveis lado a lado, e os quartis são interpolação entre eles, não contagem de casos. Os três pontos estão desenhados por cima justamente para que se leia o que existe. Para a distribuição real por documento, use a tabela.</p>
+              <p>Quem tem poucos documentos alcança QL extremo com facilidade: passe o mouse ou abra a tabela para ver quantos documentos sustentam cada ponto antes de comparar entidades de volumes muito diferentes.</p>
+            </div>
+      </CabecalhoBloco>
 
       {opcoes.length === 0 ? (
         <Aviso tipo="aviso">Não há entidades do tipo {tipo} na seleção carregada. Escolha outro tipo ou amplie as coleções.</Aviso>
@@ -159,14 +163,6 @@ export function BoxplotEspecializacao() {
             </p>
           </Card>
 
-          <Expander titulo="O que o Quociente Locacional por nível significa">
-            <div className="space-y-3 text-sm text-slate-300">
-              <p>Para cada entidade e cada nível, QL = (documentos da entidade naquele nível ÷ documentos da entidade) ÷ (documentos do nível na seleção ÷ documentos da seleção). <strong>QL acima de 1</strong> indica concentração naquele nível acima da proporção geral da seleção; abaixo de 1, o contrário. É uma razão relativa ao recorte carregado — não à universidade inteira, nem ao campo.</p>
-              <p>Teses e Dissertações são os níveis canônicos; TCC e demais categorias caem em “Outros”, como no modelo original.</p>
-              <p><strong>Cada caixa resume exatamente três valores</strong> — um por nível. Três observações não descrevem distribuição: a caixa aqui é uma forma compacta de comparar os três níveis lado a lado, e os quartis são interpolação entre eles, não contagem de casos. Os três pontos estão desenhados por cima justamente para que se leia o que existe. Para a distribuição real por documento, use a tabela.</p>
-              <p>Quem tem poucos documentos alcança QL extremo com facilidade: passe o mouse ou abra a tabela para ver quantos documentos sustentam cada ponto antes de comparar entidades de volumes muito diferentes.</p>
-            </div>
-          </Expander>
 
           {caixas.length === 0 ? (
             <Aviso>Nenhuma das entidades escolhidas tem documentos na seleção atual.</Aviso>

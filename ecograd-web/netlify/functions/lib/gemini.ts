@@ -2,15 +2,18 @@
  * Utilidades compartilhadas pelas Netlify Functions.
  * Fica em `lib/` porque a Netlify trata todo arquivo na raiz de
  * `netlify/functions/` como um endpoint publicável — este é só um módulo.
- * Porta de `gemini_utils.py` e `app_config.py` para o runtime serverless:
- * a GEMINI_API_KEY vive só aqui, nunca no bundle do cliente.
+ * Porta de `gemini_utils.py` e `app_config.py` para o runtime serverless.
+ *
+ * O texto (síntese e ontologia) sai pela DeepSeek, com a DEEPSEEK_API_KEY. A
+ * GEMINI_API_KEY fica só para o vetor da pergunta (`embedding-consulta`): os
+ * vetores do índice foram calculados com o `gemini-embedding-2`, e a DeepSeek
+ * não tem API de embeddings. Nenhuma das duas chaves entra no bundle do cliente.
  */
 
-export const MODELOS_TEXTO = ['gemini-2.5-flash-lite'] as const;
-export const MODELOS_RAPIDOS = ['gemini-2.5-flash-lite', 'gemini-3.1-flash-lite'] as const;
-export const MODELOS_CHAT = ['gemini-2.5-flash', 'gemini-2.0-flash'] as const;
+export const MODELOS_TEXTO = ['deepseek-flash'] as const;
+export const MODELOS_RAPIDOS = ['deepseek-flash'] as const;
 
-const BASE_GEMINI = 'https://generativelanguage.googleapis.com/v1beta/models';
+const URL_DEEPSEEK = 'https://api.deepseek.com/v1/chat/completions';
 
 export function json(dados: unknown, status = 200): Response {
   return new Response(JSON.stringify(dados), {
@@ -26,11 +29,15 @@ export function erro(mensagem: string, status = 500): Response {
   return json({ error: mensagem }, status);
 }
 
-export function lerChaveGemini(): string | null {
+function lerEnv(nome: string): string | null {
   const runtime=globalThis as typeof globalThis & {Netlify?:{env:{get:(name:string)=>string|undefined}}};
-  const chave = runtime.Netlify?.env.get('GEMINI_API_KEY') ?? process.env.GEMINI_API_KEY;
-  return chave && chave.trim() !== '' ? chave : null;
+  const chave = runtime.Netlify?.env.get(nome) ?? process.env[nome];
+  return chave && chave.trim() !== '' ? chave.trim() : null;
 }
+
+/** Só o embedding da pergunta ainda usa o Gemini. */
+export const lerChaveGemini = () => lerEnv('GEMINI_API_KEY');
+export const lerChaveDeepseek = () => lerEnv('DEEPSEEK_API_KEY');
 
 export interface ConteudoGemini {
   role: 'user' | 'model';
@@ -46,15 +53,19 @@ export interface OpcoesGeracao {
   responseMimeType?: string;
 }
 
-function corpoRequisicao(opcoes: OpcoesGeracao): Record<string, unknown> {
-  const generationConfig: Record<string, unknown> = { temperature: opcoes.temperature ?? 0.3 };
-  if (opcoes.responseMimeType) generationConfig.responseMimeType = opcoes.responseMimeType;
-
-  const corpo: Record<string, unknown> = { contents: opcoes.contents, generationConfig };
-  if (opcoes.systemInstruction) {
-    corpo.systemInstruction = { parts: [{ text: opcoes.systemInstruction }] };
-  }
-  return corpo;
+function corpoRequisicao(modelo: string, opcoes: OpcoesGeracao): Record<string, unknown> {
+  const messages = [
+    ...(opcoes.systemInstruction ? [{ role: 'system', content: opcoes.systemInstruction }] : []),
+    ...opcoes.contents.map((c) => ({ role: c.role === 'model' ? 'assistant' : 'user', content: c.parts.map((p) => p.text).join('') })),
+  ];
+  return {
+    model: modelo,
+    messages,
+    temperature: opcoes.temperature ?? 0.3,
+    // O thinking vem ligado por padrão no deepseek-flash, e o raciocínio é cobrado como saída.
+    thinking: { type: 'disabled' },
+    ...(opcoes.responseMimeType === 'application/json' ? { response_format: { type: 'json_object' } } : {}),
+  };
 }
 
 /**
@@ -62,8 +73,8 @@ function corpoRequisicao(opcoes: OpcoesGeracao): Record<string, unknown> {
  * `for model_name in model_candidates` de `gemini_utils.generate_content`.
  */
 export async function gerarConteudo(opcoes: OpcoesGeracao): Promise<string> {
-  const chave = lerChaveGemini();
-  if (!chave) throw new Error('GEMINI_API_KEY não configurada no ambiente da função.');
+  const chave = lerChaveDeepseek();
+  if (!chave) throw new Error('DEEPSEEK_API_KEY não configurada no ambiente da função.');
 
   const modelos = opcoes.modelos ?? MODELOS_TEXTO;
   let ultimoErro: Error | null = null;
@@ -71,18 +82,16 @@ export async function gerarConteudo(opcoes: OpcoesGeracao): Promise<string> {
   for (const modelo of modelos) {
     opcoes.signal?.throwIfAborted();
     try {
-      const r = await fetch(`${BASE_GEMINI}/${modelo}:generateContent`, {
+      const r = await fetch(URL_DEEPSEEK, {
         method: 'POST',
         signal: opcoes.signal,
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
-        body: JSON.stringify(corpoRequisicao(opcoes)),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${chave}` },
+        body: JSON.stringify(corpoRequisicao(modelo, opcoes)),
       });
       if (!r.ok) throw new Error(`${modelo}: HTTP ${r.status} — ${(await r.text()).slice(0, 300)}`);
 
-      const dados = (await r.json()) as {
-        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-      };
-      const texto = dados.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? '';
+      const dados = (await r.json()) as { choices?: Array<{ message?: { content?: string | null } }> };
+      const texto = dados.choices?.[0]?.message?.content ?? '';
       if(!texto.trim()) throw new Error('O provedor retornou texto vazio.');
       return texto;
     } catch (e) {
@@ -91,7 +100,7 @@ export async function gerarConteudo(opcoes: OpcoesGeracao): Promise<string> {
     }
   }
 
-  throw ultimoErro ?? new Error('Falha ao chamar a API Gemini.');
+  throw ultimoErro ?? new Error('Falha ao chamar a API DeepSeek.');
 }
 
 /**
@@ -115,37 +124,7 @@ export async function gerarComRetry(
       }
     }
   }
-  throw ultimoErro ?? new Error('Falha ao chamar a API Gemini.');
-}
-
-/** Abre um stream SSE do Gemini e devolve a resposta bruta para repasse. */
-export async function abrirStream(opcoes: OpcoesGeracao): Promise<Response> {
-  const chave = lerChaveGemini();
-  if (!chave) throw new Error('GEMINI_API_KEY não configurada no ambiente da função.');
-
-  const modelos = opcoes.modelos ?? MODELOS_CHAT;
-  let ultimoErro: Error | null = null;
-
-  for (const modelo of modelos) {
-    opcoes.signal?.throwIfAborted();
-    try {
-      const r = await fetch(`${BASE_GEMINI}/${modelo}:streamGenerateContent?alt=sse`, {
-        method: 'POST',
-        signal: opcoes.signal,
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': chave },
-        body: JSON.stringify(corpoRequisicao(opcoes)),
-      });
-      if (!r.ok || !r.body) {
-        throw new Error(`${modelo}: HTTP ${r.status} — ${(await r.text()).slice(0, 300)}`);
-      }
-      return r;
-    } catch (e) {
-      opcoes.signal?.throwIfAborted();
-      ultimoErro = e instanceof Error ? e : new Error(String(e));
-    }
-  }
-
-  throw ultimoErro ?? new Error('Falha ao abrir o stream do Gemini.');
+  throw ultimoErro ?? new Error('Falha ao chamar a API DeepSeek.');
 }
 
 export function esperar(ms:number,signal?:AbortSignal):Promise<void> {

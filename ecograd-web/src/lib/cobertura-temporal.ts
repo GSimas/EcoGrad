@@ -196,7 +196,7 @@ export function calcularCoberturaTemporal(
  * célula e repetido no tooltip e na tabela. Quem não distingue vermelho de
  * verde lê o número, não a cor.
  */
-const ESCALA_COBERTURA = ['#E74C3C', '#E67E22', '#F1C40F', '#9BC53D', '#2ECC71'];
+const ESCALA_COBERTURA = ['#E56D45', '#D9823B', '#F5BD59', '#C8E26A', '#8FCF3E'];
 
 /**
  * Opção do ECharts para o mapa de cobertura.
@@ -311,7 +311,7 @@ export function opcaoCoberturaTemporal(cobertura: CoberturaTemporal): EChartsOpt
         label: {
           show: true,
           fontSize: 9,
-          color: '#0E1117',
+          color: '#07110F',
           formatter: (p: unknown) => {
             const v = (p as { data: [number, number, number | null] }).data[2];
             return v === null ? '' : String(v);

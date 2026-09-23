@@ -114,14 +114,6 @@ export function RedeRadial({ docs }: Props) {
   return (
     <div className="space-y-3">
       <GrupoOpcoes opcoes={OPCOES} valor={escolha} onChange={trocarOpcao} rotulo="O que ligar no diagrama" />
-      <p className="text-xs text-slate-500">
-        Mostrando {rede.nos.length} de {rede.totalNos} {rede.totalNos === 1 ? 'nó' : 'nós'} com pelo menos uma ligação,
-        escolhidos pelo maior grau ponderado, e {rede.arestas.length} de {rede.totalArestas}{' '}
-        {rede.totalArestas === 1 ? 'par' : 'pares'}. O corte é visual: as contagens acima descrevem a rede completa.
-        Arraste para mover o diagrama e use a roda do mouse para aproximar. Clique em um ponto para destacar
-        a vizinhança dele, clique de novo no mesmo ponto para abrir o dossiê no Motor de Busca, ou clique fora
-        para limpar o destaque.
-      </p>
       <div className="space-y-1">
         <SelectBusca
           key={modo}
@@ -144,6 +136,15 @@ export function RedeRadial({ docs }: Props) {
         <Grafico
           key={modo}
           mesclar
+          descricaoEmDica
+          dicaExtra={<p>
+            Mostrando {rede.nos.length} de {rede.totalNos} {rede.totalNos === 1 ? 'nó' : 'nós'} com pelo menos uma ligação,
+            escolhidos pelo maior grau ponderado, e {rede.arestas.length} de {rede.totalArestas}{' '}
+            {rede.totalArestas === 1 ? 'par' : 'pares'}. O corte é visual: os totais descrevem a rede completa.
+            Arraste para mover o diagrama e use a roda do mouse para aproximar. Clique em um ponto para destacar
+            a vizinhança dele, clique de novo no mesmo ponto para abrir o dossiê no Motor de Busca, ou clique fora
+            para limpar o destaque.
+          </p>}
           altura={620}
           larguraMinima={520}
           option={option}

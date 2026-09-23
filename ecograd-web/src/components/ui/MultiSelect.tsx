@@ -105,7 +105,7 @@ export function MultiSelect({
                 <span
                   className={cn(
                     'flex h-4 w-4 shrink-0 items-center justify-center rounded border',
-                    ativo ? 'border-eco-accent bg-eco-action text-black' : 'border-eco-border',
+                    ativo ? 'border-eco-accent bg-eco-action text-eco-on-action' : 'border-eco-border',
                   )}
                 >
                   {ativo && <Check size={11} />}

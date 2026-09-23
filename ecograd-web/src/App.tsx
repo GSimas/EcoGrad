@@ -46,7 +46,7 @@ export default function App() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden lg:flex-row">
-      <a href="#conteudo-principal" onClick={(e) => { e.preventDefault(); conteudoRef.current?.focus(); }} className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-eco-action focus:p-3 focus:text-black">Pular para o conteúdo</a>
+      <a href="#conteudo-principal" onClick={(e) => { e.preventDefault(); conteudoRef.current?.focus(); }} className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-eco-action focus:p-3 focus:text-eco-on-action">Pular para o conteúdo</a>
       <Sidebar />
       {/* `relative` contém os textos sr-only (absolutos) na rolagem do main; sem isso eles esticam a página e sobra fundo vazio. */}
       <main id="conteudo-principal" tabIndex={-1} aria-label="Conteúdo principal" ref={conteudoRef} className="relative min-h-0 min-w-0 flex-1 overflow-y-auto focus:outline-none">

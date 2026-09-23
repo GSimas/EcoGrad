@@ -65,7 +65,7 @@ export function TutorialModal({ children, aoFazerTour }: { children: ReactNode; 
               <Icone size={18} />
             </span>
             <div className="min-w-0 flex-1">
-              <Dialog.Title className="text-base font-semibold text-eco-accent">
+              <Dialog.Title className="text-base font-semibold text-slate-100">
                 {atual.titulo}
               </Dialog.Title>
               <Dialog.Description className="text-xs text-slate-400">
@@ -104,7 +104,7 @@ export function TutorialModal({ children, aoFazerTour }: { children: ReactNode; 
                   aria-current={i === passo}
                   className={cn(
                     'h-11 min-w-6 flex-1 rounded transition',
-                    i === passo ? 'bg-eco-action text-black' : 'bg-eco-border hover:bg-slate-600',
+                    i === passo ? 'bg-eco-action text-eco-on-action' : 'bg-eco-border hover:bg-slate-600',
                   )}
                 >{i + 1}</button>
               ))}

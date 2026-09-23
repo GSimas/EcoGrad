@@ -5,6 +5,8 @@ import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { baixarArquivo, cn } from '@/lib/utils';
 import { CHIP } from '@/components/layout/atalhos';
 import { FiltroCabecalho } from './FiltroCabecalho';
+import { Dica } from './Dica';
+import { useEmJanela } from './contexto-janela';
 import { valorExibido, consultaInicial, consultarLinhas, contextoPublicavel, csvComContexto, filtroAtivo, pacoteExportacao, type ConsultaTabela, type FiltroColuna, type RotulosColuna } from '@/lib/visualizacao';
 
 export interface ColunaTabela<T> {
@@ -14,6 +16,9 @@ export interface ColunaTabela<T> {
   className?: string;
   barra?: { max: number };
 }
+export const NOTA_FILTROS = 'O funil no cabeçalho filtra a coluna; busca, filtros e ordenação afetam somente esta tabela.';
+export const NOTA_EXPORTACAO = 'Exporta todas as linhas filtradas, com nomes completos, recorte, unidades dos cabeçalhos e parâmetros. JSON conserva os valores; CSV protege textos que poderiam ser interpretados como fórmulas.';
+
 export interface LeituraDados<T extends Record<string, unknown> = Record<string, unknown>> {
   titulo: string;
   descricao?: string;
@@ -25,10 +30,19 @@ export interface LeituraDados<T extends Record<string, unknown> = Record<string,
 }
 export function Tabela<T extends Record<string, unknown>>({
   colunas, linhas, titulo, descricao, contexto, onAbrir, rotuloAbrir, altura = 'max-h-96', vazio = 'Sem dados para exibir.', aninhada = false,
+  notasNaDica: notasNaDicaPedidas,
 }: LeituraDados<T> & { altura?: string; vazio?: string;
   /** Dentro de uma região que já tem este nome — o Grafico. Evita duas regiões homônimas. */
-  aninhada?: boolean }) {
+  aninhada?: boolean;
+  /** Quem monta a tabela já mostra a descrição e a nota de exportação numa `Dica`. */
+  notasNaDica?: boolean }) {
   const id = useId();
+  // Dentro de uma janela de bloco, descrição e notas saem da página e vão para
+  // uma dica "i" na linha de status — a própria tabela a desenha. Quem passa
+  // `notasNaDica` já mostra essas notas numa dica sua, e a tabela não repete.
+  const emJanela = useEmJanela();
+  const dicaPropria = notasNaDicaPedidas === undefined && emJanela;
+  const notasNaDica = notasNaDicaPedidas ?? emJanela;
   const [consulta, setConsulta] = useSessionField<ConsultaTabela>('tabela.' + titulo, consultaInicial);
   const chaves = colunas.map((c) => c.chave);
   // Colunas que desenham a própria célula ditam o texto do filtro por seleção
@@ -57,13 +71,16 @@ export function Tabela<T extends Record<string, unknown>>({
   // o rótulo repetido, sem saber qual escolher.
   const Raiz = aninhada ? 'div' : 'section';
   return <Raiz className="min-w-0 space-y-3" aria-label={aninhada ? undefined : titulo}>
-    {descricao && <p className="text-xs leading-relaxed text-slate-300">{descricao}</p>}
+    {descricao && !notasNaDica && <p className="text-xs leading-relaxed text-slate-300">{descricao}</p>}
     <div className="flex flex-wrap items-end gap-2">
       <label htmlFor={id} className="min-w-0 flex-1 basis-56 text-sm"><span>Buscar em {titulo}</span><input className="input mt-1" id={id} type="search" value={consulta.busca} onChange={(e) => alterar({ busca: e.target.value })} /></label>
       <button type="button" className="btn" onClick={() => setConsulta(consultaInicial)}>Restaurar tabela</button>
     </div>
 
-    <p className="text-xs text-slate-400" role="status">{filtradas.length} de {linhas.length} linhas · {consulta.coluna ? `${colunas.find((c) => c.chave === consulta.coluna)?.rotulo ?? consulta.coluna}: ${consulta.direcao === 'asc' ? 'crescente' : 'decrescente'}` : 'ordem original'} · {ativos ? `${ativos} ${ativos === 1 ? 'coluna filtrada' : 'colunas filtradas'}` : 'nenhuma coluna filtrada'}. O funil no cabeçalho filtra a coluna; busca, filtros e ordenação afetam somente esta tabela.</p>
+    <div className="flex items-center gap-2">
+      <p className="text-xs text-slate-400" role="status">{filtradas.length} de {linhas.length} linhas · {consulta.coluna ? `${colunas.find((c) => c.chave === consulta.coluna)?.rotulo ?? consulta.coluna}: ${consulta.direcao === 'asc' ? 'crescente' : 'decrescente'}` : 'ordem original'} · {ativos ? `${ativos} ${ativos === 1 ? 'coluna filtrada' : 'colunas filtradas'}` : 'nenhuma coluna filtrada'}.{!notasNaDica && ` ${NOTA_FILTROS}`}</p>
+      {dicaPropria && <Dica rotulo={`Como ler: ${titulo}`}>{descricao && <p>{descricao}</p>}<p>{NOTA_FILTROS} {NOTA_EXPORTACAO}</p></Dica>}
+    </div>
     <div className={cn('overflow-auto rounded-lg border border-eco-border', altura)} role="region" aria-label={`Tabela ${titulo}; role para ler todas as colunas`} tabIndex={0}>
       <table className="tabela tabela-exploravel">
         <caption className="p-3 text-left text-sm font-medium">{titulo}</caption>
@@ -98,6 +115,6 @@ export function Tabela<T extends Record<string, unknown>>({
     </div>
     {filtradas.length > 25 && <nav aria-label={`Paginação de ${titulo}`} className="flex flex-wrap items-center gap-2"><button className="btn" disabled={pagina === 0} onClick={() => alterar({ pagina: pagina - 1 })}>Anterior</button><span className="text-sm">Página {pagina + 1} de {Math.ceil(filtradas.length / 25)}</span><button className="btn" disabled={(pagina + 1) * 25 >= filtradas.length} onClick={() => alterar({ pagina: pagina + 1 })}>Próxima</button></nav>}
     <div className="flex flex-wrap gap-2"><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('csv')} aria-label={`Exportar ${titulo} em CSV com contexto`}>CSV com contexto</button><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('json')} aria-label={`Exportar ${titulo} em JSON com contexto`}>JSON com contexto</button></div>
-    <p className="text-xs text-slate-400">Exporta todas as linhas filtradas, com nomes completos, recorte, unidades dos cabeçalhos e parâmetros. JSON conserva os valores; CSV protege textos que poderiam ser interpretados como fórmulas.</p>
+    {!notasNaDica && <p className="text-xs text-slate-400">{NOTA_EXPORTACAO}</p>}
   </Raiz>;
 }

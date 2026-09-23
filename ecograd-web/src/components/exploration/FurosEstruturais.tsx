@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { RefreshCw, Waypoints } from 'lucide-react';
-import { Aviso, Card, Expander, Kpi, Tabela } from '@/components/ui/primitives';
+import { Aviso, Card, Kpi, Tabela } from '@/components/ui/primitives';
 import { Atividade } from '@/components/ui/Atividade';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { emExecucao, useAtividade, useSnaWorker } from '@/hooks/useSnaWorker';
@@ -9,6 +9,9 @@ import { mean } from '@/lib/stats';
 import type { LinhaFuroEstrutural } from '@/lib/burt-furos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { EChartsOption } from 'echarts';
+import { CabecalhoBloco } from '@/components/ui/BlocoEmJanela';
+import { Carrossel } from '@/components/ui/Carrossel';
+import { Dica } from '@/components/ui/Dica';
 
 const COLUNAS = [
   { chave: 'Orientador', rotulo: 'Orientador', className: 'max-w-xs' },
@@ -112,12 +115,16 @@ export function FurosEstruturais() {
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="flex items-center gap-2 text-lg font-semibold"><Waypoints size={18} aria-hidden /> Furos Estruturais (Burt)</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Rede de orientadores e palavras-chave: quem atravessa vocabulários distintos e quem se concentra em um só.
-        </p>
-      </div>
+      <CabecalhoBloco titulo="Furos Estruturais (Burt)" icone={<Waypoints size={18} aria-hidden />}>
+        <p>Rede de orientadores e palavras-chave: quem atravessa vocabulários distintos e quem se concentra em um só.</p>
+        <p>A restrição de Burt e o betweenness rodam em segundo plano. Você pode navegar durante o cálculo e interrompê-lo no controle da atividade.</p>
+        <div className="space-y-2">
+          <p>A rede tem um nó por orientador e um por palavra-chave, ligados quando o orientador assina um trabalho com aquele termo. <strong>Restrição</strong> é baixa quando a vizinhança do orientador é pouco redundante — quando seus termos não se repetem entre si nos trabalhos de outras pessoas. O modelo original chama isso de <em>broker</em>.</p>
+          <p><strong>Diversidade</strong> é o número de palavras-chave distintas ligadas ao orientador, e <strong>betweenness</strong> (o tamanho da bolha) é quanto dos caminhos da rede passa por ele. A leitura proposta pelo original está no canto inferior direito: muita diversidade, pouca restrição, bolha grande.</p>
+          <p>Nada disso mede interdisciplinaridade declarada, colaboração real ou qualidade da orientação. Tudo depende das palavras-chave registradas nos metadados desta seleção: cobertura irregular entre coleções desloca posições. Quem tem uma única palavra-chave aparece com restrição baixa por falta de vizinhança, não por atravessar áreas — por isso os destaques abaixo exigem ao menos duas.</p>
+          <p>Em redes com mais de 1500 nós o betweenness é estimado por amostragem de pivôs, como no backend original; a restrição é sempre exata para os orientadores.</p>
+        </div>
+      </CabecalhoBloco>
 
       <Card className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
@@ -125,9 +132,6 @@ export function FurosEstruturais() {
             <RefreshCw size={14} className={calculando ? 'animate-spin' : ''} />
             {linhas.length ? 'Recalcular furos estruturais' : 'Calcular furos estruturais'}
           </button>
-          <p className="text-xs text-slate-500">
-            A restrição de Burt e o betweenness rodam em segundo plano. Você pode navegar durante o cálculo e interrompê-lo no controle da atividade.
-          </p>
         </div>
         <Atividade id="furos-estruturais" />
         {task?.resultado && !corresponde && (
@@ -138,18 +142,10 @@ export function FurosEstruturais() {
         )}
       </Card>
 
-      <Expander titulo="O que a restrição de Burt mede — e o que não mede">
-        <div className="space-y-3 text-sm text-slate-300">
-          <p>A rede tem um nó por orientador e um por palavra-chave, ligados quando o orientador assina um trabalho com aquele termo. <strong>Restrição</strong> é baixa quando a vizinhança do orientador é pouco redundante — quando seus termos não se repetem entre si nos trabalhos de outras pessoas. O modelo original chama isso de <em>broker</em>.</p>
-          <p><strong>Diversidade</strong> é o número de palavras-chave distintas ligadas ao orientador, e <strong>betweenness</strong> (o tamanho da bolha) é quanto dos caminhos da rede passa por ele. A leitura proposta pelo original está no canto inferior direito: muita diversidade, pouca restrição, bolha grande.</p>
-          <p>Nada disso mede interdisciplinaridade declarada, colaboração real ou qualidade da orientação. Tudo depende das palavras-chave registradas nos metadados desta seleção: cobertura irregular entre coleções desloca posições. Quem tem uma única palavra-chave aparece com restrição baixa por falta de vizinhança, não por atravessar áreas — por isso os destaques abaixo exigem ao menos duas.</p>
-          <p>Em redes com mais de 1500 nós o betweenness é estimado por amostragem de pivôs, como no backend original; a restrição é sempre exata para os orientadores.</p>
-        </div>
-      </Expander>
 
       {linhas.length > 0 && dados && (
         <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Carrossel rotulo="Indicadores da rede">
             <Kpi rotulo="Orientadores na rede" valor={linhas.length} />
             <Kpi rotulo="Palavras-chave na rede" valor={dados.totalPalavrasChave} />
             <Kpi rotulo="Conexões" valor={dados.totalArestas} detalhe={`${formatarNumero(dados.totalNos)} nós no total`} />
@@ -158,12 +154,14 @@ export function FurosEstruturais() {
               valor={resumo ? resumo.media.toFixed(4) : '—'}
               detalhe={resumo?.isolados ? `${formatarNumero(resumo.isolados)} com menos de duas palavras-chave` : 'Índice adimensional'}
             />
-          </div>
+          </Carrossel>
 
           {resumo && resumo.menores.length > 0 && (
             <Card className="space-y-2">
-              <h3 className="text-sm font-semibold">Menor restrição entre quem tem ao menos duas palavras-chave</h3>
-              <p className="text-xs text-slate-500">Os cinco primeiros da ordenação por restrição crescente. É a posição que o modelo chama de ponte; confirme nos trabalhos antes de ler como interdisciplinaridade.</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold">Menor restrição entre quem tem ao menos duas palavras-chave</h3>
+                <Dica rotulo="Como ler: menor restrição"><p>Os cinco primeiros da ordenação por restrição crescente. É a posição que o modelo chama de ponte; confirme nos trabalhos antes de ler como interdisciplinaridade.</p></Dica>
+              </div>
               <ul className="space-y-1 text-sm text-slate-300">
                 {resumo.menores.map((l) => (
                   <li key={l.Orientador}>

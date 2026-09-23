@@ -7,11 +7,11 @@ import { useEcoGradStore } from '../src/stores/useEcoGradStore';
 
 test('chart theme and reduced motion preserve data, categories, functions and original options', () => {
   const formatter = (x: unknown) => String(x);
-  const source = { animation:true, textStyle:{color:'#CBD5E1'}, xAxis:{data:['#CBD5E1', 'Termo completo']}, tooltip:{formatter,backgroundColor:'#161B22'}, series:[{animation:true, data:[0,1.23456789,NaN],itemStyle:{color:'#E74C3C'}}] };
+  const source = { animation:true, textStyle:{color:'#CBD2CE'}, xAxis:{data:['#CBD2CE', 'Termo completo']}, tooltip:{formatter,backgroundColor:'#0D1C17'}, series:[{animation:true, data:[0,1.23456789,NaN],itemStyle:{color:'#E56D45'}}] };
   const result = adaptarGrafico(source,true,true);
-  assert.notEqual(result,source);assert.equal(result.textStyle.color,'#334155');assert.equal(result.tooltip.backgroundColor,'#FFFFFF');
+  assert.notEqual(result,source);assert.equal(result.textStyle.color,'#2A3732');assert.equal(result.tooltip.backgroundColor,'#F8F7F2');
   assert.equal(result.tooltip.formatter,formatter);assert.deepEqual(result.xAxis.data,source.xAxis.data);assert.deepEqual(result.series[0].data,source.series[0].data);
-  assert.equal(result.series[0].itemStyle.color,'#E74C3C');assert.equal(result.series[0].animation,false);assert.equal(source.animation,true);assert.equal(source.textStyle.color,'#CBD5E1');
+  assert.equal(result.series[0].itemStyle.color,'#E56D45');assert.equal(result.series[0].animation,false);assert.equal(source.animation,true);assert.equal(source.textStyle.color,'#CBD2CE');
 });
 test('invalid or old appearance preferences fall back without admitting arbitrary fields', () => {
   const padrao = {tema:'escuro',fonte:'sem-serifa',tamanho:'medio',movimento:'sistema',contraste:'padrao'};

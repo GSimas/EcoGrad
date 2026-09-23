@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { Search } from 'lucide-react';
-import { Aviso } from '@/components/ui/primitives';
+import { Aviso, Dica } from '@/components/ui/primitives';
 import { GrupoOpcoes } from '@/components/ui/Tabs';
 import { SelectBusca } from '@/components/ui/MultiSelect';
 import { Dossie } from './Dossie';
+import { JUSTIFICATIVA } from './VisaoEntidade';
+import { CoberturaAnalise } from '@/components/results/CoberturaAnalise';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
 import { docsDoTermo } from '@/lib/entities';
 import { resolverDocumento } from '@/lib/resultados';
@@ -49,12 +51,13 @@ export function MotorBusca() {
   return (
     <div className="space-y-6">
       <header className="space-y-1">
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Search size={22} /> Motor de Busca e Dossiê
-        </h1>
-        <p className="text-sm text-slate-400">
-          Busca unificada por documentos, pessoas e temas. A etiqueta ao lado de cada item mostra de onde ele vem.
-        </p>
+        {/* Como usar a busca: numa dica "i" ao lado do título, e não num aviso que ocupa a página. */}
+        <div className="flex items-center gap-2">
+          <h1 className="flex items-center gap-2 text-2xl font-bold">
+            <Search size={22} /> Motor de Busca e Dossiê
+          </h1>
+          <Dica rotulo="Como usar o Motor de Busca"><p>Escolha uma categoria, digite parte do nome ou título e confirme uma opção do catálogo. Pessoas reúnem autoria, orientação e coorientação num dossiê só. Em Temas, palavras-chave vêm do autor e macrotemas são classificação da base: rótulos iguais podem representar conjuntos diferentes de trabalhos.</p></Dica>
+        </div>
       </header>
 
       {/* `div` e não `Card`: o marco de busca precisa de papel e nome, e é o
@@ -89,11 +92,6 @@ export function MotorBusca() {
         />
       </div>
 
-      {buscaTermo === null && (
-        <Aviso>
-          Escolha uma categoria, digite parte do nome ou título e confirme uma opção do catálogo. Pessoas reúnem autoria, orientação e coorientação num dossiê só. Em Temas, palavras-chave vêm do autor e macrotemas são classificação da base: rótulos iguais podem representar conjuntos diferentes de trabalhos.
-        </Aviso>
-      )}
 
       {buscaTermo !== null && docsAlvo.length === 0 && candidatos.length <= 1 && (
         <Aviso tipo="aviso">Nenhum documento associado a &quot;{buscaTermo}&quot; nesta base.</Aviso>
@@ -106,7 +104,11 @@ export function MotorBusca() {
       </section>}
       {buscaTermo !== null && docsAlvo.length > 0 && (
         <div className="space-y-6">
-          <h2 className="break-words text-xl font-semibold">{buscaTipo}: {buscaTermo || 'Trabalho sem título'}</h2>
+          {/* O que o dossiê reúne e a cobertura do recorte ficam numa dica "i" ao lado do título. */}
+          <div className="flex items-start gap-2">
+            <h2 className="break-words text-xl font-semibold">{buscaTipo}: {buscaTermo || 'Trabalho sem título'}</h2>
+            {buscaTipo !== 'Documento' && <CoberturaAnalise docs={docsAlvo} emDica introducao={JUSTIFICATIVA[buscaTipo]} />}
+          </div>
 
           <Dossie
             termo={buscaTermo}

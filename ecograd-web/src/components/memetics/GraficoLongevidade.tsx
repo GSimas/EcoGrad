@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { useAparencia } from '@/services/aparencia';
 import type { LongevidadeRow } from '@/types';
+import { Dica } from '@/components/ui/Dica';
 
 /** Escala perceptual (roxo → magenta → laranja → amarelo) do ano de extinção. */
 const ESCALA_ANO = ['#3B0F70', '#8C2981', '#DE4968', '#FE9F6D', '#FCFDBF'];
@@ -54,13 +55,15 @@ export function GraficoLongevidade({ longevidade, onSelecionar }: { longevidade:
 
   return (
     <Card className="space-y-4">
-      <div>
+      <div className="flex items-center gap-2">
         <h3 className="text-base font-semibold text-slate-100">
           Intervalos de ocorrência dos termos
         </h3>
-        <p className="mt-1 text-xs text-slate-500">
-          Distância entre o primeiro e o último ano observado, para termos com mais de um título e ao menos um ano válido. Não mede vida útil ou importância.
-        </p>
+        <Dica rotulo="Como ler: intervalos de ocorrência">
+          <p>Distância entre o primeiro e o último ano observado, para termos com mais de um título e ao menos um ano válido. Não mede vida útil ou importância.</p>
+          <p>{pontos.length} termos com ao menos {minReplicacoes} títulos distintos · eixo horizontal = ano da
+            1ª aparição · eixo vertical = anos entre a primeira e a última aparição.</p>
+        </Dica>
       </div>
 
       <label className="block space-y-1">
@@ -171,10 +174,6 @@ export function GraficoLongevidade({ longevidade, onSelecionar }: { longevidade:
         />
       )}
 
-      <p className="text-xs text-slate-500">
-        {pontos.length} termos com ao menos {minReplicacoes} títulos distintos · eixo horizontal = ano da
-        1ª aparição · eixo vertical = anos entre a primeira e a última aparição.
-      </p>
     </Card>
   );
 }

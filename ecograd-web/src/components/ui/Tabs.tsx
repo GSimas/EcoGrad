@@ -85,7 +85,7 @@ export function GrupoOpcoes<T extends string>({
             className={cn(
               'rounded-md px-3 py-1.5 text-sm font-medium transition',
               o === valor
-                ? 'bg-eco-action text-black'
+                ? 'bg-eco-action text-eco-on-action'
                 : 'text-slate-400 hover:bg-white/5 hover:text-slate-200',
             )}
           >

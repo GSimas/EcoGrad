@@ -189,7 +189,7 @@ export function BuscaGlobal() {
                 ? `${plural(escolhidos.length, 'seleção', 'seleções')} · ${plural(totalColecoes, 'coleção será carregada', 'coleções serão carregadas')} por inteiro.`
                 : carregada
                   ? 'Busque itens ou coleções. Carregar substitui a análise atual pela nova seleção.'
-                  : 'Busque um documento, uma pessoa, um tema ou uma coleção inteira. Selecione quantos quiser e carregue de uma vez.';
+                  : '';
 
   // O marco de busca nomeia o bloco para leitores de tela e dá ao tour guiado
   // um alvo que engloba campo, sugestões e o botão de carregar — durante o tour
@@ -313,7 +313,7 @@ export function BuscaGlobal() {
                   onMouseEnter={() => setAtivo(i)}
                   className={cn('eco-selecao-opcao flex min-h-11 cursor-pointer gap-2 rounded-md px-3 py-2 text-sm', i === ativo && 'bg-eco-accent/10')}
                 >
-                  <span className={cn('mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border', marcado ? 'eco-selecao-marca border-eco-accent bg-eco-action text-black' : 'border-eco-border')}>
+                  <span className={cn('mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border', marcado ? 'eco-selecao-marca border-eco-accent bg-eco-action text-eco-on-action' : 'border-eco-border')}>
                     {marcado && <Check size={11} />}
                   </span>
                   <span className="min-w-0 flex-1">

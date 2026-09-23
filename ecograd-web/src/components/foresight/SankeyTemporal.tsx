@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Waves } from 'lucide-react';
-import { Aviso, Card, Expander } from '@/components/ui/primitives';
+import { Aviso, Card } from '@/components/ui/primitives';
 import { Grafico, TEMA_GRAFICO } from '@/components/ui/Chart';
 import { useSessionField } from '@/hooks/useSessionField';
 import { FaixaDupla } from '@/components/ui/FaixaDupla';
@@ -8,6 +8,7 @@ import { formatarNumero } from '@/lib/utils';
 import { periodosPadrao, prepararSankeyTemporal, type PeriodoSankey } from '@/lib/sankey-temporal';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import type { EChartsOption } from 'echarts';
+import { CabecalhoBloco } from '@/components/ui/BlocoEmJanela';
 
 const ROTULOS = ['Período 1', 'Período 2', 'Período 3'] as const;
 
@@ -119,12 +120,15 @@ export function SankeyTemporal() {
 
   return (
     <section className="space-y-4">
-      <div>
-        <h2 className="flex items-center gap-2 text-lg font-semibold"><Waves size={18} aria-hidden /> Sankey Temporal de palavras-chave</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Acompanha quais termos as mesmas pessoas usaram ao passar de um período ao seguinte.
-        </p>
-      </div>
+      <CabecalhoBloco titulo="Sankey Temporal de palavras-chave" icone={<Waves size={18} aria-hidden />}>
+        <p>Acompanha quais termos as mesmas pessoas usaram ao passar de um período ao seguinte.</p>
+        <div className="space-y-2">
+          <p>Em cada período entram as {topN} palavras-chave mais frequentes daquele intervalo, contadas uma vez por documento. Um termo só aparece num período se estiver entre os primeiros <em>dele</em>: sumir de uma coluna não significa que deixou de ser usado, apenas que saiu do topo.</p>
+          <p>Uma ligação existe quando a <strong>mesma pessoa</strong> — orientador ou autor — aparece nos dois períodos vizinhos, cada vez com um desses termos. O peso conta pares pessoa × termo-de-origem × termo-de-destino, então quem publica muito pesa mais que um tema estudado por muita gente diferente. Não é citação, não é herança conceitual e não demonstra que um tema originou o outro.</p>
+          <p>Nomes iguais colapsam numa pessoa só e grafias diferentes contam separado, salvo o que você tenha unificado nesta sessão. Registros sem ano ficam fora dos três períodos; registros sem palavra-chave não geram fluxo.</p>
+          <p>As transições desta seleção têm {formatarNumero(sankey.pesquisadoresEmComum[0])} {sankey.pesquisadoresEmComum[0] === 1 ? 'pessoa' : 'pessoas'} em comum entre os períodos 1 e 2, e {formatarNumero(sankey.pesquisadoresEmComum[1])} entre os períodos 2 e 3. Poucas pessoas em comum produzem um diagrama esparso, e isso descreve a rotatividade da seleção — não a descontinuidade dos temas.</p>
+        </div>
+      </CabecalhoBloco>
 
       <Card className="space-y-4">
         <p className="text-sm text-slate-300">Base observada: {limites.min}–{limites.max}. Períodos podem se sobrepor; o modelo original também permitia.</p>
@@ -155,14 +159,6 @@ export function SankeyTemporal() {
         <button type="button" className="btn" onClick={() => setSalvos(null)}>Restaurar os três períodos iniciais</button>
       </Card>
 
-      <Expander titulo="O que o fluxo representa — e o que não representa">
-        <div className="space-y-3 text-sm text-slate-300">
-          <p>Em cada período entram as {topN} palavras-chave mais frequentes daquele intervalo, contadas uma vez por documento. Um termo só aparece num período se estiver entre os primeiros <em>dele</em>: sumir de uma coluna não significa que deixou de ser usado, apenas que saiu do topo.</p>
-          <p>Uma ligação existe quando a <strong>mesma pessoa</strong> — orientador ou autor — aparece nos dois períodos vizinhos, cada vez com um desses termos. O peso conta pares pessoa × termo-de-origem × termo-de-destino, então quem publica muito pesa mais que um tema estudado por muita gente diferente. Não é citação, não é herança conceitual e não demonstra que um tema originou o outro.</p>
-          <p>Nomes iguais colapsam numa pessoa só e grafias diferentes contam separado, salvo o que você tenha unificado nesta sessão. Registros sem ano ficam fora dos três períodos; registros sem palavra-chave não geram fluxo.</p>
-          <p>As transições desta seleção têm {formatarNumero(sankey.pesquisadoresEmComum[0])} {sankey.pesquisadoresEmComum[0] === 1 ? 'pessoa' : 'pessoas'} em comum entre os períodos 1 e 2, e {formatarNumero(sankey.pesquisadoresEmComum[1])} entre os períodos 2 e 3. Poucas pessoas em comum produzem um diagrama esparso, e isso descreve a rotatividade da seleção — não a descontinuidade dos temas.</p>
-        </div>
-      </Expander>
 
       {sankey.periodoVazio !== null ? (
         <Aviso tipo="aviso">O {ROTULOS[sankey.periodoVazio - 1].toLowerCase()} não tem nenhuma palavra-chave registrada nos anos escolhidos. Amplie esse intervalo ou reduza o número de termos por período.</Aviso>

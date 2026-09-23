@@ -12,8 +12,8 @@
  */
 import type { EChartsOption } from 'echarts';
 import {
-  blocosDaCapa, carimboDeData, lerChaveDossie, nomeDoArquivo,
-  type Bloco, type ContextoCapa, type Relatorio, type SelecaoRelatorio,
+  blocosDaCapa, carimboDeData, FUNDO_DO_RELATORIO, lerChaveDossie, nomeDoArquivo,
+  type Bloco, type ContextoCapa, type LinksDaTabela, type Relatorio, type SelecaoRelatorio,
 } from '@/lib/relatorio';
 import { relevanciaDossie } from '@/lib/relevancia';
 import { canvasParaDataUrl } from '@/lib/exportar-imagem';
@@ -27,7 +27,7 @@ import { gerarTabelaQLCruzado } from '@/lib/ql';
 import { calcularSimilaresRede, construirPerfisSimilaridade } from '@/lib/similarity';
 import { calcularCoberturaTemporal, opcaoCoberturaTemporal } from '@/lib/cobertura-temporal';
 import { construirRedeRadial, opcaoRedeRadial } from '@/lib/rede-radial';
-import { compararColecoes, filtrarTrabalhos, periodoTexto, relacionados, resolverDocumento, resumoRegistros, type FiltroTrabalhos } from '@/lib/resultados';
+import { compararColecoes, filtrarTrabalhos, fonteSegura, periodoTexto, relacionados, resolverDocumento, resumoRegistros, type FiltroTrabalhos } from '@/lib/resultados';
 import { formatarDecimal } from '@/lib/utils';
 import { valorExibido } from '@/lib/visualizacao';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -81,15 +81,16 @@ async function imagemDoGrafico(
     try {
       inst.setOption(adaptarGrafico({
         ...option,
-        backgroundColor: claro ? '#FFFFFF' : '#0E1117',
+        backgroundColor: claro ? FUNDO_DO_RELATORIO.claro : FUNDO_DO_RELATORIO.escuro,
         animation: false,
-        textStyle: { fontFamily: 'Inter, system-ui, sans-serif' },
+        textStyle: { fontFamily: '"Manrope Variable", Manrope, system-ui, sans-serif' },
       }, claro, true) as EChartsOption);
       // JPEG, e não PNG: o PNG de um gráfico de 1920 px entra no PDF sem
       // compressão e um relatório de quatro gráficos passava de 16 MB. É o
       // mesmo motivo pelo qual a exportação de imagem do app oferece "JPG com
       // fundo" para colar em documento.
-      const fundo = claro ? '#FFFFFF' : '#0E1117';
+      // O fundo do gráfico é o da página do PDF: papel no claro, tinta no escuro.
+      const fundo = claro ? FUNDO_DO_RELATORIO.claro : FUNDO_DO_RELATORIO.escuro;
       const dataUrl = inst.getDataURL({ type: 'jpeg', pixelRatio: 2, backgroundColor: fundo });
       return recortar ? await recortarMargens(dataUrl, fundo) : { dataUrl, proporcao: altura / largura };
     } finally {
@@ -123,10 +124,10 @@ function recortarMargens(dataUrl: string, fundo: string): Promise<{ dataUrl: str
       if (!ctx) { resolve({ dataUrl, proporcao: img.height / img.width }); return; }
       ctx.drawImage(img, 0, 0);
       const { data } = ctx.getImageData(0, 0, img.width, img.height);
-      // Tolerância: o JPEG suaviza o branco puro nas bordas do traço.
-      const claro = (i: number) => data[i] > 244 && data[i + 1] > 244 && data[i + 2] > 244;
-      const escuro = (i: number) => data[i] < 32 && data[i + 1] < 36 && data[i + 2] < 42;
-      const vazio = fundo === '#FFFFFF' ? claro : escuro;
+      // Vazio é o que está perto da cor do fundo. Tolerância: o JPEG suaviza a
+      // cor lisa nas bordas do traço.
+      const [fr, fg, fb] = [1, 3, 5].map((i) => parseInt(fundo.slice(i, i + 2), 16));
+      const vazio = (i: number) => Math.abs(data[i] - fr) + Math.abs(data[i + 1] - fg) + Math.abs(data[i + 2] - fb) < 36;
       let minX = img.width, maxX = -1, minY = img.height, maxY = -1;
       for (let y = 0; y < img.height; y += 1) {
         for (let x = 0; x < img.width; x += 1) {
@@ -171,8 +172,12 @@ function imagemDaOrbitaNaTela(): string | null {
   }
 }
 
-const tabela = (titulo: string, colunas: readonly string[], linhas: ReadonlyArray<readonly string[]>, nota?: string): Bloco =>
-  ({ tipo: 'tabela', titulo, colunas, linhas, nota });
+const tabela = (titulo: string, colunas: readonly string[], linhas: ReadonlyArray<readonly string[]>, nota?: string, links?: LinksDaTabela): Bloco =>
+  ({ tipo: 'tabela', titulo, colunas, linhas, nota, ...(links ? { links } : {}) });
+
+/** Links da coluna de títulos: cada trabalho aponta para a própria fonte, quando ela é segura. */
+const linksDosTitulos = (coluna: number, docs: readonly Documento[]): LinksDaTabela =>
+  ({ coluna, urls: docs.map((d) => fonteSegura(d.url)) });
 
 const texto = (v: unknown) => valorExibido(v);
 
@@ -335,7 +340,8 @@ export async function montarRelatorio(
     corpo.push({ tipo: 'subtitulo', texto: 'Trabalhos' });
     corpo.push(tabela('Trabalhos', ['Ano', 'Tipo registrado', 'Título', 'Autoria', 'Coleção'],
       lista.map((d) => [d.ano === null ? 'Sem ano' : String(d.ano), d.nivel_academico || 'Não informado', d.titulo || 'Sem título', d.autores.join('; ') || 'Não informada', d.programa_origem || 'Não informada']),
-      `${lista.length} de ${docs.length} registros${ativos.length ? ` · filtro da tela: ${ativos.join(' · ')}` : ' · sem filtro na tela'}. Anos mais recentes primeiro; sem ano ao final.`));
+      `${lista.length} de ${docs.length} registros${ativos.length ? ` · filtro da tela: ${ativos.join(' · ')}` : ' · sem filtro na tela'}. Anos mais recentes primeiro; sem ano ao final. Clique no título para abrir o trabalho no repositório.`,
+      linksDosTitulos(2, lista)));
     await avancar('Trabalhos');
   }
 
@@ -401,7 +407,8 @@ export async function montarRelatorio(
     if (docsAlvo.length === 0) continue;
 
     corpo.push({ tipo: 'pagina' });
-    corpo.push({ tipo: 'titulo', texto: `${tipo}: ${termo || 'Sem título'}` });
+    const urlDoTitulo = tipo === 'Documento' ? fonteSegura(docsAlvo[0].url) : null;
+    corpo.push({ tipo: 'titulo', texto: `${tipo}: ${termo || 'Sem título'}`, ...(urlDoTitulo ? { url: urlDoTitulo } : {}) });
 
     const serie = evolucaoAnual(docsAlvo, false);
     const tabelaQL = tipo === 'Orientador' || tipo === 'Co-orientador'
@@ -439,7 +446,7 @@ export async function montarRelatorio(
       if (nuvem.length) {
         const img = await desenhar({
           series: [{ type: 'wordCloud', shape: 'circle', gridSize: 6, sizeRange: [12, 54], rotationRange: [-45, 45], width: '100%', height: '100%', drawOutOfBound: false,
-            textStyle: { fontFamily: 'Inter, sans-serif', fontWeight: 600, color: TEMA_GRAFICO.paleta[0] }, data: nuvem }],
+            textStyle: { fontFamily: '"Manrope Variable", Manrope, sans-serif', fontWeight: 600, color: TEMA_GRAFICO.paleta[0] }, data: nuvem }],
         }, { altura: 400, claro });
         corpo.push({ tipo: 'subtitulo', texto: 'Lexicometria · palavras-chave' });
         if (img) corpo.push({ tipo: 'imagem', dataUrl: img.dataUrl, alt: 'Nuvem de palavras', proporcao: img.proporcao });
@@ -481,7 +488,8 @@ export async function montarRelatorio(
     }
 
     corpo.push(tabela('Trabalhos associados', ['Ano', 'Tipo registrado', 'Título', 'Coleção'],
-      [...docsAlvo].map((d) => [d.ano === null ? 'Sem ano' : String(d.ano), d.nivel_academico || 'Não informado', d.titulo || 'Sem título', d.programa_origem || 'Não informada'])));
+      [...docsAlvo].map((d) => [d.ano === null ? 'Sem ano' : String(d.ano), d.nivel_academico || 'Não informado', d.titulo || 'Sem título', d.programa_origem || 'Não informada']),
+      'Clique no título para abrir o trabalho no repositório.', linksDosTitulos(2, docsAlvo)));
 
     if (ocultas.length) {
       corpo.push({ tipo: 'nota', texto: `Análises omitidas neste dossiê, por não descreverem nada: ${ocultas.map((o) => `${o.nome} (${o.motivo})`).join('; ')}.` });

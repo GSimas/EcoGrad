@@ -69,15 +69,15 @@ export function construirGrafoHistorico(docs: readonly Documento[]): GrafoHistor
 
 /** Paleta de nós, idêntica à do agraph no Streamlit. */
 export const CORES_TIPO: Record<string, string> = {
-  Documento: '#E74C3C',
-  Autor: '#3498DB',
-  Orientador: '#F39C12',
-  'Co-orientador': '#F39C12',
-  Conceito: '#2ECC71',
-  'Palavra-chave': '#2ECC71',
-  Macrotema: '#9B59B6',
-  'Artefato (Ontologia IA)': '#1ABC9C',
-  Desconhecido: '#9B59B6',
+  Documento: '#E56D45',
+  Autor: '#55BADC',
+  Orientador: '#E9A13B',
+  'Co-orientador': '#E9A13B',
+  Conceito: '#8FCF3E',
+  'Palavra-chave': '#8FCF3E',
+  Macrotema: '#6A7DFF',
+  'Artefato (Ontologia IA)': '#53D7D0',
+  Desconhecido: '#6A7DFF',
 };
 
 function formaDoTipo(tipo: TipoNo, foco: boolean): string {
@@ -180,7 +180,7 @@ export function gerarOrbitaLocal(
       label: rotulo,
       tipo,
       size: tam,
-      color: foco ? '#FFFFFF' : (CORES_TIPO[tipo] ?? '#9B59B6'),
+      color: foco ? '#FFFFFF' : (CORES_TIPO[tipo] ?? '#6A7DFF'),
       shape: formaDoTipo(tipo, foco),
       title: `${node} — ${tipo}`,
     });
@@ -193,7 +193,7 @@ export function gerarOrbitaLocal(
     const chave = e.u < e.v ? `${e.u}||${e.v}` : `${e.v}||${e.u}`;
     if (vistos.has(chave)) continue;
     vistos.add(chave);
-    links.push({ source: e.u, target: e.v, color: '#95A5A6', width: 1, ano: e.ano });
+    links.push({ source: e.u, target: e.v, color: '#7D8A84', width: 1, ano: e.ano });
   }
 
   return { nodes, links };

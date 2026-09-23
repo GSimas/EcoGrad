@@ -11,6 +11,8 @@ import { CatalogoOntologia } from './CatalogoOntologia';
 import { GraficoLongevidade } from './GraficoLongevidade';
 import { calcularMetricasMemeticas, extrairMemesCompletos, tempoDeMeiaVida } from '@/lib/memetics';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { CabecalhoBloco } from '@/components/ui/BlocoEmJanela';
+import { Carrossel } from '@/components/ui/Carrossel';
 
 const OPCOES_FONTE = [
   'Palavras-chave e Títulos (Tradicional)',
@@ -74,14 +76,13 @@ export function PropagacaoMemetica() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <h2 className="flex items-center gap-2 text-xl font-bold">
-          <Dna size={20} aria-hidden /> Propagação de termos e ontologia
-        </h2>
-        <p className="text-sm text-slate-400">
-          Presença dos termos nos trabalhos e o intervalo entre a primeira e a última ocorrência de cada um.
-        </p>
-      </header>
+      <CabecalhoBloco titulo="Propagação de termos e ontologia" icone={<Dna size={18} aria-hidden />}>
+        <p>Presença dos termos nos trabalhos e o intervalo entre a primeira e a última ocorrência de cada um.</p>
+        <p>A propagação usa toda a seleção. Contagens são títulos distintos associados, não citações nem ocorrências no texto. Títulos iguais são agregados. Sem ano, o registro ainda contribui para contagens; intervalos exigem datas válidas.</p>
+        <p>{fonte === 'Artefatos Extraídos' ? 'A cobertura é parcial quando apenas parte dos documentos possui artefatos. Revise as extrações nos resumos; a ausência de artefatos não comprova ausência do conceito.' : 'A fonte inclui palavras-chave normalizadas e palavras dos títulos, sem palavras comuns; não representa apenas palavras-chave fornecidas pelos autores.'}</p>
+        <p>Próximo passo: abra um termo em uma tabela para ler seus trabalhos. Para examinar as conexões entre eles, use a rede memética na aba Estrutura da rede.</p>
+        <p><p >Os nomes técnicos fecundidade, mortalidade e meia-vida são metáforas do modelo original. Aqui, fecundidade conta títulos distintos, mortalidade corresponde a exatamente um título e meia-vida é a mediana dos intervalos entre primeiro e último ano dos termos com mais de um título. Não se estima probabilidade de sobrevivência. Zero anos é válido quando as aparições datadas ocorrem no mesmo ano. Falta de observações posteriores não comprova extinção. Na rede, o extrator tem normalização própria; seus nomes e totais podem diferir dos gráficos de propagação. Os campos originais das exportações permanecem compatíveis.</p></p>
+      </CabecalhoBloco>
 
       {processando && <Aviso><p role="status">Extração em andamento. {statusOntologia}</p><button type="button" className="btn mt-2" onClick={abrirCatalogo}>Acompanhar ou interromper extração</button></Aviso>}
 
@@ -97,9 +98,6 @@ export function PropagacaoMemetica() {
 
         <Card className="space-y-2 text-sm text-slate-300">
           <p>Período observado: {periodoTexto(cobertura)} · {docs.length} registros · {comTermos} com termos nesta fonte · {cobertura.semAno} sem ano.</p>
-          <p>A propagação usa toda a seleção. Contagens são títulos distintos associados, não citações nem ocorrências no texto. Títulos iguais são agregados. Sem ano, o registro ainda contribui para contagens; intervalos exigem datas válidas.</p>
-          <p>{fonte === 'Artefatos Extraídos' ? 'A cobertura é parcial quando apenas parte dos documentos possui artefatos. Revise as extrações nos resumos; a ausência de artefatos não comprova ausência do conceito.' : 'A fonte inclui palavras-chave normalizadas e palavras dos títulos, sem palavras comuns; não representa apenas palavras-chave fornecidas pelos autores.'}</p>
-          <p>Próximo passo: abra um termo em uma tabela para ler seus trabalhos. Para examinar as conexões entre eles, use a rede memética na aba Estrutura da rede.</p>
           {semTitulo > 0 && <Aviso>{semTitulo} termos não têm título associado. O algoritmo original os inclui no grupo complementar a “Um título”; por isso esse grupo não equivale integralmente a repetição.</Aviso>}
           {fonte === 'Artefatos Extraídos' && <button type="button" className="btn" onClick={abrirCatalogo}>Preparar ou importar artefatos</button>}
         </Card>
@@ -113,7 +111,7 @@ export function PropagacaoMemetica() {
           </Aviso>
         ) : (
           <>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Carrossel rotulo="Indicadores da propagação">
               <Kpi rotulo="Termos distintos" valor={totalMemes} />
               <Kpi
                 rotulo="Em um título"
@@ -126,7 +124,7 @@ export function PropagacaoMemetica() {
                 valor={metricas.longevidade.length ? `${meiaVida.toFixed(1)} anos` : "Não calculável"}
                 detalhe={`${metricas.longevidade.length} termos com ≥ 2 títulos e ano válido; não estima sobrevivência`}
               />
-            </div>
+            </Carrossel>
 
             {!roscaDegenerada && <Card>
               <h3 className="mb-2 text-sm font-semibold">Distribuição por títulos associados</h3>
@@ -142,12 +140,12 @@ export function PropagacaoMemetica() {
                       radius: ['45%', '70%'],
                       center: ['50%', '45%'],
                       data: [
-                        { name: grupoOutros, value: metricas.sobreviventes, itemStyle: { color: '#2ECC71' } },
-                        { name: 'Um título', value: metricas.mortalidade, itemStyle: { color: '#E74C3C' } },
+                        { name: grupoOutros, value: metricas.sobreviventes, itemStyle: { color: '#8FCF3E' } },
+                        { name: 'Um título', value: metricas.mortalidade, itemStyle: { color: '#E56D45' } },
                       ],
-                      label: { color: '#FFFFFF', backgroundColor: '#0E1117', padding: [3, 5], borderRadius: 3, position: 'inside', formatter: '{d}%' },
+                      label: { color: '#FFFFFF', backgroundColor: '#07110F', padding: [3, 5], borderRadius: 3, position: 'inside', formatter: '{d}%' },
                   labelLayout: {hideOverlap:true},
-                      itemStyle: { borderColor: '#0E1117', borderWidth: 2 },
+                      itemStyle: { borderColor: '#07110F', borderWidth: 2 },
                     },
                   ],
                 }}
@@ -203,9 +201,6 @@ export function PropagacaoMemetica() {
       </section>
 
       <TrabalhosDoTermo termo={termoVisual} fonteMemes={fonte} redeMemetica={origemTermo==='rede'} onFechar={()=>setTermoVisual(null)} />
-      <Expander titulo="Métodos e limites da propagação">
-        <p className="text-sm text-slate-300">Os nomes técnicos fecundidade, mortalidade e meia-vida são metáforas do modelo original. Aqui, fecundidade conta títulos distintos, mortalidade corresponde a exatamente um título e meia-vida é a mediana dos intervalos entre primeiro e último ano dos termos com mais de um título. Não se estima probabilidade de sobrevivência. Zero anos é válido quando as aparições datadas ocorrem no mesmo ano. Falta de observações posteriores não comprova extinção. Na rede, o extrator tem normalização própria; seus nomes e totais podem diferir dos gráficos de propagação. Os campos originais das exportações permanecem compatíveis.</p>
-      </Expander>
       <div ref={catalogoRef}>
         <Expander titulo="Preparar artefatos e gerenciar catálogo (avançado)">
           <p className="mb-4 text-sm text-slate-300">Etapa opcional para analisar artefatos. Confira o catálogo existente, importe um CSV ou inicie explicitamente um lote. Abrir esta seção não envia resumos à IA.</p>

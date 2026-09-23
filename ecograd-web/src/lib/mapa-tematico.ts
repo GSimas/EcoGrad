@@ -37,10 +37,10 @@ export const LEITURA_QUADRANTE_TEMATICO: Record<QuadranteTematico, string> = {
 };
 
 export const CORES_QUADRANTE_TEMATICO: Record<QuadranteTematico, string> = {
-  'Temas Motores': '#2ECC71',
-  'Temas de Nicho': '#F1C40F',
-  'Temas Básicos': '#3498DB',
-  'Temas Emergentes / Declínio': '#E74C3C',
+  'Temas Motores': '#8FCF3E',
+  'Temas de Nicho': '#F5BD59',
+  'Temas Básicos': '#55BADC',
+  'Temas Emergentes / Declínio': '#E56D45',
 };
 
 export interface LinhaMacrotema extends Record<string, unknown> {
