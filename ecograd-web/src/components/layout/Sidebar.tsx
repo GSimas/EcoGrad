@@ -116,7 +116,7 @@ export function Sidebar() {
       <FundoDinamico className="absolute inset-0" />
       <div className={cn('relative z-10 flex h-full min-h-0 flex-col gap-3 overflow-y-auto', recolhida ? 'p-2' : 'p-4')}>
       <button type="button" onClick={() => navigatePage('inicio')} className={cn('eco-brand-home flex min-h-12 items-center gap-3 rounded-lg text-left', recolhida ? 'w-12 justify-center' : 'w-full px-2')} aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
-        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <span className="flex flex-col leading-tight"><strong className="text-lg font-semibold tracking-tight text-slate-100">EcoGrad</strong><span className="font-mono text-[.68rem] uppercase tracking-[.14em] text-slate-400">UFSC</span></span>}
+        <img src="/ecograd-logo.svg" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <span className="flex flex-col leading-tight"><strong className="text-lg font-semibold tracking-tight text-slate-100">EcoGrad</strong><span className="font-mono text-[.68rem] uppercase tracking-[.14em] text-slate-400">UFSC</span></span>}
       </button>
       <button type="button" className="btn min-h-11" onClick={alternar} aria-expanded={!recolhida} aria-label={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'} title={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'}>
         {recolhida ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}
@@ -138,7 +138,7 @@ export function Sidebar() {
       </Dialog.Root>
       {/* Mesma marca da lateral do desktop: no celular ela é o único caminho de volta à apresentação. */}
       <button type="button" onClick={() => navigatePage('inicio')} className="eco-brand-home flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left" aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
-        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-8 w-8 shrink-0 object-contain" />
+        <img src="/ecograd-logo.svg" alt="" aria-hidden="true" className="h-8 w-8 shrink-0 object-contain" />
         <span className="min-w-0 flex-1"><span className="block text-sm font-semibold tracking-tight text-slate-100">EcoGrad</span><span className="block truncate text-xs text-slate-400">{PAGE_LABELS[page]}</span></span>
       </button>
       <AcessosAjuda compacto />
