@@ -9,7 +9,7 @@ import {
   calcularBetweennessBootstrap,
   otimizarParametrosForesight,
   validarForesightHistorico,
-} from '@/lib/foresight-math';
+} from '@/lib/foresight-grafo';
 import {
   calcularMaturidadeRede,
   calcularMetricasComplexas,

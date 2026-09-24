@@ -32,6 +32,11 @@ export const MAX_COLECOES_POR_ITEM = 8;
 
 const CAMINHO = /^\/data\/busca-[a-f0-9]{64}\.json\.gz$/;
 
+/**
+ * Baixa, descomprime e valida o catálogo. É o trabalho pesado — ~5 MB
+ * comprimidos, centenas de milhares de itens —, e por isso quem o chama é o
+ * `busca.worker`; a página recebe o resultado por `services/indice-busca`.
+ */
 export async function carregarIndiceBusca(signal?: AbortSignal): Promise<IndiceBusca> {
   const manifest = await carregarManifestoColecoes(signal) as { busca?: { path?: unknown } };
   const path = manifest.busca?.path;
@@ -43,9 +48,66 @@ export async function carregarIndiceBusca(signal?: AbortSignal): Promise<IndiceB
   return indice;
 }
 
+/**
+ * Chaves de busca já calculadas para um índice, por identidade do objeto.
+ * `excecoes` guarda, para os poucos nomes com espaço nas pontas, a chave do
+ * nome aparado; os demais têm as duas chaves iguais.
+ */
+interface ChavesProntas { chaves: string[]; excecoes: ReadonlyMap<number, string> }
+const chavesProntas = new WeakMap<IndiceBusca, ChavesProntas>();
+
+/** Normaliza cada nome uma vez, com a mesma regra que `termoDoAcervo` e `itensDaEntidade` aplicam. */
+export function calcularChaves(indice: IndiceBusca): ChavesProntas {
+  const chaves = new Array<string>(indice.itens.length);
+  const excecoes = new Map<number, string>();
+  for (let i = 0; i < indice.itens.length; i++) {
+    const nome = indice.itens[i][0];
+    chaves[i] = chaveBusca(nome);
+    const aparado = nome.trim();
+    if (aparado !== nome) excecoes.set(i, chaveBusca(aparado));
+  }
+  return { chaves, excecoes };
+}
+
+/** Associa ao índice as chaves que o worker já calculou, para ninguém normalizar de novo. */
+export function registrarChaves(indice: IndiceBusca, prontas: ChavesProntas) {
+  chavesProntas.set(indice, prontas);
+}
+
+/** `chaveBusca(nome.trim())` do item, sem refazer a normalização quando ela já existe. */
+function chaveAparada(indice: IndiceBusca, prontas: ChavesProntas | undefined, i: number): string {
+  return prontas ? prontas.excecoes.get(i) ?? prontas.chaves[i] : chaveBusca(indice.itens[i][0].trim());
+}
+
 /** Normaliza uma única vez; cada tecla depois só compara strings prontas. */
 export function prepararBusca(indice: IndiceBusca): BuscaPreparada {
-  return { indice, chaves: indice.itens.map(([nome]) => chaveBusca(nome)) };
+  return { indice, chaves: chavesProntas.get(indice)?.chaves ?? indice.itens.map(([nome]) => chaveBusca(nome)) };
+}
+
+/**
+ * Posições cujas chaves contêm todos os termos, com o nível de cada uma.
+ *
+ * A checagem de presença vem antes e num laço simples: quase todas as chaves
+ * falham nela, e só as que passam pagam o `nivelBusca` completo — que devolve
+ * -1 exatamente quando falta algum termo, então o resultado é o mesmo.
+ * `candidatos` restringe a varredura a um superconjunto conhecido das respostas.
+ */
+export function casarNoAcervo(chaves: readonly string[], termos: readonly string[], candidatos?: readonly number[]): Array<[nivel: number, i: number]> {
+  const achados: Array<[nivel: number, i: number]> = [];
+  const total = candidatos ? candidatos.length : chaves.length;
+  proxima: for (let k = 0; k < total; k++) {
+    const i = candidatos ? candidatos[k] : k;
+    const chave = chaves[i];
+    for (let t = 0; t < termos.length; t++) if (!chave.includes(termos[t])) continue proxima;
+    achados.push([nivelBusca(chave, termos), i]);
+  }
+  return achados;
+}
+
+/** Ordem da busca: nível, depois mais registros, depois a posição no índice. */
+export function ordenarAchados(indice: IndiceBusca, achados: Array<[nivel: number, i: number]>, limite: number): ResultadoBusca[] {
+  achados.sort((a, b) => a[0] - b[0] || indice.itens[b[1]][2] - indice.itens[a[1]][2] || a[1] - b[1]);
+  return achados.slice(0, limite).map(([, i]) => paraResultado(indice, i));
 }
 
 /**
@@ -56,14 +118,7 @@ export function prepararBusca(indice: IndiceBusca): BuscaPreparada {
 export function buscarNoAcervo({ indice, chaves }: BuscaPreparada, consulta: string, limite = 50): ResultadoBusca[] {
   const termos = termosBusca(consulta);
   if (termos.join('').length < 2) return [];
-  // ponytail: varredura linear (~250 mil nomes) na thread principal; mover para um worker se a digitação travar
-  const achados: Array<[nivel: number, i: number]> = [];
-  for (let i = 0; i < chaves.length; i++) {
-    const nivel = nivelBusca(chaves[i], termos);
-    if (nivel >= 0) achados.push([nivel, i]);
-  }
-  achados.sort((a, b) => a[0] - b[0] || indice.itens[b[1]][2] - indice.itens[a[1]][2] || a[1] - b[1]);
-  return achados.slice(0, limite).map(([, i]) => paraResultado(indice, i));
+  return ordenarAchados(indice, casarNoAcervo(chaves, termos), limite);
 }
 
 function paraResultado(indice: IndiceBusca, i: number): ResultadoBusca {
@@ -92,11 +147,12 @@ export function termoDoAcervo(indice: IndiceBusca, nome: string): ResultadoBusca
   // espaços nas pontas, e um termo clicado pode chegar com eles.
   const alvo = chaveBusca(nome.trim());
   if (!alvo) return null;
+  const prontas = chavesProntas.get(indice);
   let melhor = -1;
   let melhorPeso = Number.POSITIVE_INFINITY;
   for (let i = 0; i < indice.itens.length; i += 1) {
-    const [n, t, registros] = indice.itens[i];
-    if (chaveBusca(n.trim()) !== alvo) continue;
+    const [, t, registros] = indice.itens[i];
+    if (chaveAparada(indice, prontas, i) !== alvo) continue;
     const preferencia = PREFERENCIA_DE_TIPO.indexOf(indice.tipos[t]);
     // Tipo preferido primeiro; entre iguais, o que cobre mais registros.
     const peso = (preferencia < 0 ? PREFERENCIA_DE_TIPO.length : preferencia) * 1e9 - registros;
@@ -129,10 +185,11 @@ export function itensDaEntidade(indice: IndiceBusca, tipo: TipoBusca, nome: stri
   const alvo = chaveBusca(nome.trim());
   if (!alvo) return [];
   const tipos = new Set((tipo === 'Pessoa' ? PAPEIS_DA_PESSOA : [tipo]).map((t) => indice.tipos.indexOf(t)).filter((t) => t >= 0));
+  const prontas = chavesProntas.get(indice);
   const achados: ResultadoBusca[] = [];
   for (let i = 0; i < indice.itens.length; i += 1) {
-    const [n, t] = indice.itens[i];
-    if (tipos.has(t) && chaveBusca(n.trim()) === alvo) achados.push(paraResultado(indice, i));
+    const t = indice.itens[i][1];
+    if (tipos.has(t) && chaveAparada(indice, prontas, i) === alvo) achados.push(paraResultado(indice, i));
   }
   return achados;
 }

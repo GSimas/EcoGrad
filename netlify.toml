@@ -99,6 +99,11 @@
     Content-Type = "application/json; charset=utf-8"
     Cache-Control = "public, max-age=0, must-revalidate"
 
+# JS, CSS, fontes e workers do Vite: o nome carrega o hash do conteúdo, então
+# uma versão nova é sempre outro arquivo e o antigo pode ficar em cache para sempre.
+# Compressão: a Netlify entrega Brotli (ou gzip, se o navegador não aceitar
+# Brotli) automaticamente para texto — HTML, JS, CSS, JSON, SVG — e não há o que
+# configurar aqui. Os `.json.gz` acima ficam de fora de propósito: já são gzip.
 [[headers]]
   for = "/assets/*"
   [headers.values]
@@ -109,9 +114,12 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
+# Segurança básica em todas as respostas. `DENY`: nenhuma página do EcoGrad é
+# exibida dentro de frame, nem da própria origem — o app não se emoldura (o
+# visualizador de PDF emoldura o repositório da UFSC, não o contrário).
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    X-Frame-Options = "SAMEORIGIN"
+    X-Frame-Options = "DENY"

@@ -3,7 +3,7 @@ import { AArrowDown, AArrowUp, Accessibility, ALargeSmall, Activity, BookType, C
 import { Janela } from './Janela';
 import { esquecerTour } from './TourGuiado';
 import { CHIP } from './atalhos';
-import { ConfiguracaoIA } from '@/components/chat/ConsultorIA';
+import { ConfiguracaoIA } from '@/components/chat/ConfiguracaoIA';
 import { Expander } from '@/components/ui/primitives';
 import { cn } from '@/lib/utils';
 import { lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';

@@ -9,3 +9,5 @@ tsconfig.tsbuildinfo
 *.tsbuildinfo
 indice-out/
 ca-windows.pem
+bundle-report/
+perf-report/

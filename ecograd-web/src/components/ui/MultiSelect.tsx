@@ -128,6 +128,14 @@ export function MultiSelect({
  * Seleção única com busca — equivalente ao `st.selectbox` do Motor de Busca.
  * Combobox próprio (lista limitada a `maxSugestoes`) para manter a digitação fluida com 50k+ opções.
  */
+/** Conjunto das opções, por identidade da lista: conferir se o texto é uma opção deixa de varrer a lista a cada tecla. */
+const conjuntos = new WeakMap<readonly string[], ReadonlySet<string>>();
+function conjuntoDe(opcoes: readonly string[]): ReadonlySet<string> {
+  let c = conjuntos.get(opcoes);
+  if (!c) { c = new Set(opcoes); conjuntos.set(opcoes, c); }
+  return c;
+}
+
 export function SelectBusca({
   rotulo,
   opcoes,
@@ -172,9 +180,10 @@ export function SelectBusca({
   }, [ativo, listaId]);
 
   const confirmar = (v: string) => {
+    const existe = conjuntoDe(opcoes).has(v);
     setTexto(v);
-    setUltimoValor(opcoes.includes(v) ? v : null);
-    onChange(opcoes.includes(v) ? v : null);
+    setUltimoValor(existe ? v : null);
+    onChange(existe ? v : null);
   };
   const escolher = (v: string) => {
     confirmar(v);
@@ -222,6 +231,9 @@ export function SelectBusca({
           {visivel && (
             <ul id={listaId} role="listbox" aria-label={rotulo} className="eco-vidro absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-auto rounded-lg border border-eco-border p-1 shadow-xl">
               {sugestoes.map((o, i) => (
+                // Combobox do ARIA APG: o foco fica no campo, que trata setas e Enter e
+                // aponta a opção ativa por aria-activedescendant; a opção só recebe o clique.
+                // eslint-disable-next-line jsx-a11y/click-events-have-key-events
                 <li
                   key={o}
                   id={`${listaId}-${i}`}
@@ -235,7 +247,9 @@ export function SelectBusca({
                     i === ativo ? 'bg-eco-accent/10 text-eco-accent' : o === valor ? 'text-eco-accent' : 'text-slate-200',
                   )}
                 >
-                  <Check size={14} className={cn('shrink-0', o !== valor && 'invisible')} />
+                  {/* Só a opção escolhida desenha o ícone; as demais reservam a mesma caixa
+                      de 14 px (antes era um SVG invisível por opção, recriado a cada tecla). */}
+                  {o === valor ? <Check size={14} className="shrink-0" /> : <span aria-hidden="true" className="shrink-0" style={{ width: 14, height: 14 }} />}
                   <span className="min-w-0 break-words">{o}</span>
                 </li>
               ))}

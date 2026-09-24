@@ -95,14 +95,30 @@ export function nivelBusca(chave: string, termos: readonly string[]): number {
   return termos.every((t) => ocorreComoPalavra(chave, t, false)) ? 3 : 4;
 }
 
+/**
+ * Chaves de busca de uma lista de opções, por identidade da lista. Os seletores
+ * filtram a mesma lista a cada tecla; normalizar dezenas de milhares de nomes
+ * de novo a cada tecla era o grosso do custo da digitação.
+ */
+const chavesDasOpcoes = new WeakMap<readonly string[], string[]>();
+function chavesDe(opcoes: readonly string[]): string[] {
+  let chaves = chavesDasOpcoes.get(opcoes);
+  if (!chaves) { chaves = opcoes.map(chaveBusca); chavesDasOpcoes.set(opcoes, chaves); }
+  return chaves;
+}
+
 /** Opções que correspondem à consulta, das mais relevantes às menos; empates mantêm a ordem original. */
 export function filtrarPorRelevancia(opcoes: readonly string[], consulta: string, limite = Infinity): string[] {
   const termos = termosBusca(consulta);
   if (!termos.length) return opcoes.slice(0, limite);
+  const chaves = chavesDe(opcoes);
   const achados: Array<[nivel: number, i: number]> = [];
-  opcoes.forEach((o, i) => {
-    const nivel = nivelBusca(chaveBusca(o), termos);
-    if (nivel >= 0) achados.push([nivel, i]);
-  });
+  // A presença de todos os termos é conferida antes, num laço simples: quase
+  // nenhuma opção passa, e `nivelBusca` devolve -1 justamente quando falta um.
+  proxima: for (let i = 0; i < chaves.length; i++) {
+    const chave = chaves[i];
+    for (let t = 0; t < termos.length; t++) if (!chave.includes(termos[t])) continue proxima;
+    achados.push([nivelBusca(chave, termos), i]);
+  }
   return achados.sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, limite).map(([, i]) => opcoes[i]);
 }

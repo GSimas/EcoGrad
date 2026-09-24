@@ -1,5 +1,7 @@
 import { urlColecao, vinculoDocumentado, type ColecaoCobertura } from '@/lib/colecoes';
-const numero = (n: number) => n.toLocaleString('pt-BR');
+// Um formatador só: `toLocaleString` monta um a cada chamada, e os resultados da busca re-renderizam a cada tecla.
+const NUMERO = new Intl.NumberFormat('pt-BR');
+const numero = (n: number) => NUMERO.format(n);
 export function EvidenciaColecao({ nome, specs, tipo }: { nome: string; specs: string[]; tipo: string }) {
   const vinculo = vinculoDocumentado(nome, specs, tipo);
   return <div className="space-y-2 text-xs text-slate-300">

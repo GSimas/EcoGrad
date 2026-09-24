@@ -1,17 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type MutableRefObject } from 'react';
 import { useAparencia } from '@/services/aparencia';
 import { cn } from '@/lib/utils';
-
-/** Um nó da rede. Posição e deriva em pixels de CSS. */
-interface Ponto { x: number; y: number; dx: number; dy: number; r: number }
-
-interface Paleta { onda: string; malha: string; ponto: string; pontoAlfa: number; forca: number }
-
-const AREA_POR_PONTO = 13000;
-const MIN_PONTOS = 12;
-const MAX_PONTOS = 80;
-/** Acima disso dois nós deixam de se enxergar. Limitado pela largura em painéis estreitos. */
-const ALCANCE = 200;
+import { criarCena, type Paleta } from '@/lib/fundo-cena';
+import type { MensagemFundo } from '@/workers/fundo.worker';
 
 const lerCor = (nome: string, alternativa: string) => {
   const v = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
@@ -33,6 +24,117 @@ function paleta(claro: boolean): Paleta {
     : { onda: acento, malha: '83 215 208', ponto: acento, pontoAlfa: 0.55, forca: 0.35 };
 }
 
+const dprAtual = () => Math.min(window.devicePixelRatio || 1, 2);
+
+interface Estado { reduzir: boolean; cores: Paleta | null; sujo: boolean }
+
+/**
+ * Workers por canvas. Um canvas só transfere o controle uma vez, e no
+ * StrictMode o efeito desmonta e remonta no mesmo instante: o encerramento é
+ * adiado e cancelado se o mesmo canvas voltar a ser usado.
+ */
+const workers = new WeakMap<HTMLCanvasElement, { worker: Worker; encerrar?: ReturnType<typeof setTimeout> }>();
+const enviar = (worker: Worker, msg: MensagemFundo, transferir: Transferable[] = []) => worker.postMessage(msg, transferir);
+
+/**
+ * Anima a cena num worker, sobre um `OffscreenCanvas`: nenhum quadro passa pela
+ * main thread. Devolve `null` onde o navegador não oferece o recurso, e o
+ * chamador usa o laço na própria página.
+ */
+function animarNoWorker(canvas: HTMLCanvasElement, host: HTMLElement, estado: MutableRefObject<Estado>, claro: () => boolean): (() => void) | null {
+  let registro = workers.get(canvas);
+  if (registro) clearTimeout(registro.encerrar);
+  else {
+    if (typeof canvas.transferControlToOffscreen !== 'function' || typeof Worker === 'undefined') return null;
+    let worker: Worker;
+    try {
+      // O worker nasce antes da transferência: sem ele, o canvas ficaria
+      // transferido e inutilizável também para o laço na página.
+      worker = new Worker(new URL('../../workers/fundo.worker.ts', import.meta.url), { type: 'module' });
+      const offscreen = canvas.transferControlToOffscreen();
+      const { width, height } = host.getBoundingClientRect();
+      enviar(worker, {
+        tipo: 'iniciar', canvas: offscreen, largura: width, altura: height, dpr: dprAtual(),
+        cores: estado.current.cores ?? paleta(claro()), reduzir: estado.current.reduzir, visivel: !document.hidden,
+      }, [offscreen]);
+    } catch {
+      return null;
+    }
+    registro = { worker };
+    workers.set(canvas, registro);
+  }
+  const { worker } = registro;
+  const observador = new ResizeObserver(() => {
+    const { width, height } = host.getBoundingClientRect();
+    enviar(worker, { tipo: 'medir', largura: width, altura: height, dpr: dprAtual() });
+  });
+  observador.observe(host);
+  const visibilidade = () => enviar(worker, { tipo: 'visivel', visivel: !document.hidden });
+  document.addEventListener('visibilitychange', visibilidade);
+  const atual = registro;
+  return () => {
+    observador.disconnect();
+    document.removeEventListener('visibilitychange', visibilidade);
+    atual.encerrar = setTimeout(() => { worker.terminate(); workers.delete(canvas); }, 0);
+  };
+}
+
+/** O laço na própria página, para navegadores sem `OffscreenCanvas`. */
+function animarNaPagina(canvas: HTMLCanvasElement, host: HTMLElement, estado: MutableRefObject<Estado>, claro: () => boolean): () => void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return () => {};
+  const cena = criarCena(ctx, canvas);
+  let quadro = 0;
+  let vivo = true;
+  const cores = () => estado.current.cores ?? paleta(claro());
+  const medir = () => {
+    const { width, height } = host.getBoundingClientRect();
+    return cena.medir(width, height, dprAtual());
+  };
+
+  const passo = () => {
+    if (!vivo) return;
+    quadro = requestAnimationFrame(passo);
+    if (document.hidden) return;
+    // Em movimento reduzido a cena fica parada; só redesenha se algo mudou
+    // (tema, contraste, tamanho do painel).
+    if (estado.current.reduzir) {
+      if (!estado.current.sujo) return;
+      estado.current.sujo = false;
+      cena.desenhar(cores());
+      return;
+    }
+    estado.current.sujo = false;
+    cena.avancar();
+    cena.desenhar(cores());
+  };
+
+  // A primeira medição pode cair num layout ainda sem dimensões; o observador
+  // precisa existir de qualquer forma, ou o canvas fica parado no tamanho padrão.
+  let iniciado = false;
+  const iniciar = () => {
+    if (iniciado || !medir()) return;
+    iniciado = true;
+    quadro = requestAnimationFrame(passo);
+  };
+  // Mudar `canvas.width` apaga o desenho. Esperar o próximo quadro para
+  // redesenhar deixava a pintura deste quadro com o canvas vazio — e, ao
+  // recolher ou abrir a lateral, a largura muda a cada quadro da transição:
+  // o fundo piscava. Redesenhar aqui, no retorno do observador, acontece
+  // antes da pintura.
+  const observador = new ResizeObserver(() => {
+    if (!iniciado) iniciar();
+    else if (medir()) cena.desenhar(cores());
+  });
+  observador.observe(host);
+  iniciar();
+  return () => {
+    vivo = false;
+    cancelAnimationFrame(quadro);
+    observador.disconnect();
+  };
+}
+
 /**
  * Fundo decorativo: ondas lentas ao fundo e uma rede de pontos que se conectam
  * quando ficam perto. O desenho é puramente estético — `aria-hidden`, sem
@@ -47,155 +149,23 @@ export function FundoDinamico({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reduzir = useAparencia((s) => s.reduzir);
   const claro = useAparencia((s) => s.claro);
-  const estado = useRef({ reduzir, cores: null as Paleta | null, sujo: true });
+  const estado = useRef<Estado>({ reduzir, cores: null, sujo: true });
 
   useEffect(() => {
     estado.current.reduzir = reduzir;
     estado.current.cores = paleta(claro);
     estado.current.sujo = true;
+    const canvas = canvasRef.current;
+    const registro = canvas ? workers.get(canvas) : undefined;
+    if (registro) enviar(registro.worker, { tipo: 'aparencia', cores: estado.current.cores, reduzir });
   }, [reduzir, claro]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const host = hospedeiro.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !host || !ctx) return;
-
-    let largura = 0;
-    let altura = 0;
-    let pontos: Ponto[] = [];
-    let fase = 0;
-    let quadro = 0;
-    let vivo = true;
-
-    const semear = () => {
-      const alvo = Math.min(MAX_PONTOS, Math.max(MIN_PONTOS, Math.round((largura * altura) / AREA_POR_PONTO)));
-      // Só completa ou apara a lista: os pontos que já existem seguem onde estão.
-      pontos = pontos.slice(0, alvo);
-      while (pontos.length < alvo) {
-        pontos.push({
-          x: Math.random() * largura,
-          y: Math.random() * altura,
-          // Deriva lenta: a rede deve respirar, não correr.
-          dx: (Math.random() - 0.5) * 0.3,
-          dy: (Math.random() - 0.5) * 0.3,
-          r: 1.4 + Math.random() * 2.4,
-        });
-      }
-    };
-
-    const medir = () => {
-      const { width, height } = host.getBoundingClientRect();
-      if (width < 1 || height < 1) return false;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const mudou = width !== largura || height !== altura;
-      largura = width;
-      altura = height;
-      if (mudou) {
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
-      }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      semear();
-      return true;
-    };
-
-    const ondas = (cores: Paleta) => {
-      for (let i = 0; i < 3; i++) {
-        const base = altura * (0.32 + i * 0.2);
-        const amplitude = Math.min(altura * 0.14, 70) * (1 - i * 0.16);
-        const comprimento = Math.max(largura * 0.7, 170) * (1 + i * 0.32);
-        ctx.beginPath();
-        ctx.moveTo(0, altura);
-        ctx.lineTo(0, base);
-        for (let x = 0; x <= largura; x += 5) {
-          ctx.lineTo(x, base + Math.sin(x / comprimento * Math.PI * 2 + fase * (0.7 + i * 0.28) + i) * amplitude);
-        }
-        ctx.lineTo(largura, altura);
-        ctx.closePath();
-        ctx.fillStyle = `rgb(${cores.onda} / ${(0.17 - i * 0.045) * cores.forca})`;
-        ctx.fill();
-      }
-    };
-
-    const desenhar = () => {
-      const cores = estado.current.cores ?? paleta(document.documentElement.dataset.tema === 'claro');
-      ctx.clearRect(0, 0, largura, altura);
-      ondas(cores);
-      const alcance = Math.min(ALCANCE, Math.max(largura, altura) * 0.6);
-      for (let i = 0; i < pontos.length; i++) {
-        for (let j = i + 1; j < pontos.length; j++) {
-          const dx = pontos[i].x - pontos[j].x;
-          const dy = pontos[i].y - pontos[j].y;
-          const dist = Math.hypot(dx, dy);
-          if (dist > alcance) continue;
-          ctx.beginPath();
-          ctx.moveTo(pontos[i].x, pontos[i].y);
-          ctx.lineTo(pontos[j].x, pontos[j].y);
-          // Some suavemente conforme os nós se afastam.
-          ctx.strokeStyle = `rgb(${cores.malha} / ${(1 - dist / alcance) * 0.5 * cores.forca})`;
-          ctx.lineWidth = 1.2;
-          ctx.stroke();
-        }
-      }
-      for (const p of pontos) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgb(${cores.ponto} / ${cores.pontoAlfa})`;
-        ctx.fill();
-      }
-    };
-
-    const passo = () => {
-      if (!vivo) return;
-      quadro = requestAnimationFrame(passo);
-      if (document.hidden) return;
-      // Em movimento reduzido a cena fica parada; só redesenha se algo mudou
-      // (tema, contraste, tamanho do painel).
-      if (estado.current.reduzir) {
-        if (!estado.current.sujo) return;
-        estado.current.sujo = false;
-        desenhar();
-        return;
-      }
-      estado.current.sujo = false;
-      fase += 0.01;
-      for (const p of pontos) {
-        p.x += p.dx;
-        p.y += p.dy;
-        // Reflete nas bordas: mantém a densidade estável sem reposicionar nada.
-        if (p.x < 0 || p.x > largura) p.dx *= -1;
-        if (p.y < 0 || p.y > altura) p.dy *= -1;
-        p.x = Math.min(Math.max(p.x, 0), largura);
-        p.y = Math.min(Math.max(p.y, 0), altura);
-      }
-      desenhar();
-    };
-
-    // A primeira medição pode cair num layout ainda sem dimensões; o observador
-    // precisa existir de qualquer forma, ou o canvas fica parado no tamanho padrão.
-    let iniciado = false;
-    const iniciar = () => {
-      if (iniciado || !medir()) return;
-      iniciado = true;
-      quadro = requestAnimationFrame(passo);
-    };
-    // Mudar `canvas.width` apaga o desenho. Esperar o próximo quadro para
-    // redesenhar deixava a pintura deste quadro com o canvas vazio — e, ao
-    // recolher ou abrir a lateral, a largura muda a cada quadro da transição:
-    // o fundo piscava. Redesenhar aqui, no retorno do observador, acontece
-    // antes da pintura.
-    const observador = new ResizeObserver(() => {
-      if (!iniciado) iniciar();
-      else if (medir()) desenhar();
-    });
-    observador.observe(host);
-    iniciar();
-    return () => {
-      vivo = false;
-      cancelAnimationFrame(quadro);
-      observador.disconnect();
-    };
+    if (!canvas || !host) return;
+    const claroAgora = () => document.documentElement.dataset.tema === 'claro';
+    return animarNoWorker(canvas, host, estado, claroAgora) ?? animarNaPagina(canvas, host, estado, claroAgora);
   }, []);
 
   return (

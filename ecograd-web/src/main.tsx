@@ -6,6 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
+import { AvisosDeAtividade } from './components/ui/AvisosDeAtividade';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -26,6 +27,9 @@ root.render(<p role="status" className="p-6">Verificando e recuperando a sessão
 void initializeSession(queryClient).then(() => { initializeNavigation(); root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
+      {/* Fora do App, para o aviso de fim de atividade sobreviver à troca de tela;
+          antes dele e `sr-only` (absoluto, no topo), sem ocupar espaço nem criar rolagem. */}
+      <AvisosDeAtividade />
       <App />
     </QueryClientProvider>
   </React.StrictMode>,

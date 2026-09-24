@@ -1,6 +1,6 @@
 import { PAGE_LABELS, rotaVisivel } from '@/lib/navigation';
 import { navigatePage, useNavigation } from '@/services/navigation';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useSessionField } from '@/hooks/useSessionField';
 import * as Dialog from '@radix-ui/react-dialog';
 import { BookOpen, ChevronDown, LayoutDashboard, Menu, Microscope, PanelLeftClose, PanelLeftOpen, Search, X } from 'lucide-react';
@@ -32,16 +32,23 @@ export function AcessosAjuda({ compacto = false }: { compacto?: boolean }) {
 }
 
 function Navegacao({ compacto, aoNavegar, tour }: { compacto: boolean; aoNavegar?: () => void; tour: ReturnType<typeof useTourGuiado> }) {
-  const state = useEcoGradStore();
+  // Seletores atômicos: a lateral fica montada o tempo todo, e assinar o store
+  // inteiro a fazia renderizar a cada tecla, trecho de resposta da IA e
+  // progresso de cálculo.
+  const dadosCarregados = useEcoGradStore((s) => s.dadosCarregados);
+  const programas = useEcoGradStore((s) => s.programasSelecionados);
+  const cursosTcc = useEcoGradStore((s) => s.cursosTccSelecionados);
+  const totalDocs = useEcoGradStore((s) => s.docs.length);
+  const rotulo = useEcoGradStore(rotuloAnaliseAtiva);
   const page = useNavigation((s) => s.page);
   // A badge lista todas as coleções; o limite de altura evita empurrar a navegação para fora da tela.
-  const colecoesAtivas = [...state.programasSelecionados, ...state.cursosTccSelecionados];
+  const colecoesAtivas = useMemo(() => [...programas, ...cursosTcc], [programas, cursosTcc]);
   const botao = cn('btn min-h-11', compacto ? 'w-11 px-0' : 'w-full justify-start');
   // Na sessão, e não no componente: a lateral e a gaveta do celular mostram o mesmo bloco.
   const [analiseAberta, setAnaliseAberta] = useSessionField('lateral.analiseAtiva.aberta', true);
   const idAnalise = useId();
   return <>
-    {state.dadosCarregados && <>
+    {dadosCarregados && <>
       {!compacto && <div className="eco-analise-ativa rounded-lg border border-eco-accent/40 bg-eco-accent/10 p-3 text-sm">
         <button type="button" onClick={() => setAnaliseAberta((v) => !v)} aria-expanded={analiseAberta} aria-controls={idAnalise}
           className="-m-1 flex min-h-11 w-[calc(100%+.5rem)] items-center justify-between gap-2 rounded-md p-1 text-left hover:text-eco-accent"
@@ -52,13 +59,13 @@ function Navegacao({ compacto, aoNavegar, tour }: { compacto: boolean; aoNavegar
         {/* Recolhida, fica o resumo: o que está carregado continua à vista numa linha. */}
         <div id={idAnalise}>
           {analiseAberta && (colecoesAtivas.length === 0
-            ? <p className="mt-1 break-words text-eco-accent">{rotuloAnaliseAtiva(state)}</p>
+            ? <p className="mt-1 break-words text-eco-accent">{rotulo}</p>
             : <ul className="mt-1 max-h-48 space-y-1 overflow-y-auto overscroll-contain pr-1">
               {colecoesAtivas.map((nome) => <li key={nome} className="break-words text-eco-accent">{nome}</li>)}
             </ul>)}
           <p className="mt-2 text-xs text-slate-400">
             {colecoesAtivas.length > 0 && <>{colecoesAtivas.length.toLocaleString('pt-BR')} {colecoesAtivas.length === 1 ? 'coleção' : 'coleções'} · </>}
-            {state.docs.length.toLocaleString('pt-BR')} documentos
+            {totalDocs.toLocaleString('pt-BR')} documentos
           </p>
           {analiseAberta && <RecorteAtivo compacto />}
         </div>
@@ -72,7 +79,7 @@ function Navegacao({ compacto, aoNavegar, tour }: { compacto: boolean; aoNavegar
         </button>)}
       </nav>
     </>}
-    {!state.dadosCarregados && !compacto && <p className="text-sm leading-relaxed text-slate-400">Escolha coleções para explorar trabalhos, pesquisadores e temas. O panorama institucional e a ajuda estão disponíveis a qualquer momento.</p>}
+    {!dadosCarregados && !compacto && <p className="text-sm leading-relaxed text-slate-400">Escolha coleções para explorar trabalhos, pesquisadores e temas. O panorama institucional e a ajuda estão disponíveis a qualquer momento.</p>}
     <div className="flex flex-col gap-2 border-t border-eco-border pt-3">
       <BotaoPanoramaUfsc compacto={compacto} />
       <ExportarRelatorio compacto={compacto} />

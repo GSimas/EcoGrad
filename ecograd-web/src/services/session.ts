@@ -4,8 +4,10 @@ import type { QueryClient } from '@tanstack/react-query';
 import { useEcoGradStore, type EcoGradState, type Conversa } from '../stores/useEcoGradStore';
 import { atividades, restaurarAtividades, type Pedido, type Resultado } from './calculos';
 import type { Task } from '../lib/worker-tasks';
-import { fitsAnalysis, decode, encode, envelope, recoveryDecision, saveText, validateEnvelope, reconcileTasks, recoverConversation } from '../lib/session-codec';
-import { readAnalysis, writeAnalysis } from '../lib/session-db';
+import { fitsAnalysis, decode, encode, encodeComProntos, encodeEmFatias, envelope, recoveryDecision, saveText, validateEnvelope, reconcileTasks, recoverConversation, type Codificado } from '../lib/session-codec';
+import { readAnalysis, writeAnalysis, type StoredAnalysis } from '../lib/session-db';
+import type { PedidoSessao, RespostaSessao } from '../workers/sessao.worker';
+import { cederVez } from '../lib/fatias';
 import { validarRecorte } from '../lib/recorte';
 import { versaoPublicada } from '../lib/base-version';
 
@@ -54,7 +56,19 @@ let revision = 0;
 let textError = '';
 let analysisError = '';
 const reportError = () => useRecovery.setState({ error: [textError, analysisError].filter(Boolean).join(' ') });
+/**
+ * Rascunhos, filtros e o texto da conversa mudam a cada tecla e a cada trecho
+ * da resposta. Gravar o texto leve a cada mudança serializava tudo de novo na
+ * main thread; agora vai no máximo uma gravação por intervalo curto. Sair da
+ * aba (`pagehide`), escondê-la ou salvar a análise gravam na hora.
+ */
+let timerLeve: ReturnType<typeof setTimeout> | undefined;
+function agendarLeve() {
+  if (timerLeve === undefined) timerLeve = setTimeout(saveLight, 150);
+}
 function saveLight() {
+  clearTimeout(timerLeve);
+  timerLeve = undefined;
   try {
     const s = useEcoGradStore.getState();
     const data = light(s);
@@ -68,6 +82,81 @@ function saveLight() {
   catch { textError = 'O navegador bloqueou o armazenamento de textos.'; }
   reportError();
 }
+/**
+ * `writeAnalysis` no `sessao.worker`. A transação lê de volta as sessões
+ * guardadas — textos de dezenas de MB — para decidir o despejo, e isso não pode
+ * travar a página. Sem worker, ou se ele cair, a mesma função roda aqui.
+ */
+let gravador: Worker | null | undefined;
+let ultimaGravacao = 0;
+const gravacoes = new Map<number, { aba: string; valor?: StoredAnalysis; ok: () => void; falha: (e: unknown) => void }>();
+function obterGravador(): Worker | null {
+  if (gravador !== undefined) return gravador;
+  try {
+    const w = new Worker(new URL('../workers/sessao.worker.ts', import.meta.url), { type: 'module' });
+    w.onmessage = (e: MessageEvent<RespostaSessao>) => {
+      const p = gravacoes.get(e.data.id);
+      if (!p) return;
+      gravacoes.delete(e.data.id);
+      if (e.data.ok) p.ok();
+      else p.falha(new Error(e.data.mensagem));
+    };
+    // Um worker que não carregou não é falha de armazenamento: o que estava
+    // pendente é gravado aqui mesmo, e as próximas gravações também.
+    w.onerror = (e) => {
+      e.preventDefault();
+      w.terminate();
+      gravador = null;
+      for (const p of gravacoes.values()) writeAnalysis(p.aba, p.valor).then(p.ok, p.falha);
+      gravacoes.clear();
+    };
+    gravador = w;
+  } catch { gravador = null; }
+  return gravador;
+}
+function gravarAnalise(aba: string, valor?: StoredAnalysis): Promise<void> {
+  const w = obterGravador();
+  if (!w) return writeAnalysis(aba, valor);
+  const id = ++ultimaGravacao;
+  return new Promise((ok, falha) => {
+    gravacoes.set(id, { aba, valor, ok, falha });
+    w.postMessage({ id, aba, valor } satisfies PedidoSessao);
+  });
+}
+
+/**
+ * JSON dos objetos grandes do checkpoint — a base, as métricas da rede, os
+ * resultados das atividades —, por identidade. Eles são sempre substituídos,
+ * nunca alterados no lugar: um objeto já visto tem o mesmo JSON. Assim o
+ * checkpoint que segue o fim do SNA não serializa a base inteira de novo.
+ */
+const jsonPronto = new WeakMap<object, Codificado>();
+/**
+ * O resultado de uma atividade é um envelope (`{ type, result }`) em volta de
+ * objetos que o store também guarda — a rede do SNA é o mesmo `snaGlobal`.
+ * Guardar o JSON do envelope duplicava o do objeto; guarda-se o de cada objeto
+ * que ele carrega, e o envelope só quando não carrega nenhum.
+ */
+const objetosDoResultado = (resultado: object) => {
+  const filhos = Object.values(resultado).filter((v): v is object => !!v && typeof v === 'object');
+  return filhos.length ? filhos : [resultado];
+};
+async function prontosDoCheckpoint(value: ReturnType<typeof snapshot>): Promise<Map<object, Codificado>> {
+  const { ia, docs, snaGlobal, tasks } = value.data;
+  const grandes = [ia, docs, snaGlobal, ...tasks.flatMap((t) => t.resultado ? objetosDoResultado(t.resultado) : [])]
+    .filter((x): x is NonNullable<typeof x> & object => !!x && typeof x === 'object');
+  const prontos = new Map<object, Codificado>();
+  for (const obj of grandes) {
+    let pronto = jsonPronto.get(obj);
+    if (!pronto) {
+      // Em fatias: a base de uma coleção grande tem dezenas de MB de JSON.
+      pronto = await encodeEmFatias(obj, cederVez);
+      jsonPronto.set(obj, pronto);
+    }
+    prontos.set(obj, pronto);
+  }
+  return prontos;
+}
 export function saveSession() {
   if (!active) return;
   clearTimeout(timer);
@@ -78,19 +167,21 @@ export function saveSession() {
     if (generation !== revision) return;
     try {
       const value = snapshot(client);
-      const text = encode(value);
-      const bytes = new Blob([text]).size;
+      const prontos = await prontosDoCheckpoint(value);
+      // Enquanto as fatias eram serializadas, outro checkpoint pode ter sido pedido.
+      if (generation !== revision) return;
+      const { texto: text, bytes } = encodeComProntos(value, prontos);
       if (!fitsAnalysis(bytes)) {
-        await writeAnalysis(tabId);
+        await gravarAnalise(tabId);
         throw new Error('A análise excede 64 MiB. Continua disponível nesta aba, mas precisará ser carregada novamente após recarregar.');
       }
-      await writeAnalysis(tabId, { id: tabId, updated: value.updated, text, bytes });
+      await gravarAnalise(tabId, { id: tabId, updated: value.updated, text, bytes });
       if (generation !== revision) return;
       analysisError = '';
       useRecovery.setState({ saved: new Date().toLocaleTimeString('pt-BR'), saving: false });
     } catch {
       // Delete a prior checkpoint rather than present it later as the latest state.
-      try { await writeAnalysis(tabId); } catch { /* quota/blocked storage */ }
+      try { await gravarAnalise(tabId); } catch { /* quota/blocked storage */ }
       analysisError = 'Não foi possível salvar a análise (limite de 64 MiB ou armazenamento bloqueado/cheio). Ela continua disponível nesta aba.';
       if (generation === revision) useRecovery.setState({ saving: false });
     }
@@ -171,7 +262,7 @@ export async function initializeSession(queryClient: QueryClient) {
   active = true;
   useEcoGradStore.subscribe((s, before) => {
     if (s.analysisId !== before.analysisId) useRecovery.setState({ message: '' });
-    saveLight();
+    agendarLeve();
     if (s.ia !== before.ia || s.docs !== before.docs || s.analysisId !== before.analysisId || s.snaGlobal !== before.snaGlobal || s.maturidade !== before.maturidade) schedule();
   });
   let previousTasks = '';

@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Eraser, Layers, Send, Settings, Square, User } from 'lucide-react';
-import { ConfiguracaoIA, JanelaRetratoUFSCao, OfertaDeCortesia, RetratoUFSCao } from '@/components/chat/ConsultorIA';
+import { ConfiguracaoIA } from '@/components/chat/ConfiguracaoIA';
+import { OfertaDeCortesia } from '@/components/chat/OfertaDeCortesia';
+import { JanelaRetratoUFSCao, RetratoUFSCao } from '@/components/chat/RetratoUFSCao';
 import { ConversaAcervo } from '@/components/layout/ConversaAcervo';
 import { Aviso, Expander } from '@/components/ui/primitives';
-import { carregarIndiceBusca, type IndiceBusca } from '@/lib/busca-global';
+import type { IndiceBusca } from '@/lib/busca-global';
+import { carregarIndiceBusca } from '@/services/indice-busca';
+import { AnuncioDeResposta } from '@/components/ui/AnuncioDeResposta';
 import { estadoDoIndice, indiceConfigurado } from '@/lib/indice-remoto';
 import { markdownParaHtml } from '@/lib/markdown';
 import {
@@ -159,6 +163,8 @@ export function UFSCaoAcervo() {
     {/* Fora do ramo acima: o retrato do cabeçalho abre mesmo com o formulário
         de chave aberto, como no painel flutuante. */}
     <JanelaRetratoUFSCao aberta={retrato} onOpenChange={setRetrato} />
+    {/* Último filho e fora do fluxo: não mexe no espaçamento da conversa. */}
+    <AnuncioDeResposta total={conversa.length} ultima={conversa.at(-1)?.texto} />
   </div>;
 }
 

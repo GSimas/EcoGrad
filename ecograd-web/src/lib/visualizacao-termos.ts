@@ -1,6 +1,6 @@
 import type { Documento, TipoForesight } from '../types';
 import { extrairMemesCompletos, type FonteMemes } from './memetics';
-import { memesDoDocumento } from './memetic-network';
+import { memesDoDocumento } from './memes-documento';
 import { extrairTermosForesight } from './foresight-math';
 /** Exact matching with each original extractor; the three analyses normalize terms differently. */
 export function trabalhosDoTermo(docs: readonly Documento[], termo: string, origem: { modo: 'rede' | 'propagacao'; fonte: FonteMemes } | { modo: 'foresight'; tipo: TipoForesight }) {

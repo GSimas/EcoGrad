@@ -1,7 +1,7 @@
 import { Select } from '@/components/ui/Select';
 import { useAparencia } from '@/services/aparencia';
 import { useSessionField } from '@/hooks/useSessionField';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { RedeInterativa } from '@/components/ui/RedeInterativa';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { Card } from '@/components/ui/primitives';
@@ -89,6 +89,8 @@ export function OrbitaGrafo({
   onSelecionarNo?: (id: string, tipo: string) => void;
 }) {
   const reduzir = useAparencia(s => s.reduzir);
+  const idProfundidade = useId();
+  const idTamanho = useId();
   const anos = grafo.anos;
   const anoMax = anos.length > 0 ? anos[anos.length - 1] : new Date().getFullYear();
   const anoMin = anos.length > 0 ? anos[0] : anoMax;
@@ -173,14 +175,14 @@ export function OrbitaGrafo({
           Recorte temporal indisponível: os registros da rede estão todos em {anos.length === 1 ? `${anos[0]}` : 'anos não informados'}, então não há evolução a percorrer.
         </p>}
 
-        <label className="flex flex-col gap-1 text-xs text-slate-400">
+        <label htmlFor={idProfundidade} className="flex flex-col gap-1 text-xs text-slate-400">
           Profundidade
-          <Select aria-label="Profundidade" valor={String(profundidade)} onChange={(v) => setProfundidade(Number(v))} opcoes={[{ valor: '1', rotulo: '1 salto' }, { valor: '2', rotulo: '2 saltos' }]} />
+          <Select id={idProfundidade} aria-label="Profundidade" valor={String(profundidade)} onChange={(v) => setProfundidade(Number(v))} opcoes={[{ valor: '1', rotulo: '1 salto' }, { valor: '2', rotulo: '2 saltos' }]} />
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-slate-400">
+        <label htmlFor={idTamanho} className="flex flex-col gap-1 text-xs text-slate-400">
           Tamanho dos nós
-          <Select aria-label="Tamanho dos nós" valor={metodoTamanho} onChange={(v) => setMetodoTamanho(v as MetodoTamanho)} opcoes={METODOS.map((m) => ({ valor: m, rotulo: m }))} />
+          <Select id={idTamanho} aria-label="Tamanho dos nós" valor={metodoTamanho} onChange={(v) => setMetodoTamanho(v as MetodoTamanho)} opcoes={METODOS.map((m) => ({ valor: m, rotulo: m }))} />
         </label>
       </Card>
 

@@ -113,7 +113,7 @@ export function CorpoDaResposta({ resposta: r, fontes, indice }: {
 
   return <>
     {/* O HTML vem de `markdownParaHtml`, que escapa o texto do modelo antes de marcar. */}
-    <div className="markdown" onClick={clique} dangerouslySetInnerHTML={{ __html: html }} />
+    <div className="markdown" role="presentation" onClick={clique} dangerouslySetInnerHTML={{ __html: html }} />
     {invalidas.length > 0 && <p className="erro mt-2 text-xs">A resposta cita {invalidas.map((n) => `[${n}]`).join(', ')}, que não existe entre as fontes consultadas. Desconsidere essas citações.</p>}
   </>;
 }

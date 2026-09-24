@@ -9,6 +9,96 @@ export interface Envelope<T> { schema: number; updated: number; baseVersion: str
 export function encode(value: unknown): string {
   return JSON.stringify(value, (_key, v) => typeof v === 'number' && !Number.isFinite(v) ? { $ecogradNumber: String(v) } : v);
 }
+const codificador = typeof TextEncoder === 'function' ? new TextEncoder() : null;
+/** Área reaproveitada pelo `encodeInto`: cada unidade UTF-16 vira no máximo 3 bytes. */
+let areaUtf8 = new Uint8Array(0);
+const LIMITE_AREA = 1 << 20;
+
+/**
+ * Bytes do texto em UTF-8 — o mesmo que `new Blob([texto]).size`. Nos trechos
+ * pequenos do checkpoint o `encodeInto` nativo conta sem alocar; texto grande
+ * vai inteiro para o `Blob`, uma vez.
+ */
+export function bytesUtf8(texto: string): number {
+  if (codificador && texto.length * 3 <= LIMITE_AREA) {
+    if (areaUtf8.length < texto.length * 3) areaUtf8 = new Uint8Array(Math.min(LIMITE_AREA, Math.max(texto.length * 3, 4096)));
+    return codificador.encodeInto(texto, areaUtf8).written;
+  }
+  if (typeof Blob === 'function') return new Blob([texto]).size;
+  let bytes = texto.length;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto.charCodeAt(i);
+    if (c < 0x80) continue;
+    if (c < 0x800) bytes += 1;
+    else if (c >= 0xd800 && c <= 0xdbff && (texto.charCodeAt(i + 1) & 0xfc00) === 0xdc00) { bytes += 2; i++; }
+    else bytes += 2; // inclui surrogate isolado, que vira U+FFFD (3 bytes)
+  }
+  return bytes;
+}
+
+export interface Codificado { texto: string; bytes: number }
+
+/**
+ * O mesmo texto de `encode(valor)`, produzido em fatias: depois de cada
+ * `orcamentoMs` de trabalho a vez volta à página por `ceder`. Serve para os
+ * valores grandes do checkpoint (a base inteira, as métricas da rede), cujo
+ * `JSON.stringify` de uma vez só travava a página por centenas de milissegundos.
+ */
+export async function encodeEmFatias(valor: unknown, ceder: () => Promise<void>, orcamentoMs = 8): Promise<Codificado> {
+  const lista = Array.isArray(valor);
+  const plano = !lista && !!valor && typeof valor === 'object' && Object.getPrototypeOf(valor) === Object.prototype;
+  if (!lista && !plano) {
+    const texto = encode(valor);
+    return { texto, bytes: bytesUtf8(texto) };
+  }
+  const partes: string[] = [];
+  let bytes = 2;
+  let inicio = performance.now();
+  const chaves = lista ? null : Object.keys(valor as object);
+  const total = lista ? (valor as unknown[]).length : chaves!.length;
+  for (let i = 0; i < total; i++) {
+    let parte: string | undefined;
+    if (lista) parte = encode((valor as unknown[])[i]) ?? 'null';
+    else {
+      const t = encode((valor as Record<string, unknown>)[chaves![i]]);
+      // Como no `JSON.stringify`: propriedade que não vira JSON fica de fora.
+      if (t !== undefined) parte = `${JSON.stringify(chaves![i])}:${t}`;
+    }
+    if (parte !== undefined) { partes.push(parte); bytes += bytesUtf8(parte); }
+    if (performance.now() - inicio > orcamentoMs) { await ceder(); inicio = performance.now(); }
+  }
+  bytes += Math.max(0, partes.length - 1);
+  return { texto: lista ? `[${partes.join(',')}]` : `{${partes.join(',')}}`, bytes };
+}
+
+/**
+ * `encode(value)` reaproveitando o JSON já pronto de objetos grandes que não
+ * mudaram desde o último checkpoint. Cada objeto de `prontos` entra no lugar
+ * exato em que o `JSON.stringify` o escreveria, então o texto — e a contagem
+ * de bytes — é idêntico ao de `encode(value)`.
+ */
+export function encodeComProntos(value: unknown, prontos: ReadonlyMap<object, Codificado>): Codificado {
+  const marca = `\u0000ecograd-pronto:${Math.random().toString(36).slice(2)}:`;
+  const usados: Codificado[] = [];
+  const esqueleto = JSON.stringify(value, (_key, v) => {
+    if (v !== null && typeof v === 'object' && prontos.has(v)) {
+      usados.push(prontos.get(v)!);
+      return `${marca}${usados.length - 1}`;
+    }
+    return typeof v === 'number' && !Number.isFinite(v) ? { $ecogradNumber: String(v) } : v;
+  });
+  if (!usados.length) return { texto: esqueleto, bytes: bytesUtf8(esqueleto) };
+  // No esqueleto a marca aparece escapada (`\u0000`), sempre entre aspas e só em ASCII.
+  const padrao = new RegExp(`"${JSON.stringify(marca).slice(1, -1).replace(/\\/g, '\\\\')}(\\d+)"`, 'g');
+  let bytes = bytesUtf8(esqueleto);
+  const texto = esqueleto.replace(padrao, (inteiro, i: string) => {
+    const pronto = usados[Number(i)];
+    bytes += pronto.bytes - inteiro.length;
+    return pronto.texto;
+  });
+  return { texto, bytes };
+}
+
 export function decode(text: string): unknown {
   return JSON.parse(text, (_key, v) => v && typeof v === 'object' && Object.keys(v).length === 1 && '$ecogradNumber' in v
     ? v.$ecogradNumber === 'NaN' ? NaN : v.$ecogradNumber === 'Infinity' ? Infinity : v.$ecogradNumber === '-Infinity' ? -Infinity : v : v);

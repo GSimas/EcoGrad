@@ -1,7 +1,11 @@
 import { CHAVE_ABA_AVANCADA, rotaVisivel } from '@/lib/navigation';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { interromperConversa } from '@/services/chat';
-import { interromperExtracao, interromperSintese } from '@/services/ia';
+// As ações só aparecem com uma atividade em curso, e quem a iniciou já carregou
+// o módulo dela: importar aqui sob demanda resolve na hora, e o painel — montado
+// em toda página — deixa de arrastar o pipeline de IA para o bundle inicial.
+const interromperConversa = () => { void import('@/services/chat').then((m) => m.interromperConversa()); };
+const interromperExtracao = () => { void import('@/services/ia').then((m) => m.interromperExtracao()); };
+const interromperSintese = (id: string) => { void import('@/services/ia').then((m) => m.interromperSintese(id)); };
 import { navigatePage } from '@/services/navigation';
 /** O catálogo vive na aba Temas e conceitos; o atalho troca de página e de aba. */
 function abrirCatalogo(){

@@ -1,8 +1,9 @@
 import { useCallback, useDeferredValue, useEffect, useId, useMemo, useState, type KeyboardEvent } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Check, Info, Rocket, Search, X } from 'lucide-react';
-import { cn, correspondeBusca } from '@/lib/utils';
-import { buscarNoAcervo, carregarIndiceBusca, MAX_COLECOES_POR_ITEM, prepararBusca, type ResultadoBusca } from '@/lib/busca-global';
+import { chaveBusca, cn, termosBusca } from '@/lib/utils';
+import { MAX_COLECOES_POR_ITEM, type ResultadoBusca } from '@/lib/busca-global';
+import { buscarNoIndice, prepararIndiceDeBusca } from '@/services/indice-busca';
 import { carregarCobertura, type ColecaoCobertura } from '@/lib/colecoes';
 import { abrirEscolhaDoAcervo, colecoesDaEscolha } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
@@ -13,7 +14,9 @@ import { DetalhesCobertura, resumoCobertura } from './ColecoesPicker';
 import { UnificarPessoas, ehPessoa, type Candidato } from './UnificarPessoas';
 import { grupoDe, usePessoas } from '@/services/pessoas';
 
-const plural = (n: number, um: string, varios: string) => `${n.toLocaleString('pt-BR')} ${n === 1 ? um : varios}`;
+// Um formatador só: `toLocaleString` monta um a cada chamada, e a lista re-renderiza a cada tecla.
+const NUMERO = new Intl.NumberFormat('pt-BR');
+const plural = (n: number, um: string, varios: string) => `${NUMERO.format(n)} ${n === 1 ? um : varios}`;
 const ACERVO = { ppg: 'Pós-Graduação', tcc: 'Graduação' } as const;
 /** Coleções são poucas e grossas: um punhado no topo basta para não abafar os itens. */
 const MAX_COLECOES = 8;
@@ -60,9 +63,11 @@ export function BuscaGlobal() {
   // ("carregue as coleções para abrir a página pedida") apareceria em lugar nenhum.
   const aviso = useNavigation((n) => n.notice);
 
+  // O catálogo é baixado, descomprimido e normalizado no `busca.worker`; a
+  // página só recebe as respostas de cada consulta.
   const catalogo = useQuery({
-    queryKey: ['indice-busca'],
-    queryFn: ({ signal }) => carregarIndiceBusca(signal),
+    queryKey: ['indice-busca-worker'],
+    queryFn: ({ signal }) => prepararIndiceDeBusca(signal),
     enabled: ativada,
     staleTime: Infinity,
     gcTime: Infinity,
@@ -75,21 +80,37 @@ export function BuscaGlobal() {
     staleTime: Infinity,
     retry: 1,
   });
-  const preparada = useMemo(() => (catalogo.data ? prepararBusca(catalogo.data) : null), [catalogo.data]);
+  const buscavel = consulta.trim().length >= 2;
+  const achados = useQuery({
+    queryKey: ['busca-acervo', consulta],
+    queryFn: ({ signal }) => buscarNoIndice(consulta, 50, signal),
+    enabled: !!catalogo.data && buscavel,
+    staleTime: Infinity,
+    gcTime: 60_000,
+    // Enquanto a resposta da nova consulta não chega, a lista anterior fica.
+    placeholderData: keepPreviousData,
+  });
+  // A resposta que corresponde à consulta atual, e não a que ficou de uma anterior.
+  const respondida = !!achados.data && !achados.isPlaceholderData;
 
+  // Nome e acervo de cada coleção já normalizados: a lista é filtrada a cada tecla.
+  const chavesColecoes = useMemo(
+    () => (cobertura.data?.colecoes ?? []).map((c) => chaveBusca(`${c.nome} ${ACERVO[c.tipo]}`)),
+    [cobertura.data],
+  );
   const resultados = useMemo<Opcao[]>(() => {
-    if (consulta.trim().length < 2) return [];
+    if (!buscavel) return [];
+    // Mesma regra de `correspondeBusca`: todos os termos, em qualquer ordem.
+    const termos = termosBusca(consulta);
     // Coleções primeiro: são o recorte mais amplo e a lista de itens é longa.
     const colecoes = (cobertura.data?.colecoes ?? [])
-      .filter((c) => correspondeBusca(`${c.nome} ${ACERVO[c.tipo]}`, consulta))
+      .filter((_, i) => termos.every((t) => chavesColecoes[i].includes(t)))
       .sort((a, b) => b.total - a.total)
       .slice(0, MAX_COLECOES)
       .map((colecao): Opcao => ({ kind: 'colecao', chave: chaveColecao(colecao), nome: colecao.nome, colecao }));
-    const itens = preparada
-      ? buscarNoAcervo(preparada, consulta).map((item): Opcao => ({ kind: 'item', chave: chaveItem(item), nome: item.nome, item }))
-      : [];
+    const itens = (achados.data ?? []).map((item): Opcao => ({ kind: 'item', chave: chaveItem(item), nome: item.nome, item }));
     return [...colecoes, ...itens];
-  }, [preparada, cobertura.data, consulta]);
+  }, [buscavel, achados.data, cobertura.data, chavesColecoes, consulta]);
 
   useEffect(() => {
     if (ativo >= 0) document.getElementById(`${listaId}-${ativo}`)?.scrollIntoView({ block: 'nearest' });
@@ -179,7 +200,7 @@ export function BuscaGlobal() {
         ? 'Não foi possível preparar a busca em todo o acervo. Recarregue a página para tentar de novo.'
         : preparando
           ? 'Preparando a busca em todo o acervo...'
-          : catalogo.data && texto.trim().length >= 2 && consulta === texto && resultados.length === 0
+          : catalogo.data && texto.trim().length >= 2 && consulta === texto && respondida && resultados.length === 0
             ? 'Nenhum item ou coleção encontrado em todo o acervo.'
             : totalItens > 0
               // A honestidade do recorte começa aqui: o download é por coleção,
@@ -302,6 +323,9 @@ export function BuscaGlobal() {
             {resultados.map((o, i) => {
               const marcado = marcados.has(o.chave);
               return (
+                // Combobox do ARIA APG: o foco fica no campo, que trata setas e Enter e
+                // aponta a opção ativa por aria-activedescendant; a opção só recebe o clique.
+                // eslint-disable-next-line jsx-a11y/click-events-have-key-events
                 <li
                   key={o.chave}
                   id={`${listaId}-${i}`}

@@ -24,11 +24,8 @@ import {
 } from '../src/lib/graph-core';
 import { calcularMetricasComplexas, estimarGammaLeiPotencia } from '../src/lib/sna-engine';
 import { tituloPython } from '../src/lib/memetic-network';
-import {
-  extrairTermosForesight,
-  prepararRadarForesight,
-  validarForesightHistorico,
-} from '../src/lib/foresight-math';
+import { extrairTermosForesight, prepararRadarForesight } from '../src/lib/foresight-math';
+import { validarForesightHistorico } from '../src/lib/foresight-grafo';
 import { calcularMetricasMemeticas } from '../src/lib/memetics';
 import { gerarTabelaQLCruzado } from '../src/lib/ql';
 import { calcularSimilaresRede, construirPerfisSimilaridade } from '../src/lib/similarity';

@@ -74,3 +74,23 @@ test('Tudo reune as tres categorias sem repetir a pessoa em cada papel', () => {
   const tudo = [...montarCatalogo(idx, 'tudo').keys()].sort();
   assert.deepEqual(tudo, ['A (Documento)', 'Ana (Autor · Orientador)', 'Macro (Macrotema)', 'tema (Palavra-chave)']);
 });
+
+test('o catalogo aquecido em fatias e identico ao montado na hora, inclusive nos empates', async () => {
+  const { aquecerCatalogo } = await import('../src/lib/busca-categorias');
+  const { ordenarEmFatias } = await import('../src/lib/fatias');
+  // Nomes com acento, caixa, formas equivalentes (NFC × NFD) e homônimos entre tipos.
+  const nomes = ['Gestão', 'gestao', 'Ges\u0074a\u0303o', 'Ávila, Ana', 'avila, ana', 'Zé', 'ze', 'Ângulo', 'angulo', 'Ética', 'etica', 'Ômega'];
+  const docs = nomes.flatMap((n, i) => [
+    doc({ titulo: `${n} ${i}`, autores: [n], orientador: nomes[(i + 3) % nomes.length], palavras_chave: [n, nomes[(i + 5) % nomes.length]], macrotema: nomes[(i + 7) % nomes.length] }),
+  ]);
+  for (const [categoria, papel, origem] of [['tudo', 'Todos', 'Todos'], ['pessoas', 'Orientador', 'Todos'], ['temas', 'Todos', 'Macrotema']] as const) {
+    const esperado = [...montarCatalogo(construirIndicesInvertidos(docs), categoria, papel, origem).entries()];
+    const indices = construirIndicesInvertidos(docs);
+    await aquecerCatalogo(indices, categoria, papel, origem);
+    assert.deepEqual([...montarCatalogo(indices, categoria, papel, origem).entries()], esperado, categoria);
+  }
+  // A ordenação fatiada é estável e igual à do Array.prototype.sort, cedendo a vez no meio.
+  const pares = Array.from({ length: 5000 }, (_, i) => ({ chave: (i * 7919) % 97, ordem: i }));
+  const porChave = (a: { chave: number }, b: { chave: number }) => a.chave - b.chave;
+  assert.deepEqual(await ordenarEmFatias(pares, porChave, () => Promise.resolve(), 0), [...pares].sort(porChave));
+});

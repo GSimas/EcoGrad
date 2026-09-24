@@ -2,7 +2,7 @@ import { Select } from '@/components/ui/Select';
 import { CuradoriaTermos } from './CuradoriaTermos';
 import { resultadoCurado } from '@/lib/curadoria';
 import { aplicarCuradoria } from '@/services/curadoria';
-import { useMemo, useRef, useState } from 'react';
+import { useId, useMemo, useRef, useState } from 'react';
 import Papa from 'papaparse';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Aviso, Card, Expander, Progresso, Tabela } from '@/components/ui/primitives';
@@ -18,6 +18,7 @@ import type { ItemExtracao } from '@/lib/ia-state';
 import type { OntologiaIA } from '@/types';
 
 export function CatalogoOntologia() {
+ const idTamanho=useId();
  const docs=useEcoGradStore(s=>s.docs);const baseVersion=useEcoGradStore(s=>s.baseVersion);
  const [encerrando,setEncerrando]=useState(false);
  const {lote,importacao}=useEcoGradStore(s=>s.ia);const setIA=useEcoGradStore(s=>s.setIA);
@@ -68,7 +69,7 @@ export function CatalogoOntologia() {
    <p className="text-sm text-slate-300">A IA recebe somente o resumo integral de cada documento do lote. Título e identificador vinculam a resposta ao documento no EcoGrad e não são enviados à DeepSeek nesta extração. {comResumo} de {docs.length} registros têm resumo. A fila segue a ordem da seleção, ignora registros já enriquecidos e identidades ambíguas. Não envia chat nem notas CAPES.</p>
    <p className="text-sm text-slate-300">A IA propõe nomes de teorias, ferramentas e métodos e pode agrupá-los ou omitir conceitos. Revise as extrações e suas fontes. Há uma pausa de quatro segundos entre documentos. Cada resultado fica salvo para revisão; só altera a análise ao aplicar. Interromper impede novas solicitações, mas o provedor pode concluir uma já recebida.</p>
    <div className="flex flex-wrap items-end gap-3">
-    <label className="text-sm">Tamanho do Lote<Select aria-label="Tamanho do Lote" className="mt-1" valor={String(tamanho)} disabled={processando} onChange={v=>setTamanho(Number(v))} opcoes={[5,10,20,50,100,200,500,1000].map(t=>({valor:String(t),rotulo:String(t)}))} /></label>
+    <label htmlFor={idTamanho} className="text-sm">Tamanho do Lote<Select id={idTamanho} aria-label="Tamanho do Lote" className="mt-1" valor={String(tamanho)} disabled={processando} onChange={v=>setTamanho(Number(v))} opcoes={[5,10,20,50,100,200,500,1000].map(t=>({valor:String(t),rotulo:String(t)}))} /></label>
     <button type="button" className="btn btn-primary" disabled={processando||ocupado||!comResumo||!!lote&&!lote.aplicado} onClick={()=>void criarLote()}>Preparar novo lote pela IA</button>
     {processando&&<button type="button" className="btn" onClick={interromperExtracao}>Interromper extração</button>}
    </div>

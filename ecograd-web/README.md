@@ -63,6 +63,9 @@ GEMINI_API_KEY=...     # só o vetor da pergunta na busca por significado
 | `npm run verify:parity` | Compara os motores TS com o `backend.py` (requer o venv Python) |
 | `npm run test:all` | Regressão funcional, contratos, persistência, IA simulada e aparência |
 | `npm run report:build` | Mede os arquivos JS iniciais, chunks adiados e bases do último build |
+| `npm run lint:a11y` | Acessibilidade estática (`eslint-plugin-jsx-a11y`, conjunto *strict*) |
+| `npm run medir:bundle` | JS/CSS inicial (bruto, gzip, brotli), chunks sob demanda e workers; com `ANALYZE=1` no build, a composição por pacote |
+| `npm run medir:desempenho` | Chrome real, CPU 4×: LCP, CLS, TBT, INP, tarefas longas, quadros, heap e axe-core — ver [a auditoria](../docs/DESEMPENHO-E-ACESSIBILIDADE.md) |
 
 **Índice do acervo** (Postgres + pgvector). O que ele é, por que existe e os números medidos estão
 no [README da raiz](../README.md#️-o-índice-do-acervo); os comandos são estes:
@@ -151,6 +154,11 @@ Duas operações inviabilizariam a UI na main thread:
    apenas os documentos da seleção.
 2. **Redes complexas** — Brandes, Louvain, bootstrap e a varredura de 108 combinações do Grid
    Search levam de segundos a minutos. O `sna.worker` executa tudo e reporta progresso real.
+
+Três outros trabalhos saíram da main thread depois de medidos ([auditoria](../docs/DESEMPENHO-E-ACESSIBILIDADE.md)):
+o **catálogo da busca** do acervo inteiro (`busca.worker` — preparar o índice travava a página por segundos, e
+cada tecla varria ~250 mil nomes), a **gravação do checkpoint** no IndexedDB (`sessao.worker`) e o **fundo
+animado** (`fundo.worker`, sobre um `OffscreenCanvas`).
 
 ### Aproximações em redes grandes
 
