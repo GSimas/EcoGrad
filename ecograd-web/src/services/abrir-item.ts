@@ -2,7 +2,7 @@ import { colecoesDoItem, MAX_COLECOES_POR_ITEM, type ResultadoBusca } from '@/li
 import type { Documento, TipoBusca } from '@/types';
 import { mesmaSelecao } from '@/lib/selecao';
 import { canonizar, grupoDe, usePessoas } from './pessoas';
-import { mesmoRecorte, type ItemRecorte } from '@/lib/recorte';
+import { mesmoRecorte, somarAoRecorte, type ItemRecorte } from '@/lib/recorte';
 import { referenciaDocumento } from '@/lib/resultados';
 import { PAPEIS_PESSOA } from '@/types';
 import { carregarDados } from './calculos';
@@ -108,6 +108,45 @@ export function abrirEscolhaDoAcervo(escolha: EscolhaAcervo, limite = MAX_COLECO
     if (useEcoGradStore.getState().dadosCarregados) abrir(escolha);
   }, recorte);
   return { carregando: true, colecoes, omitidas };
+}
+
+/** O item de recorte de uma entidade do dossiê, com as grafias unificadas da pessoa. */
+function itemRecorte(tipo: TipoBusca, nome: string): ItemRecorte {
+  const pessoa = tipo === 'Pessoa' || (PAPEIS_PESSOA as readonly string[]).includes(tipo);
+  const grafias = pessoa ? grupoDe(usePessoas.getState().grupos, nome)?.grafias : undefined;
+  return grafias?.length ? { tipo, nome, grafias } : { tipo, nome };
+}
+
+/** Carrega a análise pedida e volta ao dossiê da entidade; se nada muda, só volta. */
+function carregarEAbrirDossie(analise: { programas: string[]; cursosTcc: string[]; recorte: ItemRecorte[] }, tipo: TipoBusca, nome: string, mudou: boolean): boolean {
+  const irAoDossie = () => useEcoGradStore.setState((s) => ({
+    apresentacaoVista: true, rota: 'busca' as const, buscaTipo: tipo, buscaTermo: nome,
+    ui: { ...s.ui, 'dossie.documento': undefined },
+  }));
+  if (!mudou) { irAoDossie(); return false; }
+  carregarDados(analise.programas, analise.cursosTcc, 'trabalhos', () => {
+    if (useEcoGradStore.getState().dadosCarregados) irAoDossie();
+  }, analise.recorte);
+  return true;
+}
+
+/**
+ * Soma à análise ativa tudo o que o acervo tem sobre uma entidade do dossiê:
+ * baixa as coleções dela que faltam e a acrescenta ao recorte. Devolve se
+ * começou um carregamento.
+ */
+export function somarEntidadeAAnalise(tipo: TipoBusca, nome: string, colecoes: { programas: string[]; cursosTcc: string[] }): boolean {
+  const s = useEcoGradStore.getState();
+  const soma = somarAoRecorte({ programas: s.programasSelecionados, cursosTcc: s.cursosTccSelecionados, recorte: s.recorte }, itemRecorte(tipo, nome), colecoes);
+  return carregarEAbrirDossie(soma, tipo, nome, soma.mudou);
+}
+
+/** Troca a análise ativa por tudo o que o acervo tem sobre uma entidade do dossiê. */
+export function analisarSoAEntidade(tipo: TipoBusca, nome: string, colecoes: { programas: string[]; cursosTcc: string[] }): boolean {
+  const s = useEcoGradStore.getState();
+  const recorte = [itemRecorte(tipo, nome)];
+  const mudou = !mesmaSelecao(colecoes, { programas: s.programasSelecionados, cursosTcc: s.cursosTccSelecionados }) || !mesmoRecorte(recorte, s.recorte);
+  return carregarEAbrirDossie({ ...colecoes, recorte }, tipo, nome, mudou);
 }
 
 /**

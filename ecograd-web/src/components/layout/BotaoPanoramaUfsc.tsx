@@ -21,7 +21,7 @@ export function BotaoPanoramaUfsc({ compacto = false, className, desabilitado = 
   const [aberta, setAberta] = useState(false);
   return <Janela aberta={aberta} onOpenChange={setAberta} titulo="Panorama UFSC" descricao="O acervo inteiro em números e os programas de pós-graduação reconhecidos pela CAPES — independentes das coleções da sua análise." larga
     trigger={<button type="button" className={className ?? 'btn min-h-11'} disabled={desabilitado} aria-label="Abrir Panorama UFSC" title="Panorama UFSC">
-      <Landmark size={className ? 14 : 18} className="shrink-0" aria-hidden />{!compacto && 'Panorama UFSC'}
+      <Landmark size={className ? 14 : 18} className="shrink-0" aria-hidden />{!compacto && <span className="eco-chip-rotulo">Panorama UFSC</span>}
     </button>}>
     <PanoramaUfsc aoNavegar={() => setAberta(false)} />
   </Janela>;

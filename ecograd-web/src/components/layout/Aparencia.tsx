@@ -91,7 +91,7 @@ function ProvedorDeIA() {
 export function Aparencia({ compacto = false, chip = false, desabilitado = false }: { compacto?: boolean; chip?: boolean; desabilitado?: boolean }) {
   const { tema, fonte, tamanho, movimento, contraste, reduzir, claro, erro, definir } = useAparencia();
   return <Janela titulo="Configurações"
-    trigger={<button type="button" className={chip ? cn(CHIP, compacto && 'w-11 justify-center px-0') : 'btn'} disabled={desabilitado} aria-label="Configurações" title="Configurações"><Settings size={chip ? 14 : 18} className="shrink-0" />{!compacto && 'Configurações'}</button>}>
+    trigger={<button type="button" className={chip ? cn(CHIP, compacto && 'w-11 justify-center px-0') : 'btn'} disabled={desabilitado} aria-label="Configurações" title="Configurações"><Settings size={chip ? 14 : 18} className="shrink-0" />{!compacto && <span className="eco-chip-rotulo">Configurações</span>}</button>}>
     <div className="space-y-4">
       <Grupo titulo="Tema" opcoes={TEMAS} valor={tema} onChange={(v) => definir({ tema: v })} />
       <Grupo titulo="Fonte" opcoes={FONTES} valor={fonte} onChange={(v) => definir({ fonte: v })} />

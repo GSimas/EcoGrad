@@ -24,8 +24,10 @@ const PASSOS: [titulo: string, texto: string][] = [
  * largura (`somenteIcone`), mas só empilha quando está recolhido, onde não
  * cabem três lado a lado. O nome segue no `title` e no leitor de tela.
  */
-export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabilitado = false, comPanorama = false, className, aoFazerTour }: {
+export function AtalhosEcoGrad({ somenteIcone = false, expansivel = false, empilhado = false, desabilitado = false, comPanorama = false, className, aoFazerTour }: {
   somenteIcone?: boolean;
+  /** Só o ícone em repouso; o nome desliza para fora no hover ou no foco do teclado. */
+  expansivel?: boolean;
   empilhado?: boolean;
   desabilitado?: boolean;
   /**
@@ -39,12 +41,12 @@ export function AtalhosEcoGrad({ somenteIcone = false, empilhado = false, desabi
 }) {
   const classe = cn(CHIP, somenteIcone && 'w-11 justify-center px-0');
   return (
-    <nav aria-label="Atalhos do EcoGrad" className={cn('flex gap-2', empilhado ? 'flex-col items-center' : 'flex-wrap justify-center', className)}>
-    <TutorialModal aoFazerTour={aoFazerTour}><button type="button" className={classe} disabled={desabilitado} aria-label="Ver tutorial" title="Ver tutorial"><BookOpen size={14} className="shrink-0" />{!somenteIcone && 'Ver tutorial'}</button></TutorialModal>
+    <nav aria-label="Atalhos do EcoGrad" className={cn('flex gap-2', empilhado ? 'flex-col items-center' : 'flex-wrap justify-center', expansivel && 'eco-atalhos-expansiveis', className)}>
+    <TutorialModal aoFazerTour={aoFazerTour}><button type="button" className={classe} disabled={desabilitado} aria-label="Ver tutorial" title="Ver tutorial"><BookOpen size={14} className="shrink-0" />{!somenteIcone && <span className="eco-chip-rotulo">Ver tutorial</span>}</button></TutorialModal>
     {comPanorama && <BotaoPanoramaUfsc compacto={somenteIcone} desabilitado={desabilitado} className={classe} />}
 
     <Janela titulo="Sobre" descricao="De onde vem o acervo, como o EcoGrad funciona e os limites do que os dados mostram." larga
-      trigger={<button type="button" className={classe} disabled={desabilitado} aria-label="Sobre" title="Sobre"><Info size={14} className="shrink-0" />{!somenteIcone && 'Sobre'}</button>}>
+      trigger={<button type="button" className={classe} disabled={desabilitado} aria-label="Sobre" title="Sobre"><Info size={14} className="shrink-0" />{!somenteIcone && <span className="eco-chip-rotulo">Sobre</span>}</button>}>
       <div className="space-y-6">
         <section className="space-y-3">
           <h3 className="text-base font-semibold text-slate-100">De onde vêm os dados</h3>

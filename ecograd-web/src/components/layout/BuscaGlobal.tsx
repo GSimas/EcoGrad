@@ -254,10 +254,11 @@ export function BuscaGlobal() {
           </>}
       </div>
 
-      <label htmlFor={campoId} className="mt-3 block text-sm font-medium text-slate-300">Pesquise em todo o acervo</label>
+      {/* Rótulo só para leitor de tela: o placeholder e o marco de busca já dizem o que o campo faz. */}
+      <label htmlFor={campoId} className="sr-only">Pesquise em todo o acervo</label>
       {/* `relative` só para a lista de resultados, que é a única coisa flutuante
           daqui: ela some ao escolher, e nada da seleção depende dela. */}
-      <div className="relative mt-1.5">
+      <div className="relative mt-3">
         {/* Ações à direita, sempre montadas: aparecer e sumir mudaria a largura do campo. */}
         <div className="flex items-start gap-2">
           <div className="relative min-w-0 flex-1">

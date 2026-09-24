@@ -82,6 +82,40 @@ export function recortarDocs(docs: readonly Documento[], recorte: readonly ItemR
 export const mesmoRecorte = (a: readonly ItemRecorte[], b: readonly ItemRecorte[]): boolean =>
   a.length === b.length && a.every((x) => b.some((y) => y.tipo === x.tipo && chave(y.nome) === chave(x.nome)));
 
+export interface AnaliseCarregada {
+  programas: string[];
+  cursosTcc: string[];
+  recorte: ItemRecorte[];
+}
+
+const uniao = (a: readonly string[], b: readonly string[]) => [...new Set([...a, ...b])];
+
+/**
+ * A análise ativa com mais um item somado a ela: as coleções do item se juntam
+ * às carregadas, e o item entra no recorte ao lado do que já estava.
+ *
+ * Uma análise sem recorte é de coleções inteiras. Somar um item a ela não pode
+ * recortá-la até o item — as coleções que já estavam continuam inteiras, como
+ * itens `Coleção` do recorte.
+ *
+ * `mudou` é falso quando nada viria de novo: as coleções do item já estão
+ * carregadas e o recorte já o cobre (ou não há recorte).
+ */
+export function somarAoRecorte(atual: AnaliseCarregada, item: ItemRecorte, colecoes: { programas: readonly string[]; cursosTcc: readonly string[] }): AnaliseCarregada & { mudou: boolean } {
+  const programas = uniao(atual.programas, colecoes.programas);
+  const cursosTcc = uniao(atual.cursosTcc, colecoes.cursosTcc);
+  const novas = programas.length + cursosTcc.length - atual.programas.length - atual.cursosTcc.length;
+  const base: ItemRecorte[] = atual.recorte.length
+    ? [...atual.recorte]
+    : [...atual.programas, ...atual.cursosTcc].map((nome) => ({ tipo: 'Coleção' as const, nome }));
+  // Sem recorte, as coleções carregadas já trazem o item inteiro.
+  if (!atual.recorte.length && base.length && novas === 0) return { ...atual, recorte: [...atual.recorte], mudou: false };
+  // Um papel já está dentro de uma `Pessoa` de mesmo nome; o contrário não.
+  const cobre = (y: ItemRecorte) => chave(y.nome) === chave(item.nome) && (y.tipo === item.tipo || (y.tipo === 'Pessoa' && TODAS_AS_PESSOAS.includes(item.tipo)));
+  const jaEsta = base.some(cobre);
+  return { programas, cursosTcc, recorte: jaEsta ? base : [...base, item], mudou: novas > 0 || !jaEsta };
+}
+
 /** Rótulo curto do recorte, para cabeçalhos e status. */
 export function resumoRecorte(recorte: readonly ItemRecorte[]): string {
   const itens = recorte.filter((i) => i.tipo !== 'Coleção');

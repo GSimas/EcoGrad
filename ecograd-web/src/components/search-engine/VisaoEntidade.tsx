@@ -10,6 +10,7 @@ import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { BookOpenText, ChartColumn, ChevronRight, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';
 import { BlocoEmJanela } from '@/components/ui/BlocoEmJanela';
+import { CarregarDoAcervo } from './CarregarDoAcervo';
 import { NOTA_EXPORTACAO, NOTA_FILTROS } from '@/components/ui/Tabela';
 import { PAPEIS_PESSOA, type Documento, type PapelPessoa, type TipoBusca } from '@/types';
 export const JUSTIFICATIVA: Record<TipoBusca, string> = {
@@ -118,6 +119,7 @@ export function VisaoEntidade({ tipo, docs, termo, analises, graficos }: { tipo:
       Este nome também aparece como {papeis.filter(([p]) => p !== tipo).map(([p]) => p.toLowerCase()).join(' e ')} no recorte.
       <button type="button" className="btn ml-2 text-xs" onClick={() => navegar('Pessoa', termo)}>Ver todos os trabalhos da pessoa</button>
     </p>}
+    <CarregarDoAcervo tipo={tipo} termo={termo} registrosNaAnalise={docs.length} />
     <div className="grid gap-3 sm:grid-cols-2"><Kpi rotulo="Registros associados" valor={docs.length} /><Kpi rotulo="Coleções representadas" valor={colecoes.length} detalhe={`${colecoes.filter((n) => tcc.includes(n)).length} do catálogo de TCCs`}>
       <ul className="mt-2 max-h-48 space-y-1.5 overflow-auto border-t border-eco-border pr-1 pt-2 text-xs" aria-label="Coleções representadas e registros em cada uma">
         {registrosPorColecao.map(([nome, n]) => <li key={nome} className="flex items-start justify-between gap-3">

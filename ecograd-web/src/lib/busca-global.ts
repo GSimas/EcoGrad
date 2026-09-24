@@ -113,6 +113,30 @@ export function itemDoAcervo(indice: IndiceBusca, tipo: TipoBusca, nome: string)
   return i < 0 ? null : paraResultado(indice, i);
 }
 
+/** No índice cada papel é um item à parte; o dossiê de `Pessoa` reúne os três. */
+const PAPEIS_DA_PESSOA: readonly TipoBusca[] = ['Autor', 'Orientador', 'Co-orientador'];
+
+/**
+ * Tudo o que o índice guarda sob uma entidade do dossiê — o caminho de volta do
+ * recorte carregado para o acervo inteiro.
+ *
+ * Compara pela chave de busca, e não pelo texto exato: o índice guarda
+ * palavras-chave normalizadas ("ostras"), e o dossiê mostra a grafia do
+ * registro ("Ostras"). É a mesma comparação do recorte, então o que se acha
+ * aqui é o que o recorte vai reter depois de carregar.
+ */
+export function itensDaEntidade(indice: IndiceBusca, tipo: TipoBusca, nome: string): ResultadoBusca[] {
+  const alvo = chaveBusca(nome.trim());
+  if (!alvo) return [];
+  const tipos = new Set((tipo === 'Pessoa' ? PAPEIS_DA_PESSOA : [tipo]).map((t) => indice.tipos.indexOf(t)).filter((t) => t >= 0));
+  const achados: ResultadoBusca[] = [];
+  for (let i = 0; i < indice.itens.length; i += 1) {
+    const [n, t] = indice.itens[i];
+    if (tipos.has(t) && chaveBusca(n.trim()) === alvo) achados.push(paraResultado(indice, i));
+  }
+  return achados;
+}
+
 /** Coleções a carregar para abrir o item, separadas pelos dois catálogos. */
 export function colecoesDoItem(item: ResultadoBusca, limite = MAX_COLECOES_POR_ITEM) {
   const escolhidas = item.colecoes.slice(0, limite);

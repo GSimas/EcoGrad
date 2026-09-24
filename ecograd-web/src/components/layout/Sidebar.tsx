@@ -1,8 +1,9 @@
 import { PAGE_LABELS, rotaVisivel } from '@/lib/navigation';
 import { navigatePage, useNavigation } from '@/services/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { useSessionField } from '@/hooks/useSessionField';
 import * as Dialog from '@radix-ui/react-dialog';
-import { BookOpen, LayoutDashboard, Menu, Microscope, PanelLeftClose, PanelLeftOpen, Search, X } from 'lucide-react';
+import { BookOpen, ChevronDown, LayoutDashboard, Menu, Microscope, PanelLeftClose, PanelLeftOpen, Search, X } from 'lucide-react';
 import { TutorialModal } from './TutorialModal';
 import { AtalhosEcoGrad } from './AtalhosEcoGrad';
 import { OfertaDeExemplo, useTourGuiado } from './TourGuiado';
@@ -36,20 +37,31 @@ function Navegacao({ compacto, aoNavegar, tour }: { compacto: boolean; aoNavegar
   // A badge lista todas as coleções; o limite de altura evita empurrar a navegação para fora da tela.
   const colecoesAtivas = [...state.programasSelecionados, ...state.cursosTccSelecionados];
   const botao = cn('btn min-h-11', compacto ? 'w-11 px-0' : 'w-full justify-start');
+  // Na sessão, e não no componente: a lateral e a gaveta do celular mostram o mesmo bloco.
+  const [analiseAberta, setAnaliseAberta] = useSessionField('lateral.analiseAtiva.aberta', true);
+  const idAnalise = useId();
   return <>
     {state.dadosCarregados && <>
       {!compacto && <div className="eco-analise-ativa rounded-lg border border-eco-accent/40 bg-eco-accent/10 p-3 text-sm">
-        <p className="font-mono text-[.68rem] uppercase tracking-[.12em] text-slate-300">Análise ativa</p>
-        {colecoesAtivas.length === 0
-          ? <p className="mt-1 break-words text-eco-accent">{rotuloAnaliseAtiva(state)}</p>
-          : <ul className="mt-1 max-h-48 space-y-1 overflow-y-auto overscroll-contain pr-1">
-            {colecoesAtivas.map((nome) => <li key={nome} className="break-words text-eco-accent">{nome}</li>)}
-          </ul>}
-        <p className="mt-2 text-xs text-slate-400">
-          {colecoesAtivas.length > 0 && <>{colecoesAtivas.length.toLocaleString('pt-BR')} {colecoesAtivas.length === 1 ? 'coleção' : 'coleções'} · </>}
-          {state.docs.length.toLocaleString('pt-BR')} documentos
-        </p>
-        <RecorteAtivo compacto />
+        <button type="button" onClick={() => setAnaliseAberta((v) => !v)} aria-expanded={analiseAberta} aria-controls={idAnalise}
+          className="-m-1 flex min-h-11 w-[calc(100%+.5rem)] items-center justify-between gap-2 rounded-md p-1 text-left hover:text-eco-accent"
+          title={analiseAberta ? 'Recolher a análise ativa' : 'Expandir a análise ativa'}>
+          <span className="font-mono text-[.68rem] uppercase tracking-[.12em] text-slate-300">Análise ativa</span>
+          <ChevronDown size={16} aria-hidden className={cn('shrink-0 text-slate-400 transition-transform', !analiseAberta && '-rotate-90')} />
+        </button>
+        {/* Recolhida, fica o resumo: o que está carregado continua à vista numa linha. */}
+        <div id={idAnalise}>
+          {analiseAberta && (colecoesAtivas.length === 0
+            ? <p className="mt-1 break-words text-eco-accent">{rotuloAnaliseAtiva(state)}</p>
+            : <ul className="mt-1 max-h-48 space-y-1 overflow-y-auto overscroll-contain pr-1">
+              {colecoesAtivas.map((nome) => <li key={nome} className="break-words text-eco-accent">{nome}</li>)}
+            </ul>)}
+          <p className="mt-2 text-xs text-slate-400">
+            {colecoesAtivas.length > 0 && <>{colecoesAtivas.length.toLocaleString('pt-BR')} {colecoesAtivas.length === 1 ? 'coleção' : 'coleções'} · </>}
+            {state.docs.length.toLocaleString('pt-BR')} documentos
+          </p>
+          {analiseAberta && <RecorteAtivo compacto />}
+        </div>
       </div>}
       <nav aria-label="Análise" className="space-y-1">
         {ITENS.map(({ rota, rotulo, icone: Icone }) => <button key={rota} type="button"
@@ -97,7 +109,7 @@ export function Sidebar() {
       <FundoDinamico className="absolute inset-0" />
       <div className={cn('relative z-10 flex h-full min-h-0 flex-col gap-3 overflow-y-auto', recolhida ? 'p-2' : 'p-4')}>
       <button type="button" onClick={() => navigatePage('inicio')} className={cn('eco-brand-home flex min-h-12 items-center gap-3 rounded-lg text-left', recolhida ? 'w-12 justify-center' : 'w-full px-2')} aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
-        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <span className="flex flex-col leading-tight"><strong className="text-lg font-semibold tracking-tight text-slate-100">EcoGrad</strong><span className="font-mono text-[.68rem] uppercase tracking-[.14em] text-slate-400">UFSC · 001</span></span>}
+        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <span className="flex flex-col leading-tight"><strong className="text-lg font-semibold tracking-tight text-slate-100">EcoGrad</strong><span className="font-mono text-[.68rem] uppercase tracking-[.14em] text-slate-400">UFSC</span></span>}
       </button>
       <button type="button" className="btn min-h-11" onClick={alternar} aria-expanded={!recolhida} aria-label={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'} title={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'}>
         {recolhida ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}

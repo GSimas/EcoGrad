@@ -897,3 +897,14 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
 /* Alto contraste: nada de desfoque nem transparência sobre texto. */
 :root[data-contraste="alto"] .eco-carrossel-item { filter: none; opacity: 1; }
 :root[data-contraste="alto"] .eco-carrossel { -webkit-mask-image: none; mask-image: none; }
+
+/* Atalhos da apresentação: em repouso só o ícone; o nome desliza para fora no
+   hover ou no foco do teclado. O nome segue no `aria-label` o tempo todo. */
+.eco-atalhos-expansiveis .btn-chip { gap: 0; padding-inline: .9rem; }
+.eco-atalhos-expansiveis .eco-chip-rotulo {
+  max-width: 0; overflow: hidden; white-space: nowrap; opacity: 0;
+  transition: max-width var(--motion-base) var(--ease-emphasized), margin var(--motion-base) var(--ease-emphasized), opacity var(--motion-fast) var(--ease-standard);
+}
+.eco-atalhos-expansiveis .btn-chip:hover .eco-chip-rotulo,
+.eco-atalhos-expansiveis .btn-chip:focus-visible .eco-chip-rotulo { max-width: 12rem; margin-left: .4rem; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .eco-atalhos-expansiveis .eco-chip-rotulo { transition: none; } }

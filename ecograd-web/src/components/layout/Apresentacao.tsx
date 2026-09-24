@@ -40,7 +40,7 @@ export function Apresentacao() {
         </div>}
       </header>
 
-      <AtalhosEcoGrad comPanorama desabilitado={carregando} className="mt-auto pt-16" aoFazerTour={tour.comecar} />
+      <AtalhosEcoGrad comPanorama expansivel desabilitado={carregando} className="mt-auto pt-16" aoFazerTour={tour.comecar} />
       <OfertaDeExemplo tour={tour} />
 
       <footer className="mt-8 flex flex-col items-center gap-2 border-t border-eco-border pt-6 font-mono text-[.7rem] uppercase tracking-[.1em] text-slate-300">

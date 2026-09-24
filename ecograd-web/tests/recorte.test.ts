@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mesmoRecorte, recortarDocs, resumoRecorte, validarRecorte } from '../src/lib/recorte';
+import { mesmoRecorte, recortarDocs, resumoRecorte, somarAoRecorte, validarRecorte } from '../src/lib/recorte';
 import type { Documento } from '../src/types';
 
 const doc = (d: Partial<Documento>): Documento => ({
@@ -74,4 +74,20 @@ test('recorte vindo do armazenamento só entra se estiver bem formado', () => {
     { tipo: 'Autor', nome: 'Silva, Ana', grafias: ['Silva, A.'] },
   ]);
   assert.deepEqual(validarRecorte(undefined), []);
+});
+
+test('somar ao recorte junta coleções e itens, sem recortar coleções que estavam inteiras', () => {
+  const bainy = { tipo: 'Pessoa' as const, nome: 'Bainy, Afonso' };
+  const ostras = { programas: ['PPG A'], cursosTcc: [], recorte: [{ tipo: 'Palavra-chave' as const, nome: 'Ostras' }] };
+  const soma = somarAoRecorte(ostras, bainy, { programas: ['PPG A', 'PPG B'], cursosTcc: ['TCC C'] });
+  assert.deepEqual(soma, { programas: ['PPG A', 'PPG B'], cursosTcc: ['TCC C'], recorte: [...ostras.recorte, bainy], mudou: true });
+
+  const inteiras = { programas: ['PPG A'], cursosTcc: [], recorte: [] };
+  assert.equal(somarAoRecorte(inteiras, bainy, { programas: ['PPG A'], cursosTcc: [] }).mudou, false);
+  assert.deepEqual(somarAoRecorte(inteiras, bainy, { programas: ['PPG B'], cursosTcc: [] }).recorte, [{ tipo: 'Coleção', nome: 'PPG A' }, bainy]);
+
+  // Já no recorte, com todas as coleções: nada a carregar. Um papel está dentro da pessoa.
+  const comPessoa = { programas: ['PPG A'], cursosTcc: [], recorte: [bainy] };
+  assert.equal(somarAoRecorte(comPessoa, { tipo: 'Orientador', nome: 'bainy, afonso' }, { programas: ['PPG A'], cursosTcc: [] }).mudou, false);
+  assert.equal(somarAoRecorte(comPessoa, bainy, { programas: ['PPG A', 'PPG B'], cursosTcc: [] }).mudou, true);
 });
