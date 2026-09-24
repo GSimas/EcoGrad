@@ -29,7 +29,7 @@ export function Apresentacao() {
   return (
     <div className="apresentacao mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pb-10 pt-6 sm:px-6">
       <header className="mt-6 flex flex-col items-center text-center">
-        <img src="/ecograd-logo.png" alt="" aria-hidden="true" className="intro-logo h-16 w-16 border border-eco-border bg-eco-panel/60 object-contain p-1.5" />
+        <img src="/ecograd-logo.svg" alt="" aria-hidden="true" className="intro-logo h-16 w-16 border border-eco-border bg-eco-panel/60 object-contain p-1.5" />
         <p className="eco-sobretitulo mt-8">Ecologia do Conhecimento · UFSC</p>
         <h1 className="mt-4 text-6xl leading-[.95] lg:text-7xl">Eco<span className="eco-destaque eco-brilho">Grad</span></h1>
 
