@@ -9,7 +9,18 @@ export function chaveFonte(value: string): string | null {
   const safe = fonteSegura(value);
   return safe?.replace('/xmlui/handle/', '/handle/') ?? null;
 }
+/**
+ * Resumo por identidade do array: o Dashboard e a dica de cobertura pedem o
+ * mesmo resumo a cada render, e ele interpreta a URL de cada registro. Os
+ * arrays de documentos nunca são alterados no lugar; um array novo, novo resumo.
+ */
+const resumos = new WeakMap<readonly Documento[], ReturnType<typeof calcularResumo>>();
 export function resumoRegistros(docs: readonly Documento[]) {
+  let r = resumos.get(docs);
+  if (!r) { r = calcularResumo(docs); resumos.set(docs, r); }
+  return r;
+}
+function calcularResumo(docs: readonly Documento[]) {
   const anos = [...new Set(docs.map((d) => d.ano).filter((y): y is number => y !== null && Number.isFinite(y)))].sort((a, b) => a - b);
   const tipos: Record<string, number> = {};
   for (const d of docs) { const key = d.nivel_academico.trim() || 'Não informado'; tipos[key] = (tipos[key] ?? 0) + 1; }
@@ -60,8 +71,20 @@ export function filtrarTrabalhos(docs: readonly Documento[], filtro: FiltroTraba
     (!termos.length || correspondeBusca([d.titulo, ...d.autores, d.orientador, ...d.palavras_chave, d.resumo].join(' '), termos)))
     .slice().sort((a, b) => (b.ano ?? -Infinity) - (a.ano ?? -Infinity) || a.titulo.localeCompare(b.titulo, 'pt-BR'));
 }
-/** Once per record: labels may be duplicated in the raw metadata. */
+/**
+ * Contagens por base e tipo: os painéis do Dashboard e o relatório pedem as
+ * mesmas a cada montagem. O resultado é compartilhado; quem o usa só o lê.
+ */
+const contagensRelacionadas = new WeakMap<readonly Documento[], Map<TipoBusca, Array<[string, number]>>>();
 export function relacionados(docs: readonly Documento[], tipo: TipoBusca) {
+  let porTipo = contagensRelacionadas.get(docs);
+  if (!porTipo) { porTipo = new Map(); contagensRelacionadas.set(docs, porTipo); }
+  let itens = porTipo.get(tipo);
+  if (!itens) { itens = contarRelacionados(docs, tipo); porTipo.set(tipo, itens); }
+  return itens;
+}
+/** Once per record: labels may be duplicated in the raw metadata. */
+function contarRelacionados(docs: readonly Documento[], tipo: TipoBusca) {
   const counts = new Map<string, number>();
   for (const d of docs) {
     const labels = tipo === 'Autor' ? d.autores : tipo === 'Orientador' ? [d.orientador] : tipo === 'Co-orientador' ? d.co_orientadores : tipo === 'Palavra-chave' ? d.palavras_chave : tipo === 'Macrotema' ? [d.macrotema] : [d.titulo];

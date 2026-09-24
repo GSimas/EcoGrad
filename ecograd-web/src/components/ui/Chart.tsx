@@ -1,11 +1,12 @@
 import { useAparencia } from '@/services/aparencia';
 import { adaptarGrafico } from '@/lib/aparencia-graficos';
-import { lazy, useCallback, useMemo, useRef, type ReactNode } from 'react';
+import { useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { CanvasBoundary } from './CanvasBoundary';
-const ReactECharts = lazy(() => import('./EChartsCanvas'));
+import { preguicoso } from '@/lib/preguicoso';
+const ECHARTS = preguicoso(() => import('./EChartsCanvas').then((m) => m.default));
 // O 3D mora noutro pedaço: o `echarts-gl` só é baixado por quem abre um gráfico
 // tridimensional, e não por todo mundo que abre um gráfico qualquer.
-const ReactEChartsGL = lazy(() => import('./EChartsCanvas3D'));
+const ECHARTS_GL = preguicoso(() => import('./EChartsCanvas3D').then((m) => m.default));
 import type { EChartsOption } from 'echarts';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Tabela, type LeituraDados } from './Tabela';
@@ -111,7 +112,7 @@ export function Grafico({
       </div>
       {/* `descricao` fica de fora: o Grafico já a mostra acima, nas duas vistas. */}
       {vista === 'tabela' ? <Tabela {...leitura} descricao={undefined} aninhada /> : <><div className="overflow-x-auto" tabIndex={0} role="region" aria-label={`Gráfico ${leitura.titulo}; alternativa disponível no botão Ver dados em tabela`}><div style={{minWidth:larguraMinima}}>
-    <CanvasBoundary>{tridimensional ? <ReactEChartsGL
+    <CanvasBoundary aoTentarDeNovo={tridimensional ? ECHARTS_GL.renovar : ECHARTS.renovar}>{tridimensional ? <ECHARTS_GL.Componente
       option={opcaoFinal}
       style={{ height: altura, width: '100%' }}
       opts={{ renderer: 'canvas' }}
@@ -119,7 +120,7 @@ export function Grafico({
       lazyUpdate
       onEvents={onEvents}
       onChartReady={aoMontar}
-    /> : <ReactECharts
+    /> : <ECHARTS.Componente
       option={opcaoFinal}
       style={{ height: altura, width: '100%' }}
       opts={{ renderer: 'canvas' }}

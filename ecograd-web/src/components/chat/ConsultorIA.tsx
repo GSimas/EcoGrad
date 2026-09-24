@@ -1,28 +1,33 @@
 import { useQuery } from '@tanstack/react-query';
 import { AberturaEmCurso, ConversaHerdada } from '@/components/chat/RespostaDoAcervo';
-import { carregarIndiceBusca } from '@/lib/busca-global';
+import { carregarIndiceBusca } from '@/services/indice-busca';
 import { historicoEnviado, LIMITE_MENSAGEM } from '@/lib/ia-contexto';
 import { CHAVE_CONVERSA_ACERVO, turnosHerdados } from '@/lib/ufscao-acervo';
 import { baixarArquivo } from '@/lib/utils';
 import { enviarMensagem, interromperConversa, limparConversa } from '@/services/chat';
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
-import { Dog, Eraser, Eye, EyeOff, Gift, KeyRound, Send, Settings, Square, User, X } from 'lucide-react';
-import { Confirmacao, Janela } from '@/components/layout/Janela';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { Eraser, Send, Settings, Square, User, X } from 'lucide-react';
+import { Confirmacao } from '@/components/layout/Janela';
 import { MAX_CATALOGO, MAX_DOCENTES } from '@/lib/consultor-prompt';
 import { Aviso, Expander } from '@/components/ui/primitives';
-import { Select } from '@/components/ui/Select';
+import { AnuncioDeResposta } from '@/components/ui/AnuncioDeResposta';
 import { markdownParaHtml } from '@/lib/markdown';
 import { dicionarioDoAcervo, realcarMencoes, type DicionarioMencoes } from '@/lib/mencoes';
 import { abrirRegistro } from '@/services/abrir-item';
 import type { Documento, TipoBusca } from '@/types';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
-import { configCortesia, ehCortesia, esquecerChaveIA, lerConfigIA, PROVEDORES, provedorPorId, salvarConfigIA, validarConfigIA, type ConfigSalva } from '@/lib/provedores-ia';
-import { cotaCortesia } from '@/services/ufscao-acervo';
+import { ehCortesia, lerConfigIA, provedorPorId, validarConfigIA } from '@/lib/provedores-ia';
 import type { DossieConsultor } from '@/lib/consultor-prompt';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useAparencia } from '@/services/aparencia';
 import type { SnaGlobal } from '@/types';
+import { JanelaRetratoUFSCao, RetratoUFSCao } from './RetratoUFSCao';
+import { OfertaDeCortesia } from './OfertaDeCortesia';
+import { ConfiguracaoIA } from './ConfiguracaoIA';
+
+// Quem já importava estas peças daqui continua funcionando.
+export { ConfiguracaoIA, JanelaRetratoUFSCao, OfertaDeCortesia, RetratoUFSCao };
 
 /** Top-N nós de um tipo, ordenados por uma métrica do SNA global. */
 function topPorMetrica(
@@ -40,38 +45,6 @@ function topPorMetrica(
 }
 
 /**
- * Retrato do UFSCão. A ilustração vive em `public/`; se ela faltar, o ícone de
- * cachorro assume — o chat não pode quebrar por causa de uma imagem.
- *
- * São dois arquivos de propósito: o avatar aparece em cada resposta, com 24 a
- * 32 px, e baixar 1,4 MB para isso pesaria em toda página com o chat aberto. A
- * arte em tamanho cheio fica para a ampliação, que é sob clique.
- */
-const RETRATO = '/ufscao.png';
-const RETRATO_AVATAR = '/ufscao-256.png';
-export function RetratoUFSCao({ tamanho, className }: { tamanho: number; className?: string }) {
-  const [falhou, setFalhou] = useState(false);
-  if (falhou) return <Dog size={tamanho} className={className} aria-hidden />;
-  return <img src={RETRATO_AVATAR} alt="" aria-hidden width={tamanho} height={tamanho}
-    className={`shrink-0 rounded-full object-cover ${className ?? ''}`} style={{ width: tamanho, height: tamanho }}
-    onError={() => setFalhou(true)} />;
-}
-
-/**
- * Ampliação do retrato, com a descrição do mascote.
- *
- * O mesmo diálogo serve o painel flutuante e a conversa da tela inicial: a arte
- * em tamanho cheio e o texto que a explica ficam num lugar só, em vez de duas
- * cópias que divergem quando uma delas muda.
- */
-export function JanelaRetratoUFSCao({ aberta, onOpenChange }: { aberta: boolean; onOpenChange: (v: boolean) => void }) {
-  return <Janela aberta={aberta} onOpenChange={onOpenChange} titulo="UFSCão"
-    descricao="O mascote do consultor de IA do EcoGrad, em homenagem aos cães que circulam pelos campi da UFSC.">
-    <img src={RETRATO} alt="Ilustração do UFSCão: um cão caramelo sorridente, de coleira e bandana azuis da UFSC, com medalha do brasão da universidade." className="mx-auto max-h-[60dvh] w-auto object-contain" />
-  </Janela>;
-}
-
-/**
  * UFSCão, o consultor de IA: botão flutuante sobre as páginas da análise, com a
  * chave do próprio usuário (BYOK). O nome é dos cães que circulam pelos campi da
  * UFSC, os UFSCães — a companhia é afetuosa, o conteúdo continua sendo saída de
@@ -81,6 +54,8 @@ export function ConsultorFlutuante() {
   const [aberto, setAberto] = useSessionField('consultor.aberto', false);
   const { reduzir } = useAparencia();
   const [painelMontado, setPainelMontado] = useState(aberto);
+  // Aberto por quem está usando, e não restaurado da sessão: só aí o foco entra no painel.
+  const [abertoAgora, setAbertoAgora] = useState(false);
   const streaming = useEcoGradStore((s) => s.chat.streaming);
   const botaoRef = useRef<HTMLButtonElement>(null);
   const timerFechamento = useRef<number | null>(null);
@@ -88,6 +63,7 @@ export function ConsultorFlutuante() {
   const abrir = () => {
     if (timerFechamento.current !== null) window.clearTimeout(timerFechamento.current);
     timerFechamento.current = null;
+    setAbertoAgora(true);
     setPainelMontado(true);
     setAberto(true);
   };
@@ -106,14 +82,17 @@ export function ConsultorFlutuante() {
       <RetratoUFSCao tamanho={24} /><span className="hidden sm:inline">UFSCão</span>
       {streaming && <span className="h-2 w-2 rounded-full bg-eco-on-action motion-safe:animate-pulse" aria-label="Resposta em andamento" />}
     </button>}
+    {/* Escape fecha o diálogo, como pede o padrão de diálogo do ARIA APG; a exceção
+        do plugin para isso só reconhece o elemento <dialog> nativo. */}
+    {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
     {painelMontado && <section role="dialog" aria-label="UFSCão · Consultor de IA" data-state={aberto ? 'open' : 'closed'} onKeyDown={(e) => { if (e.key === 'Escape' && !e.defaultPrevented) fechar(); }}
       className="eco-consultor-panel fixed inset-2 z-40 flex flex-col overflow-hidden rounded-xl border border-eco-border bg-eco-bg shadow-2xl sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[min(46rem,calc(100dvh-3rem))] sm:w-[30rem]">
-      <PainelConsultor onFechar={fechar} />
+      <PainelConsultor onFechar={fechar} focarAoMontar={abertoAgora} />
     </section>}
   </>;
 }
 
-function PainelConsultor({ onFechar }: { onFechar: () => void }) {
+function PainelConsultor({ onFechar, focarAoMontar }: { onFechar: () => void; focarAoMontar: boolean }) {
   const { docs } = useDadosDerivados();
   const snaGlobal = useEcoGradStore((s) => s.snaGlobal);
   const nomePrograma = useEcoGradStore(rotuloAnaliseAtiva);
@@ -126,7 +105,26 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
   const [configurando, setConfigurando] = useState(!configurado);
   const [limpando, setLimpando] = useState(false);
   const [retrato, setRetrato] = useState(false);
+  const abrirRetrato = useCallback(() => setRetrato(true), []);
   const listaRef = useRef<HTMLDivElement>(null);
+  const entradaRef = useRef<HTMLTextAreaElement>(null);
+  const configuracaoRef = useRef<HTMLDivElement>(null);
+  // O foco entra no painel quando ele é aberto — na caixa de mensagem ou, sem
+  // provedor configurado, no primeiro controle da configuração — e volta à
+  // caixa de mensagem quando a configuração fecha. Como o antigo `autoFocus`,
+  // mas sem tirar o foco da página quando a sessão é restaurada com o painel
+  // aberto, e sem deixá-lo fora do diálogo quando ele abre na configuração.
+  const configurandoAntes = useRef<boolean | null>(null);
+  useEffect(() => {
+    const anterior = configurandoAntes.current;
+    configurandoAntes.current = configurando;
+    if (anterior === null && !focarAoMontar) return;
+    if (configurando) {
+      if (anterior === null) configuracaoRef.current?.querySelector<HTMLElement>('button, [href], input, select, textarea')?.focus();
+      return;
+    }
+    if (anterior === null || anterior) entradaRef.current?.focus();
+  }, [configurando, focarAoMontar]);
   // O catálogo global resolve as citações da conversa herdada da tela inicial,
   // que apontam para obras do acervo inteiro e não para os `docs` carregados.
   const catalogo = useQuery({ queryKey: ['indice-busca'], queryFn: ({ signal }) => carregarIndiceBusca(signal), staleTime: Infinity, gcTime: Infinity, retry: 1 });
@@ -194,9 +192,10 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
       {configurado && <button type="button" className="btn h-11 w-11 shrink-0 px-0" aria-pressed={configurando} aria-label="Provedor e chave de API" title="Provedor e chave de API" onClick={() => setConfigurando((v) => !v)}><Settings size={18} /></button>}
       <button type="button" className="btn h-11 w-11 shrink-0 px-0" aria-label="Fechar o UFSCão" title="Fechar" onClick={onFechar}><X size={18} /></button>
     </header>
+    <AnuncioDeResposta total={mensagens.length} ultima={mensagens.at(-1)?.role === 'assistant' ? mensagens.at(-1)?.content : undefined} />
 
     {configurando ? (
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+      <div ref={configuracaoRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {!configurado && <OfertaDeCortesia onAceitar={(c) => { setConfig(c); setConfigurando(false); }} />}
         <ConfiguracaoIA inicial={ehCortesia(config) ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
       </div>
@@ -229,9 +228,9 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
         {temConversa && !streaming && <div className="flex flex-wrap gap-2">
           <button type="button" className="btn text-xs" onClick={() => baixarArquivo(JSON.stringify({ mensagens, parcial, parciaisAnteriores, contexto }, null, 2), 'ecograd-conversa.json')}>Exportar conversa</button>
         </div>}
-        {!!parciaisAnteriores?.length && <Expander titulo="Textos parciais de tentativas anteriores">{parciaisAnteriores.map((texto, i) => <Balao key={i} papel="assistant" conteudo={texto} dic={mencoes} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />)}</Expander>}
-        {mensagens.map((m, i) => <Balao key={i} papel={m.role} conteudo={m.content} dic={m.role === 'assistant' ? mencoes : undefined} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />)}
-        {parcial && <Balao papel="assistant" conteudo={streaming ? `${parcial}▌` : `[Resposta parcial interrompida] ${parcial}`} dic={mencoes} docs={docs} aoAbrirRetrato={() => setRetrato(true)} />}
+        {!!parciaisAnteriores?.length && <Expander titulo="Textos parciais de tentativas anteriores">{parciaisAnteriores.map((texto, i) => <Balao key={i} papel="assistant" conteudo={texto} dic={mencoes} docs={docs} aoAbrirRetrato={abrirRetrato} />)}</Expander>}
+        {mensagens.map((m, i) => <Balao key={i} papel={m.role} conteudo={m.content} dic={m.role === 'assistant' ? mencoes : undefined} docs={docs} aoAbrirRetrato={abrirRetrato} />)}
+        {parcial && <Balao papel="assistant" conteudo={streaming ? `${parcial}▌` : `[Resposta parcial interrompida] ${parcial}`} dic={mencoes} docs={docs} aoAbrirRetrato={abrirRetrato} />}
         {/* O `role="status"` fica no texto, e não no parágrafo inteiro: dentro da
             região viva, o rótulo do botão do retrato seria lido junto da etapa a
             cada troca. O botão continua no fluxo de foco, fora do anúncio. */}
@@ -263,7 +262,7 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
             aria-label="Mensagem para o consultor"
             className="input min-h-[56px] min-w-0 flex-1 resize-none"
             disabled={streaming || contextoAnterior}
-            autoFocus
+            ref={entradaRef}
           />
           {streaming
             ? <button type="button" className="btn h-11 w-11 shrink-0 px-0" onClick={interromperConversa} aria-label="Interromper resposta" title="Interromper resposta"><Square size={16} /></button>
@@ -283,105 +282,14 @@ function PainelConsultor({ onFechar }: { onFechar: () => void }) {
 }
 
 /**
- * Oferta de cortesia: as primeiras perguntas por conta do EcoGrad.
- *
- * Vive aqui, e não só na tela inicial, porque quem chega direto ao painel
- * flutuante — sem passar pela apresentação — encontrava apenas o formulário de
- * chave, sem saber que podia experimentar antes de configurar provedor nenhum.
- * A chave de cortesia é a mesma das duas superfícies (`lerConfigIA`), então
- * aceitar aqui vale lá e vice-versa.
- */
-export function OfertaDeCortesia({ onAceitar }: { onAceitar: (c: ConfigSalva) => void }) {
-  // Consultar a cota não gasta cota; sem resposta da função, a oferta some.
-  const cota = useQuery({ queryKey: ['cortesia'], queryFn: ({ signal }) => cotaCortesia(signal), staleTime: 60 * 1000, retry: 0 });
-  if (!cota.data?.disponivel || cota.data.restantes <= 0) return null;
-  return (
-    <div className="info space-y-2">
-      <p>
-        <strong>Experimente sem chave.</strong> As primeiras {cota.data.total ?? 10} perguntas são por conta do
-        EcoGrad, para você conhecer o UFSCão — restam {cota.data.restantes}. Depois delas, configure seu provedor
-        abaixo e continue sem limite.
-      </p>
-      <button type="button" className="btn btn-primary text-xs" onClick={() => {
-        const c = { ...configCortesia(), lembrar: false };
-        salvarConfigIA(c);
-        onAceitar(c);
-      }}>
-        <Gift size={14} className="shrink-0" aria-hidden /> Conversar agora, sem chave
-      </button>
-    </div>
-  );
-}
-
-export function ConfiguracaoIA({ inicial, onSalvo, onEsquecer }: { inicial: ConfigSalva | null; onSalvo: (c: ConfigSalva) => void; onEsquecer: () => void }) {
-  const id = useId();
-  // Chave de API se digita errado com facilidade e o erro só aparece na primeira
-  // pergunta, longe daqui. Ver o que foi colado é a checagem mais barata; começa
-  // escondida porque a tela pode estar sendo projetada.
-  const [chaveVisivel, setChaveVisivel] = useState(false);
-  const [rascunho, setRascunho] = useState<ConfigSalva>(() => inicial ?? { provedor: PROVEDORES[0].id, modelo: PROVEDORES[0].modelo, baseUrl: PROVEDORES[0].baseUrl, chave: '', lembrar: false });
-  const [erro, setErro] = useState<string | null>(null);
-  const provedor = provedorPorId(rascunho.provedor);
-  const alterar = (v: Partial<ConfigSalva>) => { setRascunho({ ...rascunho, ...v }); setErro(null); };
-  // A chave de um provedor não serve para outro: trocar de provedor limpa o campo.
-  const trocar = (valor: string) => { const p = provedorPorId(valor); alterar({ provedor: p.id, modelo: p.modelo, baseUrl: p.baseUrl, chave: valor === inicial?.provedor ? inicial.chave : '' }); };
-  const salvar = (e: FormEvent) => {
-    e.preventDefault();
-    const invalida = validarConfigIA(rascunho);
-    if (invalida) { setErro(invalida); return; }
-    try { salvarConfigIA(rascunho); onSalvo({ ...rascunho, chave: rascunho.chave.trim(), modelo: rascunho.modelo.trim(), baseUrl: rascunho.baseUrl.trim() }); }
-    catch { setErro('O navegador não permitiu salvar a configuração. Libere o armazenamento deste site e tente novamente.'); }
-  };
-  return <form className="space-y-4 text-sm" onSubmit={salvar}>
-    <div className="space-y-1">
-      <h3 className="flex items-center gap-2 font-semibold"><KeyRound size={16} aria-hidden /> Use sua própria chave de API</h3>
-      <p className="text-xs leading-relaxed text-slate-300">A chave fica apenas neste navegador e vai direto para o provedor escolhido, sem passar pelos servidores do EcoGrad. O uso é cobrado pelo provedor, na sua conta.</p>
-    </div>
-    <div className="space-y-1"><label htmlFor={id + '-provedor'}>Provedor</label><Select id={id + '-provedor'} valor={rascunho.provedor} onChange={trocar} opcoes={PROVEDORES.map((p) => ({ valor: p.id, rotulo: p.nome }))} /></div>
-    {provedor.id === 'personalizado' && <div className="space-y-1">
-      <label htmlFor={id + '-url'}>URL base da API</label>
-      <input id={id + '-url'} className="input" type="url" inputMode="url" spellCheck={false} placeholder="https://exemplo.com/v1" value={rascunho.baseUrl} onChange={(e) => alterar({ baseUrl: e.target.value })} />
-      <p className="text-xs text-slate-400">Qualquer serviço compatível com a API de chat da OpenAI, como Together, Fireworks, Ollama ou LM Studio (HTTP apenas em localhost).</p>
-    </div>}
-    <div className="space-y-1">
-      <label htmlFor={id + '-modelo'}>Modelo</label>
-      <input id={id + '-modelo'} className="input" spellCheck={false} autoComplete="off" placeholder="identificador-do-modelo" value={rascunho.modelo} onChange={(e) => alterar({ modelo: e.target.value })} />
-      <p className="text-xs text-slate-400">Use o identificador exato do modelo, como aparece no painel do provedor.</p>
-    </div>
-    <div className="space-y-1">
-      <label htmlFor={id + '-chave'}>Chave de API</label>
-      <div className="flex items-center gap-2">
-        <input id={id + '-chave'} className="input min-w-0 flex-1" type={chaveVisivel ? 'text' : 'password'} spellCheck={false} autoComplete="off"
-          value={rascunho.chave} onChange={(e) => alterar({ chave: e.target.value })} />
-        <button type="button" className="btn h-11 w-11 shrink-0 px-0" onClick={() => setChaveVisivel((v) => !v)}
-          aria-pressed={chaveVisivel} aria-controls={id + '-chave'}
-          aria-label={chaveVisivel ? 'Esconder a chave de API' : 'Mostrar a chave de API'}
-          title={chaveVisivel ? 'Esconder a chave' : 'Mostrar a chave'}>
-          {chaveVisivel ? <EyeOff size={16} /> : <Eye size={16} />}
-        </button>
-      </div>
-      {provedor.chaves && <a className="inline-block min-h-11 py-2 text-xs text-eco-accent underline" href={provedor.chaves} target="_blank" rel="noopener noreferrer">Obter chave em {provedor.nome} ↗<span className="sr-only"> (nova aba)</span></a>}
-    </div>
-    <label className="flex items-start gap-2">
-      <input type="checkbox" className="mt-1" checked={rascunho.lembrar} onChange={(e) => alterar({ lembrar: e.target.checked })} />
-      <span>Lembrar a chave neste navegador<span className="block text-xs text-slate-400">Sem essa opção, a chave é apagada ao fechar a aba. Não marque em computadores compartilhados.</span></span>
-    </label>
-    {erro && <p role="alert" className="erro">{erro}</p>}
-    <div className="flex flex-wrap gap-2">
-      <button type="submit" className="btn btn-primary">Salvar e conversar</button>
-      {!!inicial?.chave && <button type="button" className="btn" onClick={() => { esquecerChaveIA(); onEsquecer(); alterar({ chave: '' }); }}>Esquecer chave</button>}
-    </div>
-    <p className="text-xs text-slate-400">Se um provedor bloquear chamadas diretas do navegador (CORS), use OpenRouter ou outro serviço compatível.</p>
-  </form>;
-}
-
-/**
  * Uma fala da conversa. Na resposta do consultor, cada item do acervo citado no
  * texto — pessoa, título, palavra-chave ou macrotema — vira botão para o perfil
  * no Motor de Busca; o clique é ouvido no contêiner porque os botões nascem do
  * HTML já sanitizado, e não de JSX.
  */
-function Balao({ papel, conteudo, dic, docs, aoAbrirRetrato }: { papel: 'user' | 'assistant'; conteudo: string; dic?: DicionarioMencoes; docs?: readonly Documento[]; aoAbrirRetrato?: () => void }) {
+// `memo`: durante o streaming o painel renderiza a cada trecho, e as falas
+// anteriores não mudam — só a última precisa ser refeita.
+const Balao = memo(function Balao({ papel, conteudo, dic, docs, aoAbrirRetrato }: { papel: 'user' | 'assistant'; conteudo: string; dic?: DicionarioMencoes; docs?: readonly Documento[]; aoAbrirRetrato?: () => void }) {
   const ehUsuario = papel === 'user';
   const html = useMemo(() => {
     const base = markdownParaHtml(conteudo);
@@ -406,6 +314,9 @@ function Balao({ papel, conteudo, dic, docs, aoAbrirRetrato }: { papel: 'user' |
         className={`markdown min-w-0 flex-1 break-words rounded-xl border border-eco-border px-3 py-2 text-sm ${
           ehUsuario ? 'bg-eco-accent/10' : 'bg-eco-panel/70'
         }`}
+        // Só recolhe o clique dos botões de menção, que nascem no HTML e já são
+        // operáveis por teclado; `presentation` diz isso às tecnologias assistivas.
+        role="presentation"
         onClick={abrirMencao}
         // O HTML vem de `markdownParaHtml`, que escapa a resposta do modelo antes
         // de aplicar as marcações — nenhum HTML do modelo é interpretado.
@@ -413,4 +324,4 @@ function Balao({ papel, conteudo, dic, docs, aoAbrirRetrato }: { papel: 'user' |
       />
     </div>
   );
-}
+});

@@ -77,7 +77,17 @@ export function initializeNavigation(port?: NavigationPort) {
     }
     useNavigation.setState({ visits: [...visits], current });
   }
+  /**
+   * Filtros, abas e rascunhos mudam a cada tecla. Descrever o foco varre os
+   * controles da página e gravar o histórico serializa todas as visitas, então
+   * essas mudanças são gravadas juntas, no máximo uma vez por intervalo curto.
+   * Trocar de página, voltar, avançar e sair da aba gravam na hora (todos passam
+   * por `updateCurrent`, que torna a gravação pendente desnecessária).
+   */
+  let pendente: ReturnType<typeof setTimeout> | undefined;
   function updateCurrent(state = useEcoGradStore.getState(), position = readPosition()) {
+    clearTimeout(pendente);
+    pendente = undefined;
     visits = visits.map((v) => v.id === current ? { ...v, context: captureContext(state), position } : v);
   }
   function activate(visit: Visit, restored: boolean, notice = '') {
@@ -156,7 +166,7 @@ export function initializeNavigation(port?: NavigationPort) {
       updateCurrent(before);
       push(statePage(s), s);
     } else if (s.ui !== before.ui || s.tipoForesight !== before.tipoForesight || s.janelaRecente !== before.janelaRecente || s.metodoCorte !== before.metodoCorte || s.percentilCorte !== before.percentilCorte || s.usarBootstrap !== before.usarBootstrap || s.fonteMemes !== before.fonteMemes || s.minCoocorrencia !== before.minCoocorrencia) {
-      updateCurrent(s); persist();
+      pendente ??= setTimeout(() => { updateCurrent(); persist(); }, 150);
     }
   });
   const offPop = browser.onPop(() => {
@@ -181,5 +191,5 @@ export function initializeNavigation(port?: NavigationPort) {
       activate(fresh, true, isNewAddress ? '' : 'Este ponto do histórico não está mais disponível. A análise atual foi mantida; selecione novamente a entidade se necessário.');
     }
   });
-  return () => { unsubscribe(); offPop(); changePage = () => {}; move = () => {}; checkpoint = () => {}; };
+  return () => { clearTimeout(pendente); unsubscribe(); offPop(); changePage = () => {}; move = () => {}; checkpoint = () => {}; };
 }

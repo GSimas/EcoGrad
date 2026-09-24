@@ -5,7 +5,8 @@ import { BotaoEntidade, Card, Dica, Kpi, Tabela, TextoDoAcervo } from '@/compone
 import { Trabalhos, FonteTrabalho } from '@/components/results/Trabalhos';
 import { Relacoes } from '@/components/results/Relacoes';
 import { carregarIndiceOrientacoes, orientacoesDe, orientacoesLocais, temOrientacoes } from '@/lib/orientacoes';
-import { carregarIndiceBusca, itemDoAcervo } from '@/lib/busca-global';
+import { itemDoAcervo } from '@/lib/busca-global';
+import { carregarIndiceBusca } from '@/services/indice-busca';
 import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { BookOpenText, ChartColumn, ChevronRight, GraduationCap, Handshake, Layers3, Tag, UserRound, UsersRound } from 'lucide-react';

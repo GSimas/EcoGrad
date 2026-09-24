@@ -3,6 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { Janela } from '@/components/layout/Janela';
 import { useSessionField } from '@/hooks/useSessionField';
 import { Dica } from './primitives';
+import { LimiteDeErro } from './LimiteDeErro';
 import { EmJanela, useEmJanela } from './contexto-janela';
 
 export { useEmJanela };
@@ -32,7 +33,8 @@ export function BlocoEmJanela({ titulo, descricao, icone, children, chaveSessao 
       <span className="text-base font-semibold tracking-tight text-slate-100">{titulo}</span>
       <span id={id} className="text-xs leading-relaxed text-slate-400">{descricao}</span>
     </button>}>
-    <EmJanela.Provider value>{children}</EmJanela.Provider>
+    {/* Um bloco que quebra mostra o aviso dentro da própria janela; o resto segue. */}
+    <EmJanela.Provider value><LimiteDeErro rotulo={`“${titulo}”`}>{children}</LimiteDeErro></EmJanela.Provider>
   </Janela>;
 }
 

@@ -12,7 +12,7 @@
  */
 import type { EChartsOption } from 'echarts';
 import {
-  blocosDaCapa, carimboDeData, FUNDO_DO_RELATORIO, lerChaveDossie, nomeDoArquivo,
+  blocosDaCapa, carimboDeData, FUNDO_DO_RELATORIO, lerChaveDossie, nomeDoArquivo, passosDoRelatorio,
   type Bloco, type ContextoCapa, type LinksDaTabela, type Relatorio, type SelecaoRelatorio,
 } from '@/lib/relatorio';
 import { relevanciaDossie } from '@/lib/relevancia';
@@ -182,9 +182,8 @@ const linksDosTitulos = (coluna: number, docs: readonly Documento[]): LinksDaTab
 const texto = (v: unknown) => valorExibido(v);
 
 /** Quantos passos a barra de progresso vai percorrer, contados antes de começar. */
-export function passosDoRelatorio(selecao: SelecaoRelatorio): number {
-  return selecao.dashboard.length + selecao.dossies.length;
-}
+// Mora em `lib/relatorio`, que a tela importa sem arrastar este módulo; reexportada para quem já a usava daqui.
+export { passosDoRelatorio };
 
 export async function montarRelatorio(
   selecao: SelecaoRelatorio,

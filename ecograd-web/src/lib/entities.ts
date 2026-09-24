@@ -97,8 +97,8 @@ export function docsDoTermo(indices: IndicesInvertidos, tipo: TipoBusca, termo: 
   }
 }
 
-/** Opções do seletor do Motor de Busca para cada tipo de entidade. */
-export function opcoesPorTipo(indices: IndicesInvertidos, tipo: TipoBusca): string[] {
+/** Nomes de um tipo de entidade, na ordem do índice. `opcoesPorTipo` os devolve ordenados. */
+export function nomesDoTipo(indices: IndicesInvertidos, tipo: TipoBusca): Iterable<string> {
   const mapa: Record<TipoBusca, Iterable<string>> = {
     Documento: indices.por_titulo.keys(),
     Pessoa: indices.por_pessoa.keys(),
@@ -108,7 +108,15 @@ export function opcoesPorTipo(indices: IndicesInvertidos, tipo: TipoBusca): stri
     'Palavra-chave': indices.por_palavra_chave.keys(),
     Macrotema: indices.por_macrotema.keys(),
   };
-  return [...mapa[tipo]].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  return mapa[tipo];
+}
+
+const ordemPtBR = new Intl.Collator('pt-BR').compare;
+
+/** Opções do seletor do Motor de Busca para cada tipo de entidade. */
+export function opcoesPorTipo(indices: IndicesInvertidos, tipo: TipoBusca): string[] {
+  // Mesma ordem de `localeCompare(b, 'pt-BR')`, com um só collator em vez de um por comparação.
+  return [...nomesDoTipo(indices, tipo)].sort(ordemPtBR);
 }
 
 /** Conjuntos globais usados pelos KPIs do Dashboard (Principal.py:283). */

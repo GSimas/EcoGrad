@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'node:path';
 
 /**
@@ -9,8 +10,20 @@ import path from 'node:path';
  */
 const PORTA_DEV = Number(process.env.PORT) || 5173;
 
+/**
+ * `ANALYZE=1 npm run build` grava o mapa do bundle em `bundle-report/` (fora de
+ * `dist/`, para não ser publicado). Sem a variável o build é o de sempre.
+ */
+const ANALISAR = process.env.ANALYZE === '1';
+const analisadores = ANALISAR
+  ? [
+      visualizer({ filename: 'bundle-report/treemap.html', template: 'treemap', gzipSize: true, brotliSize: true }),
+      visualizer({ filename: 'bundle-report/stats.json', template: 'raw-data', gzipSize: true, brotliSize: true }),
+    ]
+  : [];
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), ...analisadores],
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },

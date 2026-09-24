@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, BookOpen, Download, ExternalLink, Layers, MessageSquare, Settings, Sparkles, Square, TriangleAlert } from 'lucide-react';
-import { carregarIndiceBusca, prepararBusca, type ResultadoBusca } from '@/lib/busca-global';
+import { prepararBusca, type ResultadoBusca } from '@/lib/busca-global';
+import { carregarIndiceBusca } from '@/services/indice-busca';
 import { construirIndicesInvertidos } from '@/lib/entities';
 import { executarFerramenta, type ItemRecorte, type Recorte } from '@/lib/chat-ferramentas';
 import { executarFerramentaCatalogo, type NomeFerramentaCatalogo, type PessoaNoCatalogo, type TemaNoCatalogo } from '@/lib/chat-catalogo';
@@ -11,7 +12,7 @@ import { carregarDados } from '@/services/calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { Progresso } from '@/components/ui/primitives';
 import type { NomeFerramenta } from '@/lib/chat-ferramentas';
-import { ConfiguracaoIA } from '@/components/chat/ConsultorIA';
+import { ConfiguracaoIA } from '@/components/chat/ConfiguracaoIA';
 import {
   fontesDaSintese, indiceDoItem, LOTES_SIMULTANEOS, planejarAprofundamento, promptLote, promptReducao, promptSintese, RESUMOS_PADRAO, verificarCitacoes,
   type FonteSintese, type PlanoAprofundamento,
@@ -656,7 +657,10 @@ function SinteseCitada({ pergunta, recorte, declarar, docs, recorteCompleto }: {
           : 'Lotes lidos. Escrevendo a síntese sobre as notas…'
         : 'Lendo os resumos…'}
     </p>}
-    {texto && <div className="markdown text-sm" aria-live="polite" onClick={abrirCitacao} dangerouslySetInnerHTML={{ __html: html }} />}
+    {/* Enquanto a síntese é escrita, `aria-busy` segura o anúncio: sem ele o leitor
+        de tela releria o texto a cada trecho. O clique só recolhe o dos botões de
+        citação, que nascem no HTML e são operáveis por teclado. */}
+    {texto && <div className="markdown text-sm" aria-live="polite" aria-busy={estado === 'escrevendo'} role="presentation" onClick={abrirCitacao} dangerouslySetInnerHTML={{ __html: html }} />}
     {erro && <p role="alert" className="erro text-sm">{erro}</p>}
     {verificacao && verificacao.inexistentes.length > 0 && <p className="aviso text-xs">
       A síntese citou {verificacao.inexistentes.map((n) => `[${n}]`).join(', ')}, que não {verificacao.inexistentes.length === 1 ? 'é fonte' : 'são fontes'} desta leitura. Desconsidere essas afirmações.

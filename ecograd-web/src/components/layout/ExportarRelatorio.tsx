@@ -5,13 +5,17 @@ import { Aviso } from '@/components/ui/primitives';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useNavigation } from '@/services/navigation';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import { gerarPDF } from '@/lib/relatorio-pdf';
 import { estimarTamanho, montarRelatorioJson, tamanhoLegivel } from '@/lib/relatorio-json';
-import { montarRelatorio, passosDoRelatorio, type ProgressoRelatorio } from '@/services/relatorio';
+import type { ProgressoRelatorio } from '@/services/relatorio';
 import {
-  dossiesVisitados, SECOES_DASHBOARD, selecaoInicial, selecaoValida, selecaoVazia,
+  dossiesVisitados, passosDoRelatorio, SECOES_DASHBOARD, selecaoInicial, selecaoValida, selecaoVazia,
   type FormatoRelatorio, type SelecaoRelatorio, type TemaRelatorio,
 } from '@/lib/relatorio';
+
+// A montagem e o PDF só servem na hora de exportar: vêm sob demanda, e o botão
+// — que fica na lateral de toda página — não os arrasta para o bundle inicial.
+const montador = () => import('@/services/relatorio');
+const geradorPdf = () => import('@/lib/relatorio-pdf');
 import { cn } from '@/lib/utils';
 
 /** Caixa de marcação com a mesma aparência das listas do EcoGrad. */
@@ -88,6 +92,7 @@ export function ExportarRelatorio({ compacto = false }: { compacto?: boolean }) 
     setPronto(null);
     setProgresso({ feitos: 0, total: passosDoRelatorio(selecao), etapa: 'Reunindo a análise' });
     try {
+      const { montarRelatorio } = await montador();
       const { relatorio, contexto } = await montarRelatorio(selecao, setProgresso, request.signal);
       const passos = passosDoRelatorio(selecao);
       setProgresso({ feitos: passos, total: passos, etapa: ehJson ? 'Escrevendo o JSON' : 'Montando o PDF' });
@@ -99,7 +104,7 @@ export function ExportarRelatorio({ compacto = false }: { compacto?: boolean }) 
             [JSON.stringify(montarRelatorioJson(relatorio, contexto, docs, { incluirResumos: selecao.incluirResumos, recorte }), null, 2)],
             { type: 'application/json;charset=utf-8' },
           )
-        : await gerarPDF(relatorio, selecao.tema);
+        : await (await geradorPdf()).gerarPDF(relatorio, selecao.tema);
       if (request.signal.aborted) return;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -137,7 +142,7 @@ export function ExportarRelatorio({ compacto = false }: { compacto?: boolean }) 
   return (
     <Janela
       aberta={aberta}
-      onOpenChange={(v) => { if (!gerando) setAberta(v); }}
+      onOpenChange={(v) => { if (!gerando) setAberta(v); if (v) void montador(); }}
       larga
       titulo="Exportar relatório"
       descricao="Escolha o formato e o que entra no arquivo. Tudo é montado no seu navegador; nada é enviado para servidor."

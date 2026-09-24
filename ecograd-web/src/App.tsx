@@ -1,19 +1,29 @@
 import { NavigationHistory, UnknownPage } from '@/components/layout/NavigationHistory';
+import type { Page } from '@/lib/navigation';
 import { useNavigation } from '@/services/navigation';
 import { useNavigationPosition } from '@/hooks/useNavigationPosition';
 import { SessionStatus } from '@/components/layout/SessionStatus';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Apresentacao } from '@/components/layout/Apresentacao';
 import { FundoDinamico } from '@/components/layout/FundoDinamico';
-import { Dashboard } from '@/components/dashboard/Dashboard';
-import { MotorBusca } from '@/components/search-engine/MotorBusca';
-import { AnaliseAvancada } from '@/components/advanced/AnaliseAvancada';
-import { ConsultorFlutuante } from '@/components/chat/ConsultorIA';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { AtividadesIA } from '@/components/ui/AtividadesIA';
 import { PainelAtividades } from '@/components/ui/Atividade';
+import { LimiteDeErro } from '@/components/ui/LimiteDeErro';
 import { calcularSna } from '@/services/calculos';
+import { preguicoso } from '@/lib/preguicoso';
+import type { Rota } from '@/types';
+
+// Cada página de análise é um pedaço próprio do bundle: quem abre o EcoGrad e
+// só busca na apresentação não baixa nem avalia o código das telas de análise.
+const PAGINAS: Record<Rota, ReturnType<typeof preguicoso<object>>> = {
+  dashboard: preguicoso(() => import('@/components/dashboard/Dashboard').then((m) => m.Dashboard)),
+  busca: preguicoso(() => import('@/components/search-engine/MotorBusca').then((m) => m.MotorBusca)),
+  avancada: preguicoso(() => import('@/components/advanced/AnaliseAvancada').then((m) => m.AnaliseAvancada)),
+};
+const CONSULTOR = preguicoso(() => import('@/components/chat/ConsultorIA').then((m) => m.ConsultorFlutuante));
+const NOMES_PAGINA: Record<Rota, string> = { dashboard: 'o Dashboard', busca: 'o Motor de Busca', avancada: 'a Análise Avançada' };
 
 export default function App() {
   const page = useNavigation((s) => s.page);
@@ -21,9 +31,33 @@ export default function App() {
   const rota = page;
   const docs = useEcoGradStore((s) => s.docs);
   const statusSNA = useEcoGradStore((s) => s.statusSNA);
+  const carregando = useEcoGradStore((s) => s.carregando);
   useEffect(() => {
     if (docs.length && statusSNA === 'ocioso') calcularSna(docs);
   }, [docs, statusSNA]);
+  // Enquanto a coleção baixa vêm os destinos prováveis e leves — o Dashboard, o
+  // Motor de Busca (onde abre o dossiê de um item) e o botão do UFSCão —, para a
+  // página montar sem espera quando o download terminar. A Análise Avançada,
+  // bem maior, espera a página ficar ociosa: avaliar o código dela no meio do
+  // carregamento disputaria a main thread com a montagem da análise.
+  useEffect(() => {
+    if (carregando || dadosCarregados) { PAGINAS.dashboard.precarregar(); PAGINAS.busca.precarregar(); CONSULTOR.precarregar(); }
+    if (!dadosCarregados) return;
+    // Com a análise na tela: o código da Análise Avançada e o catálogo padrão do
+    // Motor de Busca, montado em fatias, para o primeiro clique não pagar por ele.
+    const depoisDaCarga = () => {
+      PAGINAS.avancada.precarregar();
+      void Promise.all([import('@/hooks/useDadosDerivados'), import('@/lib/busca-categorias')])
+        .then(([{ derivadosDe }, { aquecerCatalogo }]) => aquecerCatalogo(derivadosDe(useEcoGradStore.getState().docs).indices))
+        .catch(() => { /* o Motor de Busca monta o catálogo quando abrir */ });
+    };
+    if (typeof window.requestIdleCallback !== 'function') {
+      const t = window.setTimeout(depoisDaCarga, 1500);
+      return () => window.clearTimeout(t);
+    }
+    const id = window.requestIdleCallback(depoisDaCarga, { timeout: 1500 });
+    return () => window.cancelIdleCallback(id);
+  }, [carregando, dadosCarregados]);
   const conteudoRef = useNavigationPosition();
 
   // A apresentação ocupa a tela inteira e é onde as coleções são escolhidas: sem
@@ -39,7 +73,7 @@ export default function App() {
         <FundoDinamico className="fixed inset-0" />
         <PainelAtividades />
         <AtividadesIA />
-        <Apresentacao />
+        <LimiteDeErro rotulo="a apresentação"><Apresentacao /></LimiteDeErro>
       </main>
     );
   }
@@ -60,13 +94,28 @@ export default function App() {
           // uma tela acima do fim real — o respiro simplesmente não aparece.
           // `pb-24` também deixa o fim da página livre do botão do UFSCão.
           <div key={rota} className="eco-page-enter mx-auto min-h-full w-full min-w-0 max-w-[1400px] px-3 pb-24 pt-4 sm:px-6 lg:px-8 lg:pt-8">
-            {rota === 'dashboard' && <Dashboard />}
-            {rota === 'busca' && <MotorBusca />}
-            {rota === 'avancada' && <AnaliseAvancada />}
+            <PaginaDeAnalise rota={rota} />
           </div>
         )}
       </main>
-      {dadosCarregados && <ConsultorFlutuante />}
+      {dadosCarregados && <LimiteDeErro rotulo="o UFSCão" aoTentarDeNovo={CONSULTOR.renovar}>
+        {/* Sem fallback: o botão flutuante aparece quando o pedaço chega (em geral já chegou). */}
+        <Suspense fallback={null}><CONSULTOR.Componente /></Suspense>
+      </LimiteDeErro>}
     </div>
   );
+}
+
+/**
+ * A página de análise da rota, isolada num limite de erro: se ela quebrar (ou
+ * o pedaço dela não baixar), a lateral, o histórico e a sessão continuam de pé.
+ */
+function PaginaDeAnalise({ rota }: { rota: Page }) {
+  if (rota !== 'dashboard' && rota !== 'busca' && rota !== 'avancada') return null;
+  const pagina = PAGINAS[rota];
+  return <LimiteDeErro rotulo={NOMES_PAGINA[rota]} aoTentarDeNovo={pagina.renovar}>
+    <Suspense fallback={<p role="status" className="text-sm text-slate-400">Abrindo {NOMES_PAGINA[rota]}…</p>}>
+      <pagina.Componente />
+    </Suspense>
+  </LimiteDeErro>;
 }

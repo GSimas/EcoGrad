@@ -1,4 +1,19 @@
-import { inflate } from 'pako';
+/**
+ * Descomprime gzip com o `DecompressionStream` nativo, e com o `pako` só onde
+ * ele falta ou falha. O `pako` entra por `import()`: a página importa este
+ * módulo para ler o manifesto e não deve baixar ~100 KB de descompressor que
+ * quase nunca usa. O hash conferido por quem chama garante os mesmos bytes.
+ */
+export async function descomprimirGzip(bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array> {
+  if (typeof DecompressionStream !== 'undefined') {
+    try {
+      const fluxo = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      return new Uint8Array(await new Response(fluxo).arrayBuffer());
+    } catch { /* cai no pako, que devolve o próprio erro se o arquivo estiver corrompido */ }
+  }
+  const { inflate } = await import('pako');
+  return inflate(bytes);
+}
 
 export interface CollectionFile {
   nome: string; path: string; sha256: string; bytes: number; total: number;
@@ -58,7 +73,7 @@ export async function carregarColecoes(
     const isGzip = compressed[0] === 0x1f && compressed[1] === 0x8b;
     if (isGzip && compressed.length !== entry.bytes) throw new Error(`Download incompleto de “${entry.nome}”. Tente novamente.`);
     // Some servers decompress at HTTP level. Hash the original JSON in either case.
-    const raw = isGzip ? inflate(compressed) : compressed;
+    const raw = isGzip ? await descomprimirGzip(compressed) : compressed;
     const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new Uint8Array(raw)))].map(b => b.toString(16).padStart(2, '0')).join('');
     if (digest !== entry.sha256) throw new Error(`Falha de integridade em “${entry.nome}”. Nenhum resultado foi aplicado.`);
     const data = JSON.parse(new TextDecoder().decode(raw));

@@ -136,13 +136,19 @@ export function Carrossel({ rotulo, children, cabecalho }: { rotulo: string; chi
       const caixa = el.getBoundingClientRect();
       const centro = caixa.left + caixa.width / 2;
       const passo = filhos.length > 1 ? filhos[1].offsetLeft - filhos[0].offsetLeft : filhos[0].offsetWidth;
+      // Todas as leituras antes de qualquer escrita: intercalá-las forçava um
+      // layout por cartão a cada quadro da rotação. `--distancia` só mexe em
+      // escala, desfoque e opacidade, que não movem o centro de cartão nenhum,
+      // então as posições lidas são as mesmas.
+      const centros = filhos.map((filho) => { const r = filho.getBoundingClientRect(); return r.left + r.width / 2; });
       let maisPerto = 0;
       let menor = Infinity;
-      filhos.forEach((filho, i) => {
-        const r = filho.getBoundingClientRect();
-        const distancia = Math.abs(r.left + r.width / 2 - centro) / Math.max(passo, 1);
+      centros.forEach((c, i) => {
+        const distancia = Math.abs(c - centro) / Math.max(passo, 1);
         if (distancia < menor) { menor = distancia; maisPerto = i; }
-        filho.style.setProperty('--distancia', Math.min(distancia, 3).toFixed(3));
+        const valor = Math.min(distancia, 3).toFixed(3);
+        // Valor igual não reescreve: evita recalcular o estilo do cartão à toa.
+        if (filhos[i].style.getPropertyValue('--distancia') !== valor) filhos[i].style.setProperty('--distancia', valor);
       });
       centroRef.current = maisPerto;
       setAtual(maisPerto % n);
@@ -260,6 +266,9 @@ export function Carrossel({ rotulo, children, cabecalho }: { rotulo: string; chi
         <button type="button" className="btn h-11 w-11 px-0" onClick={() => moverManual(1)} disabled={n < 2} aria-label="Próximo indicador" title="Próximo indicador"><ChevronRight size={16} aria-hidden="true" /></button>
       </div>
     </div>
+    {/* Região rolável do padrão de carrossel do ARIA APG: recebe foco e responde às
+        setas, Home e End; o arrasto do mouse repete o que a rolagem nativa faz. */}
+    {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
     <div ref={trilho} role="region" tabIndex={0} onKeyDown={aoTeclar}
       onPointerDown={aoApertar} onPointerMove={aoMover} onPointerUp={aoSoltar} onPointerCancel={aoSoltar}
       aria-label={`${rotulo}: role com a roda do mouse, arraste ou use as setas`}

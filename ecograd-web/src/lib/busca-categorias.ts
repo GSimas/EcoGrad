@@ -1,4 +1,5 @@
-import { opcoesPorTipo } from './entities';
+import { nomesDoTipo } from './entities';
+import { cederVez, ordenarEmFatias } from './fatias';
 import { PAPEIS_PESSOA, type IndicesInvertidos, type PapelPessoa, type TipoBusca } from '../types';
 
 /**
@@ -58,20 +59,76 @@ const ordemNome = new Intl.Collator('pt-BR').compare;
  * Rótulo exibido → item real. Os homônimos de temas geram entradas distintas,
  * porque o rótulo carrega a origem.
  */
+export type Catalogo = Map<string, { tipo: TipoBusca; nome: string }>;
+
+/**
+ * Catálogos já montados, por índice e filtro. Voltar ao Motor de Busca ou
+ * alternar entre categorias reaproveita o que já foi ordenado: com dezenas de
+ * milhares de nomes, montar de novo custava centenas de milissegundos por clique.
+ */
+const catalogos = new WeakMap<IndicesInvertidos, Map<string, Catalogo>>();
+const opcoesDosCatalogos = new WeakMap<Catalogo, string[]>();
+
 export function montarCatalogo(
   indices: IndicesInvertidos,
   categoria: Categoria,
   papel: string = TODOS,
   origem: string = TODOS,
-): Map<string, { tipo: TipoBusca; nome: string }> {
-  const itens: { rotulo: string; tipo: TipoBusca; nome: string }[] = [];
+): Catalogo {
+  let porFiltro = catalogos.get(indices);
+  if (!porFiltro) { porFiltro = new Map(); catalogos.set(indices, porFiltro); }
+  const chave = chaveDoFiltro(categoria, papel, origem);
+  let catalogo = porFiltro.get(chave);
+  if (!catalogo) { catalogo = construirCatalogo(indices, categoria, papel, origem); porFiltro.set(chave, catalogo); }
+  return catalogo;
+}
+
+/** Os rótulos do catálogo, na ordem dele — o mesmo array para o mesmo catálogo. */
+export function opcoesDoCatalogo(catalogo: Catalogo): string[] {
+  let opcoes = opcoesDosCatalogos.get(catalogo);
+  if (!opcoes) { opcoes = [...catalogo.keys()]; opcoesDosCatalogos.set(catalogo, opcoes); }
+  return opcoes;
+}
+
+type ItemCatalogo = { rotulo: string; tipo: TipoBusca; nome: string };
+const ordemCatalogo = (a: ItemCatalogo, b: ItemCatalogo) => ordemNome(a.nome, b.nome) || ordemNome(a.rotulo, b.rotulo);
+const chaveDoFiltro = (categoria: Categoria, papel: string, origem: string) => `${categoria}\u0000${papel}\u0000${origem}`;
+
+function construirCatalogo(indices: IndicesInvertidos, categoria: Categoria, papel: string, origem: string): Catalogo {
+  const itens = itensDoCatalogo(indices, categoria, papel, origem);
+  itens.sort(ordemCatalogo);
+  return new Map(itens.map((i) => [i.rotulo, { tipo: i.tipo, nome: i.nome }]));
+}
+
+/**
+ * Monta o catálogo em fatias e o deixa no cache de `montarCatalogo`. Chamado
+ * depois que a análise aparece, com a página ociosa: o primeiro clique em Motor
+ * de Busca, que antes ordenava dezenas de milhares de nomes na hora, encontra o
+ * catálogo pronto. Mesma lista e mesmo comparador numa ordenação estável — o
+ * resultado é o do `sort` síncrono.
+ */
+export async function aquecerCatalogo(indices: IndicesInvertidos, categoria: Categoria = 'tudo', papel: string = TODOS, origem: string = TODOS): Promise<void> {
+  let porFiltro = catalogos.get(indices);
+  if (!porFiltro) { porFiltro = new Map(); catalogos.set(indices, porFiltro); }
+  const chave = chaveDoFiltro(categoria, papel, origem);
+  if (porFiltro.has(chave)) return;
+  const itens = itensDoCatalogo(indices, categoria, papel, origem);
+  await cederVez();
+  const ordenados = await ordenarEmFatias(itens, ordemCatalogo);
+  // Se alguém montou o catálogo enquanto isto rodava, vale o que já está no cache.
+  if (!porFiltro.has(chave)) porFiltro.set(chave, new Map(ordenados.map((i) => [i.rotulo, { tipo: i.tipo, nome: i.nome }])));
+}
+
+function itensDoCatalogo(indices: IndicesInvertidos, categoria: Categoria, papel: string, origem: string): ItemCatalogo[] {
+  const itens: ItemCatalogo[] = [];
   for (const tipo of categoriaPorId(categoria).tipos as readonly TipoBusca[]) {
     if ((tipo === 'Palavra-chave' || tipo === 'Macrotema') && origem !== TODOS && tipo !== origem) continue;
-    for (const nome of opcoesPorTipo(indices, tipo)) {
+    // Sem ordenar aqui: a ordenação abaixo decide a ordem final, e o sort é
+    // estável, então empates mantêm a ordem do índice nos dois casos.
+    for (const nome of nomesDoTipo(indices, tipo)) {
       if (tipo === 'Pessoa' && papel !== TODOS && !indices.papeis_pessoa.get(nome)?.has(papel as PapelPessoa)) continue;
       itens.push({ rotulo: rotuloDe(tipo, nome, indices), tipo, nome });
     }
   }
-  itens.sort((a, b) => ordemNome(a.nome, b.nome) || ordemNome(a.rotulo, b.rotulo));
-  return new Map(itens.map((i) => [i.rotulo, { tipo: i.tipo, nome: i.nome }]));
+  return itens;
 }

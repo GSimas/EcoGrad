@@ -66,11 +66,14 @@ export function GrupoOpcoes<T extends string>({
   valor,
   onChange,
   rotulo,
+  aoApontar,
 }: {
   opcoes: readonly T[];
   valor: T;
   onChange: (v: T) => void;
   rotulo?: string;
+  /** Mouse sobre a opção ou foco nela — por exemplo, para adiantar o que ela vai abrir. */
+  aoApontar?: (v: T) => void;
 }) {
   return (
     <div className="space-y-1.5">
@@ -81,6 +84,8 @@ export function GrupoOpcoes<T extends string>({
             key={o}
             type="button"
             onClick={() => onChange(o)}
+            onPointerEnter={aoApontar && (() => aoApontar(o))}
+            onFocus={aoApontar && (() => aoApontar(o))}
             aria-pressed={o === valor}
             className={cn(
               'rounded-md px-3 py-1.5 text-sm font-medium transition',

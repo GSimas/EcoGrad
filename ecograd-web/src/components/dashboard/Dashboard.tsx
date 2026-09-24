@@ -146,6 +146,10 @@ export function Dashboard() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
+        {/* Título só para leitores de tela: os dois painéis abaixo usam h3, e sem um
+            h2 entre eles e o h1 a hierarquia pulava um nível. `sr-only` é absoluto
+            e não ocupa célula na grade. */}
+        <h2 className="sr-only">Pontos de partida no recorte</h2>
         <Relacoes docs={docs} tipo="Palavra-chave" titulo="Temas para começar a exploração" />
         <Relacoes docs={docs} tipo="Orientador" titulo="Orientadores presentes no recorte" />
       </div>

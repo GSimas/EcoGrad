@@ -75,3 +75,31 @@ test('interrupted conversations keep the question, draft and partial response wi
   assert.equal(restored.streaming, false);
   assert.match(restored.erro ?? '', /interrompida/);
 });
+
+test('checkpoint in slices and with ready-made JSON is byte-identical to a single encode', async () => {
+  const { bytesUtf8, encodeComProntos, encodeEmFatias } = await import('../src/lib/session-codec');
+  const ceder = () => Promise.resolve();
+  const docs = Array.from({ length: 300 }, (_, i) => ({
+    titulo: `Gestão ${i} — ação, coração, 🐕 ${'x'.repeat(i % 7)}`, ano: i % 11 === 0 ? null : 2000 + (i % 20),
+    nota: i % 13 === 0 ? NaN : i % 17 === 0 ? -Infinity : i / 3, ausente: undefined, lista: [1, undefined, 'é'],
+  }));
+  const sna: Record<string, unknown> = { '10': { grau: Infinity }, 'Órbita': { grau: 2 }, vazio: undefined, '2': [NaN] };
+  // O envelope de uma atividade carrega o mesmo objeto do topo: só o objeto tem JSON pronto.
+  const valor = { schema: 1, data: { ia: { texto: 'síntese' }, docs, sna, tarefas: [{ resultado: sna }, { resultado: { type: 'sna-global', result: sna } }, { resultado: null }] } };
+  const esperado = encode(valor);
+
+  for (const parte of [docs, sna, 'texto solto', 42, null]) {
+    const fatiado = await encodeEmFatias(parte, ceder, 0);
+    assert.equal(fatiado.texto, encode(parte));
+    assert.equal(fatiado.bytes, Buffer.byteLength(encode(parte)));
+  }
+
+  const prontos = new Map<object, { texto: string; bytes: number }>([[docs, await encodeEmFatias(docs, ceder)], [sna, await encodeEmFatias(sna, ceder)]]);
+  const montado = encodeComProntos(valor, prontos);
+  assert.equal(montado.texto, esperado);
+  assert.equal(montado.bytes, new Blob([esperado]).size);
+  assert.deepEqual(decode(montado.texto), decode(esperado));
+  assert.equal(encodeComProntos(valor, new Map()).texto, esperado);
+  // Surrogates isolados viram U+FFFD (3 bytes), como no Blob.
+  for (const s of ['a\uD800b', '\uDC00', '🐕', 'ç']) assert.equal(bytesUtf8(s), new Blob([s]).size);
+});

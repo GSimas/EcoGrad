@@ -224,3 +224,8 @@ export function dossiesVisitados(
   }
   return [...vistos.values()];
 }
+
+/** Quantos passos a montagem do relatório terá — um por seção e um por dossiê. */
+export function passosDoRelatorio(selecao: SelecaoRelatorio): number {
+  return selecao.dashboard.length + selecao.dossies.length;
+}

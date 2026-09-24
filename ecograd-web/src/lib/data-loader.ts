@@ -7,7 +7,6 @@
  * usa `DecompressionStream('gzip')` (nativo, streaming) quando disponível e
  * cai para `pako` nos navegadores que não o expõem.
  */
-import { inflate } from 'pako';
 import type { ArquivoPdf, CatalogoProgramas, ColecaoTCC, Documento } from '@/types';
 import { carregarColecoes, carregarManifestoColecoes, type CollectionManifest, type ProgressoColecoes } from './collection-loader';
 
@@ -109,6 +108,8 @@ export async function carregarJsonGz<T>(url: string, signal?: AbortSignal): Prom
     return (await new Response(stream).json()) as T;
   }
 
+  // Sem o descompressor nativo, o `pako` vem sob demanda — só esses navegadores o baixam.
+  const { inflate } = await import('pako');
   return JSON.parse(inflate(bytes, { to: 'string' })) as T;
 }
 

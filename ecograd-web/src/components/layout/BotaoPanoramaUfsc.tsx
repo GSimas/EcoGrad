@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Landmark } from 'lucide-react';
 import { Janela } from './Janela';
-import { PanoramaUfsc } from '@/components/dashboard/PanoramaUfsc';
+import { LimiteDeErro } from '@/components/ui/LimiteDeErro';
+import { preguicoso } from '@/lib/preguicoso';
+
+// O panorama traz gráficos, o catálogo CAPES e as tabelas do acervo: só vem
+// quando alguém aponta para o botão ou o abre.
+const PANORAMA = preguicoso(() => import('@/components/dashboard/PanoramaUfsc').then((m) => m.PanoramaUfsc));
 
 /**
  * Abre o Panorama UFSC.
@@ -20,9 +25,14 @@ export function BotaoPanoramaUfsc({ compacto = false, className, desabilitado = 
   // o diálogo ficaria por cima do que o usuário acabou de pedir para ver.
   const [aberta, setAberta] = useState(false);
   return <Janela aberta={aberta} onOpenChange={setAberta} titulo="Panorama UFSC" descricao="O acervo inteiro em números e os programas de pós-graduação reconhecidos pela CAPES — independentes das coleções da sua análise." larga
-    trigger={<button type="button" className={className ?? 'btn min-h-11'} disabled={desabilitado} aria-label="Abrir Panorama UFSC" title="Panorama UFSC">
+    trigger={<button type="button" className={className ?? 'btn min-h-11'} disabled={desabilitado} aria-label="Abrir Panorama UFSC" title="Panorama UFSC"
+      onPointerEnter={PANORAMA.precarregar} onFocus={PANORAMA.precarregar}>
       <Landmark size={className ? 14 : 18} className="shrink-0" aria-hidden />{!compacto && <span className="eco-chip-rotulo">Panorama UFSC</span>}
     </button>}>
-    <PanoramaUfsc aoNavegar={() => setAberta(false)} />
+    <LimiteDeErro rotulo="o Panorama UFSC" aoTentarDeNovo={PANORAMA.renovar}>
+      <Suspense fallback={<p role="status" className="text-sm text-slate-400">Abrindo o Panorama UFSC…</p>}>
+        <PANORAMA.Componente aoNavegar={() => setAberta(false)} />
+      </Suspense>
+    </LimiteDeErro>
   </Janela>;
 }

@@ -11,7 +11,7 @@ import { docsDoTermo } from '@/lib/entities';
 import { resolverDocumento } from '@/lib/resultados';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useSessionField } from '@/hooks/useSessionField';
-import { CATEGORIAS, ORIGENS, PAPEIS, TODOS, categoriaDe, categoriaPorId, categoriaTem, etiqueta, idPorRotulo, montarCatalogo, type Categoria } from '@/lib/busca-categorias';
+import { CATEGORIAS, ORIGENS, PAPEIS, TODOS, categoriaDe, categoriaPorId, categoriaTem, etiqueta, idPorRotulo, montarCatalogo, opcoesDoCatalogo, type Categoria } from '@/lib/busca-categorias';
 
 /** Motor de Busca e Dossiê (Principal.py:601-1190). */
 export function MotorBusca() {
@@ -36,7 +36,7 @@ export function MotorBusca() {
     : categoriaEscolhida;
 
   const catalogo = useMemo(() => montarCatalogo(indices, categoria, papel, origem), [indices, categoria, papel, origem]);
-  const opcoes = useMemo(() => [...catalogo.keys()], [catalogo]);
+  const opcoes = opcoesDoCatalogo(catalogo);
 
   const docsAlvo = useMemo(
     () => {
