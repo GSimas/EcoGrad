@@ -67,6 +67,7 @@ export function GrupoOpcoes<T extends string>({
   onChange,
   rotulo,
   aoApontar,
+  preencher,
 }: {
   opcoes: readonly T[];
   valor: T;
@@ -74,6 +75,8 @@ export function GrupoOpcoes<T extends string>({
   rotulo?: string;
   /** Mouse sobre a opção ou foco nela — por exemplo, para adiantar o que ela vai abrir. */
   aoApontar?: (v: T) => void;
+  /** As opções dividem a largura do contêiner em partes iguais, em vez de ficarem coladas à esquerda. */
+  preencher?: boolean;
 }) {
   return (
     <div className="space-y-1.5">
@@ -89,6 +92,7 @@ export function GrupoOpcoes<T extends string>({
             aria-pressed={o === valor}
             className={cn(
               'rounded-md px-3 py-1.5 text-sm font-medium transition',
+              preencher && 'flex-1 text-center',
               o === valor
                 ? 'bg-eco-action text-eco-on-action'
                 : 'text-slate-400 hover:bg-white/5 hover:text-slate-200',

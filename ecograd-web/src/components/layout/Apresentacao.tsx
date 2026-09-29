@@ -36,7 +36,7 @@ export function Apresentacao() {
         {/* Dois caminhos para o mesmo acervo: escolher itens ou perguntar. A busca
             segue sendo o padrão — é determinística e instantânea. */}
         <div className="mt-8 w-full max-w-md self-center sm:w-auto">
-          <GrupoOpcoes opcoes={MODOS} valor={modo} onChange={setModo} aoApontar={(m) => { if (m === 'Conversar') CONVERSA.precarregar(); }} />
+          <GrupoOpcoes preencher opcoes={MODOS} valor={modo} onChange={setModo} aoApontar={(m) => { if (m === 'Conversar') CONVERSA.precarregar(); }} />
         </div>
         <div className="w-full">{modo === 'Conversar'
           ? <LimiteDeErro rotulo="a conversa com o UFSCão" aoTentarDeNovo={CONVERSA.renovar}>
