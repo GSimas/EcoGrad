@@ -7,7 +7,7 @@ import { recuperarIA, iaVazia } from '../src/lib/ia-state';
 import { conversaVazia, useEcoGradStore } from '../src/stores/useEcoGradStore';
 import { enviarMensagem, interromperConversa } from '../src/services/chat';
 import { iniciarExtracao, interromperExtracao, gerarSintese, interromperSintese } from '../src/services/ia';
-import { lerStreamChat, requisicaoChat, validarConfigIA, type ConfigIA } from '../src/lib/provedores-ia';
+import { concluirLoginOpenRouter, falhouLoginOpenRouter, lerConfigIA, lerStreamChat, modelosOpenRouter, requisicaoChat, validarConfigIA, type ConfigIA } from '../src/lib/provedores-ia';
 import type { Documento, OntologiaIA } from '../src/types';
 const doc=(p:Partial<Documento>={}):Documento=>({titulo:'Mesmo título',ano:2020,programa_origem:'TCC A',url:'https://repositorio.ufsc.br/handle/1/2',autores:['Ana'],orientador:'João',co_orientadores:[],palavras_chave:['A'],macrotema:'M',nivel_academico:'TCC',resumo:'Um resumo',...p});
 const onto:OntologiaIA={teorias_e_modelos:['Teoria, com vírgula'],ferramentas_e_artefatos:[],metodos_e_tecnicas:['Método\ncom quebra']};
@@ -124,4 +124,22 @@ test('resuming a stale review preserves its proposals instead of replacing the b
 test('review changed while IDs are computed cannot be overwritten by extraction',async()=>{
  init();const original=globalThis.fetch;let calls=0;globalThis.fetch=async()=>{calls++;return Response.json({resultados:[]});};
  try{const pending=iniciarExtracao(5);const newer={baseVersion:'v1',estado:'concluido' as const,itens:[]};useEcoGradStore.getState().setIA({lote:newer});await pending;assert.equal(calls,0);assert.equal(useEcoGradStore.getState().ia.lote,newer);}finally{globalThis.fetch=original;}
+});
+
+test('OpenRouter PKCE: return trades the code for a key, saves the chosen model and cleans the URL; free router leads the live list',async()=>{
+ const mem=()=>{const m=new Map<string,string>();return{getItem:(k:string)=>m.get(k)??null,setItem:(k:string,v:string)=>void m.set(k,v),removeItem:(k:string)=>void m.delete(k)};};
+ const g=globalThis as Record<string,unknown>,antes={location:g.location,history:g.history,sessionStorage:g.sessionStorage,localStorage:g.localStorage,fetch:g.fetch};
+ let url='';const pedidos:{url:string;body:unknown}[]=[];
+ Object.assign(g,{location:{search:'?code=abc',pathname:'/',hash:'',origin:'http://localhost'},history:{replaceState:(_:unknown,__:string,u:string)=>{url=u;}},sessionStorage:mem(),localStorage:mem(),
+  fetch:async(u:string,init?:RequestInit)=>{pedidos.push({url:u,body:init?.body&&JSON.parse(String(init.body))});return u.endsWith('/models')
+   ?Response.json({data:[{id:'z/pago',name:'Z Pago',pricing:{prompt:'1',completion:'1'}},{id:'a/gratis:free',name:'A (free)',pricing:{prompt:'0',completion:'0'}},{id:'openrouter/free',name:'Free Models Router',pricing:{prompt:'0',completion:'0'}}]})
+   :Response.json({key:'sk-or-novo'});}});
+ try{
+  (g.sessionStorage as Storage).setItem('ecograd-openrouter-pkce',JSON.stringify({verificador:'v',lembrar:true,modelo:'a/gratis:free',hash:'#/inicio'}));
+  await concluirLoginOpenRouter();
+  assert.equal(url,'/#/inicio');assert.deepEqual(pedidos[0].body,{code:'abc',code_verifier:'v',code_challenge_method:'S256'});
+  assert.deepEqual(lerConfigIA(),{provedor:'openrouter',modelo:'a/gratis:free',baseUrl:'https://openrouter.ai/api/v1',lembrar:true,chave:'sk-or-novo'});
+  assert.equal(falhouLoginOpenRouter(),false);
+  assert.deepEqual((await modelosOpenRouter()).map(m=>m.id),['openrouter/free','a/gratis:free','z/pago']);
+ }finally{Object.assign(g,antes);}
 });

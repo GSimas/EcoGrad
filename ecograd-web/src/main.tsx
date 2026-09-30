@@ -2,6 +2,7 @@ import './services/aparencia';
 import './services/pessoas';
 import { initializeNavigation } from './services/navigation';
 import { initializeSession } from './services/session';
+import { concluirLoginOpenRouter } from './lib/provedores-ia';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -24,7 +25,8 @@ const queryClient = new QueryClient({
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(<p role="status" className="p-6">Verificando e recuperando a sessão…</p>);
-void initializeSession(queryClient).then(() => { initializeNavigation(); root.render(
+// O login do OpenRouter conclui antes de o app ler a configuração do UFSCão.
+void concluirLoginOpenRouter().then(() => initializeSession(queryClient)).then(() => { initializeNavigation(); root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       {/* Fora do App, para o aviso de fim de atividade sobreviver à troca de tela;

@@ -110,8 +110,9 @@ export function UFSCaoAcervo() {
     </div>
 
     {(!configurado || configurando) ? <div className="card space-y-3">
-      {!configurado && <OfertaDeCortesia onAceitar={(c) => { setConfig(c); setConfigurando(false); }} />}
-      <ConfiguracaoIA inicial={cortesia ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
+      <ConfiguracaoIA inicial={cortesia ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())}>
+        {!configurado && <OfertaDeCortesia onAceitar={(c) => { setConfig(c); setConfigurando(false); }} />}
+      </ConfiguracaoIA>
       {!configurado && <p className="text-xs text-slate-400">Sem chave de API, dá para <button type="button" className="underline" onClick={() => setSemIA(true)}>responder pelo catálogo, sem IA</button>: contagens e listas, sem texto escrito.</p>}
     </div> : <>
       {estado.data?.atualizado === false && <Aviso tipo="aviso">

@@ -196,8 +196,9 @@ function PainelConsultor({ onFechar, focarAoMontar }: { onFechar: () => void; fo
 
     {configurando ? (
       <div ref={configuracaoRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
-        {!configurado && <OfertaDeCortesia onAceitar={(c) => { setConfig(c); setConfigurando(false); }} />}
-        <ConfiguracaoIA inicial={ehCortesia(config) ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())} />
+        <ConfiguracaoIA inicial={ehCortesia(config) ? null : config} onSalvo={(c) => { setConfig(c); setConfigurando(false); }} onEsquecer={() => setConfig(lerConfigIA())}>
+          {!configurado && <OfertaDeCortesia onAceitar={(c) => { setConfig(c); setConfigurando(false); }} />}
+        </ConfiguracaoIA>
       </div>
     ) : <>
       <div ref={listaRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">

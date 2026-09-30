@@ -12,7 +12,7 @@ export const PROVEDORES: readonly Provedor[] = [
   { id: 'openai', nome: 'OpenAI', formato: 'openai', baseUrl: 'https://api.openai.com/v1', modelo: 'gpt-5-mini', chaves: 'https://platform.openai.com/api-keys' },
   { id: 'anthropic', nome: 'Anthropic', formato: 'anthropic', baseUrl: 'https://api.anthropic.com/v1', modelo: 'claude-opus-5', chaves: 'https://console.anthropic.com/settings/keys' },
   { id: 'google', nome: 'Google Gemini', formato: 'google', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', modelo: 'gemini-2.5-flash', chaves: 'https://aistudio.google.com/apikey' },
-  { id: 'openrouter', nome: 'OpenRouter', formato: 'openai', baseUrl: 'https://openrouter.ai/api/v1', modelo: 'openrouter/auto', chaves: 'https://openrouter.ai/keys' },
+  { id: 'openrouter', nome: 'OpenRouter', formato: 'openai', baseUrl: 'https://openrouter.ai/api/v1', modelo: 'openrouter/free', chaves: 'https://openrouter.ai/keys' },
   { id: 'groq', nome: 'Groq', formato: 'openai', baseUrl: 'https://api.groq.com/openai/v1', modelo: 'llama-3.3-70b-versatile', chaves: 'https://console.groq.com/keys' },
   { id: 'mistral', nome: 'Mistral', formato: 'openai', baseUrl: 'https://api.mistral.ai/v1', modelo: 'mistral-large-latest', chaves: 'https://console.mistral.ai/api-keys' },
   { id: 'deepseek', nome: 'DeepSeek', formato: 'openai', baseUrl: 'https://api.deepseek.com/v1', modelo: 'deepseek-chat', chaves: 'https://platform.deepseek.com/api_keys' },
@@ -132,4 +132,61 @@ export function salvarConfigIA({ chave, lembrar, provedor, modelo, baseUrl }: Co
 }
 export function esquecerChaveIA() {
   try { localStorage.removeItem(SEGREDO); sessionStorage.removeItem(SEGREDO); } catch { /* armazenamento indisponível: nada foi salvo */ }
+}
+
+/**
+ * Login com OpenRouter (OAuth PKCE): o usuário autoriza no site do OpenRouter e
+ * volta com um código que o navegador troca por uma chave de API da conta dele.
+ * A troca vai direto ao OpenRouter; o EcoGrad não vê a chave nem o código.
+ * A página inteira sai e volta, e a análise sobrevive porque a sessão grava no
+ * `pagehide` e se recupera na carga.
+ */
+const PKCE = 'ecograd-openrouter-pkce';
+let falhaLogin = false;
+const OPENROUTER = PROVEDORES.find((p) => p.id === 'openrouter')!;
+const base64url = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+export async function entrarComOpenRouter(lembrar: boolean, modelo: string) {
+  const verificador = base64url(crypto.getRandomValues(new Uint8Array(32)));
+  const desafio = base64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verificador))));
+  sessionStorage.setItem(PKCE, JSON.stringify({ verificador, lembrar, modelo, hash: location.hash }));
+  // Sem o hash: o OpenRouter acrescenta `?code=` ao fim da URL, e depois de um `#` ele cairia dentro do hash.
+  const volta = location.origin + location.pathname;
+  location.assign(`https://openrouter.ai/auth?${new URLSearchParams({ callback_url: volta, code_challenge: desafio, code_challenge_method: 'S256', key_label: 'EcoGrad' })}`);
+}
+
+/** Na carga do app: conclui um login pendente, se a URL trouxer o código. */
+export async function concluirLoginOpenRouter() {
+  const params = new URLSearchParams(location.search);
+  const codigo = params.get('code');
+  let pendente: { verificador: string; lembrar: boolean; modelo?: unknown; hash: string } | null = null;
+  try { pendente = JSON.parse(sessionStorage.getItem(PKCE) ?? 'null'); sessionStorage.removeItem(PKCE); } catch { /* sem armazenamento, sem login pendente */ }
+  if (!codigo || !pendente) return;
+  params.delete('code');
+  // O código é de uso único: sai da URL antes de qualquer coisa, para não ficar no histórico.
+  history.replaceState(null, '', location.pathname + (params.toString() ? `?${params}` : '') + pendente.hash);
+  try {
+    const r = await fetch('https://openrouter.ai/api/v1/auth/keys', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: codigo, code_verifier: pendente.verificador, code_challenge_method: 'S256' }) });
+    const { key } = r.ok ? await r.json() as { key?: string } : {};
+    if (!key) throw new Error();
+    salvarConfigIA({ provedor: OPENROUTER.id, modelo: typeof pendente.modelo === 'string' && pendente.modelo ? pendente.modelo : OPENROUTER.modelo, baseUrl: OPENROUTER.baseUrl, chave: key, lembrar: pendente.lembrar });
+  } catch { falhaLogin = true; }
+}
+
+/** O login desta carga falhou: o formulário avisa até a próxima tentativa, que recarrega a página. */
+export const falhouLoginOpenRouter = () => falhaLogin;
+
+export interface ModeloOpenRouter { id: string; nome: string; gratis: boolean }
+/**
+ * O catálogo vivo do OpenRouter: modelo novo lá aparece aqui sem nova versão do
+ * EcoGrad. O endpoint é público e aceita chamada do navegador; não leva a chave.
+ * O roteador grátis vem primeiro, depois os modelos grátis, depois o resto.
+ */
+export async function modelosOpenRouter(signal?: AbortSignal): Promise<ModeloOpenRouter[]> {
+  const r = await fetch('https://openrouter.ai/api/v1/models', { signal });
+  if (!r.ok) throw new Error(`OpenRouter respondeu ${r.status}.`);
+  const { data } = await r.json() as { data: { id: string; name?: string; pricing?: { prompt?: string; completion?: string } }[] };
+  const ordem = (m: ModeloOpenRouter) => (m.id === OPENROUTER.modelo ? 0 : m.gratis ? 1 : 2);
+  return data.map((m) => ({ id: m.id, nome: m.name || m.id, gratis: m.pricing?.prompt === '0' && m.pricing?.completion === '0' }))
+    .sort((a, b) => ordem(a) - ordem(b) || a.nome.localeCompare(b.nome, 'pt-BR'));
 }

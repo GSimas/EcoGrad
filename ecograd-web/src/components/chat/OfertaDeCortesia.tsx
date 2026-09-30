@@ -20,10 +20,10 @@ export function OfertaDeCortesia({ onAceitar }: { onAceitar: (c: ConfigSalva) =>
     <div className="info space-y-2">
       <p>
         <strong>Experimente sem chave.</strong> As primeiras {cota.data.total ?? 10} perguntas são por conta do
-        EcoGrad, para você conhecer o UFSCão — restam {cota.data.restantes}. Depois delas, configure seu provedor
-        abaixo e continue sem limite.
+        EcoGrad, para você conhecer o UFSCão — restam {cota.data.restantes}. Depois delas, entre com o OpenRouter ou use
+        sua própria chave e continue sem limite.
       </p>
-      <button type="button" className="btn btn-primary text-xs" onClick={() => {
+      <button type="button" className="btn text-xs" onClick={() => {
         const c = { ...configCortesia(), lembrar: false };
         salvarConfigIA(c);
         onAceitar(c);
