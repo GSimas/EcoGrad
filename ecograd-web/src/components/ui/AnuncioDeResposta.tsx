@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { markdownParaHtml } from '@/lib/markdown';
+import { semMarcas } from '@/lib/mencoes';
 
 /** O texto corrido de uma resposta em markdown, como o leitor de tela deve ouvi-la. */
 function textoDoMarkdown(markdown: string): string {
-  const doc = new DOMParser().parseFromString(markdownParaHtml(markdown), 'text/html');
+  const doc = new DOMParser().parseFromString(markdownParaHtml(semMarcas(markdown)), 'text/html');
   return (doc.body.textContent ?? '').replace(/\s+/g, ' ').trim();
 }
 

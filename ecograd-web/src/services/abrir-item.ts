@@ -7,6 +7,7 @@ import { referenciaDocumento } from '@/lib/resultados';
 import { PAPEIS_PESSOA } from '@/types';
 import { carregarDados } from './calculos';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
+import { navigatePage } from './navigation';
 
 /** O que a busca da apresentação tem selecionado: itens soltos e coleções inteiras. */
 export interface EscolhaAcervo {
@@ -174,4 +175,18 @@ export function abrirRegistro(docs: readonly Documento[], indice: number): void 
     buscaTermo: ref.titulo,
     ui: { ...s.ui, 'dossie.documento': ref },
   }));
+}
+
+/** Termo que a busca da apresentação deve assumir na próxima montagem. */
+export const CHAVE_BUSCA_PENDENTE = 'inicio.busca.pendente';
+
+/**
+ * Leva um termo solto para a busca da apresentação, já digitado. É o destino do
+ * nome que o UFSCão citou e que não é item exato do acervo — um tema com as
+ * palavras dele, por exemplo: a busca mostra o que o acervo tem de parecido, e
+ * quem clicou escolhe, em vez de o EcoGrad adivinhar a obra.
+ */
+export function buscarNaApresentacao(termo: string) {
+  useEcoGradStore.setState((s) => ({ ui: { ...s.ui, 'inicio.modo': 'Buscar', [CHAVE_BUSCA_PENDENTE]: termo } }));
+  navigatePage('inicio');
 }

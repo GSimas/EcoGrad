@@ -9,22 +9,21 @@
  * impede a herdada de virar uma versão pior da original.
  */
 import { useEffect, useMemo, type MouseEvent } from 'react';
-import { itemDoAcervo, type IndiceBusca, type ResultadoBusca } from '@/lib/busca-global';
+import { itemDoAcervo, itensDaEntidade, termoDoAcervo, type IndiceBusca, type ResultadoBusca } from '@/lib/busca-global';
 import { markdownParaHtml } from '@/lib/markdown';
 import { dicionarioDeItens, realcarMencoes, type Mencao } from '@/lib/mencoes';
 import {
   CHAVE_CONVERSA_ACERVO, TURNOS_HERDADOS, citacoesInvalidas, fontesDaAmostra, realcarCitacoes,
   type Fonte, type Panorama,
 } from '@/lib/ufscao-acervo';
-import { abrirEscolhaDoAcervo } from '@/services/abrir-item';
+import { abrirEscolhaDoAcervo, buscarNaApresentacao } from '@/services/abrir-item';
 import { Expander, Progresso } from '@/components/ui/primitives';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
-import type { TipoBusca } from '@/types';
+import { PAPEIS_PESSOA, type TipoBusca } from '@/types';
 
-const PAPEIS: TipoBusca[] = ['Autor', 'Orientador', 'Co-orientador'];
 /** Qual item da conversa disparou um download, para a tela poder dizer isso. */
 const CHAVE_ABRINDO = 'acervo.abrindo';
-const CAMPOS_DE_PESSOA = new Set(['nome', 'orientador', 'orientando', 'rotulo']);
+const CAMPOS_DE_PESSOA = new Set(['nome', 'orientador', 'orientando', 'rotulo', 'autor', 'pessoa', 'coorientador', 'co_orientador']);
 
 /** O mínimo que este módulo precisa saber de uma resposta, sem depender do serviço. */
 export interface RespostaRenderizavel {
@@ -34,17 +33,31 @@ export interface RespostaRenderizavel {
   dados: { linhas: Record<string, unknown>[] } | null;
 }
 
-/** Pessoas e títulos que o banco devolveu nesta resposta: só eles viram botão. */
+/**
+ * O que o banco devolveu nesta resposta — pessoas, títulos, palavras-chave e
+ * macrotemas — vira botão onde aparecer no texto. O resto que o modelo citar
+ * só vira botão se ele o marcar com `[[ ]]`.
+ */
 export function itensDaResposta(r: RespostaRenderizavel): Mencao[] {
   const itens: Mencao[] = [];
+  const item = (tipo: TipoBusca) => (nome: unknown) => { if (typeof nome === 'string' && nome.trim()) itens.push({ tipo, nome }); };
   const pessoa = (nome: unknown) => { if (typeof nome === 'string' && nome.includes(',')) itens.push({ tipo: 'Pessoa', nome }); };
   for (const [nome] of r.panorama?.principais_orientadores ?? []) pessoa(nome);
   for (const o of r.panorama?.amostra ?? []) {
+    item('Documento')(o.titulo);
     (o.autores ?? []).forEach(pessoa);
     (o.orientador ?? '').split('; ').forEach(pessoa);
+    (o.palavras_chave ?? []).forEach(item('Palavra-chave'));
   }
+  for (const [nome] of r.panorama?.por_macrotema ?? []) item('Macrotema')(nome);
+  (r.panorama?.palavras_chave_casadas ?? []).forEach(item('Palavra-chave'));
   for (const linha of r.dados?.linhas ?? []) {
-    for (const [campo, valor] of Object.entries(linha)) if (CAMPOS_DE_PESSOA.has(campo)) pessoa(valor);
+    for (const [campo, valor] of Object.entries(linha)) {
+      if (CAMPOS_DE_PESSOA.has(campo)) pessoa(valor);
+      else if (campo === 'titulo') item('Documento')(valor);
+      else if (campo === 'macrotema') item('Macrotema')(valor);
+      else if (campo === 'palavra_chave') item('Palavra-chave')(valor);
+    }
   }
   return itens;
 }
@@ -52,13 +65,13 @@ export function itensDaResposta(r: RespostaRenderizavel): Mencao[] {
 /**
  * Abre no Motor de Busca o que a resposta citou. Sem base carregada, o item é
  * achado no catálogo global e as coleções dele são carregadas — o mesmo caminho
- * da busca da tela inicial.
+ * da busca da tela inicial. Fora dos títulos, a comparação tolera acento e
+ * caixa: o modelo escreve "Da Silva" onde o acervo guarda "da Silva".
  */
-export function abrirNoMotor(indice: IndiceBusca | undefined, tipo: 'Documento' | 'Pessoa', nome: string, url?: string | null) {
-  const itens: ResultadoBusca[] = indice
-    ? (tipo === 'Documento' ? [itemDoAcervo(indice, 'Documento', nome)] : PAPEIS.map((p) => itemDoAcervo(indice, p, nome)))
-      .filter((i): i is ResultadoBusca => !!i)
-    : [];
+export function abrirNoMotor(indice: IndiceBusca | undefined, tipo: TipoBusca, nome: string, url?: string | null) {
+  const itens: ResultadoBusca[] = !indice ? []
+    : tipo === 'Documento' ? [itemDoAcervo(indice, 'Documento', nome)].filter((i): i is ResultadoBusca => !!i)
+    : itensDaEntidade(indice, tipo, nome);
   if (itens.length) {
     const r = abrirEscolhaDoAcervo({ itens, colecoes: [] });
     // Abrir um item pode exigir baixar as coleções dele, o que leva segundos.
@@ -67,7 +80,21 @@ export function abrirNoMotor(indice: IndiceBusca | undefined, tipo: 'Documento' 
     return r;
   }
   if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  else buscarNaApresentacao(nome);
   return { carregando: false, colecoes: 0, omitidas: 0 };
+}
+
+/**
+ * Clique num nome da resposta. `Termo` é o que o modelo marcou sem que o
+ * contexto o trouxesse: o tipo sai do acervo inteiro, e o que nem lá existe
+ * vai para a busca da apresentação.
+ */
+export function abrirMencao(indice: IndiceBusca | undefined, tipo: string, nome: string, url?: string | null) {
+  const achado = tipo === 'Termo' && indice ? termoDoAcervo(indice, nome) : null;
+  if (tipo === 'Termo' && !achado) { buscarNaApresentacao(nome); return; }
+  const real = (achado?.tipo ?? tipo) as TipoBusca;
+  const papel = (PAPEIS_PESSOA as readonly string[]).includes(real) ? 'Pessoa' : real;
+  abrirNoMotor(indice, papel, achado?.nome ?? nome, url);
 }
 
 /**
@@ -108,7 +135,7 @@ export function CorpoDaResposta({ resposta: r, fontes, indice }: {
     if (!alvo) return;
     const { fonte, mencao, nome } = alvo.dataset;
     if (fonte) { const f = fontes.find((x) => x.numero === Number(fonte)); if (f) abrirNoMotor(indice, 'Documento', f.titulo, f.url); }
-    else if (mencao === 'Pessoa' && nome) abrirNoMotor(indice, 'Pessoa', nome);
+    else if (mencao && nome) abrirMencao(indice, mencao, nome, mencao === 'Documento' ? fontes.find((f) => f.titulo === nome)?.url : undefined);
   };
 
   return <>

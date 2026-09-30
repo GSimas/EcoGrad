@@ -5,7 +5,7 @@
  * Importa por caminho relativo: os testes compilam com um tsconfig próprio que
  * não resolve o atalho `@/`.
  */
-import { PERSONA_UFSCAO, REGRAS_DE_SEGURANCA, cercarDadosDoAcervo } from './guardrails';
+import { PERSONA_UFSCAO, REGRA_MARCAS, REGRAS_DE_SEGURANCA, cercarDadosDoAcervo } from './guardrails';
 import { chaveBusca, termosBusca } from './utils';
 
 export interface DocenteResumo { nome: string; total: number; temas: string[] }
@@ -138,6 +138,7 @@ SUA MISSÃO:
 REGRAS DE CONDUTA:
 - Baseie suas recomendações EXCLUSIVAMENTE nos dados fornecidos no Dossiê abaixo.
 - Use a sintaxe Markdown para criar hiperlinks nos títulos dos documentos recomendados.
+${REGRA_MARCAS}
 - Se a ideia de projeto do candidato fugir completamente do escopo do programa, seja honesto e diga que o programa pode não ser o melhor encaixe, ou sugira uma adaptação para os 'Principais Conceitos Pesquisados'.
 
 ${turnosHerdados > 0 ? `

@@ -5,7 +5,7 @@ import { chaveBusca, cn, termosBusca } from '@/lib/utils';
 import { MAX_COLECOES_POR_ITEM, type ResultadoBusca } from '@/lib/busca-global';
 import { buscarNoIndice, prepararIndiceDeBusca } from '@/services/indice-busca';
 import { carregarCobertura, type ColecaoCobertura } from '@/lib/colecoes';
-import { abrirEscolhaDoAcervo, colecoesDaEscolha } from '@/services/abrir-item';
+import { abrirEscolhaDoAcervo, CHAVE_BUSCA_PENDENTE, colecoesDaEscolha } from '@/services/abrir-item';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { useNavigation } from '@/services/navigation';
 import { Progresso } from '@/components/ui/primitives';
@@ -62,6 +62,14 @@ export function BuscaGlobal() {
   // A apresentação não tem o painel de histórico; o aviso de link direto
   // ("carregue as coleções para abrir a página pedida") apareceria em lugar nenhum.
   const aviso = useNavigation((n) => n.notice);
+  // Termo mandado de fora (um nome citado pelo UFSCão): entra no campo, com a lista aberta.
+  const pendente = useEcoGradStore((s) => s.ui[CHAVE_BUSCA_PENDENTE]) as string | undefined;
+  useEffect(() => {
+    if (!pendente) return;
+    useEcoGradStore.setState((s) => ({ ui: { ...s.ui, [CHAVE_BUSCA_PENDENTE]: undefined } }));
+    setTexto(pendente); setAtivada(true); setAberta(true); setAtivo(-1);
+    document.getElementById(campoId)?.focus();
+  }, [pendente, campoId]);
 
   // O catálogo é baixado, descomprimido e normalizado no `busca.worker`; a
   // página só recebe as respostas de cada consulta.

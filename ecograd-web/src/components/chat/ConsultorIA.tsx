@@ -13,7 +13,7 @@ import { Aviso, Expander } from '@/components/ui/primitives';
 import { AnuncioDeResposta } from '@/components/ui/AnuncioDeResposta';
 import { markdownParaHtml } from '@/lib/markdown';
 import { dicionarioDoAcervo, realcarMencoes, type DicionarioMencoes } from '@/lib/mencoes';
-import { abrirRegistro } from '@/services/abrir-item';
+import { abrirRegistro, buscarNaApresentacao } from '@/services/abrir-item';
 import type { Documento, TipoBusca } from '@/types';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useDadosDerivados } from '@/hooks/useDadosDerivados';
@@ -294,13 +294,16 @@ const Balao = memo(function Balao({ papel, conteudo, dic, docs, aoAbrirRetrato }
   const ehUsuario = papel === 'user';
   const html = useMemo(() => {
     const base = markdownParaHtml(conteudo);
-    return dic ? realcarMencoes(base, dic) : base;
-  }, [conteudo, dic]);
+    // Fala do usuário fica como foi escrita; na do UFSCão, `[[ ]]` vira botão mesmo sem dicionário.
+    return ehUsuario ? base : realcarMencoes(base, dic ?? new Map());
+  }, [conteudo, dic, ehUsuario]);
   const abrirMencao = (e: MouseEvent<HTMLDivElement>) => {
     const alvo = (e.target as HTMLElement).closest<HTMLElement>('[data-mencao]');
     if (!alvo) return;
     const { mencao, nome, indice } = alvo.dataset;
     if (mencao === 'Documento' && indice !== undefined && docs) abrirRegistro(docs, Number(indice));
+    // `Termo` não está nas coleções carregadas: a busca da apresentação procura no acervo inteiro.
+    else if (mencao === 'Termo' && nome) buscarNaApresentacao(nome);
     else if (nome) useEcoGradStore.getState().navegarPara(mencao as TipoBusca, nome);
   };
   return (

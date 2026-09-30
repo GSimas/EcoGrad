@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { markdownParaHtml } from '../src/lib/markdown';
-import { dicionarioDoAcervo, realcarMencoes } from '../src/lib/mencoes';
+import { dicionarioDoAcervo, realcarMencoes, semMarcas } from '../src/lib/mencoes';
 import type { Documento } from '../src/types';
 
 const doc = (d: Partial<Documento>): Documento => ({
@@ -92,4 +92,15 @@ test('link que não é trabalho do acervo continua só link', () => {
   const html = realcarMencoes(markdownParaHtml('Veja [o repositório](https://repositorio.ufsc.br).'), dic);
   assert.doesNotMatch(html, /<button/);
   assert.match(html, /<a href="https:\/\/repositorio\.ufsc\.br"/);
+});
+
+test('[[nome]] vira botão: com o tipo do dicionário quando ele conhece, como Termo quando não', () => {
+  const d = dicionarioDoAcervo([doc({ autores: ['Catela, Eva Yamila Amanda da Silva'] })]);
+  const html = realcarMencoes(markdownParaHtml('- [[Catela, Eva Yamila Amanda Da Silva]] — 1 obra\n- [[Condicionalidades do Bolsa Família]] [4]\n- **[[Pesca & Renda]]**'), d);
+  assert.match(html, /data-mencao="Pessoa" data-nome="Catela, Eva Yamila Amanda da Silva"[^>]*>Catela, Eva Yamila Amanda Da Silva<\/button>/);
+  assert.match(html, /data-mencao="Termo" data-nome="Condicionalidades do Bolsa Família"[^>]*>Condicionalidades do Bolsa Família<\/button> \[4\]/);
+  // Escapado uma vez só: o `&` do texto não vira `&amp;amp;` no atributo.
+  assert.match(html, /data-nome="Pesca &amp; Renda"[^>]*>Pesca &amp; Renda<\/button>/);
+  assert.doesNotMatch(html, /\[\[|\]\]/);
+  assert.equal(semMarcas('Veja [[Ana]] e [3].'), 'Veja Ana e [3].');
 });

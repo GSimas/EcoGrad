@@ -19,7 +19,7 @@ import {
   MAX_CARACTERES_RESUMO, SEM_RELEVANCIA, planejarAprofundamento, sistemaSintese,
   type FonteResumo, type PlanoAprofundamento,
 } from './chat-sintese';
-import { PERSONA_UFSCAO, REGRAS_DE_SEGURANCA, cercarDadosDoAcervo } from './guardrails';
+import { PERSONA_UFSCAO, REGRA_MARCAS, REGRAS_DE_SEGURANCA, cercarDadosDoAcervo } from './guardrails';
 import exemplos from './consultas-exemplo.json';
 import { escaparHtml } from './markdown';
 
@@ -303,7 +303,7 @@ REGRAS DA RESPOSTA
 
 FORMA
 - Markdown, de 120 a 350 palavras, em tom de conversa: trate quem pergunta por "você" e escreva como quem explica para alguém ao lado, não como relatório. Uma abertura curta e calorosa cabe bem; elogiar a pergunta, não. O essencial vem logo: panorama em poucas linhas e então os destaques da amostra com [n].
-- Nomes de pessoas no formato do acervo ("Sobrenome, Nome") ou na ordem direta, como ficar mais natural.
+${REGRA_MARCAS}
 - Termine com um próximo passo útil: abrir uma obra citada, refinar por programa ou período, ou perguntar sobre um orientador.`;
   const contexto = plano.tipo === 'conversa' || plano.tipo === 'fora'
     ? `TIPO: ${plano.tipo}${plano.motivo ? ` — ${plano.motivo}` : ''}. Nenhuma consulta foi feita.`

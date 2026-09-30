@@ -26,7 +26,8 @@ import { classeDoTipo } from './tipos-cor';
 import type { Documento, TipoBusca } from '../types';
 
 export interface Mencao {
-  tipo: TipoBusca;
+  /** `Termo`: marcado pelo modelo mas fora do dicionário; o tipo sai do acervo no clique. */
+  tipo: TipoBusca | 'Termo';
   /** Grafia do acervo, que o Motor de Busca resolve. */
   nome: string;
   /** Só para `Documento`: posição em `docs`, que identifica o registro exato. */
@@ -139,9 +140,32 @@ export function mencoesNoTexto(texto: string, dic: DicionarioMencoes): Achado[] 
 
 const botao = (texto: string, m: Mencao) => {
   const indice = m.indice === undefined ? '' : ` data-indice="${m.indice}"`;
+  const titulo = m.tipo === 'Termo' ? 'Procurar no acervo' : `Abrir ${m.tipo === 'Pessoa' ? 'o perfil' : m.tipo === 'Documento' ? 'o dossiê' : 'o item'} no Motor de Busca`;
   return `<button type="button" class="eco-mencao ${classeDoTipo(m.tipo)}" data-mencao="${escaparHtml(m.tipo)}" data-nome="${escaparHtml(m.nome)}"${indice}`
-    + ` title="Abrir ${escaparHtml(m.tipo === 'Pessoa' ? 'o perfil' : m.tipo === 'Documento' ? 'o dossiê' : 'o item')} no Motor de Busca">${texto}</button>`;
+    + ` title="${titulo}">${texto}</button>`;
 };
+
+/**
+ * `[[nome]]`: o modelo marca cada item do acervo que cita. O dicionário só
+ * conhece o que o contexto trouxe, e nome solto que ele não conhece — um tema
+ * que o modelo resumiu, uma pessoa de uma contagem — ficaria como texto.
+ */
+const MARCA = /\[\[([^[\]\n]{2,200})\]\]/g;
+/** O texto sem as marcas, para onde ele aparece sem realce (streaming, leitor de tela). */
+export const semMarcas = (texto: string) => texto.replace(MARCA, '$1');
+const desescapar = (html: string) => html.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+
+/** Menções do dicionário num trecho de texto puro. */
+function realcarTrecho(parte: string, dic: DicionarioMencoes): string {
+  const achados = mencoesNoTexto(parte, dic);
+  let saida = '';
+  let cursor = 0;
+  for (const { inicio, fim, mencao } of achados) {
+    saida += parte.slice(cursor, inicio) + botao(parte.slice(inicio, fim), mencao);
+    cursor = fim;
+  }
+  return saida + parte.slice(cursor);
+}
 
 /**
  * Abaixo disso um começo de título casa com obras demais para valer como
@@ -197,7 +221,6 @@ function linksDeDocumento(html: string, dic: DicionarioMencoes): string {
  * menção. Pular botão também torna a função idempotente.
  */
 export function realcarMencoes(html: string, dic: DicionarioMencoes): string {
-  if (dic.size === 0) return html;
   let dentro = 0;
   return linksDeDocumento(html, dic).split(/(<[^>]*>)/).map((parte) => {
     if (parte.startsWith('<')) {
@@ -206,14 +229,11 @@ export function realcarMencoes(html: string, dic: DicionarioMencoes): string {
       return parte;
     }
     if (dentro > 0 || !parte) return parte;
-    const achados = mencoesNoTexto(parte, dic);
-    if (!achados.length) return parte;
-    let saida = '';
-    let cursor = 0;
-    for (const { inicio, fim, mencao } of achados) {
-      saida += parte.slice(cursor, inicio) + botao(parte.slice(inicio, fim), mencao);
-      cursor = fim;
-    }
-    return saida + parte.slice(cursor);
+    // Trechos pares são texto corrido; ímpares, o nome dentro de `[[ ]]`.
+    return parte.split(MARCA).map((trecho, i) => {
+      if (i % 2 === 0) return realcarTrecho(trecho, dic);
+      const nome = trecho.trim();
+      return botao(nome, dic.get(chaveDeBusca(nome)) ?? { tipo: 'Termo', nome: desescapar(nome) });
+    }).join('');
   }).join('');
 }

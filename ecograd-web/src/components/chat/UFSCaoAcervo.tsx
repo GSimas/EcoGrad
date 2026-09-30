@@ -11,6 +11,7 @@ import { carregarIndiceBusca } from '@/services/indice-busca';
 import { AnuncioDeResposta } from '@/components/ui/AnuncioDeResposta';
 import { estadoDoIndice, indiceConfigurado } from '@/lib/indice-remoto';
 import { markdownParaHtml } from '@/lib/markdown';
+import { semMarcas } from '@/lib/mencoes';
 import {
   AberturaEmCurso, CorpoDaResposta, FontesDaResposta, fontesDaResposta,
 } from '@/components/chat/RespostaDoAcervo';
@@ -133,7 +134,7 @@ export function UFSCaoAcervo() {
       {etapa && <>
         <Balao papel="user">{perguntaAtual}</Balao>
         {parcial
-          ? <Balao papel="assistant" aoAbrirRetrato={() => setRetrato(true)}><div className="markdown" dangerouslySetInnerHTML={{ __html: markdownParaHtml(`${parcial}▌`) }} /></Balao>
+          ? <Balao papel="assistant" aoAbrirRetrato={() => setRetrato(true)}><div className="markdown" dangerouslySetInnerHTML={{ __html: markdownParaHtml(`${semMarcas(parcial)}▌`) }} /></Balao>
           /* O `role="status"` fica no texto, e não no parágrafo inteiro: dentro
              da região viva, o rótulo do botão do retrato seria lido junto da
              etapa a cada troca. O botão continua no fluxo de foco. */
@@ -301,7 +302,7 @@ function Aprofundar({ resposta: r, indice, config, ocupado, turnos, aoAprofundar
           ? `Lendo os resumos em lotes: ${progresso.feitos} de ${progresso.lotes} concluídos.`
           : 'Lotes lidos. Escrevendo a síntese sobre as notas…'}
       </p>
-      {parcial && <div className="markdown" dangerouslySetInnerHTML={{ __html: markdownParaHtml(`${parcial}▌`) }} />}
+      {parcial && <div className="markdown" dangerouslySetInnerHTML={{ __html: markdownParaHtml(`${semMarcas(parcial)}▌`) }} />}
       <button type="button" className="btn text-xs" onClick={() => controle.current?.abort()}>
         <Square size={14} className="shrink-0" aria-hidden /> Interromper
       </button>
