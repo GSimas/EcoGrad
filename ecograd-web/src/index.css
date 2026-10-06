@@ -332,6 +332,13 @@
   display: inline-flex;
 }
 
+.apresentacao .intro-titulo {
+  display: inline-block;
+  cursor: default;
+  transition: transform 320ms var(--ease-emphasized), letter-spacing 320ms var(--ease-emphasized);
+}
+@keyframes eco-titulo-reflexo { from { background-position: 100% 0; } to { background-position: 0 0; } }
+
 .apresentacao .intro-block:focus-within {
   border-color: rgb(var(--eco-accent) / .65);
   box-shadow: 0 12px 30px rgb(0 0 0 / 25%), 0 0 24px rgb(var(--eco-accent) / 8%);
@@ -367,12 +374,30 @@
   .apresentacao footer a:hover {
     transform: translateY(-2px);
   }
+
+  /* "EcoGrad": o título sobe e se abre um pouco, e um reflexo claro atravessa
+     o "Grad" uma vez. O halo vira filtro porque text-shadow pintaria por cima
+     do texto recortado pelo degradê. */
+  .apresentacao .intro-titulo:hover {
+    transform: translateY(-3px);
+    letter-spacing: -0.02em;
+  }
+  .apresentacao .intro-titulo:hover .eco-destaque {
+    background: linear-gradient(100deg, rgb(var(--eco-accent)) 40%, rgb(var(--slate-100)) 50%, rgb(var(--eco-accent)) 60%) 0 0 / 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 0 22px rgb(var(--eco-accent) / .55));
+    animation: eco-titulo-reflexo 900ms var(--ease-standard) both;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .apresentacao .intro-block,
   .apresentacao .intro-mark,
   .apresentacao .intro-logo,
+  .apresentacao .intro-titulo,
   .apresentacao .btn,
   .apresentacao .btn svg,
   .apresentacao footer a {
@@ -711,7 +736,7 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
   transition-delay: 0s !important;
   scroll-behavior: auto !important;
 }
-:root[data-movimento="reduzido"] .apresentacao :is(.intro-block, .intro-mark, .intro-logo, .btn, .btn svg, footer a) { transform: none !important; }
+:root[data-movimento="reduzido"] .apresentacao :is(.intro-block, .intro-mark, .intro-logo, .intro-titulo, .btn, .btn svg, footer a) { transform: none !important; }
 @media (prefers-reduced-motion: reduce) {
   :root, *, *::before, *::after {
     animation-duration: .01ms !important;

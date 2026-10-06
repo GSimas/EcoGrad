@@ -284,9 +284,9 @@ export async function montarRelatorio(
       if (topOri) corpo.push({ tipo: 'paragrafo', texto: `Orientador com maior número de orientações: ${topOri[0]} (${topOri[1]} orientações).` });
       if (topCoori) corpo.push({ tipo: 'paragrafo', texto: `Coorientador com maior número de coorientações: ${topCoori[0]} (${topCoori[1]} coorientações).` });
       corpo.push(genealogia.formadores.length
-        ? tabela(`Formadores de professores (${genealogia.formadores.length})`, ['Nome'], genealogia.formadores.map((f) => [f]),
-          'Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal nem atuação atual.')
-        : { tipo: 'nota', texto: 'Formadores de professores: nenhum ciclo genealógico detectado nesta amostra.' });
+        ? tabela(`Formadores de orientadores (${genealogia.formadores.length})`, ['Formador', 'Orientadores formados'], genealogia.formadores.map(([f, formados]) => [f, formados.join('; ')]),
+          'Quem orientou, no recorte, a autoria de alguém que também orienta ou coorienta. Isso não confirma identidade, sequência temporal nem atuação atual.')
+        : { tipo: 'nota', texto: 'Formadores de orientadores: nenhum ciclo genealógico detectado nesta amostra.' });
       corpo.push(genealogia.mestreDoutor.length
         ? tabela(`Autores com dissertação e tese na mesma coleção (${genealogia.mestreDoutor.length})`, ['Autor', 'Coleções'],
           genealogia.mestreDoutor.map(([autor, progs]) => [autor, progs.join('; ')]))

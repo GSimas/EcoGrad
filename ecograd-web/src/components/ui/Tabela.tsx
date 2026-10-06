@@ -1,5 +1,6 @@
-import { useId, useMemo, type ReactNode } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
+import { ArrowUpRight, Download, FileJson, FileSpreadsheet, FileText } from 'lucide-react';
+import { Janela } from '@/components/layout/Janela';
 import { useSessionField } from '@/hooks/useSessionField';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { baixarArquivo, cn } from '@/lib/utils';
@@ -7,7 +8,7 @@ import { CHIP } from '@/components/layout/atalhos';
 import { FiltroCabecalho } from './FiltroCabecalho';
 import { Dica } from './Dica';
 import { useEmJanela } from './contexto-janela';
-import { valorExibido, consultaInicial, consultarLinhas, contextoPublicavel, csvComContexto, filtroAtivo, pacoteExportacao, type ConsultaTabela, type FiltroColuna, type RotulosColuna } from '@/lib/visualizacao';
+import { valorExibido, consultaInicial, consultarLinhas, contextoPublicavel, csvComContexto, xlsxComContexto, filtroAtivo, pacoteExportacao, type ConsultaTabela, type FiltroColuna, type RotulosColuna } from '@/lib/visualizacao';
 
 export interface ColunaTabela<T> {
   chave: string;
@@ -17,7 +18,14 @@ export interface ColunaTabela<T> {
   barra?: { max: number };
 }
 export const NOTA_FILTROS = 'O funil no cabeçalho filtra a coluna; busca, filtros e ordenação afetam somente esta tabela.';
-export const NOTA_EXPORTACAO = 'Exporta todas as linhas filtradas, com nomes completos, recorte, unidades dos cabeçalhos e parâmetros. JSON conserva os valores; CSV protege textos que poderiam ser interpretados como fórmulas.';
+export const NOTA_EXPORTACAO = 'Baixa todas as linhas filtradas, com nomes completos, recorte, unidades dos cabeçalhos e parâmetros. JSON conserva os valores; Excel traz o contexto numa aba à parte; CSV protege textos que poderiam ser interpretados como fórmulas.';
+
+const FORMATOS = {
+  csv: { rotulo: 'CSV', detalhe: 'Texto separado por vírgulas, com o contexto em colunas extras. Abre em qualquer planilha.', icone: FileText, mime: 'text/csv;charset=utf-8' },
+  xlsx: { rotulo: 'Excel (XLSX)', detalhe: 'Planilha com os dados numa aba e o contexto da análise em outra.', icone: FileSpreadsheet, mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+  json: { rotulo: 'JSON', detalhe: 'Valores exatos e contexto estruturado, para scripts e outras ferramentas.', icone: FileJson, mime: 'application/json;charset=utf-8' },
+} as const;
+type Formato = keyof typeof FORMATOS;
 
 export interface LeituraDados<T extends Record<string, unknown> = Record<string, unknown>> {
   titulo: string;
@@ -60,12 +68,15 @@ export function Tabela<T extends Record<string, unknown>>({
   };
   const ativos = colunas.filter((c) => filtroAtivo(filtros[c.chave])).length;
   const ordenar = (chave: string, direcao: 'asc' | 'desc') => alterar({ coluna: chave, direcao });
-  const exportar = (formato: 'csv' | 'json') => {
+  const [baixando, setBaixando] = useState(false);
+  const exportar = (formato: Formato) => {
     const s = useEcoGradStore.getState();
     const meta = { ...contextoPublicavel(s), ...contexto, titulo, descricao: descricao ?? '', exportadoEm: new Date().toISOString(), consulta, linhasDisponiveis: linhas.length, linhasExportadas: filtradas.length, escopo: 'Todas as linhas filtradas e ordenadas, não apenas a página visível' };
     const pacote = pacoteExportacao(filtradas, colunas, meta);
     const nome = 'ecograd-' + titulo.normalize('NFD').replace(/\p{Mn}/gu, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase();
-    baixarArquivo(formato === 'csv' ? csvComContexto(pacote) : JSON.stringify(pacote, (_, v) => typeof v === 'number' && !Number.isFinite(v) ? String(v) : v, 2), nome + '.' + formato, formato === 'csv' ? 'text/csv;charset=utf-8' : 'application/json;charset=utf-8');
+    const conteudo = formato === 'csv' ? csvComContexto(pacote) : formato === 'xlsx' ? xlsxComContexto(pacote) : JSON.stringify(pacote, (_, v) => typeof v === 'number' && !Number.isFinite(v) ? String(v) : v, 2);
+    baixarArquivo(conteudo, nome + '.' + formato, FORMATOS[formato].mime);
+    setBaixando(false);
   };
   // Duas regiões aninhadas com o mesmo nome fazem quem navega por landmarks ouvir
   // o rótulo repetido, sem saber qual escolher.
@@ -114,7 +125,18 @@ export function Tabela<T extends Record<string, unknown>>({
       {!filtradas.length && <p className="p-4 text-sm">{linhas.length ? 'Nenhuma linha corresponde à busca e aos filtros de coluna. Restaure a tabela para voltar.' : vazio}</p>}
     </div>
     {filtradas.length > 25 && <nav aria-label={`Paginação de ${titulo}`} className="flex flex-wrap items-center gap-2"><button className="btn" disabled={pagina === 0} onClick={() => alterar({ pagina: pagina - 1 })}>Anterior</button><span className="text-sm">Página {pagina + 1} de {Math.ceil(filtradas.length / 25)}</span><button className="btn" disabled={(pagina + 1) * 25 >= filtradas.length} onClick={() => alterar({ pagina: pagina + 1 })}>Próxima</button></nav>}
-    <div className="flex flex-wrap gap-2"><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('csv')} aria-label={`Exportar ${titulo} em CSV com contexto`}>CSV com contexto</button><button type="button" className="btn" disabled={!filtradas.length} onClick={() => exportar('json')} aria-label={`Exportar ${titulo} em JSON com contexto`}>JSON com contexto</button></div>
+    <div><button type="button" className="btn" disabled={!filtradas.length} onClick={() => setBaixando(true)} aria-label={`Baixar dados de ${titulo}`}><Download size={16} aria-hidden /> Baixar dados</button></div>
+    <Janela aberta={baixando} onOpenChange={setBaixando} titulo="Baixar dados" descricao={`${titulo} · ${filtradas.length} ${filtradas.length === 1 ? 'linha filtrada' : 'linhas filtradas'}, com o contexto da análise.`}>
+      <div className="space-y-2">
+        {(Object.keys(FORMATOS) as Formato[]).map((f) => {
+          const { rotulo, detalhe, icone: Icone } = FORMATOS[f];
+          return <button key={f} type="button" className="btn w-full !justify-start gap-3 !p-3 !text-left" onClick={() => exportar(f)}>
+            <Icone size={20} aria-hidden className="text-eco-accent" />
+            <span className="flex min-w-0 flex-col"><span className="font-semibold">{rotulo}</span><span className="text-xs font-normal text-slate-400">{detalhe}</span></span>
+          </button>;
+        })}
+      </div>
+    </Janela>
     {!notasNaDica && <p className="text-xs text-slate-400">{NOTA_EXPORTACAO}</p>}
   </Raiz>;
 }

@@ -8,8 +8,11 @@
 import type { Documento, SnaGlobal } from '@/types';
 
 export interface Genealogia {
-  /** Nomes que aparecem na autoria e na orientação de registros do recorte. */
-  formadores: string[];
+  /**
+   * Quem orientou, no recorte, a autoria de alguém que também aparece como
+   * (co)orientador — com os orientadores que formou, em ordem alfabética.
+   */
+  formadores: Array<[formador: string, orientadoresFormados: string[]]>;
   /** Autores com dissertação E tese na mesma coleção, com as coleções. */
   mestreDoutor: Array<[string, string[]]>;
 }
@@ -18,14 +21,18 @@ export function calcularGenealogia(
   docs: readonly Documento[],
   conjuntos: { orientadores: ReadonlySet<string>; coorientadores: ReadonlySet<string> },
 ): Genealogia {
-  const professoresAtivos = new Set([...conjuntos.orientadores, ...conjuntos.coorientadores]);
-  const formadores = new Set<string>();
+  const orientadoresAtivos = new Set([...conjuntos.orientadores, ...conjuntos.coorientadores]);
+  // formador -> orientadores que ele orientou na autoria
+  const formadores = new Map<string, Set<string>>();
   // autor -> programa -> níveis cursados
   const autorProgramas = new Map<string, Map<string, Set<string>>>();
 
   for (const d of docs) {
     for (const autor of d.autores) {
-      if (professoresAtivos.has(autor) && d.orientador) formadores.add(d.orientador);
+      if (!orientadoresAtivos.has(autor) || !d.orientador || d.orientador === autor) continue;
+      let formados = formadores.get(d.orientador);
+      if (!formados) formadores.set(d.orientador, (formados = new Set()));
+      formados.add(autor);
     }
 
     const nivel = d.nivel_academico ?? '';
@@ -59,7 +66,9 @@ export function calcularGenealogia(
   }
 
   return {
-    formadores: [...formadores].sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    formadores: [...formadores]
+      .map(([f, formados]): [string, string[]] => [f, [...formados].sort((a, b) => a.localeCompare(b, 'pt-BR'))])
+      .sort((a, b) => a[0].localeCompare(b[0], 'pt-BR')),
     mestreDoutor: mestreDoutor.sort((a, b) => a[0].localeCompare(b[0], 'pt-BR')),
   };
 }

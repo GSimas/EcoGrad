@@ -155,18 +155,28 @@ export function Destaques({ docs, snaGlobal, contagens, conjuntos, niveis, statu
 
           <Card className="space-y-3">
             {genealogia.formadores.length > 0 ? (
-                <Expander titulo={`Formadores de Professores (${genealogia.formadores.length})`} icone={<Sprout size={16} aria-hidden />} persistir={false}>
-                  <div className="mb-3"><Dica rotulo="Como ler: formadores de professores"><p>Nomes que aparecem na autoria e na orientação de registros do recorte. Isso não confirma identidade, sequência temporal ou atuação atual.</p></Dica></div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {genealogia.formadores.map((f) => (
-                      <Chip key={f} tipo="Orientador" onClick={() => navegarPara('Orientador', f)}>
-                        <GraduationCap size={14} aria-hidden /> {f}
-                      </Chip>
+                <Expander titulo={`Formadores de Orientadores (${genealogia.formadores.length})`} icone={<Sprout size={16} aria-hidden />} persistir={false}>
+                  <div className="mb-3"><Dica rotulo="Como ler: formadores de orientadores"><p>Quem orientou, no recorte, a autoria de alguém que também aparece como orientador ou coorientador. Ao lado, os orientadores que essa pessoa formou. Isso não confirma identidade, sequência temporal ou atuação atual.</p></Dica></div>
+                  <ul className="space-y-3">
+                    {genealogia.formadores.map(([f, formados]) => (
+                      <li key={f} className="space-y-1.5">
+                        <Chip tipo="Orientador" onClick={() => navegarPara('Orientador', f)}>
+                          <GraduationCap size={14} aria-hidden /> {f}
+                        </Chip>
+                        <div className="flex flex-wrap items-center gap-1.5 border-l border-eco-border pl-3">
+                          <span className="text-xs text-slate-400">Formou {formados.length === 1 ? 'o orientador' : `${formados.length} orientadores`}:</span>
+                          {formados.map((o) => (
+                            <Chip key={o} tipo="Orientador" onClick={() => navegarPara('Orientador', o)}>
+                              <School size={14} aria-hidden /> {o}
+                            </Chip>
+                          ))}
+                        </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </Expander>
               ) : (
-                <div className="space-y-2"><p className="flex items-center gap-1.5 text-sm font-medium text-slate-200"><Sprout size={15} aria-hidden /> Formadores de Professores</p><Aviso>Nenhum ciclo genealógico detectado nesta amostra.</Aviso></div>
+                <div className="space-y-2"><p className="flex items-center gap-1.5 text-sm font-medium text-slate-200"><Sprout size={15} aria-hidden /> Formadores de Orientadores</p><Aviso>Nenhum ciclo genealógico detectado nesta amostra.</Aviso></div>
               )}
             {genealogia.mestreDoutor.length > 0 ? (
                 <Expander titulo={`Autores com dissertação e tese na mesma coleção (${genealogia.mestreDoutor.length})`} icone={<User size={16} aria-hidden />} persistir={false}>

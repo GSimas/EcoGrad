@@ -156,7 +156,7 @@ export const useEcoGradStore = create<EcoGradState>()((set, get) => ({
       setChat: (value) => set((s) => ({ chat: { ...s.chat, ...value } })),
       apresentacaoVista: false,
       rota: 'dashboard',
-      sidebarRecolhida: false,
+      sidebarRecolhida: true,
 
       programasSelecionados: [],
       cursosTccSelecionados: [],

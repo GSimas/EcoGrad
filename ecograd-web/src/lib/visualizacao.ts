@@ -1,4 +1,5 @@
 import { correspondeBusca, termosBusca } from './utils';
+import { gerarXlsx } from './xlsx';
 /** Presentation only: never mutates scientific rows or recalculates metrics. */
 /**
  * Filtro de uma coluna. `texto` casa sem acento nem caixa; `selecao` aceita só
@@ -203,6 +204,14 @@ export function csvComContexto(pacote: ReturnType<typeof pacoteExportacao>): str
   const meta = Object.entries(pacote.contexto);
   const headers = [...pacote.colunas.map((c) => c.rotulo), ...meta.map(([k]) => `Contexto: ${k}`)];
   return '\uFEFF' + [headers.map(celulaCSV).join(','), ...pacote.dados.map((l) => [...pacote.colunas.map((c) => l[c.chave]), ...meta.map(([, v]) => v)].map(celulaCSV).join(','))].join('\r\n');
+}
+/** Mesmo pacote do CSV, em duas abas: os dados e, à parte, o contexto (campo, valor). */
+export function xlsxComContexto(pacote: ReturnType<typeof pacoteExportacao>) {
+  const celula = (v: unknown) => v == null ? '' : typeof v === 'number' && Number.isFinite(v) ? v : typeof v === 'object' ? JSON.stringify(v) : String(v);
+  return gerarXlsx([
+    { nome: 'Dados', linhas: [pacote.colunas.map((c) => c.rotulo), ...pacote.dados.map((l) => pacote.colunas.map((c) => celula(l[c.chave])))] },
+    { nome: 'Contexto', linhas: [['Campo', 'Valor'], ...Object.entries(pacote.contexto).map(([k, v]) => [k, celula(v)])] },
+  ]);
 }
 /** Explicit allowlist: conversations, drafts, credentials and unrelated UI never enter exports. */
 export function contextoPublicavel(s: { baseVersion: string; programasSelecionados: string[]; cursosTccSelecionados: string[]; rota: string; buscaTipo: string; buscaTermo: string | null; docs: readonly { ano: number | null }[] }) {

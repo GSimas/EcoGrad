@@ -61,7 +61,7 @@ export function BaseComSNA() {
           <p>As métricas são as do nó do <strong>documento</strong> no grafo global: <strong>grau absoluto</strong> conta autores, orientador, palavras-chave, macrotema e artefatos ligados àquele registro — ou seja, mede sobretudo quão preenchidos estão os metadados dele.</p>
           <p><strong>Betweenness</strong> e <strong>closeness</strong> situam o documento na rede inteira; <strong>comunidade</strong> é o agrupamento do Louvain; <strong>posição por betweenness</strong> é o ranking global, em que 1 é o nó de maior intermediação de toda a rede — documentos, pessoas e termos disputam o mesmo ranking.</p>
           <p>Todas mudam quando o recorte muda, e nenhuma mede impacto, citação, qualidade ou relevância do trabalho. Um registro com muitas palavras-chave sobe no grau sem que isso diga nada sobre o conteúdo.</p>
-          <p>A tabela exporta em CSV e JSON com o contexto da análise, sempre com todas as linhas filtradas — não apenas a página visível.</p>
+          <p>A tabela baixa em CSV, Excel ou JSON com o contexto da análise, sempre com todas as linhas filtradas — não apenas a página visível.</p>
         </div>
       </CabecalhoBloco>
 

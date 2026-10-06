@@ -34,8 +34,8 @@ export function paraCSV(
   return `﻿${cols.join(',')}\n${corpo}`;
 }
 
-/** Dispara o download de um texto gerado no cliente. */
-export function baixarArquivo(conteudo: string, nome: string, mime = 'text/csv;charset=utf-8'): void {
+/** Dispara o download de um conteúdo gerado no cliente. */
+export function baixarArquivo(conteudo: BlobPart, nome: string, mime = 'text/csv;charset=utf-8'): void {
   const blob = new Blob([conteudo], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

@@ -31,7 +31,7 @@ export function Apresentacao() {
       <header className="mt-6 flex flex-col items-center text-center">
         <img src="/ecograd-logo.svg" alt="" aria-hidden="true" className="intro-logo h-16 w-16 border border-eco-border bg-eco-panel/60 object-contain p-1.5" />
         <p className="eco-sobretitulo mt-8">Ecologia do Conhecimento · UFSC</p>
-        <h1 className="mt-4 text-6xl leading-[.95] lg:text-7xl">Eco<span className="eco-destaque eco-brilho">Grad</span></h1>
+        <h1 className="mt-4 text-6xl leading-[.95] lg:text-7xl"><span className="intro-titulo">Eco<span className="eco-destaque eco-brilho">Grad</span></span></h1>
 
         {/* Dois caminhos para o mesmo acervo: escolher itens ou perguntar. A busca
             segue sendo o padrão — é determinística e instantânea. */}
