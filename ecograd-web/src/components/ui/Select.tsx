@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,15 @@ export function Select({ valor, onChange, opcoes, id, className, disabled, 'aria
   'aria-label'?: string;
   'aria-describedby'?: string;
 }) {
+  // O Radix monta as opções mesmo com a lista fechada. Memoizadas, elas não se
+  // redesenham quando só o formulário em volta muda — com os 464 modelos do
+  // OpenRouter, cada tecla num campo vizinho refazia a lista inteira. A opção
+  // marcada continua atualizada: os itens leem o valor pelo contexto do Radix.
+  const itens = useMemo(() => opcoes.map((o) => <SelectPrimitive.Item key={o.valor} value={interno(o.valor)} disabled={o.desabilitada}
+    className="select-item relative flex min-h-11 cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-3 text-sm text-slate-200 outline-none data-[disabled]:cursor-not-allowed data-[disabled]:text-slate-500 data-[state=checked]:text-eco-accent data-[highlighted]:bg-eco-accent/10 data-[highlighted]:text-eco-accent">
+    <SelectPrimitive.ItemIndicator className="absolute left-2 inline-flex"><Check size={14} /></SelectPrimitive.ItemIndicator>
+    <SelectPrimitive.ItemText><span className="break-words">{o.rotulo}</span></SelectPrimitive.ItemText>
+  </SelectPrimitive.Item>), [opcoes]);
   return <SelectPrimitive.Root value={interno(valor)} onValueChange={(v) => onChange(v === VAZIO ? '' : v)} disabled={disabled}>
     <SelectPrimitive.Trigger id={id} aria-label={ariaLabel} aria-describedby={describedBy} className={cn('input select-trigger flex items-center justify-between gap-2 text-left disabled:cursor-not-allowed', className)}>
       <span className="min-w-0 truncate"><SelectPrimitive.Value /></span>
@@ -27,11 +37,7 @@ export function Select({ valor, onChange, opcoes, id, className, disabled, 'aria
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content position="popper" sideOffset={4} className="select-content eco-vidro z-[60] max-h-[min(var(--radix-select-content-available-height),20rem)] min-w-[var(--radix-select-trigger-width)] max-w-[min(36rem,calc(100vw-1rem))] overflow-hidden rounded-lg border border-eco-border shadow-xl">
         <SelectPrimitive.Viewport className="p-1">
-          {opcoes.map((o) => <SelectPrimitive.Item key={o.valor} value={interno(o.valor)} disabled={o.desabilitada}
-            className="select-item relative flex min-h-11 cursor-pointer select-none items-center rounded-md py-2 pl-8 pr-3 text-sm text-slate-200 outline-none data-[disabled]:cursor-not-allowed data-[disabled]:text-slate-500 data-[state=checked]:text-eco-accent data-[highlighted]:bg-eco-accent/10 data-[highlighted]:text-eco-accent">
-            <SelectPrimitive.ItemIndicator className="absolute left-2 inline-flex"><Check size={14} /></SelectPrimitive.ItemIndicator>
-            <SelectPrimitive.ItemText><span className="break-words">{o.rotulo}</span></SelectPrimitive.ItemText>
-          </SelectPrimitive.Item>)}
+          {itens}
         </SelectPrimitive.Viewport>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>

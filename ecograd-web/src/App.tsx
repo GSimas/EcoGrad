@@ -3,10 +3,10 @@ import type { Page } from '@/lib/navigation';
 import { useNavigation } from '@/services/navigation';
 import { useNavigationPosition } from '@/hooks/useNavigationPosition';
 import { SessionStatus } from '@/components/layout/SessionStatus';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useDeferredValue, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Apresentacao } from '@/components/layout/Apresentacao';
-import { FundoDinamico } from '@/components/layout/FundoDinamico';
+import { FundoDinamico, VeuDoFundo } from '@/components/layout/FundoDinamico';
 import { useEcoGradStore } from '@/stores/useEcoGradStore';
 import { AtividadesIA } from '@/components/ui/AtividadesIA';
 import { PainelAtividades } from '@/components/ui/Atividade';
@@ -26,8 +26,17 @@ const CONSULTOR = preguicoso(() => import('@/components/chat/ConsultorIA').then(
 const NOMES_PAGINA: Record<Rota, string> = { dashboard: 'o Dashboard', busca: 'o Motor de Busca', avancada: 'a Análise Avançada' };
 
 export default function App() {
-  const page = useNavigation((s) => s.page);
+  const paginaPedida = useNavigation((s) => s.page);
   const dadosCarregados = useEcoGradStore((s) => s.dadosCarregados);
+  /**
+   * Trocar de página (ou sair da apresentação para a análise) monta árvores
+   * pesadas: o Dashboard de uma coleção grande levava quase um segundo numa
+   * tarefa só, com a tela congelada. A página da tela é adiada: a atual segue
+   * viva e animada enquanto a próxima é montada em fatias, e a troca acontece de
+   * uma vez quando ela está pronta. Nada muda no que aparece, só deixa de travar.
+   */
+  const page = useDeferredValue(paginaPedida);
+  const dadosNaTela = useDeferredValue(dadosCarregados);
   const rota = page;
   const docs = useEcoGradStore((s) => s.docs);
   const statusSNA = useEcoGradStore((s) => s.statusSNA);
@@ -58,35 +67,39 @@ export default function App() {
     const id = window.requestIdleCallback(depoisDaCarga, { timeout: 1500 });
     return () => window.cancelIdleCallback(id);
   }, [carregando, dadosCarregados]);
-  const conteudoRef = useNavigationPosition();
+  const conteudoRef = useNavigationPosition(page);
 
   // A apresentação ocupa a tela inteira e é onde as coleções são escolhidas: sem
   // base carregada não há o que a sidebar mostre. `selecao` é uma rota aposentada
   // que sobrevive só para não quebrar links antigos.
-  if (page === 'inicio' || page === 'selecao' || (!dadosCarregados && page !== 'nao-encontrada')) {
-    return (
-      // Coluna flex: a apresentação cresce para ocupar a altura livre, o que
-      // mantém os atalhos ancorados no rodapé sem criar rolagem artificial.
+  // Um desenho só, na mesma posição da árvore nas duas telas: o React o mantém
+  // montado ao entrar e sair da apresentação, e o fundo segue em movimento em
+  // vez de sumir e recomeçar com outro sorteio de pontos e outro worker.
+  const fundo = <FundoDinamico className="fixed inset-0" veu={false} />;
+  if (page === 'inicio' || page === 'selecao' || (!dadosNaTela && page !== 'nao-encontrada')) {
+    return <>{fundo}
+      {/* Coluna flex: a apresentação cresce para ocupar a altura livre, o que
+          mantém os atalhos ancorados no rodapé sem criar rolagem artificial. */}
       <main ref={conteudoRef} tabIndex={-1} aria-label="Conteúdo principal" className="relative flex h-screen flex-col overflow-y-auto">
-        {/* `fixed`: a apresentação rola dentro do próprio main, e um fundo absoluto
+        {/* `fixed`: a apresentação rola dentro do próprio main, e um véu absoluto
             rolaria junto, descolando do enquadramento. */}
-        <FundoDinamico className="fixed inset-0" />
+        <VeuDoFundo className="fixed inset-0" />
         <PainelAtividades />
         <AtividadesIA />
         <LimiteDeErro rotulo="a apresentação"><Apresentacao /></LimiteDeErro>
       </main>
-    );
+    </>;
   }
 
-  return (
+  return <>{fundo}
     <div className="flex h-dvh flex-col overflow-hidden lg:flex-row">
       <a href="#conteudo-principal" onClick={(e) => { e.preventDefault(); conteudoRef.current?.focus(); }} className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-eco-action focus:p-3 focus:text-eco-on-action">Pular para o conteúdo</a>
       <Sidebar />
       {/* `relative` contém os textos sr-only (absolutos) na rolagem do main; sem isso eles esticam a página e sobra fundo vazio. */}
-      {/* O fundo fica num contêiner próprio, ao lado da lateral (que já tem o seu):
-          `absolute` prende o desenho à área de conteúdo, sem rolar junto com ela. */}
+      {/* O véu fica num contêiner próprio, ao lado da lateral (que já tem o seu):
+          `absolute` o prende à área de conteúdo, sem rolar junto com ela. */}
       <div className="relative min-h-0 min-w-0 flex-1">
-      <FundoDinamico className="absolute inset-0" />
+      <VeuDoFundo className="absolute inset-0" />
       <main id="conteudo-principal" tabIndex={-1} aria-label="Conteúdo principal" ref={conteudoRef} className="relative h-full min-w-0 overflow-y-auto focus:outline-none">
         <SessionStatus />
         <PainelAtividades />
@@ -108,7 +121,7 @@ export default function App() {
         <Suspense fallback={null}><CONSULTOR.Componente /></Suspense>
       </LimiteDeErro>}
     </div>
-  );
+  </>;
 }
 
 /**

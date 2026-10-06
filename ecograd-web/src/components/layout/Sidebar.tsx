@@ -8,9 +8,10 @@ import { TutorialModal } from './TutorialModal';
 import { AtalhosEcoGrad } from './AtalhosEcoGrad';
 import { OfertaDeExemplo, useTourGuiado } from './TourGuiado';
 import { ExportarRelatorio } from './ExportarRelatorio';
-import { FundoDinamico } from './FundoDinamico';
+import { VeuDoFundo } from './FundoDinamico';
 import { BotaoPanoramaUfsc } from './BotaoPanoramaUfsc';
 import { cn } from '@/lib/utils';
+import { useAparencia } from '@/services/aparencia';
 import { rotuloAnaliseAtiva, useEcoGradStore } from '@/stores/useEcoGradStore';
 import { RecorteAtivo } from './RecorteAtivo';
 import type { Rota } from '@/types';
@@ -22,6 +23,8 @@ const TODAS: Array<{ rota: Rota; rotulo: string; icone: typeof LayoutDashboard }
 ];
 /** Só o que está visível agora chega ao menu (`ROTAS_VISIVEIS`, em `lib/navigation`). */
 const ITENS = TODAS.filter(({ rota }) => rotaVisivel(rota));
+/** Quanto o conteúdo do painel leva para sumir antes de trocar de layout (o `opacity` de `.eco-sidebar-conteudo`). */
+const TROCA_MS = 120;
 
 /** Cabeçalho do celular: ali o tutorial não tem o rodapé da lateral para morar. */
 export function AcessosAjuda({ compacto = false }: { compacto?: boolean }) {
@@ -99,6 +102,24 @@ export function Sidebar() {
   const tour = useTourGuiado();
   const recolhida = useEcoGradStore((s) => s.sidebarRecolhida);
   const alternar = useEcoGradStore((s) => s.alternarSidebar);
+  /**
+   * O layout desenhado dentro do painel segue `recolhida` com atraso. Trocá-lo
+   * no mesmo quadro da largura punha o conteúdo expandido espremido na coluna
+   * de 64 px (texto quebrando, ícones fora da caixa) e, ao recolher, saltava os
+   * ícones antes de o painel encolher. Agora o conteúdo some, troca enquanto
+   * está invisível e reaparece com largura fixa, só recortado pelo painel que
+   * anima — nada reflui no meio da transição.
+   */
+  const reduzir = useAparencia((s) => s.reduzir);
+  const [compacto, setCompacto] = useState(recolhida);
+  const [trocando, setTrocando] = useState(false);
+  useEffect(() => {
+    if (compacto === recolhida) { setTrocando(false); return; }
+    if (reduzir) { setCompacto(recolhida); return; }
+    setTrocando(true);
+    const t = window.setTimeout(() => { setCompacto(recolhida); setTrocando(false); }, TROCA_MS);
+    return () => window.clearTimeout(t);
+  }, [recolhida, compacto, reduzir]);
   const page = useNavigation((s) => s.page);
   const revision = useNavigation((n) => n.revision);
   const [menu, setMenu] = useState(false);
@@ -111,17 +132,20 @@ export function Sidebar() {
     return () => desktop.removeEventListener('change', ajustar);
   }, []);
   return <>
-    <aside aria-label="Navegação principal" className={cn('eco-sidebar relative hidden h-full shrink-0 flex-col border-r border-eco-border bg-eco-panel/40 lg:flex', recolhida ? 'w-16' : 'w-72')}>
-      {/* O canvas fica fora do container que rola; senão a decoração subiria com o conteúdo. */}
-      <FundoDinamico className="absolute inset-0" />
-      <div className={cn('relative z-10 flex h-full min-h-0 flex-col gap-3 overflow-y-auto', recolhida ? 'p-2' : 'p-4')}>
-      <button type="button" onClick={() => navigatePage('inicio')} className={cn('eco-brand-home flex min-h-12 items-center gap-3 rounded-lg text-left', recolhida ? 'w-12 justify-center' : 'w-full px-2')} aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
-        <img src="/ecograd-logo.svg" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!recolhida && <span className="flex flex-col leading-tight"><strong className="text-lg font-semibold tracking-tight text-slate-100">EcoGrad</strong><span className="font-mono text-[.68rem] uppercase tracking-[.14em] text-slate-400">UFSC</span></span>}
+    <aside aria-label="Navegação principal" className={cn('eco-sidebar relative hidden h-full shrink-0 flex-col overflow-hidden border-r border-eco-border bg-eco-panel/40 lg:flex', recolhida ? 'w-16' : 'w-72')}>
+      {/* O véu fica fora do container que rola; senão subiria com o conteúdo. O
+          desenho é o da raiz do app, visto através do painel translúcido. */}
+      <VeuDoFundo className="absolute inset-0" />
+      {/* Largura fixa (a do painel menos a borda): o painel recorta, o conteúdo não reflui. */}
+      <div data-trocando={trocando || undefined} style={{ width: compacto ? 'calc(4rem - 1px)' : 'calc(18rem - 1px)' }}
+        className={cn('eco-sidebar-conteudo relative z-10 flex h-full min-h-0 shrink-0 flex-col gap-3 overflow-y-auto overflow-x-hidden', compacto ? 'p-2' : 'p-4')}>
+      <button type="button" onClick={() => navigatePage('inicio')} className={cn('eco-brand-home flex min-h-12 items-center gap-3 rounded-lg text-left', compacto ? 'w-12 justify-center' : 'w-full px-2')} aria-label="Voltar à apresentação do EcoGrad" title="Voltar à apresentação">
+        <img src="/ecograd-logo.svg" alt="" aria-hidden="true" className="h-10 w-10 shrink-0 object-contain" />{!compacto && <span className="flex flex-col leading-tight"><strong className="text-lg font-semibold tracking-tight text-slate-100">EcoGrad</strong><span className="font-mono text-[.68rem] uppercase tracking-[.14em] text-slate-400">UFSC</span></span>}
       </button>
       <button type="button" className="btn min-h-11" onClick={alternar} aria-expanded={!recolhida} aria-label={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'} title={recolhida ? 'Expandir painel lateral' : 'Recolher painel lateral'}>
-        {recolhida ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}
+        {compacto ? <PanelLeftOpen size={18} /> : <><PanelLeftClose size={18} /> Recolher painel</>}
       </button>
-        <Navegacao compacto={recolhida} tour={tour} />
+        <Navegacao compacto={compacto} tour={tour} />
       </div>
     </aside>
     <header className="flex shrink-0 items-center gap-2 border-b border-eco-border bg-eco-panel px-2 py-2 lg:hidden">

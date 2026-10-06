@@ -144,7 +144,7 @@ function animarNaPagina(canvas: HTMLCanvasElement, host: HTMLElement, estado: Mu
  * pelas dependências do efeito: reconstruir o canvas a cada troca sortearia
  * pontos novos e a mudança apareceria como um piscar.
  */
-export function FundoDinamico({ className }: { className?: string }) {
+export function FundoDinamico({ className, veu = true }: { className?: string; veu?: boolean }) {
   const hospedeiro = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reduzir = useAparencia((s) => s.reduzir);
@@ -169,8 +169,17 @@ export function FundoDinamico({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div ref={hospedeiro} aria-hidden="true" className={cn('eco-fundo overflow-hidden', className)}>
+    <div ref={hospedeiro} aria-hidden="true" className={cn('eco-fundo overflow-hidden', !veu && 'eco-fundo-sem-veu', className)}>
       <canvas ref={canvasRef} className="opacity-95 blur-[5px]" />
     </div>
   );
+}
+
+/**
+ * Só o véu do fundo, sem canvas: o desenho é um só, montado na raiz do app e
+ * contínuo entre a apresentação e a análise; cada região põe por cima o véu que
+ * protege o contraste do próprio texto.
+ */
+export function VeuDoFundo({ className }: { className?: string }) {
+  return <div aria-hidden="true" className={cn('eco-fundo', className)} />;
 }

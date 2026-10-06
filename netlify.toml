@@ -123,3 +123,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "DENY"
+    # O equivalente moderno do DENY. Só a diretiva de moldura: uma CSP completa
+    # exigiria inventariar os domínios de IA, Supabase e CAPES, e esta não
+    # restringe nada além de quem pode emoldurar o app.
+    Content-Security-Policy = "frame-ancestors 'none'"

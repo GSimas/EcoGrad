@@ -112,23 +112,38 @@ export async function aquecerCatalogo(indices: IndicesInvertidos, categoria: Cat
   if (!porFiltro) { porFiltro = new Map(); catalogos.set(indices, porFiltro); }
   const chave = chaveDoFiltro(categoria, papel, origem);
   if (porFiltro.has(chave)) return;
-  const itens = itensDoCatalogo(indices, categoria, papel, origem);
+  // Montar a lista e o Map final também custa dezenas de milissegundos com o
+  // acervo grande: as duas etapas cedem a vez como a ordenação, a cada 8 ms.
+  let fatia = performance.now();
+  const ceder = async () => { if (performance.now() - fatia > 8) { await cederVez(); fatia = performance.now(); } };
+  const itens: ItemCatalogo[] = [];
+  for (const item of percorrerCatalogo(indices, categoria, papel, origem)) {
+    itens.push(item);
+    if (itens.length % 1024 === 0) await ceder();
+  }
   await cederVez();
   const ordenados = await ordenarEmFatias(itens, ordemCatalogo);
+  const catalogo: Catalogo = new Map();
+  for (let i = 0; i < ordenados.length; i++) {
+    catalogo.set(ordenados[i].rotulo, { tipo: ordenados[i].tipo, nome: ordenados[i].nome });
+    if (i % 1024 === 1023) await ceder();
+  }
   // Se alguém montou o catálogo enquanto isto rodava, vale o que já está no cache.
-  if (!porFiltro.has(chave)) porFiltro.set(chave, new Map(ordenados.map((i) => [i.rotulo, { tipo: i.tipo, nome: i.nome }])));
+  if (!porFiltro.has(chave)) porFiltro.set(chave, catalogo);
 }
 
-function itensDoCatalogo(indices: IndicesInvertidos, categoria: Categoria, papel: string, origem: string): ItemCatalogo[] {
-  const itens: ItemCatalogo[] = [];
+const itensDoCatalogo = (indices: IndicesInvertidos, categoria: Categoria, papel: string, origem: string): ItemCatalogo[] =>
+  [...percorrerCatalogo(indices, categoria, papel, origem)];
+
+/** Os itens do catálogo na ordem do índice — a mesma sequência para a montagem síncrona e a fatiada. */
+function* percorrerCatalogo(indices: IndicesInvertidos, categoria: Categoria, papel: string, origem: string): Generator<ItemCatalogo> {
   for (const tipo of categoriaPorId(categoria).tipos as readonly TipoBusca[]) {
     if ((tipo === 'Palavra-chave' || tipo === 'Macrotema') && origem !== TODOS && tipo !== origem) continue;
     // Sem ordenar aqui: a ordenação abaixo decide a ordem final, e o sort é
     // estável, então empates mantêm a ordem do índice nos dois casos.
     for (const nome of nomesDoTipo(indices, tipo)) {
       if (tipo === 'Pessoa' && papel !== TODOS && !indices.papeis_pessoa.get(nome)?.has(papel as PapelPessoa)) continue;
-      itens.push({ rotulo: rotuloDe(tipo, nome, indices), tipo, nome });
+      yield { rotulo: rotuloDe(tipo, nome, indices), tipo, nome };
     }
   }
-  return itens;
 }

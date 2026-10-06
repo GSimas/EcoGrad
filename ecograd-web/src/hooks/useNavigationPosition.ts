@@ -12,15 +12,22 @@ function focusDescription(root: HTMLElement): Position['focus'] {
     && (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) ? '' : (el.textContent ?? '').trim().slice(0, 240)) === text);
   return { tag, label, text, ordinal: matches.indexOf(active) };
 }
-export function useNavigationPosition() {
+/**
+ * `visivel`: a página que está de fato na tela. O App a adia (`useDeferredValue`)
+ * enquanto a próxima é montada em segundo plano; restaurar rolagem e foco antes
+ * da troca mexeria no conteúdo que está saindo.
+ */
+export function useNavigationPosition(visivel?: string) {
   const ref = useRef<HTMLElement>(null);
   const revision = useNavigation((s) => s.revision);
   const restore = useNavigation((s) => s.restore);
-  const page = useNavigation((s) => s.page);
+  const atual = useNavigation((s) => s.page);
+  const page = visivel ?? atual;
+  const pendente = page !== atual;
   useLayoutEffect(() => registerPosition(() => ({ top: ref.current?.scrollTop ?? 0, focus: ref.current ? focusDescription(ref.current) : undefined })), []);
   useLayoutEffect(() => {
     const root = ref.current;
-    if (!root) return;
+    if (!root || pendente) return;
     let stopped = false;
     let frame = 0;
     const apply = () => {
@@ -45,7 +52,7 @@ export function useNavigationPosition() {
     apply();
     const timeout = window.setTimeout(stop, 1500);
     return () => { stop(); clearTimeout(timeout); root.removeEventListener('wheel', stop); root.removeEventListener('touchstart', stop); root.removeEventListener('pointerdown', stop); root.removeEventListener('keydown', stop); };
-  }, [revision, page]);
+  }, [revision, page, pendente]);
   useLayoutEffect(() => {
     const root = ref.current;
     let timer: ReturnType<typeof setTimeout>;

@@ -1,4 +1,4 @@
-import { Children, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
+import { Children, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { useAparencia } from '@/services/aparencia';
 
@@ -28,7 +28,10 @@ const INTERVALO_AUTOMATICO_MS = 3000;
  */
 export function Carrossel({ rotulo, children, cabecalho }: { rotulo: string; children: ReactNode; cabecalho?: ReactNode }) {
   const trilho = useRef<HTMLDivElement>(null);
-  const itens = Children.toArray(children);
+  // Memoizado: a rolagem muda `atual` a cada passo, e um `toArray` novo recriava
+  // os elementos dos cartões — o React redesenhava todos, nas três cópias, só
+  // para mover o marcador de posição. Com os mesmos elementos, ele os reaproveita.
+  const itens = useMemo(() => Children.toArray(children), [children]);
   const n = itens.length;
   // Com um cartão só não há o que girar: nada de cópias.
   const infinito = n > 1;

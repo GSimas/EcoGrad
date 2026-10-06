@@ -123,15 +123,41 @@ Execuções intercaladas — antes, depois, antes, depois — na mesma janela de
 - **Acessibilidade.** O lint *strict* foi de 25 ocorrências a 0, e a boa prática de ordem de títulos foi resolvida. A única regra WCAG que o axe ainda acusa é o contraste do carrossel ([pendência 1](#pendências-para-decisão)); o número de nós varia com a posição do carrossel no momento da auditoria.
 - **Outra janela, mesma ordem de grandeza.** Numa janela mais quieta da máquina (rodadas 4 e 5, com as mesmas mudanças na main thread), a busca ficou pronta em 1,2 s (era 4,6 s), a digitação caiu de 940 para 108 ms de INP, o TBT do clique à rede de 4,1 para 2,1 s, o Motor de Busca de 692 para 140 ms e o Dashboard de 892 para 324 ms.
 
+## Rodada de 05/10/2026
+
+Nova linha de base, com as funcionalidades que entraram depois de 24/09 (UFSCão com OpenRouter, menções como link, modal de download, genealogia), e uma queixa de uso: o painel lateral "pulava" ao abrir e fechar, e o fundo animado parava ao entrar e sair da apresentação. Medido numa máquina mais rápida que a de 24/09, por isso os números absolutos não se comparam com os da tabela acima — só antes × depois desta rodada.
+
+**O que a medição mostrou.** O bundle e o lint seguiam como em 24/09 (JS inicial 525,8 KB, lint *strict* zerado); a única regra do axe continua sendo o contraste do carrossel (pendência 1), que aparece também atrás da janela de Destaques. O gargalo restante era a montagem síncrona do Dashboard: a troca de página vem de um store Zustand, e o React a renderizava numa tarefa só — até 923 ms ao carregar a coleção grande e ~200 ms de INP ao voltar ao Dashboard. O perfil mostrou ainda o `Carrossel` recriando os elementos dos cartões a cada passo da rotação (o React redesenhava todos, nas três cópias), o aquecimento do catálogo montando a lista e o `Map` sem ceder a vez, e o `Select` do modelo do OpenRouter refazendo as 464 opções a cada tecla de um campo vizinho. O painel lateral animava só a largura: o conteúdo trocava de layout no primeiro quadro, e a medição quadro a quadro registrou ícones saltando 137 px e botões espremidos em 8 a 26 px de largura. O fundo eram três canvases, um por região, e cada troca entre apresentação e análise desmontava o desenho, subia outro worker e sorteava outros pontos.
+
+**O que mudou.** A página da tela é adiada (`useDeferredValue` no `App`): a atual segue viva enquanto a próxima é montada em fatias, e a troca acontece de uma vez; a restauração de rolagem e foco espera a página visível. O fundo é um canvas só, na raiz do app, que nunca desmonta; cada região põe por cima o próprio véu de contraste (`VeuDoFundo`) — a rede passa a ser uma cena contínua atrás da lateral e do conteúdo. O conteúdo do painel lateral tem largura fixa e troca de layout invisível (some em 110 ms, troca, volta) enquanto o painel, recortando, anima a largura. O `Carrossel` memoiza os filhos, o `Select` memoiza as opções, e o aquecimento do catálogo cede a vez também na lista e no `Map`. O `netlify.toml` ganhou `Content-Security-Policy: frame-ancestors 'none'` (pendência 6).
+
+| Métrica (CPU 4×, mediana de 3 execuções intercaladas) | Antes | Depois | Ganho / Delta |
+| :--- | ---: | ---: | :--- |
+| JS inicial (gzip) | 172,1 KB | 172,4 KB | +0,1% |
+| Carga da coleção grande: maior tarefa | 365 ms (334–923) | 113 ms (110–141) | -69% (faixas sem sobreposição) |
+| Carga da coleção grande: TBT | 456 ms (376–1.538) | 246 ms (199–279) | -46% |
+| Carga da coleção grande: maior intervalo entre quadros | 417 ms | 133 ms | -68% |
+| Clique em Carregar → Dashboard na tela | 722 ms | 1.166 ms | +61% (custo da montagem fatiada) |
+| Sidebar → Dashboard: INP | 200 ms | 40 ms | -80% ✅ |
+| Pior INP da navegação | 200 ms | 48 ms | -76% ✅ |
+| Abrir dossiê de pessoa: INP | 144 ms | 80 ms | -44% ≈ |
+| Painel lateral: maior salto de ícone visível num quadro | 137 px | 0 px | eliminado |
+| Fundo trocado ao entrar/sair da apresentação | 8 de 8 | 0 de 8 | eliminado |
+| Digitar num campo da configuração do UFSCão (dev, por tecla) | ~37 ms | ~6,5 ms | -82% |
+| Canvases órfãos após fechar janelas | 0 | 0 | = |
+| axe WCAG 2.1 A/AA | 1 regra | 1 regra | = (pendência 1) |
+
+O painel e o fundo foram medidos por um roteiro à parte (puppeteer, quadro a quadro, 2 rodadas e 8 alternâncias por build). O Chrome sem janela entrega no máximo 60 quadros por segundo, então o alvo de 120 fps não é medível aqui; o que se mede é o trabalho por quadro e os quadros perdidos — nenhum nas transições a CPU 1×.
+
 ## Pendências para decisão
 
 Nada aqui foi aplicado: cada item mudaria algo que a auditoria não podia mudar sozinha — aparência, comportamento ou um contrato de dados.
 
 1. **Contraste dos cartões afastados do carrossel de indicadores (WCAG 1.4.3).** É a única regra WCAG que o axe ainda acusa: os cartões fora do centro chegam a 35% de opacidade, com desfoque, e o texto fica em 2,59:1. Resolver pede um piso de opacidade (cerca de 0,8) e texto sem desfoque — o efeito de "foco no centro" fica mais sutil. Ganho: zero violações WCAG em todos os estados auditados.
-2. **Lista de sugestões do Motor de Busca.** Cada tecla re-renderiza até 300 sugestões; é o custo que sobra ao digitar ali. Virtualizar a lista (montar só as linhas visíveis) mantém a aparência, mas muda o que o leitor de tela percorre e pede `aria-setsize`/`aria-posinset`; reduzir o limite para ~50 mudaria o que dá para rolar. A primeira opção preserva tudo o que o usuário vê.
+2. **Lista de sugestões do Motor de Busca.** *(05/10: o INP de digitar ali está em 88 ms, abaixo do limite "bom"; deixa de ser prioridade.)* Cada tecla re-renderiza até 300 sugestões; é o custo que sobra ao digitar ali. Virtualizar a lista (montar só as linhas visíveis) mantém a aparência, mas muda o que o leitor de tela percorre e pede `aria-setsize`/`aria-posinset`; reduzir o limite para ~50 mudaria o que dá para rolar. A primeira opção preserva tudo o que o usuário vê.
 3. **Carga da coleção em lotes.** A maior tarefa que resta é desserializar os 4.384 documentos e montar o Dashboard no mesmo quadro (~2 s a CPU 4×). Entregar a base em lotes, como o índice da busca já faz, exige mudar o protocolo do worker de dados e das atividades.
 4. **Índice de metadados no IndexedDB.** A gravação do checkpoint já não trava a página, mas o worker ainda lê todas as sessões guardadas a cada checkpoint para decidir o despejo. Um índice por `updated` e `bytes` permitiria ler só os metadados; é uma migração de esquema (versão 1 → 2), e uma aba antiga aberta durante a transição deixaria de abrir o banco até recarregar.
 5. **`tailwind-merge`** é agora o maior item do JS inicial (~100 KB brutos). Trocar o `cn()` exigiria auditar cada combinação de classes, com risco visual.
-6. **`Content-Security-Policy: frame-ancestors 'none'`**, o equivalente moderno do `X-Frame-Options: DENY`. Uma CSP completa pede o inventário de todos os domínios de IA, Supabase e CAPES.
+6. ~~**`Content-Security-Policy: frame-ancestors 'none'`**~~ — aplicado em 05/10, só com a diretiva de moldura. Uma CSP completa ainda pede o inventário de todos os domínios de IA, Supabase e CAPES.
 7. **Memória × CPU no checkpoint.** O JSON da base e da rede fica guardado enquanto elas estão carregadas — ~22 MB para 4.384 documentos (19 MB da base, 2,8 MB da rede) — para os checkpoints seguintes não os serializarem de novo. Dispensar o cache devolve essa memória ao custo de serializar a base outra vez, nas mesmas fatias de 8 ms, a cada checkpoint (fim do SNA, da maturidade, de cada atividade).
 8. **Liberar o catálogo da busca fora da apresentação.** O `busca.worker` guarda o catálogo (~34 MB de itens e ~17 MB de chaves) enquanto a aba está aberta; a versão anterior guardava os itens na página. Encerrar o worker quando a apresentação sai de cena devolveria ~51 MB durante a análise. O custo é preparar o catálogo de novo — ~1,2 s a CPU 4×, no worker, sem travar a página — ao voltar à busca da apresentação ou ao abrir, pela primeira vez depois disso, um recurso que usa o catálogo inteiro (carregar do acervo no dossiê, citações do UFSCão).

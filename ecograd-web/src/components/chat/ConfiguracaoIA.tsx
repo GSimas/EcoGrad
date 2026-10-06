@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent, type ReactNode } from 'react';
+import { useId, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Eye, EyeOff, KeyRound, LogIn } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
@@ -12,10 +12,14 @@ const OPENROUTER = provedorPorId('openrouter');
  */
 function CampoModelo({ id, openRouter, valor, onChange }: { id: string; openRouter: boolean; valor: string; onChange: (v: string) => void }) {
   const lista = useQuery({ queryKey: ['modelos-openrouter'], queryFn: ({ signal }) => modelosOpenRouter(signal), enabled: openRouter, staleTime: 60 * 60 * 1000, retry: 1 });
-  if (openRouter && lista.data) {
-    const opcoes = lista.data.map((m) => ({ valor: m.id, rotulo: m.id === OPENROUTER.modelo ? 'Roteador de modelos grátis (padrão)' : m.nome }));
+  // O mesmo array enquanto catálogo e valor não mudam: o `Select` só refaz as opções quando elas mudam.
+  const opcoes = useMemo(() => {
+    if (!lista.data) return [];
+    const base = lista.data.map((m) => ({ valor: m.id, rotulo: m.id === OPENROUTER.modelo ? 'Roteador de modelos grátis (padrão)' : m.nome }));
     // Um modelo salvo que saiu do catálogo continua visível, em vez de sumir do campo.
-    if (valor && !lista.data.some((m) => m.id === valor)) opcoes.unshift({ valor, rotulo: valor });
+    return valor && !lista.data.some((m) => m.id === valor) ? [{ valor, rotulo: valor }, ...base] : base;
+  }, [lista.data, valor]);
+  if (openRouter && lista.data) {
     return <>
       <Select id={id} valor={valor} onChange={onChange} opcoes={opcoes} />
       <p className="text-xs text-slate-400">Lista ao vivo do OpenRouter: {lista.data.length} modelos, {lista.data.filter((m) => m.gratis).length} grátis. Com a lista aberta, digite o início do nome para pular até ele.</p>

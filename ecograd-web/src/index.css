@@ -639,7 +639,11 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
   transition: border-color var(--motion-base) var(--ease-standard), background-color var(--motion-base) var(--ease-standard), box-shadow var(--motion-base) var(--ease-standard), transform var(--motion-base) var(--ease-emphasized);
 }
 .tabela tbody tr { transition: background-color var(--motion-fast) var(--ease-standard), color var(--motion-fast) var(--ease-standard); }
-.eco-sidebar { transition: width 280ms var(--ease-emphasized), padding 280ms var(--ease-emphasized), background-color var(--motion-base) var(--ease-standard); }
+.eco-sidebar { transition: width 280ms var(--ease-emphasized), background-color var(--motion-base) var(--ease-standard); }
+/* Some rápido (o layout troca invisível, `TROCA_MS` em Sidebar.tsx) e volta
+   enquanto a largura termina de abrir ou fechar. */
+.eco-sidebar-conteudo { transition: opacity 180ms var(--ease-standard); }
+.eco-sidebar-conteudo[data-trocando] { opacity: 0; transition-duration: 110ms; }
 
 @media (hover: hover) and (pointer: fine) {
   .btn:not(:disabled):hover, .btn-chip:not(:disabled):hover { transform: translateY(-1px); }
@@ -798,6 +802,10 @@ details[open] > :not(summary) { animation: eco-collapse-in 260ms var(--ease-emph
       rgb(var(--eco-bg) / 0) 100%),
     linear-gradient(rgb(var(--eco-bg) / .40), rgb(var(--eco-bg) / .40));
 }
+
+/* O canvas único da raiz não traz véu: cada região (apresentação, lateral,
+   conteúdo) põe o seu por cima, com o desenho contínuo por baixo. */
+.eco-fundo-sem-veu::after { content: none; }
 
 /* Na sidebar quase todo texto vem sobre cartão ou botão opaco, então o véu
    pode ser bem mais leve — na coluna estreita o reforço radial cobria o painel
